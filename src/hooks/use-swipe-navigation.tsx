@@ -10,6 +10,7 @@ interface SwipeState {
   startX: number;
   currentX: number;
   direction: 'left' | 'right' | null;
+  isAnimating: boolean;
 }
 
 const SWIPE_THRESHOLD = 50; // Minimum distance for a swipe
@@ -20,7 +21,8 @@ export function useSwipeNavigation(handlers: SwipeHandlers) {
     isActive: false,
     startX: 0,
     currentX: 0,
-    direction: null
+    direction: null,
+    isAnimating: false
   });
   
   const startTimeRef = useRef<number>(0);
@@ -31,18 +33,21 @@ export function useSwipeNavigation(handlers: SwipeHandlers) {
     if (!container) return;
 
     const handleTouchStart = (e: TouchEvent) => {
+      if (swipeState.isAnimating) return; // Prevent new swipes during animation
+      
       const touch = e.touches[0];
       startTimeRef.current = Date.now();
       setSwipeState({
         isActive: true,
         startX: touch.clientX,
         currentX: touch.clientX,
-        direction: null
+        direction: null,
+        isAnimating: false
       });
     };
 
     const handleTouchMove = (e: TouchEvent) => {
-      if (!swipeState.isActive) return;
+      if (!swipeState.isActive || swipeState.isAnimating) return;
       
       const touch = e.touches[0];
       const deltaX = touch.clientX - swipeState.startX;
@@ -55,7 +60,7 @@ export function useSwipeNavigation(handlers: SwipeHandlers) {
     };
 
     const handleTouchEnd = () => {
-      if (!swipeState.isActive) return;
+      if (!swipeState.isActive || swipeState.isAnimating) return;
 
       const endTime = Date.now();
       const deltaTime = endTime - startTimeRef.current;
@@ -64,34 +69,51 @@ export function useSwipeNavigation(handlers: SwipeHandlers) {
 
       // Check if swipe meets threshold criteria
       if (Math.abs(deltaX) >= SWIPE_THRESHOLD && velocity >= SWIPE_VELOCITY_THRESHOLD) {
+        setSwipeState(prev => ({ ...prev, isAnimating: true }));
+        
         if (deltaX > 0 && handlers.onSwipeRight) {
           handlers.onSwipeRight();
         } else if (deltaX < 0 && handlers.onSwipeLeft) {
           handlers.onSwipeLeft();
         }
+        
+        // Reset after animation
+        setTimeout(() => {
+          setSwipeState({
+            isActive: false,
+            startX: 0,
+            currentX: 0,
+            direction: null,
+            isAnimating: false
+          });
+        }, 300); // Match CSS transition duration
+      } else {
+        setSwipeState({
+          isActive: false,
+          startX: 0,
+          currentX: 0,
+          direction: null,
+          isAnimating: false
+        });
       }
-
-      setSwipeState({
-        isActive: false,
-        startX: 0,
-        currentX: 0,
-        direction: null
-      });
     };
 
     // Mouse events for desktop testing
     const handleMouseDown = (e: MouseEvent) => {
+      if (swipeState.isAnimating) return;
+      
       startTimeRef.current = Date.now();
       setSwipeState({
         isActive: true,
         startX: e.clientX,
         currentX: e.clientX,
-        direction: null
+        direction: null,
+        isAnimating: false
       });
     };
 
     const handleMouseMove = (e: MouseEvent) => {
-      if (!swipeState.isActive) return;
+      if (!swipeState.isActive || swipeState.isAnimating) return;
       
       const deltaX = e.clientX - swipeState.startX;
       
@@ -103,7 +125,7 @@ export function useSwipeNavigation(handlers: SwipeHandlers) {
     };
 
     const handleMouseUp = () => {
-      if (!swipeState.isActive) return;
+      if (!swipeState.isActive || swipeState.isAnimating) return;
 
       const endTime = Date.now();
       const deltaTime = endTime - startTimeRef.current;
@@ -112,19 +134,33 @@ export function useSwipeNavigation(handlers: SwipeHandlers) {
 
       // Check if swipe meets threshold criteria
       if (Math.abs(deltaX) >= SWIPE_THRESHOLD && velocity >= SWIPE_VELOCITY_THRESHOLD) {
+        setSwipeState(prev => ({ ...prev, isAnimating: true }));
+        
         if (deltaX > 0 && handlers.onSwipeRight) {
           handlers.onSwipeRight();
         } else if (deltaX < 0 && handlers.onSwipeLeft) {
           handlers.onSwipeLeft();
         }
+        
+        // Reset after animation
+        setTimeout(() => {
+          setSwipeState({
+            isActive: false,
+            startX: 0,
+            currentX: 0,
+            direction: null,
+            isAnimating: false
+          });
+        }, 300); // Match CSS transition duration
+      } else {
+        setSwipeState({
+          isActive: false,
+          startX: 0,
+          currentX: 0,
+          direction: null,
+          isAnimating: false
+        });
       }
-
-      setSwipeState({
-        isActive: false,
-        startX: 0,
-        currentX: 0,
-        direction: null
-      });
     };
 
     // Touch events
@@ -145,11 +181,13 @@ export function useSwipeNavigation(handlers: SwipeHandlers) {
       container.removeEventListener('mousemove', handleMouseMove);
       container.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [swipeState.isActive, swipeState.startX, handlers]);
+  }, [swipeState.isActive, swipeState.startX, swipeState.isAnimating, handlers]);
 
   return {
     containerRef,
     swipeState,
-    isSwipeActive: swipeState.isActive
+    isSwipeActive: swipeState.isActive,
+    isAnimating: swipeState.isAnimating,
+    swipeDirection: swipeState.direction
   };
 }

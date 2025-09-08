@@ -84,7 +84,7 @@ export function AppShell({
     }
   };
 
-  const { containerRef } = useSwipeNavigation({
+  const { containerRef, isAnimating, swipeDirection } = useSwipeNavigation({
     onSwipeLeft: handleSwipeLeft,
     onSwipeRight: handleSwipeRight
   });
@@ -329,8 +329,17 @@ export function AppShell({
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto pb-20 pt-5">
-        {children}
+      <main className={cn(
+        "flex-1 overflow-auto pb-20 pt-5 transition-all duration-300 ease-in-out",
+        isAnimating && swipeDirection === 'left' && "transform -translate-x-full opacity-80",
+        isAnimating && swipeDirection === 'right' && "transform translate-x-full opacity-80"
+      )}>
+        <div className={cn(
+          "transition-all duration-300 ease-in-out",
+          isAnimating && "animate-slide-in-right"
+        )}>
+          {children}
+        </div>
       </main>
 
       {/* Bottom Navigation */}
@@ -349,11 +358,11 @@ export function AppShell({
                 size="sm"
                 onClick={() => onTabChange(item.id)}
                 className={cn(
-                  "flex flex-col items-center h-auto py-2 px-1 sm:px-3 relative transition-all duration-300 min-w-0",
+                  "flex flex-col items-center h-auto py-2 px-1 sm:px-3 relative transition-all duration-200 min-w-0",
                   showLabels ? "gap-1" : "gap-0",
                   isActive 
-                    ? "text-primary bg-primary/10 scale-105 animate-pulse" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    ? "text-primary bg-primary/10 transform scale-105" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted hover:scale-105"
                 )}
               >
                 <Icon className="h-5 w-5 flex-shrink-0" />
@@ -368,10 +377,7 @@ export function AppShell({
                     {item.badge}
                   </Badge>
                 )}
-                {/* Active indicator */}
-                {isActive && (
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-primary rounded-full animate-scale-in" />
-                )}
+                {/* Entfernt: blauen Punkt und animate-pulse */}
               </Button>
             );
           })}
