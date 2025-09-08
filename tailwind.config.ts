@@ -132,9 +132,7 @@ export default {
 				'elevated-maritime': 'var(--shadow-elevated)'
 			},
 			transitionTimingFunction: {
-				'wave': 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-				'elastic-out': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-				'elastic-in': 'cubic-bezier(0.6, 0.04, 0.98, 0.335)'
+				'wave': 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -157,33 +155,11 @@ export default {
 					to: {
 						height: '0'
 					}
-				},
-				'elastic-slide-in-bottom': {
-					'0%': {
-						transform: 'translateY(100%)',
-						opacity: '0'
-					},
-					'100%': {
-						transform: 'translateY(0)',
-						opacity: '1'
-					}
-				},
-				'elastic-slide-out-bottom': {
-					'0%': {
-						transform: 'translateY(0)',
-						opacity: '1'
-					},
-					'100%': {
-						transform: 'translateY(100%)',
-						opacity: '0'
-					}
 				}
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out',
-				'elastic-slide-in-bottom': 'elastic-slide-in-bottom 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
-				'elastic-slide-out-bottom': 'elastic-slide-out-bottom 0.4s cubic-bezier(0.6, 0.04, 0.98, 0.335)'
+				'accordion-up': 'accordion-up 0.2s ease-out'
 			}
 		}
 	},
