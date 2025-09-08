@@ -36,6 +36,10 @@ export interface SlotFormData {
   craneOperatorId: string;
   notes: string;
   slotBlockDurations: (15 | 30 | 45 | 60)[]; // Array für unterschiedliche Slot-Längen im Block
+  isBooked?: boolean;
+  memberName?: string;
+  memberEmail?: string;
+  memberNumber?: string;
 }
 
 interface SlotFormProps {
@@ -82,7 +86,11 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
     time: "",
     craneOperatorId: currentUserAsCraneOperator?.id || "", // Aktueller Nutzer vorausgewählt
     notes: "",
-    slotBlockDurations: [60] // Standard: 1 x 60 Min Slot
+    slotBlockDurations: [60], // Standard: 1 x 60 Min Slot
+    isBooked: false,
+    memberName: "",
+    memberEmail: "",
+    memberNumber: ""
   });
 
   // Automatische Vorauswahl des aktuellen Nutzers als Kranführer
@@ -94,7 +102,11 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
         time: slot.time,
         craneOperatorId: slot.craneOperator.id,
         notes: slot.notes || "",
-        slotBlockDurations: [slot.duration] // Bestehender Slot als einzelner Block
+        slotBlockDurations: [slot.duration], // Bestehender Slot als einzelner Block
+        isBooked: slot.isBooked || false,
+        memberName: slot.member?.name || "",
+        memberEmail: slot.member?.email || "",
+        memberNumber: slot.member?.memberNumber || ""
       });
     } else {
       // Initialize with prefilledDateTime if available, otherwise defaults
@@ -107,7 +119,11 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
         time: initialTime,
         craneOperatorId: currentUserAsCraneOperator?.id || "", // Aktueller Nutzer vorausgewählt
         notes: "",
-        slotBlockDurations: [60] // Standard: 1 x 60 Min Slot
+        slotBlockDurations: [60], // Standard: 1 x 60 Min Slot
+        isBooked: false,
+        memberName: "",
+        memberEmail: "",
+        memberNumber: ""
       }));
     }
   }, [slot, currentUserAsCraneOperator, prefilledDateTime]);
@@ -360,6 +376,80 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
             </div>
           </div>
         </div>
+
+        {/* Buchungsstatus */}
+        {isEditing && canManageSlots && (
+          <div className="space-y-3 sm:space-y-4">
+            <h3 className="text-xs sm:text-sm font-medium text-foreground border-b pb-2">Buchungsstatus</h3>
+            
+            <div className="space-y-4">
+              {/* Buchungsschalter */}
+              <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border">
+                <div className="space-y-1">
+                  <Label htmlFor="booking-status">Slot gebucht</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Slot als gebucht oder verfügbar markieren
+                  </p>
+                </div>
+                <Switch
+                  id="booking-status"
+                  checked={formData.isBooked || false}
+                  onCheckedChange={(checked) => setFormData(prev => ({ 
+                    ...prev, 
+                    isBooked: checked,
+                    // Reset member data when unbooking
+                    memberName: checked ? prev.memberName : "",
+                    memberEmail: checked ? prev.memberEmail : "",
+                    memberNumber: checked ? prev.memberNumber : ""
+                  }))}
+                />
+              </div>
+
+              {/* Mitgliedsdaten - nur wenn gebucht */}
+              {formData.isBooked && (
+                <div className="space-y-3 p-3 bg-muted/30 rounded-lg border border-dashed">
+                  <Label className="text-sm font-medium">Mitgliedsdaten</Label>
+                  
+                  <div className="grid grid-cols-1 gap-3">
+                    <div className="space-y-1">
+                      <Label htmlFor="member-name" className="text-xs">Name</Label>
+                      <Input
+                        id="member-name"
+                        placeholder="Name des Mitglieds"
+                        value={formData.memberName || ""}
+                        onChange={(e) => setFormData(prev => ({ ...prev, memberName: e.target.value }))}
+                        className="text-sm"
+                      />
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <Label htmlFor="member-email" className="text-xs">E-Mail</Label>
+                      <Input
+                        id="member-email"
+                        type="email"
+                        placeholder="E-Mail des Mitglieds"
+                        value={formData.memberEmail || ""}
+                        onChange={(e) => setFormData(prev => ({ ...prev, memberEmail: e.target.value }))}
+                        className="text-sm"
+                      />
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <Label htmlFor="member-number" className="text-xs">Mitgliedsnummer</Label>
+                      <Input
+                        id="member-number"
+                        placeholder="Mitgliedsnummer"
+                        value={formData.memberNumber || ""}
+                        onChange={(e) => setFormData(prev => ({ ...prev, memberNumber: e.target.value }))}
+                        className="text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Zusätzliche Informationen */}
         <div className="space-y-3 sm:space-y-4">

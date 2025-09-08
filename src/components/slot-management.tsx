@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Edit, Trash2, Clock, CalendarDays as Calendar, UserCheck, User, Mail, Filter, CalendarDays, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Edit, Trash2, Clock, CalendarDays as Calendar, UserCheck, User, Mail, Filter, CalendarDays, X, ChevronDown, ChevronUp, XCircle } from "lucide-react";
 import { format, parse, addMinutes, parseISO, isSameDay } from "date-fns";
 import { de } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -88,15 +88,24 @@ export function SlotManagement() {
     }
 
     if (editingSlot) {
-      // Update existing slot
+      // Update existing slot with new booking status and member data
+      const memberData = formData.isBooked && formData.memberName ? {
+        id: editingSlot.member?.id || `member-${Date.now()}`,
+        name: formData.memberName,
+        email: formData.memberEmail || "",
+        memberNumber: formData.memberNumber || ""
+      } : undefined;
+
       updateSlot(editingSlot.id, {
         date: format(formData.date!, 'yyyy-MM-dd'), 
         time: formData.time, 
         duration: formData.slotBlockDurations?.[0] || 60, // Use first duration from block
         craneOperator, 
         notes: formData.notes,
-        isBooked: editingSlot.isBooked,
-        member: editingSlot.member
+        isBooked: formData.isBooked || false,
+        member: memberData,
+        memberName: memberData?.name,
+        memberId: memberData?.id
       });
       toast({
         title: "Slot aktualisiert",
@@ -250,6 +259,31 @@ export function SlotManagement() {
     toast({
       title: "Slot gelöscht",
       description: "Der Slot wurde erfolgreich gelöscht."
+    });
+  };
+
+  const handleCancelSlot = (slotId: string) => {
+    const slot = slots.find(s => s.id === slotId);
+    if (!slot?.isBooked) {
+      toast({
+        title: "Fehler",
+        description: "Nur gebuchte Slots können storniert werden.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    updateSlot(slotId, {
+      ...slot,
+      isBooked: false,
+      member: undefined,
+      memberName: undefined,
+      memberId: undefined
+    });
+    
+    toast({
+      title: "Slot storniert",
+      description: "Die Buchung wurde erfolgreich storniert."
     });
   };
 
@@ -568,7 +602,12 @@ export function SlotManagement() {
                             <div className="flex items-center gap-3">
                               <div className="flex items-center gap-2">
                                 <Clock className="w-4 h-4" style={{ color: getSlotColors(slotStatus).text }} />
-                                <span className="font-semibold text-lg" style={{ color: getSlotColors(slotStatus).text }}>{slot.time}</span>
+                                <div className="flex flex-col">
+                                  <span className="font-semibold text-lg" style={{ color: getSlotColors(slotStatus).text }}>{slot.time}</span>
+                                  <span className="text-xs opacity-75" style={{ color: getSlotColors(slotStatus).text }}>
+                                    bis {format(addMinutes(parseISO(`${slot.date}T${slot.time}`), slot.duration), 'HH:mm')}
+                                  </span>
+                                </div>
                                 <Badge 
                                   variant="secondary" 
                                   className="text-xs"
@@ -604,13 +643,6 @@ export function SlotManagement() {
                             <div className="text-sm" style={{ color: getSlotColors(slotStatus).text }}>
                               {format(parseISO(slot.date), "EEEE, dd. MMMM yyyy", { locale: de })}
                             </div>
-                            <StatusLabel status={slotStatus as "available" | "booked" | "blocked"} size="sm">
-                              {slotStatus === 'booked' 
-                                ? slot.member ? `Gebucht von ${slot.member.name}` : "Gebucht"
-                                : slotStatus === 'blocked'
-                                  ? "Gesperrt"
-                                  : "Verfügbar"}
-                            </StatusLabel>
                           </div>
                         </div>
                       </CardContent>
@@ -624,10 +656,6 @@ export function SlotManagement() {
                           <Separator className="mb-3" />
                           
                           <div className="space-y-3">
-                            {/* Full Date */}
-                            <div className="text-sm" style={{ color: getSlotColors(slotStatus).text }}>
-                              {format(parseISO(slot.date), "EEEE, dd. MMMM yyyy", { locale: de })}
-                            </div>
 
                              {/* Crane Operator Details */}
                              <div className="flex items-center gap-2 text-sm" style={{ color: getSlotColors(slotStatus).text }}>
@@ -697,28 +725,44 @@ export function SlotManagement() {
                                 <Edit className="w-4 h-4 mr-1" />
                                 Bearbeiten
                               </Button>
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteSlot(slot.id);
-                                }}
-                                disabled={slot.isBooked}
-                                className="flex-1"
-                                style={{
-                                  backgroundColor: slot.isBooked 
-                                    ? "hsl(var(--primary-foreground) / 0.1)" 
-                                    : "hsl(var(--primary-foreground) / 0.2)",
-                                  color: slot.isBooked 
-                                    ? "hsl(var(--primary-foreground) / 0.5)" 
-                                    : getSlotColors(slotStatus).text,
-                                  borderColor: "hsl(var(--primary-foreground) / 0.3)"
-                                }}
-                              >
-                                <Trash2 className="w-4 h-4 mr-1" />
-                                Löschen
-                              </Button>
+                              
+                              {slot.isBooked ? (
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCancelSlot(slot.id);
+                                  }}
+                                  className="flex-1"
+                                  style={{
+                                    backgroundColor: "hsl(var(--primary-foreground) / 0.2)",
+                                    color: getSlotColors(slotStatus).text,
+                                    borderColor: "hsl(var(--primary-foreground) / 0.3)"
+                                  }}
+                                >
+                                  <XCircle className="w-4 h-4 mr-1" />
+                                  Stornieren
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteSlot(slot.id);
+                                  }}
+                                  className="flex-1"
+                                  style={{
+                                    backgroundColor: "hsl(var(--primary-foreground) / 0.2)",
+                                    color: getSlotColors(slotStatus).text,
+                                    borderColor: "hsl(var(--primary-foreground) / 0.3)"
+                                  }}
+                                >
+                                  <Trash2 className="w-4 h-4 mr-1" />
+                                  Löschen
+                                </Button>
+                              )}
                             </div>
                           </div>
                         </CardContent>
