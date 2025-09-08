@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 
 interface SwipeHandlers {
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
+  onSwipeProgress?: (progress: number, direction: 'left' | 'right' | null) => void;
 }
 
 interface SwipeState {
@@ -11,10 +12,11 @@ interface SwipeState {
   currentX: number;
   direction: 'left' | 'right' | null;
   isAnimating: boolean;
+  progress: number; // 0-1, how far the swipe has progressed
 }
 
-const SWIPE_THRESHOLD = 50; // Minimum distance for a swipe
-const SWIPE_VELOCITY_THRESHOLD = 0.3; // Minimum velocity for a swipe
+const SWIPE_THRESHOLD = 80; // Minimum distance for a completed swipe
+const MAX_SWIPE_DISTANCE = 200; // Maximum distance for calculating progress
 
 export function useSwipeNavigation(handlers: SwipeHandlers) {
   const [swipeState, setSwipeState] = useState<SwipeState>({
@@ -22,27 +24,42 @@ export function useSwipeNavigation(handlers: SwipeHandlers) {
     startX: 0,
     currentX: 0,
     direction: null,
-    isAnimating: false
+    isAnimating: false,
+    progress: 0
   });
   
-  const startTimeRef = useRef<number>(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const updateSwipeProgress = useCallback((deltaX: number) => {
+    const progress = Math.min(Math.abs(deltaX) / MAX_SWIPE_DISTANCE, 1);
+    const direction = deltaX > 0 ? 'right' : 'left';
+    
+    setSwipeState(prev => ({
+      ...prev,
+      direction,
+      progress
+    }));
+    
+    if (handlers.onSwipeProgress) {
+      handlers.onSwipeProgress(progress, direction);
+    }
+  }, [handlers]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
     const handleTouchStart = (e: TouchEvent) => {
-      if (swipeState.isAnimating) return; // Prevent new swipes during animation
+      if (swipeState.isAnimating) return;
       
       const touch = e.touches[0];
-      startTimeRef.current = Date.now();
       setSwipeState({
         isActive: true,
         startX: touch.clientX,
         currentX: touch.clientX,
         direction: null,
-        isAnimating: false
+        isAnimating: false,
+        progress: 0
       });
     };
 
@@ -54,21 +71,19 @@ export function useSwipeNavigation(handlers: SwipeHandlers) {
       
       setSwipeState(prev => ({
         ...prev,
-        currentX: touch.clientX,
-        direction: deltaX > 0 ? 'right' : 'left'
+        currentX: touch.clientX
       }));
+      
+      updateSwipeProgress(deltaX);
     };
 
     const handleTouchEnd = () => {
       if (!swipeState.isActive || swipeState.isAnimating) return;
 
-      const endTime = Date.now();
-      const deltaTime = endTime - startTimeRef.current;
       const deltaX = swipeState.currentX - swipeState.startX;
-      const velocity = Math.abs(deltaX) / deltaTime;
+      const shouldComplete = Math.abs(deltaX) >= SWIPE_THRESHOLD;
 
-      // Check if swipe meets threshold criteria
-      if (Math.abs(deltaX) >= SWIPE_THRESHOLD && velocity >= SWIPE_VELOCITY_THRESHOLD) {
+      if (shouldComplete) {
         setSwipeState(prev => ({ ...prev, isAnimating: true }));
         
         if (deltaX > 0 && handlers.onSwipeRight) {
@@ -77,38 +92,53 @@ export function useSwipeNavigation(handlers: SwipeHandlers) {
           handlers.onSwipeLeft();
         }
         
-        // Reset after animation
+        // Reset after animation completes
         setTimeout(() => {
           setSwipeState({
             isActive: false,
             startX: 0,
             currentX: 0,
             direction: null,
-            isAnimating: false
+            isAnimating: false,
+            progress: 0
           });
-        }, 300); // Match CSS transition duration
+          
+          if (handlers.onSwipeProgress) {
+            handlers.onSwipeProgress(0, null);
+          }
+        }, 300);
       } else {
-        setSwipeState({
-          isActive: false,
-          startX: 0,
-          currentX: 0,
-          direction: null,
-          isAnimating: false
-        });
+        // Snap back animation
+        setSwipeState(prev => ({ ...prev, isAnimating: true }));
+        
+        setTimeout(() => {
+          setSwipeState({
+            isActive: false,
+            startX: 0,
+            currentX: 0,
+            direction: null,
+            isAnimating: false,
+            progress: 0
+          });
+          
+          if (handlers.onSwipeProgress) {
+            handlers.onSwipeProgress(0, null);
+          }
+        }, 200);
       }
     };
 
-    // Mouse events for desktop testing
+    // Mouse events for desktop
     const handleMouseDown = (e: MouseEvent) => {
       if (swipeState.isAnimating) return;
       
-      startTimeRef.current = Date.now();
       setSwipeState({
         isActive: true,
         startX: e.clientX,
         currentX: e.clientX,
         direction: null,
-        isAnimating: false
+        isAnimating: false,
+        progress: 0
       });
     };
 
@@ -119,21 +149,19 @@ export function useSwipeNavigation(handlers: SwipeHandlers) {
       
       setSwipeState(prev => ({
         ...prev,
-        currentX: e.clientX,
-        direction: deltaX > 0 ? 'right' : 'left'
+        currentX: e.clientX
       }));
+      
+      updateSwipeProgress(deltaX);
     };
 
     const handleMouseUp = () => {
       if (!swipeState.isActive || swipeState.isAnimating) return;
 
-      const endTime = Date.now();
-      const deltaTime = endTime - startTimeRef.current;
       const deltaX = swipeState.currentX - swipeState.startX;
-      const velocity = Math.abs(deltaX) / deltaTime;
+      const shouldComplete = Math.abs(deltaX) >= SWIPE_THRESHOLD;
 
-      // Check if swipe meets threshold criteria
-      if (Math.abs(deltaX) >= SWIPE_THRESHOLD && velocity >= SWIPE_VELOCITY_THRESHOLD) {
+      if (shouldComplete) {
         setSwipeState(prev => ({ ...prev, isAnimating: true }));
         
         if (deltaX > 0 && handlers.onSwipeRight) {
@@ -142,24 +170,37 @@ export function useSwipeNavigation(handlers: SwipeHandlers) {
           handlers.onSwipeLeft();
         }
         
-        // Reset after animation
         setTimeout(() => {
           setSwipeState({
             isActive: false,
             startX: 0,
             currentX: 0,
             direction: null,
-            isAnimating: false
+            isAnimating: false,
+            progress: 0
           });
-        }, 300); // Match CSS transition duration
+          
+          if (handlers.onSwipeProgress) {
+            handlers.onSwipeProgress(0, null);
+          }
+        }, 300);
       } else {
-        setSwipeState({
-          isActive: false,
-          startX: 0,
-          currentX: 0,
-          direction: null,
-          isAnimating: false
-        });
+        setSwipeState(prev => ({ ...prev, isAnimating: true }));
+        
+        setTimeout(() => {
+          setSwipeState({
+            isActive: false,
+            startX: 0,
+            currentX: 0,
+            direction: null,
+            isAnimating: false,
+            progress: 0
+          });
+          
+          if (handlers.onSwipeProgress) {
+            handlers.onSwipeProgress(0, null);
+          }
+        }, 200);
       }
     };
 
@@ -168,7 +209,7 @@ export function useSwipeNavigation(handlers: SwipeHandlers) {
     container.addEventListener('touchmove', handleTouchMove, { passive: true });
     container.addEventListener('touchend', handleTouchEnd, { passive: true });
 
-    // Mouse events for desktop
+    // Mouse events
     container.addEventListener('mousedown', handleMouseDown);
     container.addEventListener('mousemove', handleMouseMove);
     container.addEventListener('mouseup', handleMouseUp);
@@ -181,13 +222,14 @@ export function useSwipeNavigation(handlers: SwipeHandlers) {
       container.removeEventListener('mousemove', handleMouseMove);
       container.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [swipeState.isActive, swipeState.startX, swipeState.isAnimating, handlers]);
+  }, [swipeState.isActive, swipeState.startX, swipeState.isAnimating, handlers, updateSwipeProgress]);
 
   return {
     containerRef,
     swipeState,
     isSwipeActive: swipeState.isActive,
     isAnimating: swipeState.isAnimating,
-    swipeDirection: swipeState.direction
+    swipeDirection: swipeState.direction,
+    swipeProgress: swipeState.progress
   };
 }

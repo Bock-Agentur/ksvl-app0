@@ -67,6 +67,14 @@ export function AppShell({
   const currentDisplaySettings = getDisplaySettingsForRole(currentRole);
   const showLabels = currentDisplaySettings?.showLabels ?? false;
   
+  const [swipeProgress, setSwipeProgress] = useState(0);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+
+  const handleSwipeProgress = (progress: number, direction: 'left' | 'right' | null) => {
+    setSwipeProgress(progress);
+    setSwipeDirection(direction);
+  };
+
   // Swipe navigation logic
   const handleSwipeLeft = () => {
     const currentIndex = footerItems.findIndex(item => item.id === activeTab);
@@ -84,9 +92,10 @@ export function AppShell({
     }
   };
 
-  const { containerRef, isAnimating, swipeDirection } = useSwipeNavigation({
+  const { containerRef, isAnimating } = useSwipeNavigation({
     onSwipeLeft: handleSwipeLeft,
-    onSwipeRight: handleSwipeRight
+    onSwipeRight: handleSwipeRight,
+    onSwipeProgress: handleSwipeProgress
   });
   
   // Get dynamic header navigation items based on settings
@@ -328,19 +337,57 @@ export function AppShell({
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className={cn(
-        "flex-1 overflow-auto pb-20 pt-5 transition-all duration-300 ease-in-out",
-        isAnimating && swipeDirection === 'left' && "transform -translate-x-full opacity-80",
-        isAnimating && swipeDirection === 'right' && "transform translate-x-full opacity-80"
-      )}>
-        <div className={cn(
-          "transition-all duration-300 ease-in-out",
-          isAnimating && "animate-slide-in-right"
-        )}>
-          {children}
-        </div>
-      </main>
+      {/* Main Content with Slider Effect */}
+      <div className="flex-1 relative overflow-hidden pb-20 pt-5">
+        {/* Current Page */}
+        <main 
+          className={cn(
+            "absolute inset-0 transition-all duration-300 ease-out",
+            isAnimating && swipeDirection === 'left' && "transform -translate-x-full opacity-0",
+            isAnimating && swipeDirection === 'right' && "transform translate-x-full opacity-0",
+            !isAnimating && swipeProgress > 0 && swipeDirection === 'left' && "transform",
+            !isAnimating && swipeProgress > 0 && swipeDirection === 'right' && "transform"
+          )}
+          style={{
+            transform: !isAnimating ? 
+              (swipeDirection === 'left' ? `translateX(-${swipeProgress * 100}%)` :
+               swipeDirection === 'right' ? `translateX(${swipeProgress * 100}%)` : 
+               'translateX(0%)') : undefined
+          }}
+        >
+          <div className="h-full overflow-auto px-4">
+            {children}
+          </div>
+        </main>
+
+        {/* Next/Previous Page Preview */}
+        {swipeProgress > 0.1 && swipeDirection && (
+          <div 
+            className={cn(
+              "absolute inset-0 bg-muted/20 backdrop-blur-sm transition-all duration-300 ease-out flex items-center justify-center",
+              swipeDirection === 'left' ? "transform translate-x-full" : "transform -translate-x-full"
+            )}
+            style={{
+              transform: swipeDirection === 'left' ? 
+                `translateX(${100 - (swipeProgress * 100)}%)` :
+                `translateX(-${100 - (swipeProgress * 100)}%)`
+            }}
+          >
+            <div className="text-center">
+              <div className="text-4xl mb-2">
+                {swipeDirection === 'left' ? '→' : '←'}
+              </div>
+              <div className="text-sm font-medium text-foreground/70">
+                {swipeDirection === 'left' && footerItems.findIndex(item => item.id === activeTab) < footerItems.length - 1
+                  ? footerItems[footerItems.findIndex(item => item.id === activeTab) + 1]?.label
+                  : swipeDirection === 'right' && footerItems.findIndex(item => item.id === activeTab) > 0
+                  ? footerItems[footerItems.findIndex(item => item.id === activeTab) - 1]?.label
+                  : ''}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-2 shadow-elevated-maritime z-50">
