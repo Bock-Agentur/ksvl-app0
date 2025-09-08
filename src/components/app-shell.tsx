@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
+import { useSwipeNavigation } from "@/hooks/use-swipe-navigation";
 import { 
   Select,
   SelectContent,
@@ -66,6 +67,28 @@ export function AppShell({
   const currentDisplaySettings = getDisplaySettingsForRole(currentRole);
   const showLabels = currentDisplaySettings?.showLabels ?? false;
   
+  // Swipe navigation logic
+  const handleSwipeLeft = () => {
+    const currentIndex = footerItems.findIndex(item => item.id === activeTab);
+    if (currentIndex < footerItems.length - 1) {
+      const nextItem = footerItems[currentIndex + 1];
+      onTabChange(nextItem.id);
+    }
+  };
+
+  const handleSwipeRight = () => {
+    const currentIndex = footerItems.findIndex(item => item.id === activeTab);
+    if (currentIndex > 0) {
+      const prevItem = footerItems[currentIndex - 1];
+      onTabChange(prevItem.id);
+    }
+  };
+
+  const { containerRef } = useSwipeNavigation({
+    onSwipeLeft: handleSwipeLeft,
+    onSwipeRight: handleSwipeRight
+  });
+  
   // Get dynamic header navigation items based on settings
   const menuItems = getOrderedHeaderItems();
   const availableHeaderItems = menuItems
@@ -127,7 +150,7 @@ export function AppShell({
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div ref={containerRef} className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className={cn(
         "sticky top-0 z-40 bg-card/90 backdrop-blur-sm border-b border-border px-4 py-3 shadow-card-maritime transition-transform duration-300 ease-in-out",
@@ -326,10 +349,10 @@ export function AppShell({
                 size="sm"
                 onClick={() => onTabChange(item.id)}
                 className={cn(
-                  "flex flex-col items-center h-auto py-2 px-1 sm:px-3 relative transition-wave min-w-0",
+                  "flex flex-col items-center h-auto py-2 px-1 sm:px-3 relative transition-all duration-300 min-w-0",
                   showLabels ? "gap-1" : "gap-0",
                   isActive 
-                    ? "text-primary bg-primary/10" 
+                    ? "text-primary bg-primary/10 scale-105 animate-pulse" 
                     : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
@@ -345,9 +368,20 @@ export function AppShell({
                     {item.badge}
                   </Badge>
                 )}
+                {/* Active indicator */}
+                {isActive && (
+                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-2 h-2 bg-primary rounded-full animate-scale-in" />
+                )}
               </Button>
             );
           })}
+        </div>
+        
+        {/* Swipe hint for first-time users */}
+        <div className="flex justify-center mt-1">
+          <div className="text-xs text-muted-foreground/50">
+            ← Wischen für Navigation →
+          </div>
         </div>
       </nav>
     </div>
