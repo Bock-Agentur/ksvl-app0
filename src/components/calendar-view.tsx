@@ -6,6 +6,7 @@ import { Calendar, CalendarDays } from "lucide-react";
 import { useRole } from "@/hooks/use-role";
 import { SlotFormDialog } from "./slot-form-dialog";
 import { Slot } from "@/types";
+import { cn } from "@/lib/utils";
 
 export function CalendarView() {
   const { currentRole, currentUser } = useRole();
@@ -55,12 +56,14 @@ export function CalendarView() {
                        currentRole === "kranfuehrer" || 
                        currentRole === "admin";
 
-  console.log('🔐 CALENDAR VIEW PERMISSIONS:', {
+  console.log('🔐 CALENDAR VIEW PERMISSIONS & STATE:', {
     currentUser: currentUser?.name,
     currentRole,
     userRoles: currentUser?.roles,
     canManageSlots,
-    canBookSlots
+    canBookSlots,
+    viewMode,
+    selectedDate
   });
 
   return (
@@ -72,8 +75,16 @@ export function CalendarView() {
           <Button
             variant={viewMode === "day" ? "default" : "outline"}
             size="sm"
-            onClick={() => setViewMode("day")}
-            className="flex items-center gap-2"
+            onClick={() => {
+              console.log('📱 Mobile Tagesansicht clicked, setting viewMode to day');
+              setViewMode("day");
+            }}
+            className={cn(
+              "flex items-center gap-2 transition-all duration-200",
+              viewMode === "day" 
+                ? "bg-blue-600 text-white border-blue-600 shadow-lg hover:bg-blue-700 font-semibold" 
+                : "border-gray-300 hover:bg-gray-50"
+            )}
           >
             <Calendar className="w-4 h-4" />
             Tagesansicht
@@ -83,7 +94,12 @@ export function CalendarView() {
             variant={viewMode === "week" ? "default" : "outline"}
             size="sm"
             onClick={() => setViewMode("week")}
-            className="hidden sm:flex items-center gap-2 lg:hidden"
+            className={cn(
+              "hidden sm:flex items-center gap-2 lg:hidden transition-all duration-200",
+              viewMode === "week" 
+                ? "bg-blue-600 text-white border-blue-600 shadow-lg hover:bg-blue-700 font-semibold" 
+                : "border-gray-300 hover:bg-gray-50"
+            )}
           >
             <Calendar className="w-4 h-4" />
             Wochenansicht
@@ -92,7 +108,12 @@ export function CalendarView() {
             variant={viewMode === "month" ? "default" : "outline"}
             size="sm"
             onClick={() => setViewMode("month")}
-            className="flex items-center gap-2"
+            className={cn(
+              "flex items-center gap-2 transition-all duration-200",
+              viewMode === "month" 
+                ? "bg-blue-600 text-white border-blue-600 shadow-lg hover:bg-blue-700 font-semibold" 
+                : "border-gray-300 hover:bg-gray-50"
+            )}
           >
             <CalendarDays className="w-4 h-4" />
             Monatsansicht
