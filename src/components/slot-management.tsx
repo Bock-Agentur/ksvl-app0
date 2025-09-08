@@ -625,31 +625,38 @@ export function SlotManagement() {
                           
                           <div className="space-y-3">
                             {/* Full Date */}
-                            <div className="text-sm text-muted-foreground">
+                            <div className="text-sm" style={{ color: getSlotColors(slotStatus).text }}>
                               {format(parseISO(slot.date), "EEEE, dd. MMMM yyyy", { locale: de })}
                             </div>
 
                              {/* Crane Operator Details */}
-                             <div className="flex items-center gap-2 text-sm">
-                               <UserCheck className="w-4 h-4 text-muted-foreground" />
+                             <div className="flex items-center gap-2 text-sm" style={{ color: getSlotColors(slotStatus).text }}>
+                               <UserCheck className="w-4 h-4" style={{ color: getSlotColors(slotStatus).text }} />
                                <div>
                                  <div>Kranführer: <strong>{slot.craneOperator.name}</strong></div>
                                  {slot.craneOperator.email && (
-                                   <div className="text-xs text-muted-foreground">{slot.craneOperator.email}</div>
+                                   <div className="text-xs opacity-80">{slot.craneOperator.email}</div>
                                  )}
                                </div>
                              </div>
                             
                             {/* Member Info if booked */}
                             {slot.isBooked && slot.member && (
-                              <div className="flex items-center gap-2 text-sm text-blue-700">
-                                <User className="w-4 h-4" />
+                              <div className="flex items-center gap-2 text-sm" style={{ color: getSlotColors(slotStatus).text }}>
+                                <User className="w-4 h-4" style={{ color: getSlotColors(slotStatus).text }} />
                                 <div>
                                   <div>Gebucht von: <strong>{slot.member.name}</strong></div>
                                   <div className="flex items-center gap-2 text-xs">
                                     {slot.member.email && <span>{slot.member.email}</span>}
                                     {slot.member.memberNumber && (
-                                      <Badge variant="outline" className="text-xs">
+                                      <Badge 
+                                        variant="secondary" 
+                                        className="text-xs"
+                                        style={{ 
+                                          backgroundColor: "hsl(var(--primary-foreground) / 0.2)",
+                                          color: getSlotColors(slotStatus).text
+                                        }}
+                                      >
                                         {slot.member.memberNumber}
                                       </Badge>
                                     )}
@@ -660,7 +667,13 @@ export function SlotManagement() {
 
                             {/* Notes */}
                             {slot.notes && (
-                              <div className="text-sm text-muted-foreground bg-muted/50 rounded-md p-2">
+                              <div 
+                                className="text-sm rounded-md p-2 opacity-90"
+                                style={{ 
+                                  color: getSlotColors(slotStatus).text,
+                                  backgroundColor: "hsl(var(--primary-foreground) / 0.1)"
+                                }}
+                              >
                                 {slot.notes}
                               </div>
                             )}
@@ -668,19 +681,24 @@ export function SlotManagement() {
                             {/* Action Buttons */}
                             <div className="flex gap-2 pt-2">
                               <Button
-                                variant="outline"
+                                variant="secondary"
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleOpenForm(slot);
                                 }}
                                 className="flex-1"
+                                style={{
+                                  backgroundColor: "hsl(var(--primary-foreground) / 0.2)",
+                                  color: getSlotColors(slotStatus).text,
+                                  borderColor: "hsl(var(--primary-foreground) / 0.3)"
+                                }}
                               >
                                 <Edit className="w-4 h-4 mr-1" />
                                 Bearbeiten
                               </Button>
                               <Button
-                                variant="outline"
+                                variant="secondary"
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -688,6 +706,15 @@ export function SlotManagement() {
                                 }}
                                 disabled={slot.isBooked}
                                 className="flex-1"
+                                style={{
+                                  backgroundColor: slot.isBooked 
+                                    ? "hsl(var(--primary-foreground) / 0.1)" 
+                                    : "hsl(var(--primary-foreground) / 0.2)",
+                                  color: slot.isBooked 
+                                    ? "hsl(var(--primary-foreground) / 0.5)" 
+                                    : getSlotColors(slotStatus).text,
+                                  borderColor: "hsl(var(--primary-foreground) / 0.3)"
+                                }}
                               >
                                 <Trash2 className="w-4 h-4 mr-1" />
                                 Löschen
