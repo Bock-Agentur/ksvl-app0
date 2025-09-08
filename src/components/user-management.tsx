@@ -1,0 +1,533 @@
+import { useState } from "react";
+import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTestData } from "@/hooks/use-test-data";
+import { useCrudOperations } from "@/hooks/use-crud-operations";
+import { useSearchFilter, useCommonFilters } from "@/hooks/use-search-filter";
+import { useFormHandler, useCommonFieldConfigs } from "@/hooks/use-form-handler";
+import { User, UserRole, generateRolesFromPrimary } from "@/types";
+import { UserRoleSelector } from "./user-role-selector";
+import { 
+  getRoleLabel, 
+  calculateUserStats, 
+  convertToCSV, 
+  downloadCSV, 
+  generateMemberNumber 
+} from "@/lib/business-logic";
+
+/**
+ * Refaktorierte Benutzer-Verwaltung mit wiederverwendbaren Hooks
+ * Demonstriert die neue modulare Architektur
+ */
+export function UserManagementRefactored() {
+  const { users, addUser, updateUser, deleteUser } = useTestData();
+  
+  // CRUD operations mit wiederverwendbarem Hook
+  const userCrud = useCrudOperations<User>({
+    entityName: "Benutzer",
+    onAdd: addUser,
+    onUpdate: (id, updates) => {
+      const existingUser = users.find(u => u.id === id);
+      if (existingUser) {
+        updateUser({ ...existingUser, ...updates });
+      }
+    },
+    onDelete: deleteUser,
+    onGet: (id) => users.find(u => u.id === id),
+    onList: () => users
+  });
+
+  // Such- und Filter-Funktionalität mit wiederverwendbarem Hook
+  const { userRoleFilter, statusFilter } = useCommonFilters();
+  
+  const searchFilter = useSearchFilter(users, {
+    searchFields: ['name', 'email', 'memberNumber', 'phone'],
+    filters: {
+      role: {
+        field: 'role',
+        ...userRoleFilter
+      },
+      status: {
+        field: 'status', 
+        ...statusFilter
+      }
+    }
+  });
+
+  // Form handling mit wiederverwendbarem Hook
+  const { nameField, emailField, phoneField, memberNumberField, roleField } = useCommonFieldConfigs();
+  
+  const userForm = useFormHandler<User>({
+    fields: [
+      nameField,
+      emailField,
+      phoneField,
+      memberNumberField,
+      roleField,
+      {
+        name: 'boatName',
+        label: 'Boot Name',
+        type: 'text',
+        placeholder: 'Name des Bootes'
+      },
+      {
+        name: 'status',
+        label: 'Status',
+        type: 'select',
+        required: true,
+        options: [
+          { value: 'active', label: 'Aktiv' },
+          { value: 'inactive', label: 'Inaktiv' }
+        ]
+      }
+    ],
+    initialValues: {
+      name: '',
+      email: '',
+      phone: '',
+      memberNumber: '',
+      boatName: '',
+      role: 'mitglied',
+      roles: ['mitglied'], // Neue Eigenschaft für mehrere Rollen
+      status: 'active'
+    },
+    onSubmit: async (data) => {
+      try {
+        const memberNumber = data.memberNumber || generateMemberNumber(users);
+        
+        const userData: User = {
+          ...data,
+          id: editingUserId || Math.random().toString(36).substr(2, 9),
+          memberNumber,
+          roles: data.roles || generateRolesFromPrimary(data.role),
+          joinDate: new Date().toISOString().split('T')[0],
+          joinedAt: new Date().toISOString().split('T')[0], // backward compatibility
+          isActive: data.status === 'active'
+        };
+
+        if (editingUserId) {
+          return await userCrud.update(editingUserId, userData);
+        } else {
+          return await userCrud.create(userData);
+        }
+      } catch (error) {
+        console.error('Form submission error:', error);
+        return false;
+      }
+    }
+  });
+
+  // UI State
+  const [showDialog, setShowDialog] = useState(false);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  
+  // Statistiken mit Business Logic
+  const stats = calculateUserStats(users);
+
+  // Event handlers
+  const handleAddUser = () => {
+    setEditingUserId(null);
+    userForm.reset();
+    setShowDialog(true);
+  };
+
+  const handleEditUser = (user: User) => {
+    setEditingUserId(user.id);
+    userForm.setValues({
+      ...user,
+      roles: user.roles || generateRolesFromPrimary(user.role) // Fallback für bestehende Nutzer
+    });
+    setShowDialog(true);
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    await userCrud.remove(userId);
+  };
+
+  const handleFormSubmit = async () => {
+    const success = await userForm.submit();
+    if (success) {
+      setShowDialog(false);
+      setEditingUserId(null);
+    }
+  };
+
+  // Export functionality
+  const handleExport = () => {
+    const csvHeaders = [
+      { key: 'name' as keyof User, label: 'Name' },
+      { key: 'email' as keyof User, label: 'E-Mail' },
+      { key: 'phone' as keyof User, label: 'Telefon' },
+      { key: 'memberNumber' as keyof User, label: 'Mitgliedsnummer' },
+      { key: 'role' as keyof User, label: 'Rolle' },
+      { key: 'status' as keyof User, label: 'Status' },
+      { key: 'joinDate' as keyof User, label: 'Beitrittsdatum' }
+    ];
+    
+    const csvContent = convertToCSV(searchFilter.filteredData, csvHeaders);
+    downloadCSV(csvContent, `benutzer-${new Date().toISOString().split('T')[0]}.csv`);
+  };
+
+  return (
+    <div className="p-4 space-y-6">
+      {/* Header mit Statistiken */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Mitgliederverwaltung (Refaktoriert)</h1>
+          <p className="text-muted-foreground">
+            {stats.total} Mitglieder • {stats.active} aktiv • {stats.byRole.admin || 0} Admins • {stats.activeRate}% Aktivitätsrate
+          </p>
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <Button variant="outline" onClick={handleExport}>
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+          <Button onClick={handleAddUser}>
+            <Plus className="w-4 h-4 mr-2" />
+            Benutzer hinzufügen
+          </Button>
+        </div>
+      </div>
+
+      {/* Statistiken Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-primary">{stats.total}</div>
+            <p className="text-xs text-muted-foreground">Gesamt</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
+            <p className="text-xs text-muted-foreground">Aktiv</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-blue-600">{stats.byRole.mitglied || 0}</div>
+            <p className="text-xs text-muted-foreground">Mitglieder</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+             <div className="text-2xl font-bold text-purple-600">{stats.byRole.kranfuehrer + stats.byRole.admin || 0}</div>
+             <p className="text-xs text-muted-foreground">Kranführer</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-red-600">{stats.byRole.admin || 0}</div>
+            <p className="text-xs text-muted-foreground">Admins</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Such- und Filter-Bereich */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Suche & Filter
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <Label htmlFor="search">Suche</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search"
+                  placeholder="Nach Name, E-Mail, Telefon oder Mitgliedsnummer suchen..."
+                  value={searchFilter.searchTerm}
+                  onChange={(e) => searchFilter.setSearchTerm(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
+            
+            <div className="sm:w-48">
+              <Label>Rolle</Label>
+              <Select 
+                value={searchFilter.filters.role || "all"} 
+                onValueChange={(value) => searchFilter.setFilter('role', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {userRoleFilter.options.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="sm:w-48">
+              <Label>Status</Label>
+              <Select 
+                value={searchFilter.filters.status || "all"} 
+                onValueChange={(value) => searchFilter.setFilter('status', value)}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {statusFilter.options.map(option => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {(searchFilter.searchTerm || Object.values(searchFilter.filters).some(v => v && v !== 'all')) && (
+              <div className="flex items-end">
+                <Button variant="outline" onClick={searchFilter.clearAll}>
+                  Filter zurücksetzen
+                </Button>
+              </div>
+            )}
+          </div>
+          
+          <div className="text-sm text-muted-foreground">
+            {searchFilter.stats.filtered} von {searchFilter.stats.total} Benutzern angezeigt
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Benutzerliste */}
+      <div className="space-y-3">
+        {searchFilter.filteredData.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">Keine Benutzer gefunden.</p>
+              {searchFilter.searchTerm && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Versuche einen anderen Suchbegriff oder entferne die Filter.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          searchFilter.filteredData.map((user) => (
+            <Card key={user.id} className="transition-colors hover:bg-muted/50">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-3 mb-2">
+                      <h3 className="font-medium truncate">{user.name}</h3>
+                      <div className="flex gap-1 flex-wrap">
+                        {user.roles?.map((role) => (
+                          <Badge 
+                            key={role}
+                            variant="outline" 
+                            className="text-xs"
+                          >
+                            {getRoleLabel(role)}
+                          </Badge>
+                        )) || (
+                          <Badge variant="outline" className="text-xs">
+                            {getRoleLabel(user.role)}
+                          </Badge>
+                        )}
+                      </div>
+                      <Badge variant={user.status === "active" ? "default" : "secondary"}>
+                        {user.status === "active" ? "Aktiv" : "Inaktiv"}
+                      </Badge>
+                    </div>
+                    
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-3 h-3" />
+                        <span className="truncate">{user.email}</span>
+                      </div>
+                      
+                      {user.phone && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-3 h-3" />
+                          <span>{user.phone}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-1">
+                          <Anchor className="w-3 h-3" />
+                          <span>{user.memberNumber}</span>
+                        </div>
+                        {user.boatName && (
+                          <span className="text-xs">Boot: {user.boatName}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleEditUser(user)}
+                    >
+                      <Edit className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDeleteUser(user.id)}
+                      className="hover:bg-destructive hover:text-destructive-foreground"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
+
+      {/* Form Dialog */}
+      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {editingUserId ? "Benutzer bearbeiten" : "Neuer Benutzer"}
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              {editingUserId ? "Bearbeiten Sie die Benutzerdaten" : "Erstellen Sie einen neuen Benutzer"}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="name">Name *</Label>
+                <Input
+                  id="name"
+                  value={userForm.values.name || ""}
+                  onChange={(e) => userForm.setValue('name', e.target.value)}
+                  placeholder="Vollständiger Name"
+                  className={userForm.errors.name ? "border-destructive" : ""}
+                />
+                {userForm.errors.name && (
+                  <p className="text-xs text-destructive mt-1">{userForm.errors.name}</p>
+                )}
+              </div>
+              
+              <div>
+                <Label htmlFor="email">E-Mail *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={userForm.values.email || ""}
+                  onChange={(e) => userForm.setValue('email', e.target.value)}
+                  placeholder="beispiel@email.com"
+                  className={userForm.errors.email ? "border-destructive" : ""}
+                />
+                {userForm.errors.email && (
+                  <p className="text-xs text-destructive mt-1">{userForm.errors.email}</p>
+                )}
+              </div>
+              
+              <div>
+                <Label htmlFor="phone">Telefon</Label>
+                <Input
+                  id="phone"
+                  value={userForm.values.phone || ""}
+                  onChange={(e) => userForm.setValue('phone', e.target.value)}
+                  placeholder="+43 664 123 4567"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="memberNumber">Mitgliedsnummer</Label>
+                <Input
+                  id="memberNumber"
+                  value={userForm.values.memberNumber || ""}
+                  onChange={(e) => userForm.setValue('memberNumber', e.target.value)}
+                  placeholder="KSVL001"
+                />
+              </div>
+              
+              <div>
+                <Label htmlFor="boatName">Boot Name</Label>
+                <Input
+                  id="boatName"
+                  value={userForm.values.boatName || ""}
+                  onChange={(e) => userForm.setValue('boatName', e.target.value)}
+                  placeholder="Name des Bootes"
+                />
+              </div>
+              
+              <UserRoleSelector
+                selectedRoles={userForm.values.roles || [userForm.values.role]}
+                onRolesChange={(roles) => {
+                  userForm.setValue('roles', roles);
+                  // Primary role ist die höchste Rolle
+                  const primaryRole = roles.includes('admin') ? 'admin' 
+                    : roles.includes('kranfuehrer') ? 'kranfuehrer' 
+                    : 'mitglied';
+                  userForm.setValue('role', primaryRole);
+                }}
+              />
+              
+              <div>
+                <Label htmlFor="status">Status</Label>
+                <Select
+                  value={userForm.values.status}
+                  onValueChange={(value) => userForm.setValue('status', value as "active" | "inactive")}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Aktiv</SelectItem>
+                    <SelectItem value="inactive">Inaktiv</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-2 pt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowDialog(false)}
+              >
+                Abbrechen
+              </Button>
+              <Button 
+                onClick={handleFormSubmit}
+                disabled={userForm.isSubmitting || !userForm.isValid}
+              >
+                {userForm.isSubmitting 
+                  ? "Speichert..." 
+                  : editingUserId ? "Aktualisieren" : "Erstellen"
+                }
+              </Button>
+            </div>
+            
+            {userForm.isDirty && (
+              <p className="text-xs text-muted-foreground">
+                * Nicht gespeicherte Änderungen
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

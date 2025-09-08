@@ -1,0 +1,586 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* KSVL Maritime Design System - Segelverein Krantermin App
+All colors MUST be HSL for proper theme support.
+*/
+
+@layer base {
+  :root {
+    /* Maritime Color Palette */
+    --background: 210 25% 98%;
+    --foreground: 210 15% 20%;
+
+    --card: 210 20% 99%;
+    --card-foreground: 210 15% 20%;
+
+    --popover: 210 20% 99%;
+    --popover-foreground: 210 15% 20%;
+
+    /* Maritime Primary - Deep Navy */
+    --primary: 210 60% 25%;
+    --primary-foreground: 210 25% 98%;
+    --primary-hover: 210 60% 20%;
+
+    /* Ocean Blue Secondary */
+    --secondary: 210 40% 88%;
+    --secondary-foreground: 210 60% 25%;
+
+    /* Light Sea Muted */
+    --muted: 210 30% 92%;
+    --muted-foreground: 210 20% 45%;
+
+    /* Sea Foam Accent */
+    --accent: 195 50% 90%;
+    --accent-foreground: 210 60% 25%;
+
+    /* Alternative Slot Colors with Trendy Palette */
+    --action-created: 120 60% 40%; /* Green */
+    --action-created-foreground: 120 60% 95%;
+    --action-created-bg: 120 60% 90%;
+    --action-updated: 210 80% 35%; /* Blue */  
+    --action-updated-foreground: 210 80% 95%;
+    --action-updated-bg: 210 80% 90%;
+    --action-deleted: 0 70% 50%; /* Red */
+    --action-deleted-foreground: 0 70% 95%;
+    --action-deleted-bg: 0 70% 90%;
+    --action-booked: 270 60% 40%; /* Purple */
+    --action-booked-foreground: 270 60% 95%;
+    --action-booked-bg: 270 60% 90%;
+    --action-cancelled: 30 80% 45%; /* Orange */
+    --action-cancelled-foreground: 30 80% 95%;
+    --action-cancelled-bg: 30 80% 90%;
+    
+    /* Maritime Status Colors */
+    --success: 160 60% 35%;
+    --success-foreground: 160 60% 95%;
+    --warning: 45 85% 55%;
+    --warning-foreground: 45 85% 10%;
+    --destructive: 0 75% 55%;
+    --destructive-foreground: 0 75% 95%;
+
+    /* Status Colors for Slots */
+    --status-available: 160 60% 35%;
+    --status-available-foreground: 160 60% 95%;
+    --status-booked: 210 80% 35%;
+    --status-booked-foreground: 210 80% 95%;
+    --status-blocked: 0 75% 55%;
+    --status-blocked-foreground: 0 75% 95%;
+    --status-slot-block: 0 75% 55%;
+    --status-slot-block-foreground: 0 75% 95%;
+
+    /* Borders & Inputs */
+    --border: 210 25% 85%;
+    --input: 210 25% 90%;
+    --ring: 210 60% 25%;
+
+    /* Maritime Gradients */
+    --gradient-ocean: linear-gradient(135deg, hsl(210, 60%, 45%) 0%, hsl(195, 55%, 60%) 100%);
+    --gradient-wave: linear-gradient(180deg, hsl(210, 30%, 95%) 0%, hsl(210, 25%, 90%) 100%);
+    --gradient-deep: linear-gradient(135deg, hsl(210, 60%, 25%) 0%, hsl(210, 50%, 35%) 100%);
+    
+    /* Named Trendy Gradients */
+    --gradient-maritime-sunset: linear-gradient(135deg, hsl(348, 77%, 67%) 0%, hsl(194, 99%, 47%) 100%);
+    --gradient-ocean-breeze: linear-gradient(135deg, hsl(202, 85%, 23%) 0%, hsl(133, 28%, 68%) 100%);
+    --gradient-harbor-mist: linear-gradient(180deg, hsl(194, 99%, 87%) 0%, hsl(87, 66%, 84%) 100%);
+
+    /* Maritime Shadows */
+    --shadow-card: 0 4px 20px -8px hsl(210 60% 25% / 0.15);
+    --shadow-button: 0 2px 8px -2px hsl(210 60% 25% / 0.2);
+    --shadow-elevated: 0 8px 32px -12px hsl(210 60% 25% / 0.25);
+
+    /* Maritime Animations */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* Dashboard Animation Delays */
+  --animation-delay-1: 0ms;
+  --animation-delay-2: 100ms;
+  --animation-delay-3: 200ms;
+  --animation-delay-4: 300ms;
+  --animation-delay-5: 400ms;
+    --transition-wave: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+    --radius: 0.375rem; /* Reduced by 50% from 0.75rem */
+
+    /* Trendy Colors from Image - HSL converted */
+    --trendy-pink: 348 77% 67%; /* #EE4266 */
+    --trendy-navy: 202 85% 23%; /* #0B4F6C */
+    --trendy-cyan: 194 99% 47%; /* #01BAEF */
+    --trendy-light-green: 87 66% 84%; /* #D0FCB3 */
+    --trendy-green: 133 28% 68%; /* #9BC59D */
+    
+    /* Alternative Slot Colors with Trendy Palette - DEPRECATED, using dynamic system */
+    --alt-slot-available-bg: 87 66% 84%; /* Light Green */
+    --alt-slot-available-border: 133 28% 68%; /* Medium Green */
+    --alt-slot-available-text: 133 28% 48%; /* Darker Green */
+    --alt-slot-available-label: 133 28% 58%; /* Green Label */
+    
+    --alt-slot-booked-bg: 194 99% 87%; /* Light Cyan */
+    --alt-slot-booked-border: 194 99% 47%; /* Cyan */
+    --alt-slot-booked-text: 202 85% 23%; /* Navy */
+    --alt-slot-booked-label: 194 99% 37%; /* Darker Cyan */
+    
+    --alt-slot-blocked-bg: 348 77% 87%; /* Light Pink */
+    --alt-slot-blocked-border: 348 77% 67%; /* Pink */
+    --alt-slot-blocked-text: 348 77% 47%; /* Darker Pink */
+    --alt-slot-blocked-label: 348 77% 57%; /* Pink Label */
+
+    /* Sidebar colors adjusted for maritime theme */
+    --sidebar-background: 210 25% 98%;
+    --sidebar-foreground: 210 15% 20%;
+    --sidebar-primary: 210 60% 25%;
+    --sidebar-primary-foreground: 210 25% 98%;
+    --sidebar-accent: 210 40% 88%;
+    --sidebar-accent-foreground: 210 60% 25%;
+    --sidebar-border: 210 25% 85%;
+    --sidebar-ring: 210 60% 25%;
+  }
+
+  .dark {
+    /* Dark Maritime Theme */
+    --background: 210 50% 8%;
+    --foreground: 210 25% 95%;
+
+    --card: 210 50% 10%;
+    --card-foreground: 210 25% 95%;
+
+    --popover: 210 50% 10%;
+    --popover-foreground: 210 25% 95%;
+
+    --primary: 195 70% 60%;
+    --primary-foreground: 210 50% 8%;
+    --primary-hover: 195 70% 55%;
+
+    --secondary: 210 40% 15%;
+    --secondary-foreground: 210 25% 95%;
+
+    --muted: 210 40% 12%;
+    --muted-foreground: 210 20% 70%;
+
+    --accent: 195 50% 20%;
+    --accent-foreground: 195 70% 90%;
+
+    /* Dark Mode Slot Status Colors - using trendy colors */
+    --action-created: 85 70% 50%; /* Green Dark */
+    --action-created-foreground: 85 85% 95%;
+    --action-created-bg: 85 70% 20%;
+    --action-updated: 217 80% 70%; /* Blue Dark */
+    --action-updated-foreground: 217 91% 95%;
+    --action-updated-bg: 217 80% 20%;
+    --action-deleted: 0 70% 70%; /* Red Dark */
+    --action-deleted-foreground: 0 84% 95%;
+    --action-deleted-bg: 0 70% 20%;
+    --action-booked: 270 60% 50%; /* Purple Dark */
+    --action-booked-foreground: 270 60% 95%;
+    --action-booked-bg: 270 60% 20%;
+    --action-cancelled: 30 80% 55%; /* Orange Dark */
+    --action-cancelled-foreground: 30 80% 95%;
+    --action-cancelled-bg: 30 80% 20%;
+    
+    --success: 160 60% 45%;
+    --success-foreground: 160 60% 95%;
+    --warning: 45 85% 65%;
+    --warning-foreground: 45 85% 10%;
+    --destructive: 0 75% 65%;
+    --destructive-foreground: 0 75% 95%;
+
+    /* Dark Mode Status Colors */
+    --status-available: 160 60% 45%;
+    --status-available-foreground: 160 60% 95%;
+    --status-booked: 217 80% 70%;
+    --status-booked-foreground: 217 91% 95%;
+    --status-blocked: 0 75% 65%;
+    --status-blocked-foreground: 0 75% 95%;
+    --status-slot-block: 0 75% 65%;
+    --status-slot-block-foreground: 0 75% 95%;
+
+    --border: 210 40% 18%;
+    --input: 210 40% 18%;
+    --ring: 195 70% 60%;
+
+    /* Dark Maritime Gradients */
+    --gradient-ocean: linear-gradient(135deg, hsl(210, 60%, 15%) 0%, hsl(195, 55%, 25%) 100%);
+    --gradient-wave: linear-gradient(180deg, hsl(210, 50%, 10%) 0%, hsl(210, 40%, 12%) 100%);
+    --gradient-deep: linear-gradient(135deg, hsl(210, 60%, 8%) 0%, hsl(210, 50%, 15%) 100%);
+    
+    /* Dark Named Trendy Gradients */
+    --gradient-maritime-sunset: linear-gradient(135deg, hsl(348, 77%, 47%) 0%, hsl(194, 99%, 37%) 100%);
+    --gradient-ocean-breeze: linear-gradient(135deg, hsl(202, 85%, 13%) 0%, hsl(133, 28%, 48%) 100%);
+    --gradient-harbor-mist: linear-gradient(180deg, hsl(194, 99%, 20%) 0%, hsl(87, 66%, 20%) 100%);
+
+    /* Dark Maritime Shadows */
+    --shadow-card: 0 4px 20px -8px hsl(210 60% 5% / 0.4);
+    --shadow-button: 0 2px 8px -2px hsl(210 60% 5% / 0.3);
+    --shadow-elevated: 0 8px 32px -12px hsl(210 60% 5% / 0.5);
+
+    --sidebar-background: 210 50% 8%;
+    --sidebar-foreground: 210 25% 95%;
+    --sidebar-primary: 195 70% 60%;
+    --sidebar-primary-foreground: 210 50% 8%;
+    --sidebar-accent: 210 40% 15%;
+    --sidebar-accent-foreground: 210 25% 95%;
+    --sidebar-border: 210 40% 18%;
+    --sidebar-ring: 195 70% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
+}
+
+@layer components {
+  /* Maritime-specific utility classes */
+  .bg-gradient-ocean {
+    background: var(--gradient-ocean);
+  }
+}
+
+/* Dashboard Animations - Enhanced animation system for better UX */
+.animate-fade-in {
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scroll reveal animations */
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 2s ease-out, transform 2s ease-out;
+}
+
+.scroll-revealed {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Animation delays for staggered effects */
+.delay-100 { animation-delay: 300ms; }
+.delay-200 { animation-delay: 600ms; }
+.delay-300 { animation-delay: 900ms; }
+.delay-400 { animation-delay: 1200ms; }
+.delay-500 { animation-delay: 1500ms; }
+
+/* Enhanced bounce animation for dashboard cards */
+@keyframes enhanced-bounce {
+  0% {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.8);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(10px) scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Staggered animation utilities */
+.animate-stagger {
+  animation: staggerIn 1.2s ease-out;
+}
+
+@keyframes staggerIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Micro Animations - Trendy Effects */
+.micro-bounce {
+  animation: micro-bounce 0.6s ease-in-out;
+}
+
+.wiggle {
+  animation: wiggle 0.8s ease-in-out;
+}
+
+.slide-up {
+  animation: slide-up 0.5s ease-out;
+}
+
+.slide-down {
+  animation: slide-down 0.5s ease-out;
+}
+
+.slide-left {
+  animation: slide-left 0.5s ease-out;
+}
+
+.slide-right {
+  animation: slide-right 0.5s ease-out;
+}
+
+.scale-up {
+  animation: scale-up 0.4s ease-out;
+}
+
+.rotate-in {
+  animation: rotate-in 0.7s ease-out;
+}
+
+@keyframes micro-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-8px) scale(1.05); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 hsla(var(--primary), 0.4); }
+  50% { box-shadow: 0 0 20px 4px hsla(var(--primary), 0.1); }
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-3deg); }
+  75% { transform: rotate(3deg); }
+}
+
+@keyframes slide-up {
+  from { transform: translateY(30px) scale(0.95); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes slide-down {
+  from { transform: translateY(-30px) scale(0.95); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes slide-left {
+  from { transform: translateX(30px) scale(0.95); opacity: 0; }
+  to { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+@keyframes slide-right {
+  from { transform: translateX(-30px) scale(0.95); opacity: 0; }
+  to { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+@keyframes scale-up {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+@keyframes rotate-in {
+  from { transform: rotate(-180deg) scale(0.8); opacity: 0; }
+  to { transform: rotate(0deg) scale(1); opacity: 1; }
+}
+
+@keyframes flip-x {
+  from { transform: rotateX(-90deg); opacity: 0; }
+  to { transform: rotateX(0); opacity: 1; }
+}
+
+@keyframes flip-y {
+  from { transform: rotateY(-90deg); opacity: 0; }
+  to { transform: rotateY(0); opacity: 1; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+  20%, 40%, 60%, 80% { transform: translateX(2px); }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 2px hsla(var(--primary), 0.3)); }
+  50% { filter: drop-shadow(0 0 8px hsla(var(--primary), 0.6)); }
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink {
+  50% { border-color: transparent; }
+}
+
+/* Startup Screen Animations */
+@keyframes startup-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes startup-slide-in-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes startup-slide-in-down {
+  from { opacity: 0; transform: translateY(-30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes startup-scale-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes startup-zoom-in {
+  from { opacity: 0; transform: scale(0.8) rotate(-10deg); }
+  to { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+/* Advanced Startup Screen Animations */
+@keyframes startup-rotate-in {
+  from { opacity: 0; transform: rotate(-180deg) scale(0.8); }
+  to { opacity: 1; transform: rotate(0deg) scale(1); }
+}
+
+@keyframes startup-elastic {
+  0% { opacity: 0; transform: scale(0.3) rotate(-10deg); }
+  50% { opacity: 0.8; transform: scale(1.05) rotate(2deg); }
+  70% { opacity: 0.9; transform: scale(0.95) rotate(-1deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes startup-bounce {
+  0% { opacity: 0; transform: translateY(100px) scale(0.8); }
+  60% { opacity: 0.8; transform: translateY(-20px) scale(1.1); }
+  80% { opacity: 0.9; transform: translateY(10px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes startup-wave {
+  0% { opacity: 0; transform: translateX(-100px) scaleX(0.8); }
+  50% { opacity: 0.6; transform: translateX(20px) scaleX(1.1); }
+  100% { opacity: 1; transform: translateX(0px) scaleX(1); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(20px) rotate(0deg); }
+  to { transform: rotate(360deg) translateX(20px) rotate(-360deg); }
+}
+
+@keyframes morph {
+  0%, 100% { border-radius: 50%; }
+  25% { border-radius: 25% 75%; }
+  50% { border-radius: 75% 25%; }
+  75% { border-radius: 25% 75% 75% 25%; }
+}
+
+@keyframes typewriter {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes glitch {
+  0%, 100% { text-shadow: 0 0 5px hsla(var(--primary), 0.8); }
+  10% { text-shadow: 2px 0 0 red, -2px 0 0 blue; }
+  20% { text-shadow: -2px 0 0 red, 2px 0 0 blue; }
+}
+
+@keyframes neon-flicker {
+  0%, 100% { text-shadow: 0 0 5px hsla(var(--primary), 0.8), 0 0 10px hsla(var(--primary), 0.6); }
+  50% { text-shadow: 0 0 2px hsla(var(--primary), 0.4), 0 0 5px hsla(var(--primary), 0.2); }
+}
+
+@keyframes wave-text {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-5px); }
+  75% { transform: translateY(5px); }
+}
+
+@keyframes letter-dance {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-3px) rotate(2deg); }
+  50% { transform: translateY(3px) rotate(-2deg); }
+  75% { transform: translateY(-1px) rotate(1deg); }
+}
+
+@keyframes glow-text {
+  0%, 100% { text-shadow: 0 0 10px hsla(var(--primary), 0.5); }
+  50% { text-shadow: 0 0 20px hsla(var(--primary), 0.8), 0 0 30px hsla(var(--primary), 0.6); }
+}
+
+@keyframes elastic {
+  0% { transform: scale(1, 1); }
+  25% { transform: scale(0.9, 1.1); }
+  50% { transform: scale(1.1, 0.9); }
+  75% { transform: scale(0.95, 1.05); }
+  100% { transform: scale(1, 1); }
+}
+
+@keyframes magnetic {
+  0%, 100% { transform: translate(0, 0); }
+  25% { transform: translate(2px, -2px); }
+  50% { transform: translate(-2px, 2px); }
+  75% { transform: translate(-2px, -2px); }
+}
+
+/* Utility Classes for Micro Animations */
+.micro-bounce { animation: micro-bounce 0.6s ease-in-out; }
+.pulse-glow { animation: pulse-glow 2s infinite; }
+.wiggle { animation: wiggle 0.5s ease-in-out; }
+.slide-up { animation: slide-up 0.4s ease-out; }
+.slide-down { animation: slide-down 0.4s ease-out; }
+.slide-left { animation: slide-left 0.4s ease-out; }
+.slide-right { animation: slide-right 0.4s ease-out; }
+.scale-up { animation: scale-up 0.3s ease-out; }
+.rotate-in { animation: rotate-in 0.5s ease-out; }
+.flip-x { animation: flip-x 0.6s ease-out; }
+.flip-y { animation: flip-y 0.6s ease-out; }
+.shake { animation: shake 0.5s ease-in-out; }
+.glow-pulse { animation: glow-pulse 1.5s infinite; }
+
+/* Extended Animation Classes */
+.float { animation: float 3s ease-in-out infinite; }
+.breathe { animation: breathe 2s ease-in-out infinite; }
+.orbit { animation: orbit 4s linear infinite; }
+.morph { animation: morph 2s ease-in-out infinite; }
+.typewriter { animation: typewriter 2s steps(20, end); }
+.glitch { animation: glitch 0.5s infinite; }
+.neon-flicker { animation: neon-flicker 1.5s ease-in-out infinite; }
+.wave-text { animation: wave-text 1s ease-in-out infinite; }
+.letter-dance { animation: letter-dance 1s ease-in-out infinite; }
+.glow-text { animation: glow-text 2s ease-in-out infinite; }
+.elastic { animation: elastic 1s ease-in-out; }
+.magnetic { animation: magnetic 1s ease-in-out infinite; }
+
+/* Transform utilities for startup screen */
+.rotate-x-90 { transform: rotateX(90deg); }
+.rotate-y-90 { transform: rotateY(90deg); }
+
+/* Hover Effects */
+.hover-lift:hover { transform: translateY(-2px); transition: transform 0.2s ease; }
+.hover-grow:hover { transform: scale(1.05); transition: transform 0.2s ease; }
+.hover-shrink:hover { transform: scale(0.95); transition: transform 0.2s ease; }
+.hover-rotate:hover { transform: rotate(5deg); transition: transform 0.2s ease; }
+.hover-glow:hover { filter: drop-shadow(0 0 8px hsla(var(--primary), 0.4)); transition: filter 0.2s ease; }
+
+/* Interactive Elements */
+.clickable {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.clickable:active {
+  transform: scale(0.98);
+}
