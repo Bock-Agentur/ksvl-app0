@@ -39,35 +39,52 @@ interface StartupScreenProps {
 }
 
 export function StartupScreen({ isVisible, onComplete, settings }: StartupScreenProps) {
-  const [phase, setPhase] = useState<'hidden' | 'entering' | 'showing' | 'exiting'>('hidden');
+  const [phase, setPhase] = useState<'hidden' | 'loading' | 'entering' | 'showing' | 'exiting'>('hidden');
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     if (isVisible) {
-      // Start the sequence
-      setPhase('entering');
+      // First, set loading state and wait for next frame to ensure DOM is ready
+      setPhase('loading');
       
-      // After entrance animation, show content
-      const showTimeout = setTimeout(() => {
-        setPhase('showing');
-        
-        // After display duration, start exit
-        const exitTimeout = setTimeout(() => {
-          setPhase('exiting');
+      // Use requestAnimationFrame to ensure smooth animation start
+      const animationFrame = requestAnimationFrame(() => {
+        // Small delay to prevent flickering and ensure CSS is loaded
+        const readyTimeout = setTimeout(() => {
+          setIsReady(true);
+          setPhase('entering');
           
-          // After exit animation, complete with main page animation
-          const completeTimeout = setTimeout(() => {
-            // Trigger main page animation
-            document.body.classList.add('startup-complete');
-            onComplete();
-          }, settings.exitDuration / settings.animationSpeed);
+          // After entrance animation, show content
+          const showTimeout = setTimeout(() => {
+            setPhase('showing');
+            
+            // After display duration, start exit
+            const exitTimeout = setTimeout(() => {
+              setPhase('exiting');
+              
+              // After exit animation, complete with main page animation
+              const completeTimeout = setTimeout(() => {
+                // Trigger main page animation
+                document.body.classList.add('startup-complete');
+                onComplete();
+              }, settings.exitDuration / settings.animationSpeed);
+              
+              return () => clearTimeout(completeTimeout);
+            }, settings.duration);
+            
+            return () => clearTimeout(exitTimeout);
+          }, settings.enterDuration / settings.animationSpeed);
           
-          return () => clearTimeout(completeTimeout);
-        }, settings.duration);
+          return () => clearTimeout(showTimeout);
+        }, 50); // Small delay to prevent flicker
         
-        return () => clearTimeout(exitTimeout);
-      }, settings.enterDuration / settings.animationSpeed);
+        return () => clearTimeout(readyTimeout);
+      });
       
-      return () => clearTimeout(showTimeout);
+      return () => cancelAnimationFrame(animationFrame);
+    } else {
+      setIsReady(false);
+      setPhase('hidden');
     }
   }, [isVisible, settings.duration, settings.enterDuration, settings.exitDuration, settings.animationSpeed, onComplete]);
 
@@ -116,7 +133,8 @@ export function StartupScreen({ isVisible, onComplete, settings }: StartupScreen
       }
     };
 
-    if (phase === 'entering') return getEnterClass();
+    if (phase === 'loading') return `${getEnterClass()} opacity-0`;
+    if (phase === 'entering') return isReady ? 'translate-y-0 scale-100 opacity-100' : `${getEnterClass()} opacity-0`;
     if (phase === 'exiting') return getExitClass();
     return 'translate-y-0 scale-100 opacity-100';
   };
