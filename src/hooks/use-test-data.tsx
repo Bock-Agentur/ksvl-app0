@@ -922,12 +922,10 @@ export function TestDataProvider({ children }: { children: ReactNode }) {
       // Mische die Block-Strukturen für Variation
       const shuffledStructures = [...blockStructures].sort(() => Math.random() - 0.5);
       
-      // Zeitslots über den Tag verteilt (6:00 - 20:00)
+      // Zeitslots über den Tag verteilt (6:00 - 20:00) - NUR volle Stunden um Überschneidungen zu vermeiden
       const timeSlots = [];
       for (let hour = 6; hour <= 20; hour++) {
-        for (let minute = 0; minute < 60; minute += 15) { // Alle 15 Minuten
-          timeSlots.push(`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`);
-        }
+        timeSlots.push(`${hour.toString().padStart(2, '0')}:00`);
       }
       
       let currentTimeIndex = 0;
@@ -996,8 +994,8 @@ export function TestDataProvider({ children }: { children: ReactNode }) {
           // EINZELSLOT: Zufällige Dauer und Position
           if (currentTimeIndex >= timeSlots.length) continue;
           
-          const durations = [30, 45, 60, 60, 90] as (30 | 45 | 60 | 90)[]; // Mehr Variation in Dauer
-          const duration = durations[Math.floor(Math.random() * durations.length)];
+          const durations = [30, 45, 60] as (30 | 45 | 60)[]; // Sichere Dauern für stündliche Slots
+          const duration = 60; // Für stündliche Slots immer 60 Minuten verwenden
           const time = timeSlots[currentTimeIndex++];
           const isBooked = Math.random() > 0.5; // 50% Buchungsrate für Einzelslots
           const bookedMember = isBooked ? memberOptions[Math.floor(Math.random() * memberOptions.length)] : undefined;
@@ -1006,7 +1004,7 @@ export function TestDataProvider({ children }: { children: ReactNode }) {
             id: `slot-${++slotIdCounter}`,
             date: dateString,
             time,
-            duration: duration as 60, // TypeScript fix
+            duration: duration as 60, // Konsistente 60-Minuten-Slots
             craneOperator: operator,
             isBooked,
             bookedBy: bookedMember?.name,
@@ -1020,8 +1018,8 @@ export function TestDataProvider({ children }: { children: ReactNode }) {
       // Fülle restliche Slots mit Einzelslots auf
       while (slotIndex < slotsPerDay && currentTimeIndex < timeSlots.length) {
         const operator = craneOperators[slotIndex % craneOperators.length];
-        const durations = [30, 45, 60] as (30 | 45 | 60)[];
-        const duration = durations[Math.floor(Math.random() * durations.length)];
+        const durations = [60] as (30 | 45 | 60)[]; // Nur 60 Minuten für stündliche Slots
+        const duration = 60; // Konsistente Dauer
         const time = timeSlots[currentTimeIndex++];
         const isBooked = Math.random() > 0.6; // 40% Buchungsrate für Füllslots
         const bookedMember = isBooked ? memberOptions[Math.floor(Math.random() * memberOptions.length)] : undefined;
