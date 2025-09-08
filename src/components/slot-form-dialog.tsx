@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -286,14 +286,14 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
   // Wenn bereits ein Slot existiert, zeige Slot-Details an
   if (slot && !canManageSlots && slot.isBooked && slot.bookedBy !== currentRole) {
     return (
-      <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto overflow-x-hidden">
-          <DialogHeader>
-            <DialogTitle>Slot-Details</DialogTitle>
-            <DialogDescription className="sr-only">
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>Slot-Details</SheetTitle>
+            <SheetDescription className="sr-only">
               Zeigt Details eines bereits gebuchten Slots
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
           
           <Card>
             <CardHeader>
@@ -339,16 +339,16 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
               Schließen
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     );
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="w-[95vw] max-w-[500px] max-h-[90vh] overflow-y-auto mx-auto p-2 sm:p-4 md:p-6 bg-background border-border">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-sm sm:text-base">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+          <SheetHeader>
+            <SheetTitle className="flex items-center gap-2 text-sm sm:text-base">
               {slot ? (
                 <>
                   <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -360,11 +360,11 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
                 Neuen Slot erstellen
               </>
             )}
-          </DialogTitle>
-          <DialogDescription className="sr-only">
+          </SheetTitle>
+          <SheetDescription className="sr-only">
             {slot ? "Verwalten Sie einen bestehenden Slot" : "Erstellen Sie einen neuen Slot"}
-          </DialogDescription>
-        </DialogHeader>
+          </SheetDescription>
+        </SheetHeader>
         
         {slot ? (
           // Existing slot - Show details and actions
@@ -500,7 +500,7 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
             </CardContent>
           </Card>
         )}
-      </DialogContent>
-    </Dialog>
+        </SheetContent>
+    </Sheet>
   );
 }
