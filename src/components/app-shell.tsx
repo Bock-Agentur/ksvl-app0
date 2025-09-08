@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
-import { useSwipeNavigation } from "@/hooks/use-swipe-navigation";
 import { 
   Select,
   SelectContent,
@@ -67,37 +66,6 @@ export function AppShell({
   const currentDisplaySettings = getDisplaySettingsForRole(currentRole);
   const showLabels = currentDisplaySettings?.showLabels ?? false;
   
-  const [swipeProgress, setSwipeProgress] = useState(0);
-  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
-
-  const handleSwipeProgress = (progress: number, direction: 'left' | 'right' | null) => {
-    setSwipeProgress(progress);
-    setSwipeDirection(direction);
-  };
-
-  // Swipe navigation logic
-  const handleSwipeLeft = () => {
-    const currentIndex = footerItems.findIndex(item => item.id === activeTab);
-    if (currentIndex < footerItems.length - 1) {
-      const nextItem = footerItems[currentIndex + 1];
-      onTabChange(nextItem.id);
-    }
-  };
-
-  const handleSwipeRight = () => {
-    const currentIndex = footerItems.findIndex(item => item.id === activeTab);
-    if (currentIndex > 0) {
-      const prevItem = footerItems[currentIndex - 1];
-      onTabChange(prevItem.id);
-    }
-  };
-
-  const { containerRef, isAnimating } = useSwipeNavigation({
-    onSwipeLeft: handleSwipeLeft,
-    onSwipeRight: handleSwipeRight,
-    onSwipeProgress: handleSwipeProgress
-  });
-  
   // Get dynamic header navigation items based on settings
   const menuItems = getOrderedHeaderItems();
   const availableHeaderItems = menuItems
@@ -159,7 +127,7 @@ export function AppShell({
   };
 
   return (
-    <div ref={containerRef} className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className={cn(
         "sticky top-0 z-40 bg-card/90 backdrop-blur-sm border-b border-border px-4 py-3 shadow-card-maritime transition-transform duration-300 ease-in-out",
@@ -337,57 +305,10 @@ export function AppShell({
         </div>
       </header>
 
-      {/* Main Content with Slider Effect */}
-      <div className="flex-1 relative overflow-hidden pb-20 pt-5">
-        {/* Current Page */}
-        <main 
-          className={cn(
-            "absolute inset-0 transition-all duration-300 ease-out",
-            isAnimating && swipeDirection === 'left' && "transform -translate-x-full opacity-0",
-            isAnimating && swipeDirection === 'right' && "transform translate-x-full opacity-0",
-            !isAnimating && swipeProgress > 0 && swipeDirection === 'left' && "transform",
-            !isAnimating && swipeProgress > 0 && swipeDirection === 'right' && "transform"
-          )}
-          style={{
-            transform: !isAnimating ? 
-              (swipeDirection === 'left' ? `translateX(-${swipeProgress * 100}%)` :
-               swipeDirection === 'right' ? `translateX(${swipeProgress * 100}%)` : 
-               'translateX(0%)') : undefined
-          }}
-        >
-          <div className="h-full overflow-auto px-4">
-            {children}
-          </div>
-        </main>
-
-        {/* Next/Previous Page Preview */}
-        {swipeProgress > 0.1 && swipeDirection && (
-          <div 
-            className={cn(
-              "absolute inset-0 bg-muted/20 backdrop-blur-sm transition-all duration-300 ease-out flex items-center justify-center",
-              swipeDirection === 'left' ? "transform translate-x-full" : "transform -translate-x-full"
-            )}
-            style={{
-              transform: swipeDirection === 'left' ? 
-                `translateX(${100 - (swipeProgress * 100)}%)` :
-                `translateX(-${100 - (swipeProgress * 100)}%)`
-            }}
-          >
-            <div className="text-center">
-              <div className="text-4xl mb-2">
-                {swipeDirection === 'left' ? '→' : '←'}
-              </div>
-              <div className="text-sm font-medium text-foreground/70">
-                {swipeDirection === 'left' && footerItems.findIndex(item => item.id === activeTab) < footerItems.length - 1
-                  ? footerItems[footerItems.findIndex(item => item.id === activeTab) + 1]?.label
-                  : swipeDirection === 'right' && footerItems.findIndex(item => item.id === activeTab) > 0
-                  ? footerItems[footerItems.findIndex(item => item.id === activeTab) - 1]?.label
-                  : ''}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto pb-20 pt-5">
+        {children}
+      </main>
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-2 shadow-elevated-maritime z-50">
@@ -405,11 +326,11 @@ export function AppShell({
                 size="sm"
                 onClick={() => onTabChange(item.id)}
                 className={cn(
-                  "flex flex-col items-center h-auto py-2 px-1 sm:px-3 relative transition-all duration-200 min-w-0",
+                  "flex flex-col items-center h-auto py-2 px-1 sm:px-3 relative transition-wave min-w-0",
                   showLabels ? "gap-1" : "gap-0",
                   isActive 
-                    ? "text-primary bg-primary/10 transform scale-105" 
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted hover:scale-105"
+                    ? "text-primary bg-primary/10" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
                 )}
               >
                 <Icon className="h-5 w-5 flex-shrink-0" />
@@ -424,17 +345,9 @@ export function AppShell({
                     {item.badge}
                   </Badge>
                 )}
-                {/* Entfernt: blauen Punkt und animate-pulse */}
               </Button>
             );
           })}
-        </div>
-        
-        {/* Swipe hint for first-time users */}
-        <div className="flex justify-center mt-1">
-          <div className="text-xs text-muted-foreground/50">
-            ← Wischen für Navigation →
-          </div>
         </div>
       </nav>
     </div>
