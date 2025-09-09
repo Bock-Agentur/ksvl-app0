@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -19,9 +19,24 @@ const App = () => {
   const { settings, isVisible, hideStartupScreen } = useStartupScreen();
   const [showMainContent, setShowMainContent] = useState(!settings.enabled);
 
+  // Control body background color for smooth startup transition
+  useEffect(() => {
+    if (isVisible && settings.enabled) {
+      // Set body to black during startup
+      document.body.style.backgroundColor = 'black';
+    } else if (!isVisible && showMainContent) {
+      // Reset body background when startup is complete
+      document.body.style.backgroundColor = '';
+    }
+  }, [isVisible, settings.enabled, showMainContent]);
+
   const handleStartupComplete = () => {
     hideStartupScreen();
     setShowMainContent(true);
+    // Reset body background after a small delay to ensure smooth transition
+    setTimeout(() => {
+      document.body.style.backgroundColor = '';
+    }, 100);
   };
 
   return (
