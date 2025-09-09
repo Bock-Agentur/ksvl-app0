@@ -44,9 +44,6 @@ export function StartupScreen({ isVisible, onComplete, settings }: StartupScreen
 
   useEffect(() => {
     if (isVisible) {
-      // Set body to black during startup
-      document.body.classList.add('startup-loading');
-      
       // First, set loading state and wait for next frame to ensure DOM is ready
       setPhase('loading');
       
@@ -63,8 +60,8 @@ export function StartupScreen({ isVisible, onComplete, settings }: StartupScreen
             
             // After display duration, start exit
             const exitTimeout = setTimeout(() => {
-              // Remove black background before exit animation
-              document.body.classList.remove('startup-loading');
+              // Set body back to white before exit animation
+              document.body.style.backgroundColor = 'white';
               setPhase('exiting');
               
               // After exit animation, complete with main page animation
@@ -88,7 +85,6 @@ export function StartupScreen({ isVisible, onComplete, settings }: StartupScreen
       
       return () => cancelAnimationFrame(animationFrame);
     } else {
-      document.body.classList.remove('startup-loading');
       setIsReady(false);
       setPhase('hidden');
     }
