@@ -60,8 +60,8 @@ export function StartupScreen({ isVisible, onComplete, settings }: StartupScreen
             
             // After display duration, start exit
             const exitTimeout = setTimeout(() => {
-              // Set body back to normal before exit animation
-              document.body.style.backgroundColor = '';
+              // Set body back to white before exit animation
+              document.body.style.backgroundColor = 'white';
               setPhase('exiting');
               
               // After exit animation, complete with main page animation
