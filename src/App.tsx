@@ -31,6 +31,11 @@ const App = () => {
           <Toaster />
           <Sonner />
           
+          {/* Black Background Overlay for Startup */}
+          {(isVisible && settings.enabled) && (
+            <div className="fixed inset-0 bg-black z-[9998]" />
+          )}
+          
           {/* Startup Screen */}
           <StartupScreen
             isVisible={isVisible && settings.enabled}
