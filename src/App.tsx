@@ -22,21 +22,14 @@ const App = () => {
   // Control body background color for smooth startup transition
   useEffect(() => {
     if (!settings.enabled) {
-      // If startup is disabled, immediately reset body background
-      document.body.style.backgroundColor = '';
-    } else if (!isVisible && showMainContent) {
-      // Reset body background when startup is complete
-      document.body.style.backgroundColor = '';
+      // If startup is disabled, remove black background class
+      document.body.classList.remove('startup-loading');
     }
-  }, [isVisible, settings.enabled, showMainContent]);
+  }, [settings.enabled]);
 
   const handleStartupComplete = () => {
     hideStartupScreen();
     setShowMainContent(true);
-    // Reset body background after a small delay to ensure smooth transition
-    setTimeout(() => {
-      document.body.style.backgroundColor = '';
-    }, 100);
   };
 
   return (

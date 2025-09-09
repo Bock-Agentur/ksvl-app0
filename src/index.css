@@ -232,7 +232,9 @@ All colors MUST be HSL for proper theme support.
 
   body {
     @apply bg-background text-foreground font-sans;
-    /* Start with black background to prevent white flash before startup screen */
+  }
+  
+  body.startup-loading {
     background-color: black !important;
   }
 }
