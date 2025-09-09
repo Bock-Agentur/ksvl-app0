@@ -21,9 +21,9 @@ const App = () => {
 
   // Control body background color for smooth startup transition
   useEffect(() => {
-    if (isVisible && settings.enabled) {
-      // Set body to black during startup
-      document.body.style.backgroundColor = 'black';
+    if (!settings.enabled) {
+      // If startup is disabled, immediately reset body background
+      document.body.style.backgroundColor = '';
     } else if (!isVisible && showMainContent) {
       // Reset body background when startup is complete
       document.body.style.backgroundColor = '';
