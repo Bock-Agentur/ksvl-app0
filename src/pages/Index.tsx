@@ -11,7 +11,6 @@ import { SlotManagement } from "@/components/slot-management";
 import { ProfileView } from "@/components/profile-view";
 import { Messages } from "@/components/messages";
 import { Settings } from "@/pages/Settings";
-import StyleCenter from "@/pages/StyleCenter";
 import { AuditLogs } from "@/components/audit-logs";
 import { CalendarView } from "@/components/calendar-view";
 
@@ -67,10 +66,8 @@ function AppContent() {
       case "audit-logs":
         return <AuditLogs />;
       case "settings":
-          return <Settings />;
-        case "style-center":
-          return <StyleCenter />;
-        default:
+        return <Settings />;
+      default:
         return <Dashboard />;
     }
   };
