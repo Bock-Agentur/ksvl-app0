@@ -33,13 +33,11 @@ export const AVAILABLE_MENU_ITEMS: FooterMenuItem[] = [
   { id: "profile", label: "Profil", icon: "User", roles: ["mitglied", "kranfuehrer", "admin"] },
   
   // Admin/management items
-  { id: "admin", label: "Test Center", icon: "TestTube", roles: ["admin"] },
   { id: "messages", label: "Nachrichten", icon: "MessageSquare", roles: ["mitglied", "kranfuehrer", "admin"], badge: "2" },
   { id: "users", label: "Mitglieder", icon: "Users", roles: ["admin"] },
   { id: "slots", label: "Slot Manager", icon: "Layers", roles: ["admin", "kranfuehrer"] },
   { id: "audit-logs", label: "Aktivitäten", icon: "FileText", roles: ["admin"] },
   { id: "settings", label: "Einstellungen", icon: "Settings", roles: ["admin"] },
-  { id: "style-center", label: "Style Center", icon: "Palette", roles: ["admin"] },
   
   // Additional useful items
   { id: "reports", label: "Berichte", icon: "BarChart3", roles: ["admin", "kranfuehrer"] },
@@ -54,26 +52,20 @@ const DEFAULT_FOOTER_SETTINGS: FooterMenuSettings = {
   mitglied: [
     { id: "dashboard", label: "Home", icon: "Home", roles: ["mitglied", "kranfuehrer", "admin"] },
     { id: "calendar", label: "Kalender", icon: "Calendar", roles: ["mitglied", "kranfuehrer", "admin"] },
-    { id: "slots", label: "Slot", icon: "Layers", roles: ["admin", "kranfuehrer"] },
-    { id: "settings", label: "Einstellungen", icon: "Settings", roles: ["admin"] },
-    { id: "style-center", label: "Style Center", icon: "Palette", roles: ["admin"] },
-    { id: "admin", label: "Test Center", icon: "TestTube", roles: ["admin"] },
+    { id: "profile", label: "Profil", icon: "User", roles: ["mitglied", "kranfuehrer", "admin"] },
+    { id: "bookings", label: "Buchungen", icon: "UserCheck", roles: ["mitglied", "kranfuehrer", "admin"] },
   ],
   kranfuehrer: [
     { id: "dashboard", label: "Home", icon: "Home", roles: ["mitglied", "kranfuehrer", "admin"] },
     { id: "calendar", label: "Kalender", icon: "Calendar", roles: ["mitglied", "kranfuehrer", "admin"] },
-    { id: "slots", label: "Slot", icon: "Layers", roles: ["admin", "kranfuehrer"] },
-    { id: "settings", label: "Einstellungen", icon: "Settings", roles: ["admin"] },
-    { id: "style-center", label: "Style Center", icon: "Palette", roles: ["admin"] },
-    { id: "admin", label: "Test Center", icon: "TestTube", roles: ["admin"] },
+    { id: "slots", label: "Slots", icon: "Layers", roles: ["admin", "kranfuehrer"] },
+    { id: "profile", label: "Profil", icon: "User", roles: ["mitglied", "kranfuehrer", "admin"] },
   ],
   admin: [
     { id: "dashboard", label: "Home", icon: "Home", roles: ["mitglied", "kranfuehrer", "admin"] },
     { id: "calendar", label: "Kalender", icon: "Calendar", roles: ["mitglied", "kranfuehrer", "admin"] },
-    { id: "slots", label: "Slot", icon: "Layers", roles: ["admin", "kranfuehrer"] },
+    { id: "slots", label: "Slots", icon: "Layers", roles: ["admin", "kranfuehrer"] },
     { id: "settings", label: "Einstellungen", icon: "Settings", roles: ["admin"] },
-    { id: "style-center", label: "Style Center", icon: "Palette", roles: ["admin"] },
-    { id: "admin", label: "Test Center", icon: "TestTube", roles: ["admin"] },
   ]
 };
 
