@@ -36,7 +36,6 @@ import { useMenuSettings } from "@/hooks/use-menu-settings";
 const iconMap = {
   Palette,
   TestTube,
-  MessageSquare,
   Users,
   Calendar,
   FileText,

@@ -33,7 +33,6 @@ export const AVAILABLE_MENU_ITEMS: FooterMenuItem[] = [
   { id: "profile", label: "Profil", icon: "User", roles: ["mitglied", "kranfuehrer", "admin"] },
   
   // Admin/management items
-  { id: "messages", label: "Nachrichten", icon: "MessageSquare", roles: ["mitglied", "kranfuehrer", "admin"], badge: "2" },
   { id: "users", label: "Mitglieder", icon: "Users", roles: ["admin"] },
   { id: "slots", label: "Slot Manager", icon: "Layers", roles: ["admin", "kranfuehrer"] },
   { id: "audit-logs", label: "Aktivitäten", icon: "FileText", roles: ["admin"] },

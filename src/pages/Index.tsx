@@ -9,7 +9,6 @@ import { Dashboard } from "@/components/dashboard";
 import { UserManagementRefactored as UserManagement } from "@/components/user-management";
 import { SlotManagement } from "@/components/slot-management";
 import { ProfileView } from "@/components/profile-view";
-import { Messages } from "@/components/messages";
 import { Settings } from "@/pages/Settings";
 import { AuditLogs } from "@/components/audit-logs";
 import { CalendarView } from "@/components/calendar-view";
@@ -55,8 +54,6 @@ function AppContent() {
             <p className="text-muted-foreground">Buchungsverwaltung wird hier implementiert...</p>
           </div>
         );
-      case "messages":
-        return <Messages currentRole={currentRole} />;
       case "profile":
         return <ProfileView currentRole={currentRole} />;
       case "users":

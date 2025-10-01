@@ -17,10 +17,9 @@ export interface MenuSettings {
 
 const DEFAULT_HEADER_ITEMS: MenuItemConfig[] = [
   { id: "settings", label: "Einstellungen", icon: "Settings", roles: ["admin"], order: 0 },
-  { id: "messages", label: "Nachrichten", icon: "MessageSquare", roles: ["mitglied", "kranfuehrer", "admin"], badge: "2", order: 1 },
-  { id: "users", label: "Mitgliederverwaltung", icon: "Users", roles: ["admin"], order: 2 },
-  { id: "slots", label: "Slot Manager", icon: "Layers", roles: ["admin"], order: 3 },
-  { id: "audit-logs", label: "Aktivitätsprotokoll", icon: "FileText", roles: ["admin"], order: 4 },
+  { id: "users", label: "Mitgliederverwaltung", icon: "Users", roles: ["admin"], order: 1 },
+  { id: "slots", label: "Slot Manager", icon: "Layers", roles: ["admin"], order: 2 },
+  { id: "audit-logs", label: "Aktivitätsprotokoll", icon: "FileText", roles: ["admin"], order: 3 },
 ];
 
 const DEFAULT_SETTINGS: MenuSettings = {
