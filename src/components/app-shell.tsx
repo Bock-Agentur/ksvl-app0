@@ -269,34 +269,6 @@ export function AppShell({
                       </div>
                     </>
                   )}
-
-                  <Separator />
-
-                  {/* Quick Navigation */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-muted-foreground">Navigation</h3>
-                     <div className="space-y-1">
-                       {mobileNavItems.map((item) => {
-                         const Icon = item.icon;
-                         const isActive = activeTab === item.id;
-                         
-                         return (
-                           <Button
-                             key={item.id}
-                             variant={isActive ? "secondary" : "ghost"}
-                             className="w-full justify-start"
-                             onClick={() => {
-                               onTabChange(item.id);
-                               setIsMenuOpen(false);
-                             }}
-                           >
-                             <Icon className="w-4 h-4 mr-2" />
-                             <span>{item.label}</span>
-                           </Button>
-                         );
-                       })}
-                    </div>
-                  </div>
                 </div>
               </SheetContent>
             </Sheet>
