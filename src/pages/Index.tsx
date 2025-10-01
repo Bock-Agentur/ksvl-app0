@@ -6,7 +6,6 @@ import { ConsecutiveSlotsProvider } from "@/hooks/use-consecutive-slots";
 import { storage } from "@/lib/storage";
 import { AppShell } from "@/components/app-shell";
 import { Dashboard } from "@/components/dashboard";
-import { TestDataCenter } from "@/components/test-data-center";
 import { UserManagementRefactored as UserManagement } from "@/components/user-management";
 import { SlotManagement } from "@/components/slot-management";
 import { ProfileView } from "@/components/profile-view";
@@ -67,9 +66,7 @@ function AppContent() {
         return <SlotManagement />;
       case "audit-logs":
         return <AuditLogs />;
-      case "admin":
-        return <TestDataCenter />;
-        case "settings":
+      case "settings":
           return <Settings />;
         case "style-center":
           return <StyleCenter />;
