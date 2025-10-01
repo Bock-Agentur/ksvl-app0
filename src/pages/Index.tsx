@@ -10,7 +10,6 @@ import { UserManagementRefactored as UserManagement } from "@/components/user-ma
 import { SlotManagement } from "@/components/slot-management";
 import { ProfileView } from "@/components/profile-view";
 import { Settings } from "@/pages/Settings";
-import { AuditLogs } from "@/components/audit-logs";
 import { CalendarView } from "@/components/calendar-view";
 
 // Inner component that uses the role context
@@ -47,21 +46,12 @@ function AppContent() {
       case "calendar":
         console.log("Rendering CalendarView");
         return <CalendarView />;
-      case "bookings":
-        return (
-          <div className="p-4 text-center">
-            <h2 className="text-2xl font-bold mb-4">Buchungen</h2>
-            <p className="text-muted-foreground">Buchungsverwaltung wird hier implementiert...</p>
-          </div>
-        );
       case "profile":
         return <ProfileView currentRole={currentRole} />;
       case "users":
         return <UserManagement />;
       case "slots":
         return <SlotManagement />;
-      case "audit-logs":
-        return <AuditLogs />;
       case "settings":
         return <Settings />;
       default:

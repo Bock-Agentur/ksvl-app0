@@ -19,7 +19,6 @@ const DEFAULT_HEADER_ITEMS: MenuItemConfig[] = [
   { id: "settings", label: "Einstellungen", icon: "Settings", roles: ["admin"], order: 0 },
   { id: "users", label: "Mitgliederverwaltung", icon: "Users", roles: ["admin"], order: 1 },
   { id: "slots", label: "Slot Manager", icon: "Layers", roles: ["admin"], order: 2 },
-  { id: "audit-logs", label: "Aktivitätsprotokoll", icon: "FileText", roles: ["admin"], order: 3 },
 ];
 
 const DEFAULT_SETTINGS: MenuSettings = {

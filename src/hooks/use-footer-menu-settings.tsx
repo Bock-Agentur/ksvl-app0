@@ -29,13 +29,11 @@ export const AVAILABLE_MENU_ITEMS: FooterMenuItem[] = [
   // Core navigation items
   { id: "dashboard", label: "Dashboard", icon: "Home", roles: ["mitglied", "kranfuehrer", "admin"] },
   { id: "calendar", label: "Kalender", icon: "Calendar", roles: ["mitglied", "kranfuehrer", "admin"] },
-  { id: "bookings", label: "Buchungen", icon: "UserCheck", roles: ["mitglied", "kranfuehrer", "admin"] },
   { id: "profile", label: "Profil", icon: "User", roles: ["mitglied", "kranfuehrer", "admin"] },
   
   // Admin/management items
   { id: "users", label: "Mitglieder", icon: "Users", roles: ["admin"] },
   { id: "slots", label: "Slot Manager", icon: "Layers", roles: ["admin", "kranfuehrer"] },
-  { id: "audit-logs", label: "Aktivitäten", icon: "FileText", roles: ["admin"] },
   { id: "settings", label: "Einstellungen", icon: "Settings", roles: ["admin"] },
   
   // Additional useful items
@@ -52,7 +50,6 @@ const DEFAULT_FOOTER_SETTINGS: FooterMenuSettings = {
     { id: "dashboard", label: "Home", icon: "Home", roles: ["mitglied", "kranfuehrer", "admin"] },
     { id: "calendar", label: "Kalender", icon: "Calendar", roles: ["mitglied", "kranfuehrer", "admin"] },
     { id: "profile", label: "Profil", icon: "User", roles: ["mitglied", "kranfuehrer", "admin"] },
-    { id: "bookings", label: "Buchungen", icon: "UserCheck", roles: ["mitglied", "kranfuehrer", "admin"] },
   ],
   kranfuehrer: [
     { id: "dashboard", label: "Home", icon: "Home", roles: ["mitglied", "kranfuehrer", "admin"] },
