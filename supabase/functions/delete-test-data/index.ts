@@ -36,38 +36,48 @@ serve(async (req) => {
       throw slotsError
     }
 
-    // Get test user IDs
+    // Get test user IDs - check both is_test_data flag AND email pattern
     const { data: testUsers, error: usersSelectError } = await supabaseAdmin
       .from('profiles')
-      .select('id')
-      .eq('is_test_data', true)
+      .select('id, email')
+      .or('is_test_data.eq.true,email.like.%@test.hafen.com')
 
     if (usersSelectError) {
       console.error('Error selecting test users:', usersSelectError)
       throw usersSelectError
     }
 
+    console.log(`Found ${testUsers?.length || 0} test users to delete`)
+
     if (testUsers && testUsers.length > 0) {
       const userIds = testUsers.map(u => u.id)
       
+      console.log('Deleting user roles...')
       // Delete user roles
       await supabaseAdmin
         .from('user_roles')
         .delete()
         .in('user_id', userIds)
 
+      console.log('Deleting profiles...')
       // Delete profiles
       await supabaseAdmin
         .from('profiles')
         .delete()
-        .eq('is_test_data', true)
+        .in('id', userIds)
 
+      console.log('Deleting auth users...')
       // Delete auth users
       for (const userId of userIds) {
-        await supabaseAdmin.auth.admin.deleteUser(userId)
+        try {
+          await supabaseAdmin.auth.admin.deleteUser(userId)
+          console.log(`Deleted auth user ${userId}`)
+        } catch (error) {
+          console.error(`Error deleting auth user ${userId}:`, error)
+        }
       }
 
-      console.log(`Deleted ${userIds.length} test users`)
+      console.log(`Successfully deleted ${userIds.length} test users`)
     }
 
     return new Response(
