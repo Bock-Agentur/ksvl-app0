@@ -43,8 +43,15 @@ export function UserManagementRefactored() {
     status: (u.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
     joinDate: u.joinDate || '',
     joinedAt: u.joinDate || '',
-    isActive: u.isActive || false
-  }));
+    isActive: u.isActive || false,
+    // Additional fields from database
+    oesvNumber: (u as any).oesv_number || '',
+    address: (u as any).address || '',
+    berthNumber: (u as any).berth_number || '',
+    berthType: (u as any).berth_type || '',
+    birthDate: (u as any).birth_date || '',
+    entryDate: (u as any).entry_date || ''
+  } as any));
 
   // Such- und Filter-Funktionalität mit wiederverwendbarem Hook
   const { userRoleFilter, statusFilter } = useCommonFilters();
@@ -97,9 +104,15 @@ export function UserManagementRefactored() {
       memberNumber: '',
       boatName: '',
       role: 'mitglied',
-      roles: ['mitglied'], // Neue Eigenschaft für mehrere Rollen
-      status: 'active'
-    },
+      roles: ['mitglied'],
+      status: 'active',
+      oesvNumber: '',
+      address: '',
+      berthNumber: '',
+      berthType: '',
+      birthDate: '',
+      entryDate: ''
+    } as any,
     onSubmit: async (data) => {
       try {
         const memberNumber = data.memberNumber || generateMemberNumber(users);
@@ -115,7 +128,13 @@ export function UserManagementRefactored() {
               phone: data.phone || null,
               member_number: memberNumber,
               boat_name: data.boatName || null,
-              status: data.status
+              status: data.status,
+              oesv_number: (data as any).oesvNumber || null,
+              address: (data as any).address || null,
+              berth_number: (data as any).berthNumber || null,
+              berth_type: (data as any).berthType || null,
+              birth_date: (data as any).birthDate || null,
+              entry_date: (data as any).entryDate || null
             })
             .eq('id', editingUserId);
 
@@ -331,7 +350,13 @@ export function UserManagementRefactored() {
             phone: data.phone || null,
             member_number: memberNumber,
             boat_name: data.boatName || null,
-            status: data.status
+            status: data.status,
+            oesv_number: (data as any).oesvNumber || null,
+            address: (data as any).address || null,
+            berth_number: (data as any).berthNumber || null,
+            berth_type: (data as any).berthType || null,
+            birth_date: (data as any).birthDate || null,
+            entry_date: (data as any).entryDate || null
           })
           .eq('id', userId);
 
@@ -752,17 +777,27 @@ export function UserManagementRefactored() {
                 />
               </div>
               
-              <UserRoleSelector
-                selectedRoles={userForm.values.roles || [userForm.values.role]}
-                onRolesChange={(roles) => {
-                  userForm.setValue('roles', roles);
-                  // Primary role ist die höchste Rolle
-                  const primaryRole = roles.includes('admin') ? 'admin' 
-                    : roles.includes('kranfuehrer') ? 'kranfuehrer' 
-                    : 'mitglied';
-                  userForm.setValue('role', primaryRole);
-                }}
-              />
+              <div className="col-span-2">
+                <Label htmlFor="role">Rolle</Label>
+                <Select
+                  value={userForm.values.role}
+                  onValueChange={(value: UserRole) => {
+                    userForm.setValue('role', value);
+                    userForm.setValue('roles', generateRolesFromPrimary(value));
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="mitglied">Mitglied</SelectItem>
+                    <SelectItem value="kranfuehrer">Kranführer</SelectItem>
+                    <SelectItem value="gastmitglied">Gastmitglied</SelectItem>
+                    <SelectItem value="vorstand">Vorstand</SelectItem>
+                    <SelectItem value="admin">Admin</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               
               <div>
                 <Label htmlFor="status">Status</Label>
@@ -778,6 +813,79 @@ export function UserManagementRefactored() {
                     <SelectItem value="inactive">Inaktiv</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              {/* Zusätzliche Informationen */}
+              <div className="col-span-2">
+                <h3 className="text-sm font-medium mt-2 mb-2 border-b pb-2">Zusätzliche Informationen</h3>
+              </div>
+
+              <div>
+                <Label htmlFor="oesvNumber">OESV Nummer</Label>
+                <Input
+                  id="oesvNumber"
+                  value={(userForm.values as any).oesvNumber || ""}
+                  onChange={(e) => userForm.setValue('oesvNumber' as any, e.target.value)}
+                  placeholder="OESV Mitgliedsnummer"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="address">Adresse</Label>
+                <Input
+                  id="address"
+                  value={(userForm.values as any).address || ""}
+                  onChange={(e) => userForm.setValue('address' as any, e.target.value)}
+                  placeholder="Ihre Adresse"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="berthNumber">Liegeplatz Nummer</Label>
+                <Input
+                  id="berthNumber"
+                  value={(userForm.values as any).berthNumber || ""}
+                  onChange={(e) => userForm.setValue('berthNumber' as any, e.target.value)}
+                  placeholder="Liegeplatz Nummer"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="berthType">Liegeplatz Typ</Label>
+                <Select
+                  value={(userForm.values as any).berthType || ""}
+                  onValueChange={(value) => userForm.setValue('berthType' as any, value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Typ auswählen" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="schwimmsteg">Schwimmsteg</SelectItem>
+                    <SelectItem value="festliegeplatz">Festliegeplatz</SelectItem>
+                    <SelectItem value="bojenplatz">Bojenplatz</SelectItem>
+                    <SelectItem value="trockenplatz">Trockenplatz</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="birthDate">Geburtsdatum</Label>
+                <Input
+                  id="birthDate"
+                  type="date"
+                  value={(userForm.values as any).birthDate || ""}
+                  onChange={(e) => userForm.setValue('birthDate' as any, e.target.value)}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="entryDate">Eintrittsdatum</Label>
+                <Input
+                  id="entryDate"
+                  type="date"
+                  value={(userForm.values as any).entryDate || ""}
+                  onChange={(e) => userForm.setValue('entryDate' as any, e.target.value)}
+                />
               </div>
             </div>
 

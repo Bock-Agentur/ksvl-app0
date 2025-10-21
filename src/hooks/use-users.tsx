@@ -69,11 +69,17 @@ export function useUsers() {
           boatName: profile.boat_name, // Alias
           status: profile.status,
           is_test_data: profile.is_test_data,
-          created_at: profile.created_at, // Include created_at
+          created_at: profile.created_at,
           roles,
           role: primaryRole,
           isActive: profile.status === 'active',
-          joinDate: profile.entry_date || profile.created_at
+          joinDate: profile.entry_date || profile.created_at,
+          oesv_number: profile.oesv_number,
+          address: profile.address,
+          berth_number: profile.berth_number,
+          berth_type: profile.berth_type,
+          birth_date: profile.birth_date,
+          entry_date: profile.entry_date
         };
       });
 
