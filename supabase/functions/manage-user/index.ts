@@ -68,10 +68,15 @@ serve(async (req) => {
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .update({
-          name: userData.name,
+          user: userData.user || userData.name, // Support both old and new field names
+          first_name: userData.firstName || null,
+          last_name: userData.lastName || null,
           phone: userData.phone || null,
           member_number: userData.memberNumber || null,
           boat_name: userData.boatName || null,
+          street_address: userData.streetAddress || null,
+          postal_code: userData.postalCode || null,
+          city: userData.city || null,
           status: userData.status || 'active',
           oesv_number: userData.oesvNumber || null,
           address: userData.address || null,
@@ -119,10 +124,15 @@ serve(async (req) => {
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .update({
-          name: userData.name,
+          user: userData.user || userData.name, // Support both old and new field names
+          first_name: userData.firstName || null,
+          last_name: userData.lastName || null,
           phone: userData.phone || null,
           member_number: userData.memberNumber || null,
           boat_name: userData.boatName || null,
+          street_address: userData.streetAddress || null,
+          postal_code: userData.postalCode || null,
+          city: userData.city || null,
           status: userData.status || 'active',
           oesv_number: userData.oesvNumber || null,
           address: userData.address || null,

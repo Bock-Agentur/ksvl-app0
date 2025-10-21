@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 export interface DatabaseUser {
   id: string;
   email: string;
-  name: string | null;
+  name: string | null; // Maps to 'user' field for display
   phone: string | null;
   member_number: string | null;
   memberNumber?: string | null; // Alias for compatibility
@@ -33,7 +33,7 @@ export function useUsers() {
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
-        .order('name');
+        .order('user');
 
       if (profilesError) throw profilesError;
 
@@ -61,7 +61,7 @@ export function useUsers() {
         return {
           id: profile.id,
           email: profile.email,
-          name: profile.name,
+          name: profile.user,
           phone: profile.phone,
           member_number: profile.member_number,
           memberNumber: profile.member_number, // Alias

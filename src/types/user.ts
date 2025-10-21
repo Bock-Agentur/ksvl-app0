@@ -8,11 +8,16 @@ export type UserRole = "mitglied" | "kranfuehrer" | "admin" | "gastmitglied" | "
 
 export interface User {
   id: string;
-  name: string;
+  user: string; // Hauptfeld (ersetzt name)
+  firstName?: string;
+  lastName?: string;
   email: string;
   phone?: string;
   boatName?: string;
   memberNumber: string;
+  streetAddress?: string;
+  postalCode?: string;
+  city?: string;
   roles: UserRole[]; // Mehrere Rollen möglich
   role: UserRole; // Backward compatibility - primary role
   status: "active" | "inactive";
@@ -23,22 +28,32 @@ export interface User {
 
 // ===== API TYPES =====
 export interface CreateUserRequest {
-  name: string;
+  user: string;
+  firstName?: string;
+  lastName?: string;
   email: string;
   phone?: string;
   boatName?: string;
   memberNumber: string;
+  streetAddress?: string;
+  postalCode?: string;
+  city?: string;
   roles: UserRole[]; // Mehrere Rollen möglich
   role: UserRole; // Primary role for backward compatibility
   status?: "active" | "inactive";
 }
 
 export interface UpdateUserRequest {
-  name?: string;
+  user?: string;
+  firstName?: string;
+  lastName?: string;
   email?: string;
   phone?: string;
   boatName?: string;
   memberNumber?: string;
+  streetAddress?: string;
+  postalCode?: string;
+  city?: string;
   roles?: UserRole[]; // Mehrere Rollen möglich
   role?: UserRole; // Primary role for backward compatibility
   status?: "active" | "inactive";

@@ -79,7 +79,7 @@ export function TestDataManager() {
       // Get profiles for these crane operators that are test data
       const { data: craneOperators, error: profilesError } = await supabase
         .from('profiles')
-        .select('id, name, email')
+        .select('id, user, email')
         .in('id', craneOperatorRoles.map(r => r.user_id))
         .eq('is_test_data', true);
 

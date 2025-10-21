@@ -18,7 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 const mockCurrentUsers: Record<UserRole, UserType> = {
   gastmitglied: {
     id: "0",
-    name: "Gast User",
+    user: "Gast User",
     email: "gast@email.com",
     phone: "+43 664 000 0000",
     boatName: "Gast Boot",
@@ -32,7 +32,7 @@ const mockCurrentUsers: Record<UserRole, UserType> = {
   },
   mitglied: {
     id: "1",
-    name: "Hans Müller",
+    user: "Hans Müller",
     email: "hans.mueller@email.com",
     phone: "+43 664 123 4567",
     boatName: "Seeadler",
@@ -46,7 +46,7 @@ const mockCurrentUsers: Record<UserRole, UserType> = {
   },
   kranfuehrer: {
     id: "3",
-    name: "Franz Weber",
+    user: "Franz Weber",
     email: "f.weber@email.com",
     phone: "+43 664 345 6789",
     memberNumber: "KSVL003",
@@ -59,7 +59,7 @@ const mockCurrentUsers: Record<UserRole, UserType> = {
   },
   admin: {
     id: "4",
-    name: "Anna Bauer",
+    user: "Anna Bauer",
     email: "anna.bauer@email.com",
     phone: "+43 664 456 7890",
     memberNumber: "KSVL004",
@@ -72,7 +72,7 @@ const mockCurrentUsers: Record<UserRole, UserType> = {
   },
   vorstand: {
     id: "5",
-    name: "Dr. Vorstand",
+    user: "Dr. Vorstand",
     email: "vorstand@email.com",
     phone: "+43 664 555 5555",
     memberNumber: "KSVL005",
@@ -186,11 +186,16 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
 
       const userData: UserType = {
         id: profile.id,
-        name: profile.name || '',
+        user: profile.user || '',
+        firstName: profile.first_name || undefined,
+        lastName: profile.last_name || undefined,
         email: profile.email,
         phone: profile.phone || '',
         boatName: profile.boat_name || '',
         memberNumber: profile.member_number || '',
+        streetAddress: profile.street_address || undefined,
+        postalCode: profile.postal_code || undefined,
+        city: profile.city || undefined,
         roles: roles,
         role: primaryRole as UserRole,
         status: (profile.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
@@ -229,10 +234,15 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
       const { error } = await supabase
         .from('profiles')
         .update({
-          name: editedUser.name,
+          user: editedUser.user,
+          first_name: editedUser.firstName || null,
+          last_name: editedUser.lastName || null,
           phone: editedUser.phone || null,
           member_number: editedUser.memberNumber || null,
           boat_name: editedUser.boatName || null,
+          street_address: editedUser.streetAddress || null,
+          postal_code: editedUser.postalCode || null,
+          city: editedUser.city || null,
           oesv_number: (editedUser as any).oesvNumber || null,
           address: (editedUser as any).address || null,
           berth_number: (editedUser as any).berthNumber || null,
@@ -451,17 +461,87 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Label>Name</Label>
+                <Label>User</Label>
                 {isEditing ? (
                   <Input
-                    value={editedUser.name}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, name: e.target.value }))}
+                    value={editedUser.user}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, user: e.target.value }))}
                   />
                 ) : (
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{user.name}</span>
+                    <span className="text-sm">{user.user}</span>
                   </div>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <Label>Vorname</Label>
+                {isEditing ? (
+                  <Input
+                    value={editedUser.firstName || ''}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, firstName: e.target.value }))}
+                  />
+                ) : user.firstName ? (
+                  <span className="text-sm">{user.firstName}</span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">-</span>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <Label>Nachname</Label>
+                {isEditing ? (
+                  <Input
+                    value={editedUser.lastName || ''}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, lastName: e.target.value }))}
+                  />
+                ) : user.lastName ? (
+                  <span className="text-sm">{user.lastName}</span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">-</span>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <Label>Adresse</Label>
+                {isEditing ? (
+                  <Input
+                    value={editedUser.streetAddress || ''}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, streetAddress: e.target.value }))}
+                  />
+                ) : user.streetAddress ? (
+                  <span className="text-sm">{user.streetAddress}</span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">-</span>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <Label>PLZ</Label>
+                {isEditing ? (
+                  <Input
+                    value={editedUser.postalCode || ''}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, postalCode: e.target.value }))}
+                  />
+                ) : user.postalCode ? (
+                  <span className="text-sm">{user.postalCode}</span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">-</span>
+                )}
+              </div>
+
+              <div className="space-y-1">
+                <Label>Ort</Label>
+                {isEditing ? (
+                  <Input
+                    value={editedUser.city || ''}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, city: e.target.value }))}
+                  />
+                ) : user.city ? (
+                  <span className="text-sm">{user.city}</span>
+                ) : (
+                  <span className="text-sm text-muted-foreground">-</span>
                 )}
               </div>
               

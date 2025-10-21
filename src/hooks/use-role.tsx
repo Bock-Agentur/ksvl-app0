@@ -36,11 +36,16 @@ export function RoleProvider({ children }: { children: ReactNode }) {
 
       const user: User = {
         id: profile.id,
-        name: profile.name || '',
+        user: profile.user || '',
+        firstName: profile.first_name || undefined,
+        lastName: profile.last_name || undefined,
         email: profile.email,
         phone: profile.phone || undefined,
         boatName: profile.boat_name || undefined,
         memberNumber: profile.member_number || '',
+        streetAddress: profile.street_address || undefined,
+        postalCode: profile.postal_code || undefined,
+        city: profile.city || undefined,
         roles,
         role: primaryRole,
         status: profile.status === 'active' ? 'active' : 'inactive',
