@@ -56,6 +56,7 @@ export type Database = {
           email: string
           entry_date: string | null
           id: string
+          is_test_data: boolean | null
           member_number: string | null
           name: string | null
           oesv_number: string | null
@@ -74,6 +75,7 @@ export type Database = {
           email: string
           entry_date?: string | null
           id: string
+          is_test_data?: boolean | null
           member_number?: string | null
           name?: string | null
           oesv_number?: string | null
@@ -92,6 +94,7 @@ export type Database = {
           email?: string
           entry_date?: string | null
           id?: string
+          is_test_data?: boolean | null
           member_number?: string | null
           name?: string | null
           oesv_number?: string | null
@@ -111,6 +114,7 @@ export type Database = {
           id: string
           is_booked: boolean | null
           is_mini_slot: boolean | null
+          is_test_data: boolean | null
           member_id: string | null
           mini_slot_count: number | null
           notes: string | null
@@ -127,6 +131,7 @@ export type Database = {
           id?: string
           is_booked?: boolean | null
           is_mini_slot?: boolean | null
+          is_test_data?: boolean | null
           member_id?: string | null
           mini_slot_count?: number | null
           notes?: string | null
@@ -143,6 +148,7 @@ export type Database = {
           id?: string
           is_booked?: boolean | null
           is_mini_slot?: boolean | null
+          is_test_data?: boolean | null
           member_id?: string | null
           mini_slot_count?: number | null
           notes?: string | null

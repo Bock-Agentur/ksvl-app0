@@ -1,0 +1,374 @@
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { Users, UserCheck, Calendar, Trash2, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+
+export function TestDataManager() {
+  const { toast } = useToast();
+  const [craneOperatorCount, setCraneOperatorCount] = useState(3);
+  const [memberCount, setMemberCount] = useState(10);
+  const [slotCount, setSlotCount] = useState(20);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [hideTestData, setHideTestData] = useState(false);
+
+  const generateTestUsers = async () => {
+    setIsGenerating(true);
+    try {
+      const testUsers = [];
+
+      // Generate Crane Operators
+      for (let i = 1; i <= craneOperatorCount; i++) {
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: `kranfuehrer${i}@test.hafen.com`,
+          password: `Test1234!${i}`,
+          options: {
+            data: {
+              name: `Test Kranführer ${i}`
+            }
+          }
+        });
+
+        if (authError) throw authError;
+
+        if (authData.user) {
+          // Update profile as test data
+          await supabase
+            .from('profiles')
+            .update({ is_test_data: true })
+            .eq('id', authData.user.id);
+
+          // Add crane operator role
+          await supabase
+            .from('user_roles')
+            .insert({ user_id: authData.user.id, role: 'kranfuehrer' });
+
+          testUsers.push(authData.user);
+        }
+      }
+
+      // Generate Members
+      for (let i = 1; i <= memberCount; i++) {
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: `mitglied${i}@test.hafen.com`,
+          password: `Test1234!${i}`,
+          options: {
+            data: {
+              name: `Test Mitglied ${i}`
+            }
+          }
+        });
+
+        if (authError) throw authError;
+
+        if (authData.user) {
+          // Update profile as test data
+          await supabase
+            .from('profiles')
+            .update({ is_test_data: true })
+            .eq('id', authData.user.id);
+
+          // Member role is added automatically by trigger
+          testUsers.push(authData.user);
+        }
+      }
+
+      toast({
+        title: "Test-Benutzer erstellt",
+        description: `${craneOperatorCount} Kranführer und ${memberCount} Mitglieder wurden angelegt.`
+      });
+
+    } catch (error) {
+      console.error('Error generating test users:', error);
+      toast({
+        title: "Fehler",
+        description: "Test-Benutzer konnten nicht erstellt werden.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const generateTestSlots = async () => {
+    setIsGenerating(true);
+    try {
+      // Get test crane operators
+      const { data: craneOperators, error: operatorsError } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .eq('is_test_data', true);
+
+      if (operatorsError) throw operatorsError;
+
+      if (!craneOperators || craneOperators.length === 0) {
+        toast({
+          title: "Keine Kranführer",
+          description: "Bitte erstellen Sie zuerst Test-Kranführer.",
+          variant: "destructive"
+        });
+        setIsGenerating(false);
+        return;
+      }
+
+      // Generate slots for next 7 days
+      const today = new Date();
+      const testSlots = [];
+
+      for (let i = 0; i < slotCount; i++) {
+        const daysOffset = Math.floor(i / 10); // Spread across week
+        const slotDate = new Date(today);
+        slotDate.setDate(today.getDate() + daysOffset);
+
+        const hour = 6 + (i % 15); // Hours 6-20
+        const time = `${hour.toString().padStart(2, '0')}:00`;
+
+        const randomOperator = craneOperators[Math.floor(Math.random() * craneOperators.length)];
+
+        testSlots.push({
+          date: slotDate.toISOString().split('T')[0],
+          time,
+          duration: 60,
+          crane_operator_id: randomOperator.id,
+          is_booked: Math.random() > 0.7, // 30% booked
+          is_test_data: true
+        });
+      }
+
+      const { error: insertError } = await supabase
+        .from('slots')
+        .insert(testSlots);
+
+      if (insertError) throw insertError;
+
+      toast({
+        title: "Test-Slots erstellt",
+        description: `${slotCount} Test-Termine wurden angelegt.`
+      });
+
+    } catch (error) {
+      console.error('Error generating test slots:', error);
+      toast({
+        title: "Fehler",
+        description: "Test-Slots konnten nicht erstellt werden.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const deleteTestData = async () => {
+    if (!confirm('Möchten Sie wirklich alle Testdaten löschen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      // Delete test slots
+      const { error: slotsError } = await supabase
+        .from('slots')
+        .delete()
+        .eq('is_test_data', true);
+
+      if (slotsError) throw slotsError;
+
+      // Get test user IDs
+      const { data: testUsers, error: usersSelectError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('is_test_data', true);
+
+      if (usersSelectError) throw usersSelectError;
+
+      if (testUsers && testUsers.length > 0) {
+        // Delete user roles
+        const userIds = testUsers.map(u => u.id);
+        await supabase
+          .from('user_roles')
+          .delete()
+          .in('user_id', userIds);
+
+        // Delete profiles (auth users will be deleted by cascade)
+        const { error: profilesError } = await supabase
+          .from('profiles')
+          .delete()
+          .eq('is_test_data', true);
+
+        if (profilesError) throw profilesError;
+      }
+
+      toast({
+        title: "Testdaten gelöscht",
+        description: "Alle Test-Benutzer und Test-Slots wurden entfernt."
+      });
+
+    } catch (error) {
+      console.error('Error deleting test data:', error);
+      toast({
+        title: "Fehler",
+        description: "Testdaten konnten nicht gelöscht werden.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <Alert>
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription>
+          Dies ist ein Testsystem. Mit dieser Funktion können Sie Test-Benutzer und Test-Termine in der echten Datenbank anlegen.
+          Alle Testdaten werden mit einem speziellen Marker versehen und können jederzeit gelöscht werden.
+        </AlertDescription>
+      </Alert>
+
+      {/* Test Users Generation */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Test-Benutzer generieren
+          </CardTitle>
+          <CardDescription>
+            Erstellen Sie automatisch Test-Kranführer und Test-Mitglieder
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="craneOperators">
+                <UserCheck className="h-4 w-4 inline mr-2" />
+                Anzahl Kranführer
+              </Label>
+              <Input
+                id="craneOperators"
+                type="number"
+                min="1"
+                max="20"
+                value={craneOperatorCount}
+                onChange={(e) => setCraneOperatorCount(parseInt(e.target.value) || 1)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="members">
+                <Users className="h-4 w-4 inline mr-2" />
+                Anzahl Mitglieder
+              </Label>
+              <Input
+                id="members"
+                type="number"
+                min="1"
+                max="50"
+                value={memberCount}
+                onChange={(e) => setMemberCount(parseInt(e.target.value) || 1)}
+              />
+            </div>
+          </div>
+          <Button
+            onClick={generateTestUsers}
+            disabled={isGenerating}
+            className="w-full"
+          >
+            {isGenerating ? "Generiere..." : "Test-Benutzer erstellen"}
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            Login: kranfuehrer1@test.hafen.com / Test1234!1 (usw.)
+          </p>
+        </CardContent>
+      </Card>
+
+      {/* Test Slots Generation */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Test-Slots generieren
+          </CardTitle>
+          <CardDescription>
+            Erstellen Sie automatisch Test-Krantermine
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="slots">
+              <Calendar className="h-4 w-4 inline mr-2" />
+              Anzahl Slots
+            </Label>
+            <Input
+              id="slots"
+              type="number"
+              min="1"
+              max="100"
+              value={slotCount}
+              onChange={(e) => setSlotCount(parseInt(e.target.value) || 1)}
+            />
+          </div>
+          <Button
+            onClick={generateTestSlots}
+            disabled={isGenerating}
+            className="w-full"
+          >
+            {isGenerating ? "Generiere..." : "Test-Slots erstellen"}
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            Slots werden über die nächsten 7 Tage verteilt, ca. 30% sind bereits gebucht.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Separator />
+
+      {/* Test Data Management */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Trash2 className="h-5 w-5" />
+            Test-Datenverwaltung
+          </CardTitle>
+          <CardDescription>
+            Verwalten Sie alle Testdaten
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="hideTestData">Testdaten ausblenden</Label>
+              <p className="text-sm text-muted-foreground">
+                Testdaten werden in der App nicht angezeigt
+              </p>
+            </div>
+            <Switch
+              id="hideTestData"
+              checked={hideTestData}
+              onCheckedChange={setHideTestData}
+            />
+          </div>
+
+          <Separator />
+
+          <Button
+            onClick={deleteTestData}
+            disabled={isDeleting}
+            variant="destructive"
+            className="w-full"
+          >
+            {isDeleting ? "Lösche..." : "Alle Testdaten löschen"}
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            ⚠️ Nur Testdaten werden gelöscht. Alle anderen Daten bleiben erhalten.
+          </p>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

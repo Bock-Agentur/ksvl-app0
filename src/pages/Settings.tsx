@@ -7,6 +7,7 @@ import { RoleWelcomeSettings } from "@/components/role-welcome-settings";
 import { FooterMenuSettings } from "@/components/footer-menu-settings";
 import { MenuSettings } from "@/components/menu-settings";
 import { DesignSettings } from "@/components/design-settings";
+import { TestDataManager } from "@/components/test-data-manager";
 import { cn } from "@/lib/utils";
 
 export function Settings() {
@@ -19,6 +20,7 @@ export function Settings() {
     { id: "footer", label: "Footer-Menü", component: FooterMenuSettings },
     { id: "design", label: "Design", component: DesignSettings },
     { id: "system", label: "System", component: ConsecutiveSlotsSettings },
+    { id: "testdata", label: "Testdaten", component: TestDataManager },
   ];
 
   const ActiveComponent = sections.find(section => section.id === activeSection)?.component || DashboardSettings;
