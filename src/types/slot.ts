@@ -6,13 +6,13 @@
 // ===== SLOT TYPES =====
 export interface CraneOperator {
   id: string;
-  name: string;
+  user: string; // Changed from 'name' to 'user'
   email: string;
 }
 
 export interface SlotMember {
   id: string;
-  name: string;
+  user: string; // Changed from 'name' to 'user'
   email: string;
   memberNumber: string;
 }
