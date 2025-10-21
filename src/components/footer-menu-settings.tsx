@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAppSettings } from "@/hooks/use-app-settings";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -77,10 +78,15 @@ export function FooterMenuSettings() {
     getDisplaySettingsForRole
   } = useFooterMenuSettings();
 
-  const [activeRole, setActiveRole] = useState<UserRole>(() => {
-    const savedRole = localStorage.getItem("footerMenuActiveRole");
-    return (savedRole as UserRole) || "admin";
-  });
+  const { value: activeRole, setValue: setActiveRoleInDb } = useAppSettings<UserRole>(
+    "footerMenuActiveRole",
+    "admin",
+    false
+  );
+
+  const setActiveRole = (role: UserRole) => {
+    setActiveRoleInDb(role);
+  };
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   // Get current role's display settings
@@ -200,7 +206,6 @@ export function FooterMenuSettings() {
                     )}
                     onClick={() => {
                       setActiveRole(role);
-                      localStorage.setItem("footerMenuActiveRole", role);
                     }}
                   >
                     <CardContent className="p-3 text-center">

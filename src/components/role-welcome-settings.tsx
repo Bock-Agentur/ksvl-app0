@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { UserRole } from "@/types/user";
 import { MessageSquare, Smile, Save, RotateCcw, Users, UserCheck, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useWelcomeMessages } from "@/hooks/use-welcome-messages";
 
 // Emoji-Kategorien für den einfachen Emoji-Picker
 const EMOJI_CATEGORIES = {
@@ -31,43 +32,19 @@ const DEFAULT_MESSAGES: Record<UserRole, string> = {
 
 export function RoleWelcomeSettings() {
   const { toast } = useToast();
-  const [messages, setMessages] = useState<Record<UserRole, string>>(DEFAULT_MESSAGES);
+  const { messages, updateMessage } = useWelcomeMessages();
   const [activeRole, setActiveRole] = useState<UserRole>("mitglied");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
-  // Load messages from localStorage on component mount
-  useEffect(() => {
-    const savedMessages = localStorage.getItem("roleWelcomeMessages");
-    if (savedMessages) {
-      try {
-        const parsed = JSON.parse(savedMessages);
-        setMessages({ ...DEFAULT_MESSAGES, ...parsed });
-      } catch (error) {
-        console.error("Error loading welcome messages:", error);
-      }
-    }
-  }, []);
-
   const handleSave = () => {
-    try {
-      localStorage.setItem("roleWelcomeMessages", JSON.stringify(messages));
-      toast({
-        title: "Startnachrichten gespeichert",
-        description: "Die Nachrichten wurden erfolgreich aktualisiert."
-      });
-    } catch (error) {
-      toast({
-        title: "Fehler beim Speichern",
-        description: "Die Nachrichten konnten nicht gespeichert werden.",
-        variant: "destructive"
-      });
-    }
+    toast({
+      title: "Startnachrichten gespeichert",
+      description: "Die Nachrichten wurden automatisch in der Datenbank gespeichert."
+    });
   };
 
   const handleReset = (role: UserRole) => {
-    const newMessages = { ...messages };
-    newMessages[role] = DEFAULT_MESSAGES[role];
-    setMessages(newMessages);
+    updateMessage(role, DEFAULT_MESSAGES[role]);
     toast({
       title: "Nachricht zurückgesetzt",
       description: `Die Standardnachricht für ${getRoleDisplayName(role)} wurde wiederhergestellt.`
@@ -75,10 +52,7 @@ export function RoleWelcomeSettings() {
   };
 
   const handleMessageChange = (role: UserRole, message: string) => {
-    setMessages(prev => ({
-      ...prev,
-      [role]: message
-    }));
+    updateMessage(role, message);
   };
 
   const insertEmoji = (emoji: string) => {

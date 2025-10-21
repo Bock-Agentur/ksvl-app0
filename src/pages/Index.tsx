@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { RoleProvider, useRole } from "@/hooks/use-role";
 import { useSlotDesign } from "@/hooks/use-slot-design";
 import { TestDataProvider, useTestData } from "@/hooks/use-test-data";
 import { ConsecutiveSlotsProvider } from "@/hooks/use-consecutive-slots";
-import { storage } from "@/lib/storage";
+import { useAppSettings } from "@/hooks/use-app-settings";
 import { AppShell } from "@/components/app-shell";
 import { Dashboard } from "@/components/dashboard";
 import { UserManagementRefactored as UserManagement } from "@/components/user-management";
@@ -20,19 +21,15 @@ function AppContent() {
   const { currentRole, currentUser, setRole } = useRole();
   const testData = useTestData();
   
-  // Load active tab from localStorage, fallback to "dashboard"
-  const [activeTab, setActiveTab] = useState(() => {
-    const savedTab = storage.getItem('activeTab', 'dashboard');
-    return savedTab;
-  });
+  // Use database for active tab storage
+  const { value: activeTab, setValue: setActiveTab } = useAppSettings<string>(
+    "activeTab",
+    "dashboard",
+    false
+  );
   
   // Initialize slot design system
   useSlotDesign();
-
-  // Save active tab to localStorage when it changes
-  useEffect(() => {
-    storage.setItem('activeTab', activeTab);
-  }, [activeTab]);
 
   // Scroll to top when tab changes
   useEffect(() => {

@@ -100,11 +100,35 @@ export function useAppSettings<T = any>(
         user_id: isGlobal ? null : user?.id
       };
 
-      const { error } = await supabase
+      // Check if setting already exists
+      let query = supabase
         .from('app_settings')
-        .upsert([settingData], {
-          onConflict: isGlobal ? 'setting_key' : 'user_id,setting_key'
-        });
+        .select('id')
+        .eq('setting_key', settingKey);
+
+      if (isGlobal) {
+        query = query.eq('is_global', true);
+      } else if (user) {
+        query = query.eq('user_id', user.id);
+      }
+
+      const { data: existingSettings } = await query.maybeSingle();
+
+      let error;
+      if (existingSettings) {
+        // Update existing setting
+        const updateResult = await supabase
+          .from('app_settings')
+          .update({ setting_value: newValue as any, updated_at: new Date().toISOString() })
+          .eq('id', existingSettings.id);
+        error = updateResult.error;
+      } else {
+        // Insert new setting
+        const insertResult = await supabase
+          .from('app_settings')
+          .insert([settingData]);
+        error = insertResult.error;
+      }
 
       if (error) throw error;
 
