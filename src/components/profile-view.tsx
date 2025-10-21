@@ -270,28 +270,65 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         targetUserId = authUser.id;
       }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          name: editedUser.name,
-          first_name: editedUser.firstName || null,
-          last_name: editedUser.lastName || null,
-          phone: editedUser.phone || null,
-          member_number: editedUser.memberNumber || null,
-          boat_name: editedUser.boatName || null,
-          street_address: editedUser.streetAddress || null,
-          postal_code: editedUser.postalCode || null,
-          city: editedUser.city || null,
-          oesv_number: (editedUser as any).oesvNumber || null,
-          address: (editedUser as any).address || null,
-          berth_number: (editedUser as any).berthNumber || null,
-          berth_type: (editedUser as any).berthType || null,
-          birth_date: (editedUser as any).birthDate || null,
-          entry_date: (editedUser as any).entryDate || null
-        })
-        .eq('id', targetUserId);
+      // If admin is editing another user and roles changed, use manage-user function
+      if (isAdmin && userId && editedUser.roles) {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error('Nicht angemeldet');
 
-      if (error) throw error;
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            action: 'update',
+            userId: targetUserId,
+            userData: {
+              name: editedUser.name,
+              phone: editedUser.phone,
+              memberNumber: editedUser.memberNumber,
+              boatName: editedUser.boatName,
+              roles: editedUser.roles,
+              oesvNumber: (editedUser as any).oesvNumber,
+              address: (editedUser as any).address,
+              berthNumber: (editedUser as any).berthNumber,
+              berthType: (editedUser as any).berthType,
+              birthDate: (editedUser as any).birthDate,
+              entryDate: (editedUser as any).entryDate
+            }
+          })
+        });
+
+        const result = await response.json();
+        if (!response.ok || result.error) {
+          throw new Error(result.error || 'Benutzer konnte nicht aktualisiert werden');
+        }
+      } else {
+        // Regular profile update without role changes
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            name: editedUser.name,
+            first_name: editedUser.firstName || null,
+            last_name: editedUser.lastName || null,
+            phone: editedUser.phone || null,
+            member_number: editedUser.memberNumber || null,
+            boat_name: editedUser.boatName || null,
+            street_address: editedUser.streetAddress || null,
+            postal_code: editedUser.postalCode || null,
+            city: editedUser.city || null,
+            oesv_number: (editedUser as any).oesvNumber || null,
+            address: (editedUser as any).address || null,
+            berth_number: (editedUser as any).berthNumber || null,
+            berth_type: (editedUser as any).berthType || null,
+            birth_date: (editedUser as any).birthDate || null,
+            entry_date: (editedUser as any).entryDate || null
+          })
+          .eq('id', targetUserId);
+
+        if (error) throw error;
+      }
 
       setUser(editedUser);
       setCustomValues(editedCustomValues);
@@ -307,11 +344,11 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       if (onUpdate) {
         onUpdate();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving profile:', error);
       toast({
         title: "Fehler",
-        description: "Profil konnte nicht gespeichert werden.",
+        description: error.message || "Profil konnte nicht gespeichert werden.",
         variant: "destructive"
       });
     }
