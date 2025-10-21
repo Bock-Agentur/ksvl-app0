@@ -105,30 +105,56 @@ export function UserManagementRefactored() {
         const memberNumber = data.memberNumber || generateMemberNumber(users);
         
         if (editingUserId) {
+          console.log('Updating user:', editingUserId, data);
+          
           // Update existing user
           const { error: profileError } = await supabase
             .from('profiles')
             .update({
               name: data.name,
-              phone: data.phone,
+              phone: data.phone || null,
               member_number: memberNumber,
-              boat_name: data.boatName,
+              boat_name: data.boatName || null,
               status: data.status
             })
             .eq('id', editingUserId);
 
-          if (profileError) throw profileError;
+          if (profileError) {
+            console.error('Profile update error:', profileError);
+            throw profileError;
+          }
 
-          // Update roles
-          await supabase.from('user_roles').delete().eq('user_id', editingUserId);
+          // Update roles - delete old ones first
+          const { error: deleteError } = await supabase
+            .from('user_roles')
+            .delete()
+            .eq('user_id', editingUserId);
+
+          if (deleteError) {
+            console.error('Role delete error:', deleteError);
+            throw deleteError;
+          }
           
           const rolesToInsert = data.roles || generateRolesFromPrimary(data.role);
+          console.log('Inserting roles:', rolesToInsert);
+          
           for (const role of rolesToInsert) {
-            await supabase.from('user_roles').insert({ user_id: editingUserId, role });
+            const { error: roleError } = await supabase
+              .from('user_roles')
+              .insert({ user_id: editingUserId, role });
+            
+            if (roleError) {
+              console.error('Role insert error:', roleError);
+              throw roleError;
+            }
           }
 
           toast({ title: "Erfolg", description: "Benutzer wurde aktualisiert." });
+          refreshUsers();
+          return true;
         } else {
+          console.log('Creating new user:', data);
+          
           // Create new user
           const { data: authData, error: authError } = await supabase.auth.signUp({
             email: data.email,
@@ -146,9 +172,9 @@ export function UserManagementRefactored() {
             .from('profiles')
             .update({
               name: data.name,
-              phone: data.phone,
+              phone: data.phone || null,
               member_number: memberNumber,
-              boat_name: data.boatName,
+              boat_name: data.boatName || null,
               status: data.status
             })
             .eq('id', authData.user.id);
@@ -164,10 +190,9 @@ export function UserManagementRefactored() {
           }
 
           toast({ title: "Erfolg", description: `Benutzer ${data.name} wurde erstellt.` });
+          refreshUsers();
+          return true;
         }
-
-        refreshUsers();
-        return true;
       } catch (error: any) {
         console.error('Form submission error:', error);
         toast({
