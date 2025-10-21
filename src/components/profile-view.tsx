@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings, Eye, EyeOff } from "lucide-react";
+import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings, Key } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -150,8 +150,10 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const [editedUser, setEditedUser] = useState<UserType | null>(null);
   const [editedCustomValues, setEditedCustomValues] = useState<Record<string, any>>({});
   const [isAdmin, setIsAdmin] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const { toast } = useToast();
 
   // New custom field form
@@ -265,6 +267,69 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!userId) return;
+    
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Fehler",
+        description: "Die Passwörter stimmen nicht überein.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      toast({
+        title: "Fehler",
+        description: "Das Passwort muss mindestens 6 Zeichen lang sein.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    try {
+      setIsChangingPassword(true);
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Nicht angemeldet');
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          userId: userId,
+          newPassword: newPassword
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok || result.error) {
+        throw new Error(result.error || 'Passwort konnte nicht geändert werden');
+      }
+
+      toast({
+        title: "Passwort geändert",
+        description: "Das Passwort wurde erfolgreich aktualisiert."
+      });
+      
+      setShowPasswordDialog(false);
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      console.error('Error changing password:', error);
+      toast({
+        title: "Fehler",
+        description: error.message || "Passwort konnte nicht geändert werden.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsChangingPassword(false);
     }
   };
 
@@ -660,34 +725,20 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               {isAdmin && userId && (
                 <div className="space-y-2">
                   <Label>Passwort</Label>
-                  {isEditing ? (
-                    <div className="relative">
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        placeholder="Neues Passwort eingeben..."
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                      </button>
-                    </div>
-                  ) : (
+                  <div className="flex items-center gap-2">
                     <span className="text-sm text-muted-foreground">********</span>
-                  )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordDialog(true)}
+                    className="text-sm text-primary hover:underline flex items-center gap-1"
+                  >
+                    <Key className="w-3 h-3" />
+                    Passwort ändern
+                  </button>
                 </div>
               )}
             </div>
-            
-            {isAdmin && userId && isEditing && newPassword && (
-              <p className="text-sm text-muted-foreground">
-                Das Passwort wird beim Speichern geändert
-              </p>
-            )}
           </div>
           
           {/* Stammdaten */}
@@ -1089,6 +1140,62 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           )}
         </CardContent>
       </Card>
+
+      {/* Password Change Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Passwort ändern</DialogTitle>
+            <DialogDescription>
+              Geben Sie das neue Passwort zweimal ein, um es zu ändern.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-password">Neues Passwort</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Mindestens 6 Zeichen"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="confirm-password">Passwort bestätigen</Label>
+              <Input
+                id="confirm-password"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Passwort wiederholen"
+              />
+            </div>
+            
+            <div className="flex gap-2 justify-end pt-4">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowPasswordDialog(false);
+                  setNewPassword("");
+                  setConfirmPassword("");
+                }}
+                disabled={isChangingPassword}
+              >
+                Abbrechen
+              </Button>
+              <Button 
+                onClick={handleChangePassword}
+                disabled={isChangingPassword || !newPassword || !confirmPassword}
+              >
+                {isChangingPassword ? "Wird geändert..." : "Passwort ändern"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Admin Field Management - Bottom Section */}
       {currentRole === "admin" && (
