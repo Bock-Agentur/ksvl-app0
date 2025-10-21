@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key, Eye, LayoutGrid, List } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -126,7 +126,6 @@ export function UserManagementRefactored() {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [passwordUserId, setPasswordUserId] = useState<string | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'cards' | 'list'>('cards');
   
   // Statistiken mit Business Logic
   const stats = calculateUserStats(users);
@@ -341,7 +340,7 @@ export function UserManagementRefactored() {
         </Card>
         <Card>
           <CardContent className="pt-3 pb-2">
-             <div className="text-lg font-bold text-purple-600">{stats.kranfuehrer || 0}</div>
+             <div className="text-lg font-bold text-purple-600">{stats.byRole.kranfuehrer + stats.byRole.admin || 0}</div>
              <p className="text-[10px] text-muted-foreground">Kranführer</p>
           </CardContent>
         </Card>
@@ -356,28 +355,10 @@ export function UserManagementRefactored() {
       {/* Such- und Filter-Bereich */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Suche & Filter
-            </CardTitle>
-            <div className="flex gap-1">
-              <Button
-                variant={viewMode === 'cards' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('cards')}
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setViewMode('list')}
-              >
-                <List className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Suche & Filter
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-col sm:flex-row gap-4">
@@ -449,227 +430,124 @@ export function UserManagementRefactored() {
       </Card>
 
       {/* Benutzerliste */}
-      {viewMode === 'cards' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {searchFilter.filteredData.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Keine Benutzer gefunden.</p>
-                {searchFilter.searchTerm && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Versuche einen anderen Suchbegriff oder entferne die Filter.
-                  </p>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            searchFilter.filteredData.map((user) => (
-              <Card key={user.id} className="transition-colors hover:bg-muted/50">
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
-                    {/* User Info Section */}
-                    <div className="flex-1 min-w-0 space-y-2 sm:space-y-1">
-                      {/* Name and Badges Row */}
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <h3 className="font-medium text-base sm:text-sm">{user.name}</h3>
-                        
-                        <div className="flex items-center gap-2 flex-wrap">
-                          {/* Role Badges */}
-                          <div className="flex gap-1 flex-wrap">
-                            {user.roles?.map((role) => (
-                              <Badge 
-                                key={role}
-                                variant="outline" 
-                                className="text-xs px-2 py-0.5 h-5"
-                              >
-                                {getRoleLabel(role)}
-                              </Badge>
-                            )) || (
-                              <Badge variant="outline" className="text-xs px-2 py-0.5 h-5">
-                                {getRoleLabel(user.role)}
-                              </Badge>
-                            )}
-                          </div>
-                          
-                          {/* Status Badge */}
-                          <Badge 
-                            variant={user.status === "active" ? "default" : "secondary"}
-                            className="text-xs px-2 py-0.5 h-5"
-                          >
-                            {user.status === "active" ? "Aktiv" : "Inaktiv"}
-                          </Badge>
-                        </div>
-                      </div>
+      <div className="space-y-3">
+        {searchFilter.filteredData.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6 text-center">
+              <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground">Keine Benutzer gefunden.</p>
+              {searchFilter.searchTerm && (
+                <p className="text-sm text-muted-foreground mt-2">
+                  Versuche einen anderen Suchbegriff oder entferne die Filter.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          searchFilter.filteredData.map((user) => (
+            <Card key={user.id} className="transition-colors hover:bg-muted/50">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
+                  {/* User Info Section */}
+                  <div className="flex-1 min-w-0 space-y-2 sm:space-y-1">
+                    {/* Name and Badges Row */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <h3 className="font-medium text-base sm:text-sm">{user.name}</h3>
                       
-                      {/* Contact Info */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2 min-w-0">
-                          <Mail className="w-4 h-4 flex-shrink-0" />
-                          <span className="truncate text-xs sm:text-sm">{user.email}</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {/* Role Badges */}
+                        <div className="flex gap-1 flex-wrap">
+                          {user.roles?.map((role) => (
+                            <Badge 
+                              key={role}
+                              variant="outline" 
+                              className="text-xs px-2 py-0.5 h-5"
+                            >
+                              {getRoleLabel(role)}
+                            </Badge>
+                          )) || (
+                            <Badge variant="outline" className="text-xs px-2 py-0.5 h-5">
+                              {getRoleLabel(user.role)}
+                            </Badge>
+                          )}
                         </div>
                         
-                        {user.phone && (
-                          <div className="flex items-center gap-2">
-                            <Phone className="w-4 h-4 flex-shrink-0" />
-                            <span className="text-xs sm:text-sm">{user.phone}</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {/* Member Info */}
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-1.5">
-                          <Anchor className="w-4 h-4 flex-shrink-0" />
-                          <span className="text-xs sm:text-sm font-medium">{user.memberNumber}</span>
-                        </div>
-                        {user.boatName && (
-                          <span className="text-xs sm:text-sm">Boot: {user.boatName}</span>
-                        )}
+                        {/* Status Badge */}
+                        <Badge 
+                          variant={user.status === "active" ? "default" : "secondary"}
+                          className="text-xs px-2 py-0.5 h-5"
+                        >
+                          {user.status === "active" ? "Aktiv" : "Inaktiv"}
+                        </Badge>
                       </div>
                     </div>
                     
-                    {/* Action Buttons */}
-                    <div className="flex gap-2 sm:ml-4 self-end sm:self-center">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleViewUser(user)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Eye className="w-4 h-4" />
-                        <span className="sr-only">Ansehen</span>
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setPasswordUserId(user.id);
-                          setShowPasswordDialog(true);
-                        }}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Key className="w-4 h-4" />
-                        <span className="sr-only">Passwort ändern</span>
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handleDeleteUser(user.id)}
-                        className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        <span className="sr-only">Löschen</span>
-                      </Button>
+                    {/* Contact Info */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Mail className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate text-xs sm:text-sm">{user.email}</span>
+                      </div>
+                      
+                      {user.phone && (
+                        <div className="flex items-center gap-2">
+                          <Phone className="w-4 h-4 flex-shrink-0" />
+                          <span className="text-xs sm:text-sm">{user.phone}</span>
+                        </div>
+                      )}
+                    </div>
+                    
+                    {/* Member Info */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <Anchor className="w-4 h-4 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm font-medium">{user.memberNumber}</span>
+                      </div>
+                      {user.boatName && (
+                        <span className="text-xs sm:text-sm">Boot: {user.boatName}</span>
+                      )}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </div>
-      ) : (
-        <Card>
-          <CardContent className="p-0">
-            {searchFilter.filteredData.length === 0 ? (
-              <div className="pt-6 pb-6 text-center">
-                <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                <p className="text-muted-foreground">Keine Benutzer gefunden.</p>
-                {searchFilter.searchTerm && (
-                  <p className="text-sm text-muted-foreground mt-2">
-                    Versuche einen anderen Suchbegriff oder entferne die Filter.
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-muted/50 border-b">
-                    <tr>
-                      <th className="text-left p-3 text-xs font-medium">Name</th>
-                      <th className="text-left p-3 text-xs font-medium">E-Mail</th>
-                      <th className="text-left p-3 text-xs font-medium">Telefon</th>
-                      <th className="text-left p-3 text-xs font-medium">Mitgl.-Nr.</th>
-                      <th className="text-left p-3 text-xs font-medium">Rollen</th>
-                      <th className="text-left p-3 text-xs font-medium">Status</th>
-                      <th className="text-right p-3 text-xs font-medium">Aktionen</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {searchFilter.filteredData.map((user) => (
-                      <tr key={user.id} className="border-b hover:bg-muted/50 transition-colors">
-                        <td className="p-3 text-sm font-medium">{user.name}</td>
-                        <td className="p-3 text-sm text-muted-foreground">{user.email}</td>
-                        <td className="p-3 text-sm text-muted-foreground">{user.phone || '-'}</td>
-                        <td className="p-3 text-sm text-muted-foreground">{user.memberNumber}</td>
-                        <td className="p-3">
-                          <div className="flex gap-1 flex-wrap">
-                            {user.roles?.map((role) => (
-                              <Badge 
-                                key={role}
-                                variant="outline" 
-                                className="text-xs px-2 py-0.5 h-5"
-                              >
-                                {getRoleLabel(role)}
-                              </Badge>
-                            )) || (
-                              <Badge variant="outline" className="text-xs px-2 py-0.5 h-5">
-                                {getRoleLabel(user.role)}
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="p-3">
-                          <Badge 
-                            variant={user.status === "active" ? "default" : "secondary"}
-                            className="text-xs px-2 py-0.5 h-5"
-                          >
-                            {user.status === "active" ? "Aktiv" : "Inaktiv"}
-                          </Badge>
-                        </td>
-                        <td className="p-3">
-                          <div className="flex gap-2 justify-end">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleViewUser(user)}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Eye className="w-4 h-4" />
-                              <span className="sr-only">Ansehen</span>
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setPasswordUserId(user.id);
-                                setShowPasswordDialog(true);
-                              }}
-                              className="h-8 w-8 p-0"
-                            >
-                              <Key className="w-4 h-4" />
-                              <span className="sr-only">Passwort ändern</span>
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleDeleteUser(user.id)}
-                              className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                              <span className="sr-only">Löschen</span>
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+                  
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 sm:ml-4 self-end sm:self-center">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleViewUser(user)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span className="sr-only">Ansehen</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setPasswordUserId(user.id);
+                        setShowPasswordDialog(true);
+                      }}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Key className="w-4 h-4" />
+                      <span className="sr-only">Passwort ändern</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDeleteUser(user.id)}
+                      className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      <span className="sr-only">Löschen</span>
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
 
       {/* Benutzer Hinzufügen Dialog */}
       <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
