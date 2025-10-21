@@ -18,6 +18,7 @@ import { MemberStatsWidget } from "./dashboard-widgets/member-stats-widget";
 import { FinanceOverviewWidget } from "./dashboard-widgets/finance-overview-widget";
 import { MaintenanceAlertsWidget } from "./dashboard-widgets/maintenance-alerts-widget";
 import { EventsCalendarWidget } from "./dashboard-widgets/events-calendar-widget";
+import { HarborChatWidget } from "./dashboard-widgets/harbor-chat-widget";
 
 interface DashboardStats {
   todayBookings: number;
@@ -473,6 +474,9 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
           </CardContent>
         </Card>
       )}
+
+      {/* AI Chat Widget */}
+      <HarborChatWidget />
     </div>
   );
 }
