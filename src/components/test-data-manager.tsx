@@ -100,13 +100,32 @@ export function TestDataManager() {
   const generateTestSlots = async () => {
     setIsGenerating(true);
     try {
-      // Get test crane operators
-      const { data: craneOperators, error: operatorsError } = await supabase
-        .from('profiles')
-        .select('id, name, email')
-        .eq('is_test_data', true);
+      // Get test crane operators (only users with kranfuehrer role)
+      const { data: craneOperatorRoles, error: operatorsError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'kranfuehrer');
 
       if (operatorsError) throw operatorsError;
+
+      if (!craneOperatorRoles || craneOperatorRoles.length === 0) {
+        toast({
+          title: "Keine Kranführer",
+          description: "Bitte erstellen Sie zuerst Test-Kranführer.",
+          variant: "destructive"
+        });
+        setIsGenerating(false);
+        return;
+      }
+
+      // Get profiles for these crane operators that are test data
+      const { data: craneOperators, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .in('id', craneOperatorRoles.map(r => r.user_id))
+        .eq('is_test_data', true);
+
+      if (profilesError) throw profilesError;
 
       if (!craneOperators || craneOperators.length === 0) {
         toast({
