@@ -525,10 +525,22 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             </div>
             <div className="flex-1">
               <CardTitle className="text-lg">{user.name}</CardTitle>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge className={cn("text-xs", roleColors[user.role])}>
-                  {roleLabels[user.role]}
-                </Badge>
+              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                {/* Sort roles by priority: admin > vorstand > kranfuehrer > mitglied > gastmitglied */}
+                {user.roles?.sort((a, b) => {
+                  const priority: Record<UserRole, number> = {
+                    admin: 5,
+                    vorstand: 4,
+                    kranfuehrer: 3,
+                    mitglied: 2,
+                    gastmitglied: 1
+                  };
+                  return (priority[b] || 0) - (priority[a] || 0);
+                }).map((role) => (
+                  <Badge key={role} className={cn("text-xs", roleColors[role])}>
+                    {roleLabels[role]}
+                  </Badge>
+                ))}
                 <Badge variant={user.status === "active" ? "default" : "secondary"} className="text-xs">
                   {user.status === "active" ? "Aktiv" : "Inaktiv"}
                 </Badge>
@@ -590,7 +602,16 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {user.roles?.map((role) => (
+                  {user.roles?.sort((a, b) => {
+                    const priority: Record<UserRole, number> = {
+                      admin: 5,
+                      vorstand: 4,
+                      kranfuehrer: 3,
+                      mitglied: 2,
+                      gastmitglied: 1
+                    };
+                    return (priority[b] || 0) - (priority[a] || 0);
+                  }).map((role) => (
                     <Badge key={role} className={cn("text-xs", roleColors[role])}>
                       {roleLabels[role]}
                     </Badge>
