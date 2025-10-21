@@ -8,12 +8,14 @@ import { FooterMenuSettings } from "@/components/footer-menu-settings";
 import { MenuSettings } from "@/components/menu-settings";
 import { DesignSettings } from "@/components/design-settings";
 import { TestDataManager } from "@/components/test-data-manager";
+import { UserListDatabase } from "@/components/user-list-database";
 import { cn } from "@/lib/utils";
 
 export function Settings() {
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const [activeSection, setActiveSection] = useState("users");
 
   const sections = [
+    { id: "users", label: "Benutzer", component: UserListDatabase },
     { id: "dashboard", label: "Dashboard", component: DashboardSettings },
     { id: "messages", label: "Startnachrichten", component: RoleWelcomeSettings },
     { id: "menu", label: "Menü", component: MenuSettings },
