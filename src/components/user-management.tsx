@@ -12,7 +12,7 @@ import { useUsers, DatabaseUser } from "@/hooks/use-users";
 import { useSearchFilter, useCommonFilters } from "@/hooks/use-search-filter";
 import { useFormHandler, useCommonFieldConfigs } from "@/hooks/use-form-handler";
 import { User, UserRole, generateRolesFromPrimary } from "@/types";
-import { UserDetailView } from "./user-detail-view";
+import { ProfileView } from "./profile-view";
 import { UserRoleSelector } from "./user-role-selector";
 import { 
   getRoleLabel, 
@@ -879,18 +879,31 @@ export function UserManagementRefactored() {
         </DialogContent>
       </Dialog>
 
-      {/* User Detail View */}
-      {selectedUser && (
-        <UserDetailView
-          user={selectedUser}
-          isOpen={showDetailView}
-          onClose={() => {
-            setShowDetailView(false);
-            setSelectedUser(null);
-          }}
-          onUpdate={refreshUsers}
-        />
-      )}
+      {/* User Detail Dialog */}
+      <Dialog open={showDetailView} onOpenChange={(open) => {
+        setShowDetailView(open);
+        if (!open) setSelectedUser(null);
+      }}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="sr-only">Benutzerdetails</DialogTitle>
+            <DialogDescription className="sr-only">
+              Detaillierte Ansicht und Bearbeitung der Benutzerdaten
+            </DialogDescription>
+          </DialogHeader>
+          
+          {selectedUser && (
+            <ProfileView
+              userId={selectedUser.id}
+              onUpdate={() => {
+                refreshUsers();
+                setShowDetailView(false);
+              }}
+              isDialog={true}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

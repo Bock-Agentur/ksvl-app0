@@ -131,7 +131,14 @@ const roleColors: Record<UserRole, string> = {
   vorstand: "bg-gradient-deep text-primary-foreground"
 };
 
-export function ProfileView({ currentRole }: ProfileViewProps) {
+interface ProfileComponentProps {
+  currentRole?: UserRole;
+  userId?: string; // Optional: Wenn gesetzt, zeigt es das Profil eines anderen Benutzers (für Admin)
+  onUpdate?: () => void; // Optional: Callback nach Update
+  isDialog?: boolean; // Optional: Zeigt an, ob es in einem Dialog angezeigt wird
+}
+
+export function ProfileView({ currentRole, userId, onUpdate, isDialog = false }: ProfileComponentProps = {}) {
   const [user, setUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
   const [customFields, setCustomFields] = useState<CustomField[]>(initialCustomFields);
@@ -153,22 +160,31 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
 
   useEffect(() => {
     loadCurrentUser();
-  }, []);
+  }, [userId]);
 
   const loadCurrentUser = async () => {
     try {
       setLoading(true);
-      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
       
-      if (authError || !authUser) {
-        throw new Error('Nicht angemeldet');
+      // If userId is provided, load that user's profile (admin view)
+      // Otherwise, load the current authenticated user's profile
+      let targetUserId: string;
+      
+      if (userId) {
+        targetUserId = userId;
+      } else {
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+        if (authError || !authUser) {
+          throw new Error('Nicht angemeldet');
+        }
+        targetUserId = authUser.id;
       }
 
       // Fetch user profile
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', authUser.id)
+        .eq('id', targetUserId)
         .single();
 
       if (profileError) throw profileError;
@@ -177,7 +193,7 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
       const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', authUser.id);
+        .eq('user_id', targetUserId);
 
       if (rolesError) throw rolesError;
 
@@ -228,8 +244,15 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
     if (!editedUser) return;
     
     try {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) throw new Error('Nicht angemeldet');
+      // Use userId if provided (admin mode), otherwise use current user
+      let targetUserId: string;
+      if (userId) {
+        targetUserId = userId;
+      } else {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (!authUser) throw new Error('Nicht angemeldet');
+        targetUserId = authUser.id;
+      }
 
       const { error } = await supabase
         .from('profiles')
@@ -250,7 +273,7 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
           birth_date: (editedUser as any).birthDate || null,
           entry_date: (editedUser as any).entryDate || null
         })
-        .eq('id', authUser.id);
+        .eq('id', targetUserId);
 
       if (error) throw error;
 
@@ -263,6 +286,11 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
       });
       
       loadCurrentUser(); // Reload to ensure fresh data
+      
+      // Call onUpdate callback if provided
+      if (onUpdate) {
+        onUpdate();
+      }
     } catch (error) {
       console.error('Error saving profile:', error);
       toast({
@@ -410,14 +438,16 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
     );
   }
 
-  return (
-    <div className="p-4 space-y-6 max-w-2xl mx-auto">
+  const content = (
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Mein Profil</h1>
+          <h1 className="text-2xl font-bold text-foreground">
+            {userId ? "Benutzerprofil" : "Mein Profil"}
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Verwalten Sie Ihre Kontoinformationen
+            {userId ? "Benutzerdaten ansehen und bearbeiten" : "Verwalten Sie Ihre Kontoinformationen"}
           </p>
         </div>
         
@@ -854,6 +884,16 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
           </Dialog>
         </div>
       )}
+    </div>
+  );
+
+  if (isDialog) {
+    return content;
+  }
+
+  return (
+    <div className="p-4 max-w-2xl mx-auto">
+      {content}
     </div>
   );
 }
