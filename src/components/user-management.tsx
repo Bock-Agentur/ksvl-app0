@@ -114,113 +114,8 @@ export function UserManagementRefactored() {
       entryDate: ''
     } as any,
     onSubmit: async (data) => {
-      try {
-        const memberNumber = data.memberNumber || generateMemberNumber(users);
-        
-        if (editingUserId) {
-          console.log('Updating user:', editingUserId, data);
-          
-          // Update existing user
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .update({
-              name: data.name,
-              phone: data.phone || null,
-              member_number: memberNumber,
-              boat_name: data.boatName || null,
-              status: data.status,
-              oesv_number: (data as any).oesvNumber || null,
-              address: (data as any).address || null,
-              berth_number: (data as any).berthNumber || null,
-              berth_type: (data as any).berthType || null,
-              birth_date: (data as any).birthDate || null,
-              entry_date: (data as any).entryDate || null
-            })
-            .eq('id', editingUserId);
-
-          if (profileError) {
-            console.error('Profile update error:', profileError);
-            throw profileError;
-          }
-
-          // Update roles - delete old ones first
-          const { error: deleteError } = await supabase
-            .from('user_roles')
-            .delete()
-            .eq('user_id', editingUserId);
-
-          if (deleteError) {
-            console.error('Role delete error:', deleteError);
-            throw deleteError;
-          }
-          
-          const rolesToInsert = data.roles || generateRolesFromPrimary(data.role);
-          console.log('Inserting roles:', rolesToInsert);
-          
-          for (const role of rolesToInsert) {
-            const { error: roleError } = await supabase
-              .from('user_roles')
-              .insert({ user_id: editingUserId, role });
-            
-            if (roleError) {
-              console.error('Role insert error:', roleError);
-              throw roleError;
-            }
-          }
-
-          toast({ title: "Erfolg", description: "Benutzer wurde aktualisiert." });
-          refreshUsers();
-          return true;
-        } else {
-          console.log('Creating new user:', data);
-          
-          // Create new user
-          const { data: authData, error: authError } = await supabase.auth.signUp({
-            email: data.email,
-            password: 'changeme123', // Temporary password
-            options: {
-              data: { name: data.name }
-            }
-          });
-
-          if (authError) throw authError;
-          if (!authData.user) throw new Error("User creation failed");
-
-          // Update profile
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .update({
-              name: data.name,
-              phone: data.phone || null,
-              member_number: memberNumber,
-              boat_name: data.boatName || null,
-              status: data.status
-            })
-            .eq('id', authData.user.id);
-
-          if (profileError) throw profileError;
-
-          // Add additional roles
-          const rolesToInsert = data.roles || generateRolesFromPrimary(data.role);
-          for (const role of rolesToInsert) {
-            if (role !== 'mitglied') { // mitglied is added by trigger
-              await supabase.from('user_roles').insert({ user_id: authData.user.id, role });
-            }
-          }
-
-          toast({ title: "Erfolg", description: `Benutzer ${data.name} wurde erstellt.` });
-          refreshUsers();
-          return true;
-        }
-      } catch (error: any) {
-        console.error('Form submission error:', error);
-        toast({
-          title: "Fehler",
-          description: error.message || "Benutzer konnte nicht gespeichert werden.",
-          variant: "destructive"
-        });
-        return false;
-      }
+      // Validation only, actual submission in handleFormSubmit
+      return true;
     }
   });
 
@@ -238,15 +133,13 @@ export function UserManagementRefactored() {
   const handleAddUser = () => {
     setEditingUserId(null);
     userForm.reset();
+    setPassword("");
     setShowDialog(true);
   };
 
   const handleEditUser = (user: User) => {
     setEditingUserId(user.id);
-    userForm.setValues({
-      ...user,
-      roles: user.roles || generateRolesFromPrimary(user.role) // Fallback für bestehende Nutzer
-    });
+    userForm.setValues(user);
     setShowDialog(true);
   };
 
@@ -261,49 +154,43 @@ export function UserManagementRefactored() {
       const data = userForm.values;
       const memberNumber = data.memberNumber || generateMemberNumber(users);
       
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Nicht angemeldet');
+      }
+
       if (editingUserId) {
         console.log('Updating user:', editingUserId, data);
         
-        // Update existing user
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            name: data.name,
-            phone: data.phone || null,
-            member_number: memberNumber,
-            boat_name: data.boatName || null,
-            status: data.status
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            action: 'update',
+            userId: editingUserId,
+            userData: {
+              name: data.name,
+              phone: data.phone,
+              memberNumber: memberNumber,
+              boatName: data.boatName,
+              status: data.status,
+              roles: data.roles || generateRolesFromPrimary(data.role),
+              oesvNumber: (data as any).oesvNumber,
+              address: (data as any).address,
+              berthNumber: (data as any).berthNumber,
+              berthType: (data as any).berthType,
+              birthDate: (data as any).birthDate,
+              entryDate: (data as any).entryDate
+            }
           })
-          .eq('id', editingUserId);
+        });
 
-        if (profileError) {
-          console.error('Profile update error:', profileError);
-          throw profileError;
-        }
-
-        // Update roles - delete old ones first
-        const { error: deleteError } = await supabase
-          .from('user_roles')
-          .delete()
-          .eq('user_id', editingUserId);
-
-        if (deleteError) {
-          console.error('Role delete error:', deleteError);
-          throw deleteError;
-        }
-        
-        const rolesToInsert = data.roles || generateRolesFromPrimary(data.role);
-        console.log('Inserting roles:', rolesToInsert);
-        
-        for (const role of rolesToInsert) {
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .insert({ user_id: editingUserId, role });
-          
-          if (roleError) {
-            console.error('Role insert error:', roleError);
-            throw roleError;
-          }
+        const result = await response.json();
+        if (!response.ok || result.error) {
+          throw new Error(result.error || 'Benutzer konnte nicht aktualisiert werden');
         }
 
         toast({ title: "Erfolg", description: "Benutzer wurde aktualisiert." });
@@ -319,55 +206,36 @@ export function UserManagementRefactored() {
           return;
         }
 
-        // Create new user with password via edge function
-        const { data: { session } } = await supabase.auth.getSession();
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user-password`, {
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`
+            'Authorization': `Bearer ${session.access_token}`
           },
           body: JSON.stringify({
             action: 'create',
-            email: data.email,
-            password: password,
-            name: data.name
+            userData: {
+              email: data.email,
+              password: password,
+              name: data.name,
+              phone: data.phone,
+              memberNumber: memberNumber,
+              boatName: data.boatName,
+              status: data.status,
+              roles: data.roles || generateRolesFromPrimary(data.role),
+              oesvNumber: (data as any).oesvNumber,
+              address: (data as any).address,
+              berthNumber: (data as any).berthNumber,
+              berthType: (data as any).berthType,
+              birthDate: (data as any).birthDate,
+              entryDate: (data as any).entryDate
+            }
           })
         });
 
         const result = await response.json();
         if (!response.ok || result.error) {
           throw new Error(result.error || 'Benutzer konnte nicht erstellt werden');
-        }
-
-        const userId = result.user.id;
-
-        // Update profile
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            name: data.name,
-            phone: data.phone || null,
-            member_number: memberNumber,
-            boat_name: data.boatName || null,
-            status: data.status,
-            oesv_number: (data as any).oesvNumber || null,
-            address: (data as any).address || null,
-            berth_number: (data as any).berthNumber || null,
-            berth_type: (data as any).berthType || null,
-            birth_date: (data as any).birthDate || null,
-            entry_date: (data as any).entryDate || null
-          })
-          .eq('id', userId);
-
-        if (profileError) throw profileError;
-
-        // Add additional roles
-        const rolesToInsert = data.roles || generateRolesFromPrimary(data.role);
-        for (const role of rolesToInsert) {
-          if (role !== 'mitglied') {
-            await supabase.from('user_roles').insert({ user_id: userId, role });
-          }
         }
 
         toast({ title: "Erfolg", description: `Benutzer ${data.name} wurde erstellt.` });
