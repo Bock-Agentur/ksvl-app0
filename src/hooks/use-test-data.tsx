@@ -383,17 +383,7 @@ export function TestDataProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Initialize data on mount
-  useEffect(() => {
-    const activeScenario = currentScenarios.find(s => s.active);
-    if (!activeScenario) {
-      // If no scenario is active, activate the first one
-      activateScenario(currentScenarios[0].id);
-    } else if (users.length === 0 || slots.length === 0) {
-      // If active scenario exists but no data, generate it
-      activateScenario(activeScenario.id);
-    }
-  }, []);
+  // Data initialization removed - start with empty data
 
   const generateRandomData = () => {
     const scenario = activeScenario;
@@ -1057,18 +1047,7 @@ export function TestDataProvider({ children }: { children: ReactNode }) {
     }, 100);
   };
 
-  // ===== AUTOMATISCHE INITIALISIERUNG BEIM APP-START =====
-  useEffect(() => {
-    console.log('🚀 App gestartet - Initialisiere automatisch Komplettset...');
-    
-    // Kurze Verzögerung für bessere UX
-    const initTimer = setTimeout(() => {
-      generatePersonaWithSlots();
-      console.log('✅ Automatische Initialisierung abgeschlossen');
-    }, 500);
-    
-    return () => clearTimeout(initTimer);
-  }, []); // Nur einmal beim Mount
+  // Automatic initialization removed - users must manually add data
 
   const generateRandomCredentials = () => {
     const scenario = activeScenario;
