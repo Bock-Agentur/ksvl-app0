@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { useRole } from "@/hooks/use-role";
 import { cn } from "@/lib/utils";
 import { User as UserType, UserRole, generateRolesFromPrimary } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,28 +41,10 @@ const roleColors: Record<UserRole, string> = {
 export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<UserType>(user);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { hasAnyRole } = useRole();
   const { toast } = useToast();
-
-  useEffect(() => {
-    const checkAdminStatus = async () => {
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (currentUser) {
-        const { data: roles } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', currentUser.id);
-        
-        setIsAdmin(roles?.some(r => r.role === 'admin') || false);
-      }
-    };
-    
-    checkAdminStatus();
-  }, []);
-
-  useEffect(() => {
-    setEditedUser(user);
-  }, [user]);
+  
+  const isAdmin = hasAnyRole(['admin']);
 
   useEffect(() => {
     setEditedUser(user);
