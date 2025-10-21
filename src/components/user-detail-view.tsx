@@ -157,8 +157,8 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                 <h3 className="text-sm font-medium text-foreground border-b pb-2">Grunddaten</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label>Name</Label>
+                  <div className="space-y-2">
+                    <Label>Name:</Label>
                     {isEditing ? (
                       <Input
                         value={editedUser.name}
@@ -166,20 +166,20 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                         placeholder="Vollständiger Name"
                       />
                     ) : (
-                      <span className="text-sm text-muted-foreground">{editedUser.name}</span>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">{editedUser.name}</div>
                     )}
                   </div>
 
-                  <div className="space-y-1">
-                    <Label>E-Mail</Label>
+                  <div className="space-y-2">
+                    <Label>E-Mail:</Label>
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">{editedUser.email}</span>
                     </div>
                   </div>
 
-                  <div className="space-y-1">
-                    <Label>Telefon</Label>
+                  <div className="space-y-2">
+                    <Label>Telefon:</Label>
                     {isEditing ? (
                       <Input
                         value={editedUser.phone || ""}
@@ -194,8 +194,8 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                     )}
                   </div>
 
-                  <div className="space-y-1">
-                    <Label>Mitgliedsnummer</Label>
+                  <div className="space-y-2">
+                    <Label>Mitgliedsnummer:</Label>
                     {isEditing ? (
                       <Input
                         value={editedUser.memberNumber || ""}
@@ -210,8 +210,8 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                     )}
                   </div>
 
-                  <div className="space-y-1">
-                    <Label>Boot Name</Label>
+                  <div className="space-y-2">
+                    <Label>Boot Name:</Label>
                     {isEditing ? (
                       <Input
                         value={editedUser.boatName || ""}
@@ -219,12 +219,12 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                         placeholder="Name des Bootes"
                       />
                     ) : (
-                      <span className="text-sm text-muted-foreground">{editedUser.boatName || "-"}</span>
+                      <div className="text-sm text-muted-foreground">{editedUser.boatName || "-"}</div>
                     )}
                   </div>
 
-                  <div className="space-y-1">
-                    <Label>Rolle</Label>
+                  <div className="space-y-2">
+                    <Label>Rolle:</Label>
                     {isEditing ? (
                       <Select
                         value={editedUser.role}
@@ -248,12 +248,12 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                         </SelectContent>
                       </Select>
                     ) : (
-                      <span className="text-sm text-muted-foreground">{roleLabels[editedUser.role]}</span>
+                      <div className="text-sm text-muted-foreground">{roleLabels[editedUser.role]}</div>
                     )}
                   </div>
 
-                  <div className="space-y-1">
-                    <Label>Status</Label>
+                  <div className="space-y-2">
+                    <Label>Status:</Label>
                     {isEditing ? (
                       <Select
                         value={editedUser.status}
@@ -274,15 +274,15 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                     )}
                   </div>
 
-                  <div className="space-y-1">
-                    <Label>Beitrittsdatum</Label>
-                    <span className="text-sm text-muted-foreground">
+                  <div className="space-y-2">
+                    <Label>Beitrittsdatum:</Label>
+                    <div className="text-sm text-muted-foreground">
                       {editedUser.joinDate ? new Date(editedUser.joinDate).toLocaleDateString('de-AT', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric'
                       }) : "-"}
-                    </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -292,8 +292,8 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                 <h3 className="text-sm font-medium text-foreground border-b pb-2">Zusätzliche Informationen</h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1">
-                    <Label>OESV Nummer</Label>
+                  <div className="space-y-2">
+                    <Label>OESV Nummer:</Label>
                     {isEditing ? (
                       <Input
                         value={(editedUser as any).oesvNumber || ""}
@@ -301,14 +301,14 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                         placeholder="OESV Mitgliedsnummer"
                       />
                     ) : (
-                      <span className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground">
                         {(editedUser as any).oesvNumber || "-"}
-                      </span>
+                      </div>
                     )}
                   </div>
                   
-                  <div className="space-y-1">
-                    <Label>Adresse</Label>
+                  <div className="space-y-2">
+                    <Label>Adresse:</Label>
                     {isEditing ? (
                       <Input
                         value={(editedUser as any).address || ""}
@@ -316,14 +316,14 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                         placeholder="Ihre Adresse"
                       />
                     ) : (
-                      <span className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground">
                         {(editedUser as any).address || "-"}
-                      </span>
+                      </div>
                     )}
                   </div>
                   
-                  <div className="space-y-1">
-                    <Label>Liegeplatz Nummer</Label>
+                  <div className="space-y-2">
+                    <Label>Liegeplatz Nummer:</Label>
                     {isEditing ? (
                       <Input
                         value={(editedUser as any).berthNumber || ""}
@@ -331,14 +331,14 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                         placeholder="Liegeplatz Nummer"
                       />
                     ) : (
-                      <span className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground">
                         {(editedUser as any).berthNumber || "-"}
-                      </span>
+                      </div>
                     )}
                   </div>
                   
-                  <div className="space-y-1">
-                    <Label>Liegeplatz Typ</Label>
+                  <div className="space-y-2">
+                    <Label>Liegeplatz Typ:</Label>
                     {isEditing ? (
                       <Select
                         value={(editedUser as any).berthType || ""}
@@ -355,14 +355,14 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                         </SelectContent>
                       </Select>
                     ) : (
-                      <span className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground">
                         {(editedUser as any).berthType || "-"}
-                      </span>
+                      </div>
                     )}
                   </div>
                   
-                  <div className="space-y-1">
-                    <Label>Geburtsdatum</Label>
+                  <div className="space-y-2">
+                    <Label>Geburtsdatum:</Label>
                     {isEditing ? (
                       <Input
                         type="date"
@@ -370,14 +370,14 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                         onChange={(e) => setEditedUser(prev => ({ ...prev, birthDate: e.target.value } as any))}
                       />
                     ) : (
-                      <span className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground">
                         {(editedUser as any).birthDate ? new Date((editedUser as any).birthDate).toLocaleDateString('de-AT') : "-"}
-                      </span>
+                      </div>
                     )}
                   </div>
                   
-                  <div className="space-y-1">
-                    <Label>Eintrittsdatum</Label>
+                  <div className="space-y-2">
+                    <Label>Eintrittsdatum:</Label>
                     {isEditing ? (
                       <Input
                         type="date"
@@ -385,9 +385,9 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                         onChange={(e) => setEditedUser(prev => ({ ...prev, entryDate: e.target.value } as any))}
                       />
                     ) : (
-                      <span className="text-sm text-muted-foreground">
+                      <div className="text-sm text-muted-foreground">
                         {(editedUser as any).entryDate ? new Date((editedUser as any).entryDate).toLocaleDateString('de-AT') : "-"}
-                      </span>
+                      </div>
                     )}
                   </div>
                 </div>
