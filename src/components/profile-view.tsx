@@ -453,30 +453,16 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           </p>
         </div>
         
-        <div className="flex gap-2">
-          {!isEditing && !userId && (
-            <Button 
-              variant="outline"
-              onClick={async () => {
-                await supabase.auth.signOut();
-                window.location.href = '/auth';
-              }}
-            >
-              <LogOut className="w-4 h-4 mr-2" />
-              Abmelden
-            </Button>
-          )}
-          {!isEditing && (
-            <Button onClick={() => {
-              setIsEditing(true);
-              setEditedUser(user);
-              setEditedCustomValues(customValues);
-            }}>
-              <Edit className="w-4 h-4 mr-2" />
-              Bearbeiten
-            </Button>
-          )}
-        </div>
+        {!isEditing && (
+          <Button onClick={() => {
+            setIsEditing(true);
+            setEditedUser(user);
+            setEditedCustomValues(customValues);
+          }}>
+            <Edit className="w-4 h-4 mr-2" />
+            Bearbeiten
+          </Button>
+        )}
       </div>
 
       {/* Profile Card */}

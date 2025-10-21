@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Calendar, Home, MessageSquare, Settings, User, Users, UserCheck, Menu, X, FileText, TestTube, Palette, Layers } from "lucide-react";
+import { Calendar, Home, MessageSquare, Settings, User, Users, UserCheck, Menu, X, FileText, TestTube, Palette, Layers, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -277,8 +278,24 @@ export function AppShell({
                           })}
                         </div>
                       </div>
+                      <Separator />
                     </>
                   )}
+                  
+                  {/* Logout Button */}
+                  <div className="pt-2">
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={async () => {
+                        await supabase.auth.signOut();
+                        window.location.href = '/auth';
+                      }}
+                    >
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Abmelden
+                    </Button>
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
