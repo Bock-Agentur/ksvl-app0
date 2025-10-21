@@ -14,25 +14,44 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const loadUser = async () => {
       const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) return;
+      if (!authUser) {
+        setCurrentUser(null);
+        return;
+      }
 
       // Fetch profile
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', authUser.id)
         .single();
 
-      if (!profile) return;
+      if (profileError || !profile) {
+        console.error('Error loading profile:', profileError);
+        return;
+      }
 
       // Fetch roles
-      const { data: userRoles } = await supabase
+      const { data: userRoles, error: rolesError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', authUser.id);
 
-      const roles = (userRoles?.map(r => r.role as UserRole) || ['mitglied']) as UserRole[];
-      const primaryRole = roles.find(r => r === 'vorstand') || roles.find(r => r === 'admin') || roles.find(r => r === 'kranfuehrer') || roles.find(r => r === 'mitglied') || 'gastmitglied';
+      if (rolesError) {
+        console.error('Error loading roles:', rolesError);
+      }
+
+      const roles = (userRoles && userRoles.length > 0 
+        ? userRoles.map(r => r.role as UserRole) 
+        : ['mitglied']) as UserRole[];
+      
+      console.log('Loaded roles for user:', roles);
+      
+      const primaryRole = roles.find(r => r === 'vorstand') 
+        || roles.find(r => r === 'admin') 
+        || roles.find(r => r === 'kranfuehrer') 
+        || roles.find(r => r === 'mitglied') 
+        || 'gastmitglied';
 
       const user: User = {
         id: profile.id,
@@ -53,11 +72,25 @@ export function RoleProvider({ children }: { children: ReactNode }) {
         isActive: profile.status === 'active'
       };
 
+      console.log('Setting current user:', user);
       setCurrentUser(user);
       setCurrentRole(settings.defaultRole || primaryRole);
     };
 
     loadUser();
+    
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      console.log('Auth event in useRole:', event);
+      if (event === 'SIGNED_OUT') {
+        setCurrentUser(null);
+        setCurrentRole('mitglied');
+      } else if (event === 'SIGNED_IN') {
+        loadUser();
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, [settings.defaultRole]);
 
   // Set default role on mount
