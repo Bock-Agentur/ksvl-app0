@@ -12,10 +12,9 @@ import { UserListDatabase } from "@/components/user-list-database";
 import { cn } from "@/lib/utils";
 
 export function Settings() {
-  const [activeSection, setActiveSection] = useState("users");
+  const [activeSection, setActiveSection] = useState("dashboard");
 
   const sections = [
-    { id: "users", label: "Benutzer", component: UserListDatabase },
     { id: "dashboard", label: "Dashboard", component: DashboardSettings },
     { id: "messages", label: "Startnachrichten", component: RoleWelcomeSettings },
     { id: "menu", label: "Menü", component: MenuSettings },

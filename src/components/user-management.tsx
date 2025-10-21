@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -208,6 +208,9 @@ export function UserManagementRefactored() {
   // UI State
   const [showDialog, setShowDialog] = useState(false);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [passwordUserId, setPasswordUserId] = useState<string | null>(null);
   
   // Statistiken mit Business Logic
   const stats = calculateUserStats(users);
@@ -288,17 +291,37 @@ export function UserManagementRefactored() {
       } else {
         console.log('Creating new user:', data);
         
-        // Create new user
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: data.email,
-          password: 'changeme123',
-          options: {
-            data: { name: data.name }
-          }
+        if (!password) {
+          toast({
+            title: "Fehler",
+            description: "Bitte geben Sie ein Passwort ein.",
+            variant: "destructive"
+          });
+          return;
+        }
+
+        // Create new user with password via edge function
+        const { data: { session } } = await supabase.auth.getSession();
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user-password`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify({
+            action: 'create',
+            email: data.email,
+            password: password,
+            name: data.name
+          })
         });
 
-        if (authError) throw authError;
-        if (!authData.user) throw new Error("User creation failed");
+        const result = await response.json();
+        if (!response.ok || result.error) {
+          throw new Error(result.error || 'Benutzer konnte nicht erstellt werden');
+        }
+
+        const userId = result.user.id;
 
         // Update profile
         const { error: profileError } = await supabase
@@ -310,7 +333,7 @@ export function UserManagementRefactored() {
             boat_name: data.boatName || null,
             status: data.status
           })
-          .eq('id', authData.user.id);
+          .eq('id', userId);
 
         if (profileError) throw profileError;
 
@@ -318,11 +341,12 @@ export function UserManagementRefactored() {
         const rolesToInsert = data.roles || generateRolesFromPrimary(data.role);
         for (const role of rolesToInsert) {
           if (role !== 'mitglied') {
-            await supabase.from('user_roles').insert({ user_id: authData.user.id, role });
+            await supabase.from('user_roles').insert({ user_id: userId, role });
           }
         }
 
         toast({ title: "Erfolg", description: `Benutzer ${data.name} wurde erstellt.` });
+        setPassword("");
       }
 
       refreshUsers();
@@ -333,6 +357,49 @@ export function UserManagementRefactored() {
       toast({
         title: "Fehler",
         description: error.message || "Benutzer konnte nicht gespeichert werden.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handlePasswordChange = async () => {
+    if (!passwordUserId || !password) {
+      toast({
+        title: "Fehler",
+        description: "Bitte geben Sie ein Passwort ein.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          action: 'update',
+          userId: passwordUserId,
+          password: password
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok || result.error) {
+        throw new Error(result.error || 'Passwort konnte nicht aktualisiert werden');
+      }
+
+      toast({ title: "Erfolg", description: "Passwort wurde erfolgreich geändert." });
+      setShowPasswordDialog(false);
+      setPasswordUserId(null);
+      setPassword("");
+    } catch (error: any) {
+      toast({
+        title: "Fehler",
+        description: error.message || "Passwort konnte nicht geändert werden.",
         variant: "destructive"
       });
     }
@@ -586,6 +653,18 @@ export function UserManagementRefactored() {
                     <Button
                       size="sm"
                       variant="outline"
+                      onClick={() => {
+                        setPasswordUserId(user.id);
+                        setShowPasswordDialog(true);
+                      }}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Key className="w-4 h-4" />
+                      <span className="sr-only">Passwort ändern</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() => handleDeleteUser(user.id)}
                       className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
                     >
@@ -701,6 +780,20 @@ export function UserManagementRefactored() {
                 </Select>
               </div>
             </div>
+
+            {!editingUserId && (
+              <div>
+                <Label htmlFor="password">Passwort *</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Mindestens 6 Zeichen"
+                />
+              </div>
+            )}
+            
             
             <div className="flex justify-end gap-2 pt-4">
               <Button 
@@ -725,6 +818,47 @@ export function UserManagementRefactored() {
                 * Nicht gespeicherte Änderungen
               </p>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Password Change Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Passwort ändern</DialogTitle>
+            <DialogDescription>
+              Geben Sie ein neues Passwort für den Benutzer ein.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="newPassword">Neues Passwort</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Mindestens 6 Zeichen"
+              />
+            </div>
+            
+            <div className="flex justify-end gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setShowPasswordDialog(false);
+                  setPassword("");
+                  setPasswordUserId(null);
+                }}
+              >
+                Abbrechen
+              </Button>
+              <Button onClick={handlePasswordChange}>
+                Passwort ändern
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
