@@ -136,9 +136,10 @@ interface ProfileComponentProps {
   userId?: string; // Optional: Wenn gesetzt, zeigt es das Profil eines anderen Benutzers (für Admin)
   onUpdate?: () => void; // Optional: Callback nach Update
   isDialog?: boolean; // Optional: Zeigt an, ob es in einem Dialog angezeigt wird
+  onBack?: () => void; // Optional: Callback zum Zurück-Button
 }
 
-export function ProfileView({ currentRole, userId, onUpdate, isDialog = false }: ProfileComponentProps = {}) {
+export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, onBack }: ProfileComponentProps = {}) {
   const [user, setUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
   const [customFields, setCustomFields] = useState<CustomField[]>(initialCustomFields);
@@ -892,7 +893,12 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false }:
   }
 
   return (
-    <div className="p-4 max-w-2xl mx-auto">
+    <div className="container mx-auto p-4 max-w-4xl">
+      {onBack && (
+        <Button variant="ghost" size="sm" onClick={onBack} className="mb-4">
+          ← Zurück zur Übersicht
+        </Button>
+      )}
       {content}
     </div>
   );

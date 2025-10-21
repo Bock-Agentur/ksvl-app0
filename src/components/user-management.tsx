@@ -121,34 +121,28 @@ export function UserManagementRefactored() {
   });
 
   // UI State
-  const [showDialog, setShowDialog] = useState(false);
-  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
   const [password, setPassword] = useState("");
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [passwordUserId, setPasswordUserId] = useState<string | null>(null);
-  const [showDetailView, setShowDetailView] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   
   // Statistiken mit Business Logic
   const stats = calculateUserStats(users);
 
   // Event handlers
   const handleAddUser = () => {
-    setEditingUserId(null);
     userForm.reset();
     setPassword("");
-    setShowDialog(true);
-  };
-
-  const handleEditUser = (user: User) => {
-    setEditingUserId(user.id);
-    userForm.setValues(user);
-    setShowDialog(true);
+    setShowAddDialog(true);
   };
 
   const handleViewUser = (user: User) => {
-    setSelectedUser(user);
-    setShowDetailView(true);
+    setSelectedUserId(user.id);
+  };
+  
+  const handleBackToList = () => {
+    setSelectedUserId(null);
   };
 
   const handleDeleteUser = async (userId: string) => {
@@ -167,92 +161,55 @@ export function UserManagementRefactored() {
         throw new Error('Nicht angemeldet');
       }
 
-      if (editingUserId) {
-        console.log('Updating user:', editingUserId, data);
+      // Always create mode in add dialog
+      console.log('Creating new user:', data);
         
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({
-            action: 'update',
-            userId: editingUserId,
-            userData: {
-              name: data.name,
-              phone: data.phone,
-              memberNumber: memberNumber,
-              boatName: data.boatName,
-              status: data.status,
-              roles: data.roles || generateRolesFromPrimary(data.role),
-              oesvNumber: (data as any).oesvNumber,
-              address: (data as any).address,
-              berthNumber: (data as any).berthNumber,
-              berthType: (data as any).berthType,
-              birthDate: (data as any).birthDate,
-              entryDate: (data as any).entryDate
-            }
-          })
+      if (!password) {
+        toast({
+          title: "Fehler",
+          description: "Bitte geben Sie ein Passwort ein.",
+          variant: "destructive"
         });
-
-        const result = await response.json();
-        if (!response.ok || result.error) {
-          throw new Error(result.error || 'Benutzer konnte nicht aktualisiert werden');
-        }
-
-        toast({ title: "Erfolg", description: "Benutzer wurde aktualisiert." });
-      } else {
-        console.log('Creating new user:', data);
-        
-        if (!password) {
-          toast({
-            title: "Fehler",
-            description: "Bitte geben Sie ein Passwort ein.",
-            variant: "destructive"
-          });
-          return;
-        }
-
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({
-            action: 'create',
-            userData: {
-              email: data.email,
-              password: password,
-              name: data.name,
-              phone: data.phone,
-              memberNumber: memberNumber,
-              boatName: data.boatName,
-              status: data.status,
-              roles: data.roles || generateRolesFromPrimary(data.role),
-              oesvNumber: (data as any).oesvNumber,
-              address: (data as any).address,
-              berthNumber: (data as any).berthNumber,
-              berthType: (data as any).berthType,
-              birthDate: (data as any).birthDate,
-              entryDate: (data as any).entryDate
-            }
-          })
-        });
-
-        const result = await response.json();
-        if (!response.ok || result.error) {
-          throw new Error(result.error || 'Benutzer konnte nicht erstellt werden');
-        }
-
-        toast({ title: "Erfolg", description: `Benutzer ${data.name} wurde erstellt.` });
-        setPassword("");
+        return;
       }
 
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({
+          action: 'create',
+          userData: {
+            email: data.email,
+            password: password,
+            name: data.name,
+            phone: data.phone,
+            memberNumber: memberNumber,
+            boatName: data.boatName,
+            status: data.status,
+            roles: data.roles || generateRolesFromPrimary(data.role),
+            oesvNumber: (data as any).oesvNumber,
+            address: (data as any).address,
+            berthNumber: (data as any).berthNumber,
+            berthType: (data as any).berthType,
+            birthDate: (data as any).birthDate,
+            entryDate: (data as any).entryDate
+          }
+        })
+      });
+
+      const result = await response.json();
+      if (!response.ok || result.error) {
+        throw new Error(result.error || 'Benutzer konnte nicht erstellt werden');
+      }
+
+      toast({ title: "Erfolg", description: `Benutzer ${data.name} wurde erstellt.` });
+      setPassword("");
+
       refreshUsers();
-      setShowDialog(false);
-      setEditingUserId(null);
+      setShowAddDialog(false);
     } catch (error: any) {
       console.error('Form submission error:', error);
       toast({
@@ -554,15 +511,6 @@ export function UserManagementRefactored() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleEditUser(user)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Edit className="w-4 h-4" />
-                      <span className="sr-only">Bearbeiten</span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
                       onClick={() => {
                         setPasswordUserId(user.id);
                         setShowPasswordDialog(true);
@@ -588,255 +536,6 @@ export function UserManagementRefactored() {
           ))
         )}
       </div>
-
-      {/* Form Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              {editingUserId ? "Benutzer bearbeiten" : "Neuer Benutzer"}
-            </DialogTitle>
-            <DialogDescription className="sr-only">
-              {editingUserId ? "Bearbeiten Sie die Benutzerdaten" : "Erstellen Sie einen neuen Benutzer"}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-6">
-            {/* Header Section */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-foreground">
-                  {editingUserId ? userForm.values.name : "Neuer Benutzer"}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {editingUserId ? `Mitgliedsnummer: ${userForm.values.memberNumber}` : "Geben Sie die Benutzerdaten ein"}
-                </p>
-              </div>
-            </div>
-
-            {/* Profile Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Benutzerdaten</CardTitle>
-              </CardHeader>
-              
-              <CardContent className="space-y-6">
-                {/* Grunddaten */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-medium text-foreground border-b pb-2">Grunddaten</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <Label htmlFor="name">Name *</Label>
-                      <Input
-                        id="name"
-                        value={userForm.values.name || ""}
-                        onChange={(e) => userForm.setValue('name', e.target.value)}
-                        placeholder="Vollständiger Name"
-                        className={userForm.errors.name ? "border-destructive" : ""}
-                      />
-                      {userForm.errors.name && (
-                        <p className="text-xs text-destructive mt-1">{userForm.errors.name}</p>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="email">E-Mail *</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={userForm.values.email || ""}
-                        onChange={(e) => userForm.setValue('email', e.target.value)}
-                        placeholder="beispiel@email.com"
-                        className={userForm.errors.email ? "border-destructive" : ""}
-                        disabled={!!editingUserId}
-                      />
-                      {userForm.errors.email && (
-                        <p className="text-xs text-destructive mt-1">{userForm.errors.email}</p>
-                      )}
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="phone">Telefon</Label>
-                      <Input
-                        id="phone"
-                        value={userForm.values.phone || ""}
-                        onChange={(e) => userForm.setValue('phone', e.target.value)}
-                        placeholder="+43 664 123 4567"
-                      />
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="memberNumber">Mitgliedsnummer</Label>
-                      <Input
-                        id="memberNumber"
-                        value={userForm.values.memberNumber || ""}
-                        onChange={(e) => userForm.setValue('memberNumber', e.target.value)}
-                        placeholder="KSVL001"
-                      />
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="boatName">Boot Name</Label>
-                      <Input
-                        id="boatName"
-                        value={userForm.values.boatName || ""}
-                        onChange={(e) => userForm.setValue('boatName', e.target.value)}
-                        placeholder="Name des Bootes"
-                      />
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="role">Rolle</Label>
-                      <Select
-                        value={userForm.values.role}
-                        onValueChange={(value: UserRole) => {
-                          userForm.setValue('role', value);
-                          userForm.setValue('roles', generateRolesFromPrimary(value));
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="mitglied">Mitglied</SelectItem>
-                          <SelectItem value="kranfuehrer">Kranführer</SelectItem>
-                          <SelectItem value="gastmitglied">Gastmitglied</SelectItem>
-                          <SelectItem value="vorstand">Vorstand</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="status">Status</Label>
-                      <Select
-                        value={userForm.values.status}
-                        onValueChange={(value) => userForm.setValue('status', value as "active" | "inactive")}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="active">Aktiv</SelectItem>
-                          <SelectItem value="inactive">Inaktiv</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {!editingUserId && (
-                      <div className="space-y-1">
-                        <Label htmlFor="password">Passwort *</Label>
-                        <Input
-                          id="password"
-                          type="password"
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="Mindestens 6 Zeichen"
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                {/* Zusätzliche Informationen */}
-                <div className="space-y-4">
-                  <h3 className="text-sm font-medium text-foreground border-b pb-2">Zusätzliche Informationen</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <Label htmlFor="oesvNumber">OESV Nummer</Label>
-                      <Input
-                        id="oesvNumber"
-                        value={(userForm.values as any).oesvNumber || ""}
-                        onChange={(e) => userForm.setValue('oesvNumber' as any, e.target.value)}
-                        placeholder="OESV Mitgliedsnummer"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label htmlFor="address">Adresse</Label>
-                      <Input
-                        id="address"
-                        value={(userForm.values as any).address || ""}
-                        onChange={(e) => userForm.setValue('address' as any, e.target.value)}
-                        placeholder="Ihre Adresse"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label htmlFor="berthNumber">Liegeplatz Nummer</Label>
-                      <Input
-                        id="berthNumber"
-                        value={(userForm.values as any).berthNumber || ""}
-                        onChange={(e) => userForm.setValue('berthNumber' as any, e.target.value)}
-                        placeholder="Liegeplatz Nummer"
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label htmlFor="berthType">Liegeplatz Typ</Label>
-                      <Select
-                        value={(userForm.values as any).berthType || ""}
-                        onValueChange={(value) => userForm.setValue('berthType' as any, value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Typ auswählen" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="schwimmsteg">Schwimmsteg</SelectItem>
-                          <SelectItem value="festliegeplatz">Festliegeplatz</SelectItem>
-                          <SelectItem value="bojenplatz">Bojenplatz</SelectItem>
-                          <SelectItem value="trockenplatz">Trockenplatz</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label htmlFor="birthDate">Geburtsdatum</Label>
-                      <Input
-                        id="birthDate"
-                        type="date"
-                        value={(userForm.values as any).birthDate || ""}
-                        onChange={(e) => userForm.setValue('birthDate' as any, e.target.value)}
-                      />
-                    </div>
-
-                    <div className="space-y-1">
-                      <Label htmlFor="entryDate">Eintrittsdatum</Label>
-                      <Input
-                        id="entryDate"
-                        type="date"
-                        value={(userForm.values as any).entryDate || ""}
-                        onChange={(e) => userForm.setValue('entryDate' as any, e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowDialog(false)}
-              >
-                Abbrechen
-              </Button>
-              <Button 
-                onClick={handleFormSubmit}
-                disabled={userForm.isSubmitting || !userForm.values.name || !userForm.values.email}
-              >
-                {userForm.isSubmitting 
-                  ? "Speichert..." 
-                  : editingUserId ? "Aktualisieren" : "Erstellen"
-                }
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Password Change Dialog */}
       <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
@@ -876,32 +575,6 @@ export function UserManagementRefactored() {
               </Button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* User Detail Dialog */}
-      <Dialog open={showDetailView} onOpenChange={(open) => {
-        setShowDetailView(open);
-        if (!open) setSelectedUser(null);
-      }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="sr-only">Benutzerdetails</DialogTitle>
-            <DialogDescription className="sr-only">
-              Detaillierte Ansicht und Bearbeitung der Benutzerdaten
-            </DialogDescription>
-          </DialogHeader>
-          
-          {selectedUser && (
-            <ProfileView
-              userId={selectedUser.id}
-              onUpdate={() => {
-                refreshUsers();
-                setShowDetailView(false);
-              }}
-              isDialog={true}
-            />
-          )}
         </DialogContent>
       </Dialog>
     </div>
