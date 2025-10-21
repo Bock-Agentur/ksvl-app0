@@ -525,22 +525,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             </div>
             <div className="flex-1">
               <CardTitle className="text-lg">{user.name}</CardTitle>
-              <div className="flex items-center gap-2 mt-1 flex-wrap">
-                {/* Sort roles by priority: admin > vorstand > kranfuehrer > mitglied > gastmitglied */}
-                {user.roles?.sort((a, b) => {
-                  const priority: Record<UserRole, number> = {
-                    admin: 5,
-                    vorstand: 4,
-                    kranfuehrer: 3,
-                    mitglied: 2,
-                    gastmitglied: 1
-                  };
-                  return (priority[b] || 0) - (priority[a] || 0);
-                }).map((role) => (
-                  <Badge key={role} className={cn("text-xs", roleColors[role])}>
-                    {roleLabels[role]}
-                  </Badge>
-                ))}
+              <div className="flex items-center gap-2 mt-1">
                 <Badge variant={user.status === "active" ? "default" : "secondary"} className="text-xs">
                   {user.status === "active" ? "Aktiv" : "Inaktiv"}
                 </Badge>
@@ -556,8 +541,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               <h3 className="text-sm font-medium text-foreground border-b pb-2">Rollen</h3>
               {isEditing ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {Object.entries(roleLabels).map(([roleKey, roleLabel]) => {
-                    const role = roleKey as UserRole;
+                  {/* Reihenfolge: Admin, Vorstand, Kranführer, Mitglied, Gastmitglied */}
+                  {(['admin', 'vorstand', 'kranfuehrer', 'mitglied', 'gastmitglied'] as UserRole[]).map((role) => {
                     const isChecked = editedUser?.roles?.includes(role) || false;
                     
                     return (
@@ -590,32 +575,26 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                             });
                           }}
                         />
-                        <label
-                          htmlFor={`role-${role}`}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                        >
-                          {roleLabel}
-                        </label>
+                          <label
+                            htmlFor={`role-${role}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {roleLabels[role]}
+                          </label>
                       </div>
                     );
                   })}
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {user.roles?.sort((a, b) => {
-                    const priority: Record<UserRole, number> = {
-                      admin: 5,
-                      vorstand: 4,
-                      kranfuehrer: 3,
-                      mitglied: 2,
-                      gastmitglied: 1
-                    };
-                    return (priority[b] || 0) - (priority[a] || 0);
-                  }).map((role) => (
-                    <Badge key={role} className={cn("text-xs", roleColors[role])}>
-                      {roleLabels[role]}
-                    </Badge>
-                  ))}
+                  {/* Reihenfolge: Admin, Vorstand, Kranführer, Mitglied, Gastmitglied */}
+                  {(['admin', 'vorstand', 'kranfuehrer', 'mitglied', 'gastmitglied'] as UserRole[])
+                    .filter(role => user.roles?.includes(role))
+                    .map((role) => (
+                      <Badge key={role} className={cn("text-xs", roleColors[role])}>
+                        {roleLabels[role]}
+                      </Badge>
+                    ))}
                 </div>
               )}
             </div>
