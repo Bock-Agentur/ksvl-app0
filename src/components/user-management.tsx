@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key, Eye } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -455,21 +456,83 @@ export function UserManagementRefactored() {
                       <h3 className="font-medium text-base sm:text-sm">{user.name}</h3>
                       
                       <div className="flex items-center gap-2 flex-wrap">
-                        {/* Role Badges */}
-                        <div className="flex gap-1 flex-wrap">
-                          {user.roles?.map((role) => (
-                            <Badge 
-                              key={role}
-                              variant="outline" 
-                              className="text-xs px-2 py-0.5 h-5"
-                            >
-                              {getRoleLabel(role)}
-                            </Badge>
-                          )) || (
-                            <Badge variant="outline" className="text-xs px-2 py-0.5 h-5">
-                              {getRoleLabel(user.role)}
-                            </Badge>
-                          )}
+                        {/* Role Checkboxes */}
+                        <div className="flex gap-2 flex-wrap items-center">
+                          <span className="text-xs text-muted-foreground">Rollen:</span>
+                          {(['gastmitglied', 'mitglied', 'kranfuehrer', 'admin', 'vorstand'] as UserRole[]).map((role) => {
+                            const isChecked = user.roles?.includes(role) || false;
+                            const roleLabels: Record<UserRole, string> = {
+                              gastmitglied: "Gast",
+                              mitglied: "Mitglied",
+                              kranfuehrer: "Kran",
+                              admin: "Admin",
+                              vorstand: "Vorstand"
+                            };
+                            
+                            return (
+                              <div key={role} className="flex items-center space-x-1">
+                                <Checkbox
+                                  id={`${user.id}-${role}`}
+                                  checked={isChecked}
+                                  onCheckedChange={async (checked) => {
+                                    const currentRoles = user.roles || [];
+                                    let newRoles: UserRole[];
+                                    
+                                    if (checked) {
+                                      newRoles = [...currentRoles, role];
+                                    } else {
+                                      newRoles = currentRoles.filter(r => r !== role);
+                                    }
+                                    
+                                    // Update via API
+                                    try {
+                                      const { data: { session } } = await supabase.auth.getSession();
+                                      if (!session) throw new Error('Nicht angemeldet');
+
+                                      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`, {
+                                        method: 'POST',
+                                        headers: {
+                                          'Content-Type': 'application/json',
+                                          'Authorization': `Bearer ${session.access_token}`
+                                        },
+                                        body: JSON.stringify({
+                                          action: 'update',
+                                          userId: user.id,
+                                          userData: {
+                                            roles: newRoles
+                                          }
+                                        })
+                                      });
+
+                                      const result = await response.json();
+                                      if (!response.ok || result.error) {
+                                        throw new Error(result.error || 'Rollen konnten nicht aktualisiert werden');
+                                      }
+
+                                      toast({
+                                        title: "Erfolg",
+                                        description: "Rollen wurden aktualisiert."
+                                      });
+                                      
+                                      refreshUsers();
+                                    } catch (error: any) {
+                                      toast({
+                                        title: "Fehler",
+                                        description: error.message,
+                                        variant: "destructive"
+                                      });
+                                    }
+                                  }}
+                                />
+                                <label
+                                  htmlFor={`${user.id}-${role}`}
+                                  className="text-xs cursor-pointer select-none"
+                                >
+                                  {roleLabels[role]}
+                                </label>
+                              </div>
+                            );
+                          })}
                         </div>
                         
                         {/* Status Badge */}
