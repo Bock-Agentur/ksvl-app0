@@ -80,44 +80,54 @@ function AppContent() {
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (!session) {
-          navigate("/auth");
-        } else if (event === 'SIGNED_IN') {
-          // Reset to dashboard after login
-          await supabase
-            .from('app_settings')
-            .upsert({ 
-              setting_key: 'activeTab', 
-              setting_value: 'dashboard',
-              user_id: session.user.id 
-            });
-        }
-      }
-    );
-
-    // Check for existing session
+    // Check for existing session first
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
+      setLoading(false);
       
       if (!session) {
         navigate("/auth");
       }
     });
 
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (event === 'SIGNED_OUT') {
+          navigate("/auth");
+        } else if (event === 'SIGNED_IN') {
+          // Defer database update to avoid blocking
+          setTimeout(() => {
+            supabase
+              .from('app_settings')
+              .upsert({ 
+                setting_key: 'activeTab', 
+                setting_value: 'dashboard',
+                user_id: session?.user?.id 
+              }, {
+                onConflict: 'user_id,setting_key'
+              })
+              .then(() => {
+                // Force navigation to ensure we're on the main page
+                navigate("/");
+              });
+          }, 0);
+        }
+      }
+    );
+
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  if (!session || !user) {
+  if (loading || !session || !user) {
     return null;
   }
 
