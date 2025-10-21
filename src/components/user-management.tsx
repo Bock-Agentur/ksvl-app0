@@ -537,6 +537,171 @@ export function UserManagementRefactored() {
         )}
       </div>
 
+      {/* Benutzer Hinzufügen Dialog */}
+      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Neuen Benutzer hinzufügen</DialogTitle>
+            <DialogDescription>
+              Erstellen Sie einen neuen Benutzer mit allen erforderlichen Informationen.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            <Tabs defaultValue="basic" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="basic">Basis</TabsTrigger>
+                <TabsTrigger value="contact">Kontakt & Boot</TabsTrigger>
+                <TabsTrigger value="roles">Rollen & Status</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="basic" className="space-y-4 mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Name *</Label>
+                    <Input
+                      id="name"
+                      placeholder="Max Mustermann"
+                      value={userForm.values.name || ''}
+                      onChange={(e) => userForm.setValue('name', e.target.value)}
+                    />
+                    {userForm.errors.name && (
+                      <p className="text-sm text-destructive">{userForm.errors.name}</p>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="email">E-Mail *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="max@beispiel.de"
+                      value={userForm.values.email || ''}
+                      onChange={(e) => userForm.setValue('email', e.target.value)}
+                    />
+                    {userForm.errors.email && (
+                      <p className="text-sm text-destructive">{userForm.errors.email}</p>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="password">Passwort *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Mindestens 6 Zeichen"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="memberNumber">Mitgliedsnummer</Label>
+                  <Input
+                    id="memberNumber"
+                    placeholder="Automatisch generiert, falls leer"
+                      value={userForm.values.memberNumber || ''}
+                      onChange={(e) => userForm.setValue('memberNumber', e.target.value)}
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="contact" className="space-y-4 mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Telefon</Label>
+                    <Input
+                      id="phone"
+                      placeholder="+43 123 456789"
+                      value={userForm.values.phone || ''}
+                      onChange={(e) => userForm.setValue('phone', e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="boatName">Bootsname</Label>
+                    <Input
+                      id="boatName"
+                      placeholder="Name des Bootes"
+                      value={userForm.values.boatName || ''}
+                      onChange={(e) => userForm.setValue('boatName', e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-2 space-y-2">
+                    <Label htmlFor="streetAddress">Straße</Label>
+                    <Input
+                      id="streetAddress"
+                      placeholder="Musterstraße 123"
+                      value={(userForm.values as any).streetAddress || ''}
+                      onChange={(e) => userForm.setValue('streetAddress' as any, e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="postalCode">PLZ</Label>
+                    <Input
+                      id="postalCode"
+                      placeholder="1234"
+                      value={(userForm.values as any).postalCode || ''}
+                      onChange={(e) => userForm.setValue('postalCode' as any, e.target.value)}
+                    />
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="city">Ort</Label>
+                  <Input
+                    id="city"
+                    placeholder="Wien"
+                    value={(userForm.values as any).city || ''}
+                    onChange={(e) => userForm.setValue('city' as any, e.target.value)}
+                  />
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="roles" className="space-y-4 mt-4">
+                <div className="space-y-2">
+                  <Label>Rollen</Label>
+                  <UserRoleSelector
+                    selectedRoles={userForm.values.roles || []}
+                    onRolesChange={(roles) => userForm.setValue('roles', roles)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="status">Status</Label>
+                  <Select
+                    value={userForm.values.status || 'active'}
+                    onValueChange={(value) => userForm.setValue('status', value as any)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">Aktiv</SelectItem>
+                      <SelectItem value="inactive">Inaktiv</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </TabsContent>
+            </Tabs>
+            
+            <div className="flex justify-end gap-2 pt-4">
+              <Button variant="outline" onClick={() => setShowAddDialog(false)}>
+                Abbrechen
+              </Button>
+              <Button onClick={handleFormSubmit}>
+                Benutzer erstellen
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Password Change Dialog */}
       <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
         <DialogContent className="max-w-md">
