@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { User as UserType, UserRole, CustomField, ProfileViewProps, generateRolesFromPrimary } from "@/types";
+import { supabase } from "@/integrations/supabase/client";
 
 // Mock current users based on role
 const mockCurrentUsers: Record<UserRole, UserType> = {
@@ -131,12 +132,13 @@ const roleColors: Record<UserRole, string> = {
 };
 
 export function ProfileView({ currentRole }: ProfileViewProps) {
-  const [user, setUser] = useState<UserType>(mockCurrentUsers[currentRole]);
+  const [user, setUser] = useState<UserType | null>(null);
+  const [loading, setLoading] = useState(true);
   const [customFields, setCustomFields] = useState<CustomField[]>(initialCustomFields);
   const [customValues, setCustomValues] = useState<Record<string, any>>({});
   const [isEditing, setIsEditing] = useState(false);
   const [isManagingFields, setIsManagingFields] = useState(false);
-  const [editedUser, setEditedUser] = useState<UserType>(user);
+  const [editedUser, setEditedUser] = useState<UserType | null>(null);
   const [editedCustomValues, setEditedCustomValues] = useState<Record<string, any>>({});
   const { toast } = useToast();
 
@@ -150,18 +152,115 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
   });
 
   useEffect(() => {
-    setUser(mockCurrentUsers[currentRole]);
-    setEditedUser(mockCurrentUsers[currentRole]);
-  }, [currentRole]);
+    loadCurrentUser();
+  }, []);
 
-  const handleSaveProfile = () => {
-    setUser(editedUser);
-    setCustomValues(editedCustomValues);
-    setIsEditing(false);
-    toast({
-      title: "Profil gespeichert",
-      description: "Ihre Profildaten wurden erfolgreich aktualisiert."
-    });
+  const loadCurrentUser = async () => {
+    try {
+      setLoading(true);
+      const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !authUser) {
+        throw new Error('Nicht angemeldet');
+      }
+
+      // Fetch user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', authUser.id)
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Fetch user roles
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', authUser.id);
+
+      if (rolesError) throw rolesError;
+
+      const roles = userRoles?.map(r => r.role as UserRole) || [];
+      const primaryRole = roles.find(r => r !== 'mitglied') || roles[0] || 'mitglied';
+
+      const userData: UserType = {
+        id: profile.id,
+        name: profile.name || '',
+        email: profile.email,
+        phone: profile.phone || '',
+        boatName: profile.boat_name || '',
+        memberNumber: profile.member_number || '',
+        roles: roles,
+        role: primaryRole as UserRole,
+        status: (profile.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
+        joinDate: profile.entry_date || profile.created_at || '',
+        joinedAt: profile.entry_date || profile.created_at || '',
+        isActive: profile.status === 'active',
+        oesvNumber: profile.oesv_number || '',
+        address: profile.address || '',
+        berthNumber: profile.berth_number || '',
+        berthType: profile.berth_type || '',
+        birthDate: profile.birth_date || '',
+        entryDate: profile.entry_date || ''
+      } as any;
+
+      setUser(userData);
+      setEditedUser(userData);
+    } catch (error) {
+      console.error('Error loading user:', error);
+      toast({
+        title: "Fehler",
+        description: "Profil konnte nicht geladen werden.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!editedUser) return;
+    
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (!authUser) throw new Error('Nicht angemeldet');
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          name: editedUser.name,
+          phone: editedUser.phone || null,
+          member_number: editedUser.memberNumber || null,
+          boat_name: editedUser.boatName || null,
+          oesv_number: (editedUser as any).oesvNumber || null,
+          address: (editedUser as any).address || null,
+          berth_number: (editedUser as any).berthNumber || null,
+          berth_type: (editedUser as any).berthType || null,
+          birth_date: (editedUser as any).birthDate || null,
+          entry_date: (editedUser as any).entryDate || null
+        })
+        .eq('id', authUser.id);
+
+      if (error) throw error;
+
+      setUser(editedUser);
+      setCustomValues(editedCustomValues);
+      setIsEditing(false);
+      toast({
+        title: "Profil gespeichert",
+        description: "Ihre Profildaten wurden erfolgreich aktualisiert."
+      });
+      
+      loadCurrentUser(); // Reload to ensure fresh data
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast({
+        title: "Fehler",
+        description: "Profil konnte nicht gespeichert werden.",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleAddCustomField = () => {
@@ -221,7 +320,23 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
     
     if (!isEditing) {
       if (!value) return null;
-      return (
+  if (loading) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-muted-foreground">Lade Profil...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-destructive">Profil konnte nicht geladen werden.</p>
+      </div>
+    );
+  }
+
+  return (
         <div key={field.id} className="space-y-1">
           <Label className="text-sm font-medium">{field.label}</Label>
           <p className="text-sm text-muted-foreground">{value}</p>
