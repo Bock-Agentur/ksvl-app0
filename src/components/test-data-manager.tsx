@@ -22,74 +22,32 @@ export function TestDataManager() {
   const generateTestUsers = async () => {
     setIsGenerating(true);
     try {
-      const testUsers = [];
-
-      // Generate Crane Operators
-      for (let i = 1; i <= craneOperatorCount; i++) {
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: `kranfuehrer${i}@test.hafen.com`,
-          password: `Test1234!${i}`,
-          options: {
-            data: {
-              name: `Test Kranführer ${i}`
-            }
-          }
-        });
-
-        if (authError) throw authError;
-
-        if (authData.user) {
-          // Update profile as test data
-          await supabase
-            .from('profiles')
-            .update({ is_test_data: true })
-            .eq('id', authData.user.id);
-
-          // Add crane operator role
-          await supabase
-            .from('user_roles')
-            .insert({ user_id: authData.user.id, role: 'kranfuehrer' });
-
-          testUsers.push(authData.user);
+      console.log('Calling create-test-users function...');
+      
+      const { data, error } = await supabase.functions.invoke('create-test-users', {
+        body: {
+          craneOperatorCount,
+          memberCount
         }
+      });
+
+      if (error) {
+        console.error('Error from edge function:', error);
+        throw error;
       }
 
-      // Generate Members
-      for (let i = 1; i <= memberCount; i++) {
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-          email: `mitglied${i}@test.hafen.com`,
-          password: `Test1234!${i}`,
-          options: {
-            data: {
-              name: `Test Mitglied ${i}`
-            }
-          }
-        });
-
-        if (authError) throw authError;
-
-        if (authData.user) {
-          // Update profile as test data
-          await supabase
-            .from('profiles')
-            .update({ is_test_data: true })
-            .eq('id', authData.user.id);
-
-          // Member role is added automatically by trigger
-          testUsers.push(authData.user);
-        }
-      }
+      console.log('Test users created:', data);
 
       toast({
         title: "Test-Benutzer erstellt",
-        description: `${craneOperatorCount} Kranführer und ${memberCount} Mitglieder wurden angelegt.`
+        description: `${data.created} Test-Benutzer wurden erfolgreich angelegt.`
       });
 
     } catch (error) {
       console.error('Error generating test users:', error);
       toast({
         title: "Fehler",
-        description: "Test-Benutzer konnten nicht erstellt werden.",
+        description: "Test-Benutzer konnten nicht erstellt werden. Bitte versuchen Sie es erneut.",
         variant: "destructive"
       });
     } finally {
