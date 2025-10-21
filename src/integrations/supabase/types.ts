@@ -101,6 +101,57 @@ export type Database = {
         }
         Relationships: []
       }
+      slots: {
+        Row: {
+          block_id: string | null
+          crane_operator_id: string
+          created_at: string | null
+          date: string
+          duration: number
+          id: string
+          is_booked: boolean | null
+          is_mini_slot: boolean | null
+          member_id: string | null
+          mini_slot_count: number | null
+          notes: string | null
+          start_minute: number | null
+          time: string
+          updated_at: string | null
+        }
+        Insert: {
+          block_id?: string | null
+          crane_operator_id: string
+          created_at?: string | null
+          date: string
+          duration: number
+          id?: string
+          is_booked?: boolean | null
+          is_mini_slot?: boolean | null
+          member_id?: string | null
+          mini_slot_count?: number | null
+          notes?: string | null
+          start_minute?: number | null
+          time: string
+          updated_at?: string | null
+        }
+        Update: {
+          block_id?: string | null
+          crane_operator_id?: string
+          created_at?: string | null
+          date?: string
+          duration?: number
+          id?: string
+          is_booked?: boolean | null
+          is_mini_slot?: boolean | null
+          member_id?: string | null
+          mini_slot_count?: number | null
+          notes?: string | null
+          start_minute?: number | null
+          time?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
