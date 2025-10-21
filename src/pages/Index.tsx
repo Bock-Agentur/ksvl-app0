@@ -86,14 +86,10 @@ const Index = () => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        console.log('Auth state changed:', event, session);
         setSession(session);
         setUser(session?.user ?? null);
         
-        if (event === 'SIGNED_OUT' || !session) {
-          // Clear session and redirect to auth
-          setSession(null);
-          setUser(null);
+        if (!session) {
           navigate("/auth");
         } else if (event === 'SIGNED_IN') {
           // Reset to dashboard after login
@@ -110,7 +106,6 @@ const Index = () => {
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session);
       setSession(session);
       setUser(session?.user ?? null);
       

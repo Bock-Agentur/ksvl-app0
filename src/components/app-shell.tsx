@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, Home, MessageSquare, Settings, User, Users, UserCheck, Menu, X, FileText, TestTube, Palette, Layers, LogOut } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Calendar, Home, MessageSquare, Settings, User, Users, UserCheck, Menu, X, FileText, TestTube, Palette, Layers } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -278,33 +277,8 @@ export function AppShell({
                           })}
                         </div>
                       </div>
-                      <Separator />
                     </>
                   )}
-                  
-                  {/* Logout Button */}
-                  <div className="pt-2">
-                    <Button
-                      variant="outline"
-                      className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={async () => {
-                        try {
-                          const { error } = await supabase.auth.signOut();
-                          if (error) {
-                            console.error('Logout error:', error);
-                          }
-                          // Force navigation to auth page
-                          window.location.replace('/auth');
-                        } catch (err) {
-                          console.error('Logout failed:', err);
-                          window.location.replace('/auth');
-                        }
-                      }}
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Abmelden
-                    </Button>
-                  </div>
                 </div>
               </SheetContent>
             </Sheet>

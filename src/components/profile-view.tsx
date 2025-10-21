@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings, LogOut } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

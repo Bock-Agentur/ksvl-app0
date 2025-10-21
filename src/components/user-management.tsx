@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key, Eye, LayoutGrid, List, ChevronDown } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key, Eye, LayoutGrid, List } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useUsers, DatabaseUser } from "@/hooks/use-users";
 import { useSearchFilter, useCommonFilters } from "@/hooks/use-search-filter";
 import { useFormHandler, useCommonFieldConfigs } from "@/hooks/use-form-handler";
@@ -20,8 +19,7 @@ import {
   calculateUserStats, 
   convertToCSV, 
   downloadCSV, 
-  generateMemberNumber,
-  formatDate 
+  generateMemberNumber 
 } from "@/lib/business-logic";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -467,153 +465,105 @@ export function UserManagementRefactored() {
             </Card>
           ) : (
             searchFilter.filteredData.map((user) => (
-              <Card key={user.id} className="transition-colors">
-                <Accordion type="single" collapsible className="w-full">
-                  <AccordionItem value={user.id} className="border-0">
-                    <AccordionTrigger className="hover:no-underline p-0 [&[data-state=open]>div]:bg-muted/50">
-                      <div className="w-full p-3 sm:p-4 transition-colors">
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
-                          {/* User Info Section */}
-                          <div className="flex-1 min-w-0 space-y-2 sm:space-y-1">
-                            {/* Name and Badges Row */}
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                              <h3 className="font-medium text-base sm:text-sm">{user.name}</h3>
-                              
-                              <div className="flex items-center gap-2 flex-wrap">
-                                {/* Role Badges */}
-                                <div className="flex gap-1 flex-wrap">
-                                  {user.roles?.map((role) => (
-                                    <Badge 
-                                      key={role}
-                                      variant="outline" 
-                                      className="text-xs px-2 py-0.5 h-5"
-                                    >
-                                      {getRoleLabel(role)}
-                                    </Badge>
-                                  )) || (
-                                    <Badge variant="outline" className="text-xs px-2 py-0.5 h-5">
-                                      {getRoleLabel(user.role)}
-                                    </Badge>
-                                  )}
-                                </div>
-                                
-                                {/* Status Badge */}
-                                <Badge 
-                                  variant={user.status === "active" ? "default" : "secondary"}
-                                  className="text-xs px-2 py-0.5 h-5"
-                                >
-                                  {user.status === "active" ? "Aktiv" : "Inaktiv"}
-                                </Badge>
-                              </div>
-                            </div>
-                            
-                            {/* Contact Info */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-sm text-muted-foreground">
-                              <div className="flex items-center gap-2 min-w-0">
-                                <Mail className="w-4 h-4 flex-shrink-0" />
-                                <span className="truncate text-xs sm:text-sm">{user.email}</span>
-                              </div>
-                              
-                              {user.phone && (
-                                <div className="flex items-center gap-2">
-                                  <Phone className="w-4 h-4 flex-shrink-0" />
-                                  <span className="text-xs sm:text-sm">{user.phone}</span>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {/* Member Info */}
-                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                              <div className="flex items-center gap-1.5">
-                                <Anchor className="w-4 h-4 flex-shrink-0" />
-                                <span className="text-xs sm:text-sm font-medium">{user.memberNumber}</span>
-                              </div>
-                              {user.boatName && (
-                                <span className="text-xs sm:text-sm">Boot: {user.boatName}</span>
-                              )}
-                            </div>
+              <Card key={user.id} className="transition-colors hover:bg-muted/50">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
+                    {/* User Info Section */}
+                    <div className="flex-1 min-w-0 space-y-2 sm:space-y-1">
+                      {/* Name and Badges Row */}
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <h3 className="font-medium text-base sm:text-sm">{user.name}</h3>
+                        
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {/* Role Badges */}
+                          <div className="flex gap-1 flex-wrap">
+                            {user.roles?.map((role) => (
+                              <Badge 
+                                key={role}
+                                variant="outline" 
+                                className="text-xs px-2 py-0.5 h-5"
+                              >
+                                {getRoleLabel(role)}
+                              </Badge>
+                            )) || (
+                              <Badge variant="outline" className="text-xs px-2 py-0.5 h-5">
+                                {getRoleLabel(user.role)}
+                              </Badge>
+                            )}
                           </div>
+                          
+                          {/* Status Badge */}
+                          <Badge 
+                            variant={user.status === "active" ? "default" : "secondary"}
+                            className="text-xs px-2 py-0.5 h-5"
+                          >
+                            {user.status === "active" ? "Aktiv" : "Inaktiv"}
+                          </Badge>
                         </div>
                       </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-3 sm:px-4 pb-4">
-                      <div className="space-y-4 pt-2 border-t">
-                        {/* Extended Details */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                          {(user as any).oesvNumber && (
-                            <div>
-                              <span className="text-muted-foreground">OESV-Nummer:</span>
-                              <p className="font-medium">{(user as any).oesvNumber}</p>
-                            </div>
-                          )}
-                          {(user as any).berthNumber && (
-                            <div>
-                              <span className="text-muted-foreground">Liegeplatz:</span>
-                              <p className="font-medium">{(user as any).berthNumber} {(user as any).berthType && `(${(user as any).berthType})`}</p>
-                            </div>
-                          )}
-                          {(user as any).birthDate && (
-                            <div>
-                              <span className="text-muted-foreground">Geburtsdatum:</span>
-                              <p className="font-medium">{formatDate((user as any).birthDate)}</p>
-                            </div>
-                          )}
-                          {(user as any).entryDate && (
-                            <div>
-                              <span className="text-muted-foreground">Eintrittsdatum:</span>
-                              <p className="font-medium">{formatDate((user as any).entryDate)}</p>
-                            </div>
-                          )}
-                          {(user as any).address && (
-                            <div className="sm:col-span-2">
-                              <span className="text-muted-foreground">Adresse:</span>
-                              <p className="font-medium">{(user as any).address}</p>
-                            </div>
-                          )}
+                      
+                      {/* Contact Info */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Mail className="w-4 h-4 flex-shrink-0" />
+                          <span className="truncate text-xs sm:text-sm">{user.email}</span>
                         </div>
                         
-                        {/* Action Buttons */}
-                        <div className="flex gap-2 pt-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewUser(user);
-                            }}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            Details ansehen
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setPasswordUserId(user.id);
-                              setShowPasswordDialog(true);
-                            }}
-                          >
-                            <Key className="w-4 h-4 mr-2" />
-                            Passwort ändern
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteUser(user.id);
-                            }}
-                            className="hover:bg-destructive hover:text-destructive-foreground"
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Löschen
-                          </Button>
-                        </div>
+                        {user.phone && (
+                          <div className="flex items-center gap-2">
+                            <Phone className="w-4 h-4 flex-shrink-0" />
+                            <span className="text-xs sm:text-sm">{user.phone}</span>
+                          </div>
+                        )}
                       </div>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
+                      
+                      {/* Member Info */}
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-1.5">
+                          <Anchor className="w-4 h-4 flex-shrink-0" />
+                          <span className="text-xs sm:text-sm font-medium">{user.memberNumber}</span>
+                        </div>
+                        {user.boatName && (
+                          <span className="text-xs sm:text-sm">Boot: {user.boatName}</span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Action Buttons */}
+                    <div className="flex gap-2 sm:ml-4 self-end sm:self-center">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleViewUser(user)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Eye className="w-4 h-4" />
+                        <span className="sr-only">Ansehen</span>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setPasswordUserId(user.id);
+                          setShowPasswordDialog(true);
+                        }}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Key className="w-4 h-4" />
+                        <span className="sr-only">Passwort ändern</span>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDeleteUser(user.id)}
+                        className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        <span className="sr-only">Löschen</span>
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
               </Card>
             ))
           )}
