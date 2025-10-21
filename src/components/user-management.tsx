@@ -319,35 +319,35 @@ export function UserManagementRefactored() {
       </div>
 
       {/* Statistiken Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
         <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-primary">{stats.total}</div>
-            <p className="text-xs text-muted-foreground">Gesamt</p>
+          <CardContent className="pt-3 pb-2">
+            <div className="text-lg font-bold text-primary">{stats.total}</div>
+            <p className="text-[10px] text-muted-foreground">Gesamt</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-            <p className="text-xs text-muted-foreground">Aktiv</p>
+          <CardContent className="pt-3 pb-2">
+            <div className="text-lg font-bold text-green-600">{stats.active}</div>
+            <p className="text-[10px] text-muted-foreground">Aktiv</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-blue-600">{stats.byRole.mitglied || 0}</div>
-            <p className="text-xs text-muted-foreground">Mitglieder</p>
+          <CardContent className="pt-3 pb-2">
+            <div className="text-lg font-bold text-blue-600">{stats.byRole.mitglied || 0}</div>
+            <p className="text-[10px] text-muted-foreground">Mitglieder</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-             <div className="text-2xl font-bold text-purple-600">{stats.byRole.kranfuehrer + stats.byRole.admin || 0}</div>
-             <p className="text-xs text-muted-foreground">Kranführer</p>
+          <CardContent className="pt-3 pb-2">
+             <div className="text-lg font-bold text-purple-600">{stats.byRole.kranfuehrer + stats.byRole.admin || 0}</div>
+             <p className="text-[10px] text-muted-foreground">Kranführer</p>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-red-600">{stats.byRole.admin || 0}</div>
-            <p className="text-xs text-muted-foreground">Admins</p>
+          <CardContent className="pt-3 pb-2">
+            <div className="text-lg font-bold text-red-600">{stats.byRole.admin || 0}</div>
+            <p className="text-[10px] text-muted-foreground">Admins</p>
           </CardContent>
         </Card>
       </div>
