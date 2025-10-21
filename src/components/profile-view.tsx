@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings } from "lucide-react";
+import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -452,16 +453,30 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           </p>
         </div>
         
-        {!isEditing && (
-          <Button onClick={() => {
-            setIsEditing(true);
-            setEditedUser(user);
-            setEditedCustomValues(customValues);
-          }}>
-            <Edit className="w-4 h-4 mr-2" />
-            Bearbeiten
-          </Button>
-        )}
+        <div className="flex gap-2">
+          {!isEditing && !userId && (
+            <Button 
+              variant="outline"
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.href = '/auth';
+              }}
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Abmelden
+            </Button>
+          )}
+          {!isEditing && (
+            <Button onClick={() => {
+              setIsEditing(true);
+              setEditedUser(user);
+              setEditedCustomValues(customValues);
+            }}>
+              <Edit className="w-4 h-4 mr-2" />
+              Bearbeiten
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Profile Card */}
