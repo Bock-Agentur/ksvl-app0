@@ -43,16 +43,20 @@ export function DashboardSettings() {
     return acc;
   }, {} as Record<string, typeof availableWidgets>);
 
-  const roleLabels = {
+  const roleLabels: Record<UserRole, string> = {
+    admin: "Administrator",
+    vorstand: "Vorstand",
+    kranfuehrer: "Kranführer",
     mitglied: "Mitglied",
-    kranfuehrer: "Kranführer", 
-    admin: "Administrator"
+    gastmitglied: "Gastmitglied"
   };
 
-  const roleIcons = {
-    mitglied: Users,
+  const roleIcons: Record<UserRole, any> = {
+    admin: Shield,
+    vorstand: Shield,
     kranfuehrer: UserCheck,
-    admin: Shield
+    mitglied: Users,
+    gastmitglied: Users
   };
 
   const categoryNames = {
@@ -116,8 +120,8 @@ export function DashboardSettings() {
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Rolle konfigurieren</h3>
             </div>
-            <div className="flex gap-2 justify-center sm:justify-start">
-              {(["mitglied", "kranfuehrer", "admin"] as UserRole[]).map((role) => {
+            <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
+              {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
                 const Icon = roleIcons[role];
                 return (
                   <Card 
@@ -139,7 +143,7 @@ export function DashboardSettings() {
                         "font-medium text-xs",
                         selectedConfigRole === role ? "text-primary" : "text-foreground"
                       )}>
-                        {role === "mitglied" ? "Mitgl." : role === "kranfuehrer" ? "Kran" : "Admin"}
+                        {roleLabels[role]}
                       </p>
                     </CardContent>
                   </Card>
