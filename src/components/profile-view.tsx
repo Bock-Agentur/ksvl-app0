@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -148,6 +149,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const [isManagingFields, setIsManagingFields] = useState(false);
   const [editedUser, setEditedUser] = useState<UserType | null>(null);
   const [editedCustomValues, setEditedCustomValues] = useState<Record<string, any>>({});
+  const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
 
   // New custom field form
@@ -161,7 +163,20 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
 
   useEffect(() => {
     loadCurrentUser();
+    checkAdminStatus();
   }, [userId]);
+  
+  const checkAdminStatus = async () => {
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (currentUser) {
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', currentUser.id);
+      
+      setIsAdmin(roles?.some(r => r.role === 'admin') || false);
+    }
+  };
 
   const loadCurrentUser = async () => {
     try {
@@ -486,6 +501,68 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         </CardHeader>
         
         <CardContent className="space-y-6">
+          {/* Rollen - Nur für Admins sichtbar */}
+          {isAdmin && userId && (
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-foreground border-b pb-2">Rollen</h3>
+              {isEditing ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                  {Object.entries(roleLabels).map(([roleKey, roleLabel]) => {
+                    const role = roleKey as UserRole;
+                    const isChecked = editedUser?.roles?.includes(role) || false;
+                    
+                    return (
+                      <div key={role} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`role-${role}`}
+                          checked={isChecked}
+                          onCheckedChange={(checked) => {
+                            if (!editedUser) return;
+                            const currentRoles = editedUser.roles || [];
+                            let newRoles: UserRole[];
+                            
+                            if (checked) {
+                              newRoles = [...currentRoles, role];
+                            } else {
+                              newRoles = currentRoles.filter(r => r !== role);
+                            }
+                            
+                            // Update primary role if needed
+                            const primaryRole = newRoles.find(r => r === 'vorstand') 
+                              || newRoles.find(r => r === 'admin') 
+                              || newRoles.find(r => r === 'kranfuehrer') 
+                              || newRoles.find(r => r === 'mitglied') 
+                              || 'gastmitglied';
+                            
+                            setEditedUser({
+                              ...editedUser,
+                              roles: newRoles,
+                              role: primaryRole
+                            });
+                          }}
+                        />
+                        <label
+                          htmlFor={`role-${role}`}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                          {roleLabel}
+                        </label>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {user.roles?.map((role) => (
+                    <Badge key={role} className={cn("text-xs", roleColors[role])}>
+                      {roleLabels[role]}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+          
           {/* Basic Information */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-foreground border-b pb-2">Grunddaten</h3>
