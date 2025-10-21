@@ -121,11 +121,18 @@ export type Database = {
           avatar_url: string | null
           berth_number: string | null
           berth_type: string | null
+          beverage_chip_issue_date: string | null
+          beverage_chip_number: string | null
           birth_date: string | null
+          boat_length: number | null
           boat_name: string | null
+          boat_type: string | null
+          boat_width: number | null
           city: string | null
           created_at: string | null
+          dinghy_berth_number: string | null
           email: string
+          emergency_contact: string | null
           entry_date: string | null
           first_name: string | null
           id: string
@@ -133,7 +140,10 @@ export type Database = {
           last_name: string | null
           member_number: string | null
           name: string | null
+          notes: string | null
           oesv_number: string | null
+          parking_permit_issue_date: string | null
+          parking_permit_number: string | null
           phone: string | null
           postal_code: string | null
           status: string | null
@@ -145,11 +155,18 @@ export type Database = {
           avatar_url?: string | null
           berth_number?: string | null
           berth_type?: string | null
+          beverage_chip_issue_date?: string | null
+          beverage_chip_number?: string | null
           birth_date?: string | null
+          boat_length?: number | null
           boat_name?: string | null
+          boat_type?: string | null
+          boat_width?: number | null
           city?: string | null
           created_at?: string | null
+          dinghy_berth_number?: string | null
           email: string
+          emergency_contact?: string | null
           entry_date?: string | null
           first_name?: string | null
           id: string
@@ -157,7 +174,10 @@ export type Database = {
           last_name?: string | null
           member_number?: string | null
           name?: string | null
+          notes?: string | null
           oesv_number?: string | null
+          parking_permit_issue_date?: string | null
+          parking_permit_number?: string | null
           phone?: string | null
           postal_code?: string | null
           status?: string | null
@@ -169,11 +189,18 @@ export type Database = {
           avatar_url?: string | null
           berth_number?: string | null
           berth_type?: string | null
+          beverage_chip_issue_date?: string | null
+          beverage_chip_number?: string | null
           birth_date?: string | null
+          boat_length?: number | null
           boat_name?: string | null
+          boat_type?: string | null
+          boat_width?: number | null
           city?: string | null
           created_at?: string | null
+          dinghy_berth_number?: string | null
           email?: string
+          emergency_contact?: string | null
           entry_date?: string | null
           first_name?: string | null
           id?: string
@@ -181,7 +208,10 @@ export type Database = {
           last_name?: string | null
           member_number?: string | null
           name?: string | null
+          notes?: string | null
           oesv_number?: string | null
+          parking_permit_issue_date?: string | null
+          parking_permit_number?: string | null
           phone?: string | null
           postal_code?: string | null
           status?: string | null

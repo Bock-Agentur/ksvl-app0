@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings } from "lucide-react";
+import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings, Eye, EyeOff } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -150,6 +150,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const [editedUser, setEditedUser] = useState<UserType | null>(null);
   const [editedCustomValues, setEditedCustomValues] = useState<Record<string, any>>({});
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
   const { toast } = useToast();
 
   // New custom field form
@@ -239,7 +241,17 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         berthNumber: profile.berth_number || '',
         berthType: profile.berth_type || '',
         birthDate: profile.birth_date || '',
-        entryDate: profile.entry_date || ''
+        entryDate: profile.entry_date || '',
+        dinghyBerthNumber: profile.dinghy_berth_number || '',
+        boatType: profile.boat_type || '',
+        boatLength: profile.boat_length || undefined,
+        boatWidth: profile.boat_width || undefined,
+        parkingPermitNumber: profile.parking_permit_number || '',
+        parkingPermitIssueDate: profile.parking_permit_issue_date || '',
+        beverageChipNumber: profile.beverage_chip_number || '',
+        beverageChipIssueDate: profile.beverage_chip_issue_date || '',
+        emergencyContact: profile.emergency_contact || '',
+        notes: profile.notes || ''
       } as any;
 
       setUser(userData);
@@ -286,16 +298,31 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             userId: targetUserId,
             userData: {
               name: editedUser.name,
+              firstName: editedUser.firstName,
+              lastName: editedUser.lastName,
               phone: editedUser.phone,
               memberNumber: editedUser.memberNumber,
               boatName: editedUser.boatName,
               roles: editedUser.roles,
               oesvNumber: (editedUser as any).oesvNumber,
               address: (editedUser as any).address,
+              streetAddress: editedUser.streetAddress,
+              postalCode: editedUser.postalCode,
+              city: editedUser.city,
               berthNumber: (editedUser as any).berthNumber,
               berthType: (editedUser as any).berthType,
               birthDate: (editedUser as any).birthDate,
-              entryDate: (editedUser as any).entryDate
+              entryDate: (editedUser as any).entryDate,
+              dinghyBerthNumber: (editedUser as any).dinghyBerthNumber,
+              boatType: (editedUser as any).boatType,
+              boatLength: (editedUser as any).boatLength,
+              boatWidth: (editedUser as any).boatWidth,
+              parkingPermitNumber: (editedUser as any).parkingPermitNumber,
+              parkingPermitIssueDate: (editedUser as any).parkingPermitIssueDate,
+              beverageChipNumber: (editedUser as any).beverageChipNumber,
+              beverageChipIssueDate: (editedUser as any).beverageChipIssueDate,
+              emergencyContact: (editedUser as any).emergencyContact,
+              notes: (editedUser as any).notes
             }
           })
         });
@@ -323,7 +350,17 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             berth_number: (editedUser as any).berthNumber || null,
             berth_type: (editedUser as any).berthType || null,
             birth_date: (editedUser as any).birthDate || null,
-            entry_date: (editedUser as any).entryDate || null
+            entry_date: (editedUser as any).entryDate || null,
+            dinghy_berth_number: (editedUser as any).dinghyBerthNumber || null,
+            boat_type: (editedUser as any).boatType || null,
+            boat_length: (editedUser as any).boatLength || null,
+            boat_width: (editedUser as any).boatWidth || null,
+            parking_permit_number: (editedUser as any).parkingPermitNumber || null,
+            parking_permit_issue_date: (editedUser as any).parkingPermitIssueDate || null,
+            beverage_chip_number: (editedUser as any).beverageChipNumber || null,
+            beverage_chip_issue_date: (editedUser as any).beverageChipIssueDate || null,
+            emergency_contact: (editedUser as any).emergencyContact || null,
+            notes: (editedUser as any).notes || null
           })
           .eq('id', targetUserId);
 
@@ -600,13 +637,13 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             </div>
           )}
           
-          {/* Basic Information */}
+          {/* Grunddaten - User-Name und Passwort */}
           <div className="space-y-4">
             <h3 className="text-sm font-medium text-foreground border-b pb-2">Grunddaten</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>User-Name: </Label>
+                <Label>User-Name</Label>
                 {isEditing ? (
                   <Input
                     value={editedUser.name}
@@ -620,78 +657,84 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
 
+              {isAdmin && userId && (
+                <div className="space-y-2">
+                  <Label>Passwort</Label>
+                  {isEditing ? (
+                    <div className="relative">
+                      <Input
+                        type={showPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Neues Passwort eingeben..."
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      >
+                        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">********</span>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {isAdmin && userId && isEditing && newPassword && (
+              <p className="text-sm text-muted-foreground">
+                Das Passwort wird beim Speichern geändert
+              </p>
+            )}
+          </div>
+          
+          {/* Stammdaten */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-foreground border-b pb-2">Stammdaten</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Vorname: </Label>
+                <Label>Mitgliedernummer</Label>
+                {isEditing ? (
+                  <Input
+                    value={editedUser.memberNumber || ''}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev!, memberNumber: e.target.value }))}
+                  />
+                ) : (
+                  <span className="text-sm font-mono bg-muted px-2 py-1 rounded inline-block">
+                    {user.memberNumber || '-'}
+                  </span>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Vorname</Label>
                 {isEditing ? (
                   <Input
                     value={editedUser.firstName || ''}
                     onChange={(e) => setEditedUser(prev => ({ ...prev!, firstName: e.target.value }))}
                   />
-                ) : user.firstName ? (
-                  <span className="text-sm">{user.firstName}</span>
                 ) : (
-                  <span className="text-sm text-muted-foreground">-</span>
+                  <span className="text-sm">{user.firstName || '-'}</span>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label>Nachname: </Label>
+                <Label>Nachname</Label>
                 {isEditing ? (
                   <Input
                     value={editedUser.lastName || ''}
                     onChange={(e) => setEditedUser(prev => ({ ...prev!, lastName: e.target.value }))}
                   />
-                ) : user.lastName ? (
-                  <span className="text-sm">{user.lastName}</span>
                 ) : (
-                  <span className="text-sm text-muted-foreground">-</span>
+                  <span className="text-sm">{user.lastName || '-'}</span>
                 )}
               </div>
 
               <div className="space-y-2">
-                <Label>Adresse: </Label>
-                {isEditing ? (
-                  <Input
-                    value={editedUser.streetAddress || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev!, streetAddress: e.target.value }))}
-                  />
-                ) : user.streetAddress ? (
-                  <span className="text-sm">{user.streetAddress}</span>
-                ) : (
-                  <span className="text-sm text-muted-foreground">-</span>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>PLZ: </Label>
-                {isEditing ? (
-                  <Input
-                    value={editedUser.postalCode || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev!, postalCode: e.target.value }))}
-                  />
-                ) : user.postalCode ? (
-                  <span className="text-sm">{user.postalCode}</span>
-                ) : (
-                  <span className="text-sm text-muted-foreground">-</span>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>Ort: </Label>
-                {isEditing ? (
-                  <Input
-                    value={editedUser.city || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev!, city: e.target.value }))}
-                  />
-                ) : user.city ? (
-                  <span className="text-sm">{user.city}</span>
-                ) : (
-                  <span className="text-sm text-muted-foreground">-</span>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label>E-Mail: </Label>
+                <Label>Email</Label>
                 {isEditing ? (
                   <Input
                     type="email"
@@ -707,7 +750,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Telefon: </Label>
+                <Label>Telefonnummer</Label>
                 {isEditing ? (
                   <Input
                     value={editedUser.phone}
@@ -716,88 +759,99 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 ) : (
                   <div className="flex items-center gap-2">
                     <Phone className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{user.phone}</span>
+                    <span className="text-sm">{user.phone || '-'}</span>
                   </div>
                 )}
               </div>
               
               <div className="space-y-2">
-                <Label>Mitgliedsnummer: </Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-mono bg-muted px-2 py-1 rounded">
-                    {user.memberNumber}
-                  </span>
-                </div>
+                <Label>Adresse</Label>
+                {isEditing ? (
+                  <Input
+                    value={editedUser.streetAddress || ''}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev!, streetAddress: e.target.value }))}
+                  />
+                ) : (
+                  <span className="text-sm">{user.streetAddress || '-'}</span>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>PLZ</Label>
+                {isEditing ? (
+                  <Input
+                    value={editedUser.postalCode || ''}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev!, postalCode: e.target.value }))}
+                  />
+                ) : (
+                  <span className="text-sm">{user.postalCode || '-'}</span>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label>Stadt</Label>
+                {isEditing ? (
+                  <Input
+                    value={editedUser.city || ''}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev!, city: e.target.value }))}
+                  />
+                ) : (
+                  <span className="text-sm">{user.city || '-'}</span>
+                )}
               </div>
               
-              {(user.boatName || isEditing) && (
-                <div className="space-y-2">
-                  <Label>Bootsname: </Label>
-                  {isEditing ? (
-                    <Input
-                      value={editedUser.boatName || ""}
-                      onChange={(e) => setEditedUser(prev => ({ ...prev, boatName: e.target.value }))}
-                      placeholder="Name Ihres Bootes"
-                    />
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <Anchor className="w-4 h-4 text-muted-foreground" />
-                      <span className="text-sm">{user.boatName}</span>
-                    </div>
-                  )}
-                </div>
-              )}
+              <div className="space-y-2">
+                <Label>Geburtsdatum</Label>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={(editedUser as any).birthDate || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, birthDate: e.target.value } as any))}
+                  />
+                ) : (
+                  <span className="text-sm">
+                    {(user as any).birthDate ? new Date((user as any).birthDate).toLocaleDateString('de-AT') : "-"}
+                  </span>
+                )}
+              </div>
               
               <div className="space-y-2">
-                <Label>Mitglied seit: </Label>
-                <span className="text-sm text-muted-foreground">
-                  {new Date(user.joinedAt).toLocaleDateString('de-AT', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}
-                </span>
+                <Label>Eintrittsdatum</Label>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={(editedUser as any).entryDate || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, entryDate: e.target.value } as any))}
+                  />
+                ) : (
+                  <span className="text-sm">
+                    {(user as any).entryDate ? new Date((user as any).entryDate).toLocaleDateString('de-AT') : "-"}
+                  </span>
+                )}
               </div>
             </div>
           </div>
           
-          {/* Additional Information */}
+          {/* Segeldaten */}
           <div className="space-y-4">
-            <h3 className="text-sm font-medium text-foreground border-b pb-2">Zusätzliche Informationen</h3>
+            <h3 className="text-sm font-medium text-foreground border-b pb-2">Segeldaten</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>OESV Nummer: </Label>
+                <Label>ÖSV Mitgliedsnummer</Label>
                 {isEditing ? (
                   <Input
                     value={(editedUser as any).oesvNumber || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, oesvNumber: e.target.value } as any))}
-                    placeholder="OESV Mitgliedsnummer"
+                    placeholder="ÖSV Nummer"
                   />
                 ) : (
-                  <span className="text-sm text-muted-foreground">
-                    {(user as any).oesvNumber || "-"}
-                  </span>
+                  <span className="text-sm">{(user as any).oesvNumber || "-"}</span>
                 )}
               </div>
               
               <div className="space-y-2">
-                <Label>Adresse: </Label>
-                {isEditing ? (
-                  <Input
-                    value={(editedUser as any).address || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, address: e.target.value } as any))}
-                    placeholder="Ihre Adresse"
-                  />
-                ) : (
-                  <span className="text-sm text-muted-foreground">
-                    {(user as any).address || "-"}
-                  </span>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Liegeplatz Nummer: </Label>
+                <Label>Liegeplatznummer</Label>
                 {isEditing ? (
                   <Input
                     value={(editedUser as any).berthNumber || ""}
@@ -805,14 +859,25 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                     placeholder="Liegeplatz Nummer"
                   />
                 ) : (
-                  <span className="text-sm text-muted-foreground">
-                    {(user as any).berthNumber || "-"}
-                  </span>
+                  <span className="text-sm">{(user as any).berthNumber || "-"}</span>
                 )}
               </div>
               
               <div className="space-y-2">
-                <Label>Liegeplatz Typ: </Label>
+                <Label>Beibootplatznummer</Label>
+                {isEditing ? (
+                  <Input
+                    value={(editedUser as any).dinghyBerthNumber || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, dinghyBerthNumber: e.target.value } as any))}
+                    placeholder="Beibootplatz Nummer"
+                  />
+                ) : (
+                  <span className="text-sm">{(user as any).dinghyBerthNumber || "-"}</span>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Liegeplatztyp</Label>
                 {isEditing ? (
                   <Select
                     value={(editedUser as any).berthType || ""}
@@ -829,45 +894,135 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                     </SelectContent>
                   </Select>
                 ) : (
-                  <span className="text-sm text-muted-foreground">
-                    {(user as any).berthType || "-"}
+                  <span className="text-sm">{(user as any).berthType || "-"}</span>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Bootstyp</Label>
+                {isEditing ? (
+                  <Input
+                    value={(editedUser as any).boatType || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, boatType: e.target.value } as any))}
+                    placeholder="z.B. Segelboot, Motorboot"
+                  />
+                ) : (
+                  <span className="text-sm">{(user as any).boatType || "-"}</span>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Bootsname</Label>
+                {isEditing ? (
+                  <Input
+                    value={editedUser.boatName || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, boatName: e.target.value }))}
+                    placeholder="Name Ihres Bootes"
+                  />
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Anchor className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm">{user.boatName || '-'}</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Bootslänge (m)</Label>
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={(editedUser as any).boatLength || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, boatLength: e.target.value ? parseFloat(e.target.value) : undefined } as any))}
+                    placeholder="z.B. 8.5"
+                  />
+                ) : (
+                  <span className="text-sm">{(user as any).boatLength ? `${(user as any).boatLength} m` : "-"}</span>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Bootsbreite (m)</Label>
+                {isEditing ? (
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={(editedUser as any).boatWidth || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, boatWidth: e.target.value ? parseFloat(e.target.value) : undefined } as any))}
+                    placeholder="z.B. 2.8"
+                  />
+                ) : (
+                  <span className="text-sm">{(user as any).boatWidth ? `${(user as any).boatWidth} m` : "-"}</span>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {/* Parkplatz und Getränke */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-foreground border-b pb-2">Parkplatz und Getränke</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Parkberechtigungs-Nummer</Label>
+                {isEditing ? (
+                  <Input
+                    value={(editedUser as any).parkingPermitNumber || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, parkingPermitNumber: e.target.value } as any))}
+                    placeholder="Parkausweis Nummer"
+                  />
+                ) : (
+                  <span className="text-sm">{(user as any).parkingPermitNumber || "-"}</span>
+                )}
+              </div>
+              
+              <div className="space-y-2">
+                <Label>Ausgabedatum</Label>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={(editedUser as any).parkingPermitIssueDate || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, parkingPermitIssueDate: e.target.value } as any))}
+                  />
+                ) : (
+                  <span className="text-sm">
+                    {(user as any).parkingPermitIssueDate ? new Date((user as any).parkingPermitIssueDate).toLocaleDateString('de-AT') : "-"}
                   </span>
                 )}
               </div>
               
               <div className="space-y-2">
-                <Label>Geburtsdatum: </Label>
+                <Label>Getränkechip-Nummer</Label>
                 {isEditing ? (
                   <Input
-                    type="date"
-                    value={(editedUser as any).birthDate || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, birthDate: e.target.value } as any))}
+                    value={(editedUser as any).beverageChipNumber || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, beverageChipNumber: e.target.value } as any))}
+                    placeholder="Chip Nummer"
                   />
                 ) : (
-                  <span className="text-sm text-muted-foreground">
-                    {(user as any).birthDate ? new Date((user as any).birthDate).toLocaleDateString('de-AT') : "-"}
-                  </span>
+                  <span className="text-sm">{(user as any).beverageChipNumber || "-"}</span>
                 )}
               </div>
               
               <div className="space-y-2">
-                <Label>Eintrittsdatum: </Label>
+                <Label>Ausgabedatum</Label>
                 {isEditing ? (
                   <Input
                     type="date"
-                    value={(editedUser as any).entryDate || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, entryDate: e.target.value } as any))}
+                    value={(editedUser as any).beverageChipIssueDate || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, beverageChipIssueDate: e.target.value } as any))}
                   />
                 ) : (
-                  <span className="text-sm text-muted-foreground">
-                    {(user as any).entryDate ? new Date((user as any).entryDate).toLocaleDateString('de-AT') : "-"}
+                  <span className="text-sm">
+                    {(user as any).beverageChipIssueDate ? new Date((user as any).beverageChipIssueDate).toLocaleDateString('de-AT') : "-"}
                   </span>
                 )}
               </div>
             </div>
           </div>
           
-          {/* Custom Fields */}
+          {/* Zusätzliche Informationen (Custom Fields) */}
           {customFields.length > 0 && (
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-foreground border-b pb-2">Zusätzliche Informationen</h3>
@@ -876,6 +1031,42 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
             </div>
           )}
+          
+          {/* Notfallkontakt */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-foreground border-b pb-2">Notfallkontakt</h3>
+            
+            <div className="space-y-2">
+              {isEditing ? (
+                <Textarea
+                  value={(editedUser as any).emergencyContact || ""}
+                  onChange={(e) => setEditedUser(prev => ({ ...prev, emergencyContact: e.target.value } as any))}
+                  placeholder="Name, Telefonnummer und Beziehung"
+                  rows={3}
+                />
+              ) : (
+                <p className="text-sm">{(user as any).emergencyContact || "-"}</p>
+              )}
+            </div>
+          </div>
+          
+          {/* Notizen */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-foreground border-b pb-2">Notizen</h3>
+            
+            <div className="space-y-2">
+              {isEditing ? (
+                <Textarea
+                  value={(editedUser as any).notes || ""}
+                  onChange={(e) => setEditedUser(prev => ({ ...prev, notes: e.target.value } as any))}
+                  placeholder="Zusätzliche Notizen..."
+                  rows={4}
+                />
+              ) : (
+                <p className="text-sm whitespace-pre-wrap">{(user as any).notes || "-"}</p>
+              )}
+            </div>
+          </div>
 
           {/* Save/Cancel Buttons */}
           {isEditing && (
