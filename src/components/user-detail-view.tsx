@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Edit, Save, X, User, Mail, Phone, Anchor } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -224,32 +225,61 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Rolle: </Label>
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Rollen: </Label>
                     {isEditing ? (
-                      <Select
-                        value={editedUser.role}
-                        onValueChange={(value: UserRole) => {
-                          setEditedUser(prev => ({
-                            ...prev,
-                            role: value,
-                            roles: generateRolesFromPrimary(value)
-                          }));
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="mitglied">Mitglied</SelectItem>
-                          <SelectItem value="kranfuehrer">Kranführer</SelectItem>
-                          <SelectItem value="gastmitglied">Gastmitglied</SelectItem>
-                          <SelectItem value="vorstand">Vorstand</SelectItem>
-                          <SelectItem value="admin">Admin</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {Object.entries(roleLabels).map(([roleKey, roleLabel]) => {
+                          const role = roleKey as UserRole;
+                          const isChecked = editedUser.roles?.includes(role) || false;
+                          
+                          return (
+                            <div key={role} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`role-${role}`}
+                                checked={isChecked}
+                                onCheckedChange={(checked) => {
+                                  const currentRoles = editedUser.roles || [];
+                                  let newRoles: UserRole[];
+                                  
+                                  if (checked) {
+                                    newRoles = [...currentRoles, role];
+                                  } else {
+                                    newRoles = currentRoles.filter(r => r !== role);
+                                  }
+                                  
+                                  // Update primary role if needed
+                                  const primaryRole = newRoles.find(r => r === 'vorstand') 
+                                    || newRoles.find(r => r === 'admin') 
+                                    || newRoles.find(r => r === 'kranfuehrer') 
+                                    || newRoles.find(r => r === 'mitglied') 
+                                    || 'gastmitglied';
+                                  
+                                  setEditedUser(prev => ({
+                                    ...prev,
+                                    roles: newRoles,
+                                    role: primaryRole
+                                  }));
+                                }}
+                              />
+                              <label
+                                htmlFor={`role-${role}`}
+                                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                              >
+                                {roleLabel}
+                              </label>
+                            </div>
+                          );
+                        })}
+                      </div>
                     ) : (
-                      <div className="text-sm text-muted-foreground">{roleLabels[editedUser.role]}</div>
+                      <div className="flex flex-wrap gap-2">
+                        {editedUser.roles?.map((role) => (
+                          <Badge key={role} className={cn("text-xs", roleColors[role])}>
+                            {roleLabels[role]}
+                          </Badge>
+                        ))}
+                      </div>
                     )}
                   </div>
 
