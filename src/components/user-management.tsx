@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { useUsers, DatabaseUser } from "@/hooks/use-users";
 import { useSearchFilter, useCommonFilters } from "@/hooks/use-search-filter";
 import { useFormHandler, useCommonFieldConfigs } from "@/hooks/use-form-handler";
 import { User, UserRole, generateRolesFromPrimary } from "@/types";
+import { UserDetailView } from "./user-detail-view";
 import { UserRoleSelector } from "./user-role-selector";
 import { 
   getRoleLabel, 
@@ -125,6 +126,8 @@ export function UserManagementRefactored() {
   const [password, setPassword] = useState("");
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [passwordUserId, setPasswordUserId] = useState<string | null>(null);
+  const [showDetailView, setShowDetailView] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   
   // Statistiken mit Business Logic
   const stats = calculateUserStats(users);
@@ -141,6 +144,11 @@ export function UserManagementRefactored() {
     setEditingUserId(user.id);
     userForm.setValues(user);
     setShowDialog(true);
+  };
+
+  const handleViewUser = (user: User) => {
+    setSelectedUser(user);
+    setShowDetailView(true);
   };
 
   const handleDeleteUser = async (userId: string) => {
@@ -537,6 +545,15 @@ export function UserManagementRefactored() {
                     <Button
                       size="sm"
                       variant="outline"
+                      onClick={() => handleViewUser(user)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span className="sr-only">Ansehen</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() => handleEditUser(user)}
                       className="h-8 w-8 p-0"
                     >
@@ -838,6 +855,19 @@ export function UserManagementRefactored() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* User Detail View */}
+      {selectedUser && (
+        <UserDetailView
+          user={selectedUser}
+          isOpen={showDetailView}
+          onClose={() => {
+            setShowDetailView(false);
+            setSelectedUser(null);
+          }}
+          onUpdate={refreshUsers}
+        />
+      )}
     </div>
   );
 }
