@@ -60,7 +60,11 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       };
 
       setCurrentUser(user);
-      setCurrentRole(settings.defaultRole || primaryRole);
+      // Only use defaultRole if it's one of the user's roles
+      const roleToUse = (settings.defaultRole && roles.includes(settings.defaultRole)) 
+        ? settings.defaultRole 
+        : primaryRole;
+      setCurrentRole(roleToUse);
     };
 
     loadUser();
