@@ -235,10 +235,106 @@ export function UserManagementRefactored() {
   };
 
   const handleFormSubmit = async () => {
-    const success = await userForm.submit();
-    if (success) {
+    try {
+      const data = userForm.values;
+      const memberNumber = data.memberNumber || generateMemberNumber(users);
+      
+      if (editingUserId) {
+        console.log('Updating user:', editingUserId, data);
+        
+        // Update existing user
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            name: data.name,
+            phone: data.phone || null,
+            member_number: memberNumber,
+            boat_name: data.boatName || null,
+            status: data.status
+          })
+          .eq('id', editingUserId);
+
+        if (profileError) {
+          console.error('Profile update error:', profileError);
+          throw profileError;
+        }
+
+        // Update roles - delete old ones first
+        const { error: deleteError } = await supabase
+          .from('user_roles')
+          .delete()
+          .eq('user_id', editingUserId);
+
+        if (deleteError) {
+          console.error('Role delete error:', deleteError);
+          throw deleteError;
+        }
+        
+        const rolesToInsert = data.roles || generateRolesFromPrimary(data.role);
+        console.log('Inserting roles:', rolesToInsert);
+        
+        for (const role of rolesToInsert) {
+          const { error: roleError } = await supabase
+            .from('user_roles')
+            .insert({ user_id: editingUserId, role });
+          
+          if (roleError) {
+            console.error('Role insert error:', roleError);
+            throw roleError;
+          }
+        }
+
+        toast({ title: "Erfolg", description: "Benutzer wurde aktualisiert." });
+      } else {
+        console.log('Creating new user:', data);
+        
+        // Create new user
+        const { data: authData, error: authError } = await supabase.auth.signUp({
+          email: data.email,
+          password: 'changeme123',
+          options: {
+            data: { name: data.name }
+          }
+        });
+
+        if (authError) throw authError;
+        if (!authData.user) throw new Error("User creation failed");
+
+        // Update profile
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            name: data.name,
+            phone: data.phone || null,
+            member_number: memberNumber,
+            boat_name: data.boatName || null,
+            status: data.status
+          })
+          .eq('id', authData.user.id);
+
+        if (profileError) throw profileError;
+
+        // Add additional roles
+        const rolesToInsert = data.roles || generateRolesFromPrimary(data.role);
+        for (const role of rolesToInsert) {
+          if (role !== 'mitglied') {
+            await supabase.from('user_roles').insert({ user_id: authData.user.id, role });
+          }
+        }
+
+        toast({ title: "Erfolg", description: `Benutzer ${data.name} wurde erstellt.` });
+      }
+
+      refreshUsers();
       setShowDialog(false);
       setEditingUserId(null);
+    } catch (error: any) {
+      console.error('Form submission error:', error);
+      toast({
+        title: "Fehler",
+        description: error.message || "Benutzer konnte nicht gespeichert werden.",
+        variant: "destructive"
+      });
     }
   };
 
