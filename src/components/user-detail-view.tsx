@@ -90,6 +90,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
       });
       
       onUpdate();
+      onClose(); // Dialog schließen nach dem Speichern
     } catch (error: any) {
       console.error('Error saving user:', error);
       toast({
