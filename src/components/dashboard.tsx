@@ -393,6 +393,11 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
         </div>
       )}
 
+      {/* AI Chat Assistant - Full Width */}
+      <div className={getAnimationClass("chat")}>
+        <HarborChatWidget />
+      </div>
+
       {/* Quick Actions */}
       {settings.showQuickActions && (
         <Card className={cn(
@@ -474,9 +479,6 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
           </CardContent>
         </Card>
       )}
-
-      {/* AI Chat Widget */}
-      <HarborChatWidget />
     </div>
   );
 }

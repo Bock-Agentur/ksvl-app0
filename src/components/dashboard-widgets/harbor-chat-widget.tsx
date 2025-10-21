@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, MessageSquare, X } from "lucide-react";
+import { Loader2, Send, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -21,7 +21,6 @@ export function HarborChatWidget() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -84,69 +83,49 @@ export function HarborChatWidget() {
     }
   };
 
-  if (isMinimized) {
-    return (
-      <Button
-        onClick={() => setIsMinimized(false)}
-        className="fixed bottom-6 right-6 rounded-full h-14 w-14 shadow-lg bg-primary hover:bg-primary/90"
-        size="icon"
-      >
-        <MessageSquare className="h-6 w-6" />
-      </Button>
-    );
-  }
-
   return (
-    <Card className="fixed bottom-6 right-6 w-96 shadow-2xl z-50">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 bg-primary text-primary-foreground rounded-t-lg">
+    <Card className="w-full">
+      <CardHeader className="pb-3 bg-gradient-to-r from-primary/10 to-primary/5">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <MessageSquare className="h-5 w-5" />
+          <MessageSquare className="h-5 w-5 text-primary" />
           Krantermin-Assistent
         </CardTitle>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsMinimized(true)}
-          className="h-8 w-8 hover:bg-primary-foreground/20"
-        >
-          <X className="h-4 w-4" />
-        </Button>
       </CardHeader>
       <CardContent className="p-0">
-        <ScrollArea className="h-96 p-4" ref={scrollRef}>
-          <div className="space-y-4">
+        <ScrollArea className="h-[400px] p-4" ref={scrollRef}>
+          <div className="space-y-3">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[80%] rounded-lg px-4 py-2 ${
+                  className={`max-w-[85%] rounded-lg px-4 py-2.5 ${
                     msg.role === 'user'
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                 </div>
               </div>
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-muted rounded-lg px-4 py-2">
-                  <Loader2 className="h-4 w-4 animate-spin" />
+                <div className="bg-muted rounded-lg px-4 py-2.5">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 </div>
               </div>
             )}
           </div>
         </ScrollArea>
-        <div className="p-4 border-t">
+        <div className="p-4 border-t bg-muted/30">
           <div className="flex gap-2">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Frage zu Kranterminen..."
+              placeholder="Frage zu Kranterminen eingeben..."
               disabled={isLoading}
               className="flex-1"
             />
@@ -154,6 +133,7 @@ export function HarborChatWidget() {
               onClick={sendMessage}
               disabled={isLoading || !input.trim()}
               size="icon"
+              className="flex-shrink-0"
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -163,7 +143,7 @@ export function HarborChatWidget() {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            Fragen Sie nach verfügbaren Terminen, Buchungen oder Statistiken
+            💡 Fragen Sie nach verfügbaren Terminen, Buchungen oder Statistiken
           </p>
         </div>
       </CardContent>
