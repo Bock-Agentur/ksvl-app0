@@ -14,29 +14,7 @@ interface CraneStatus {
 }
 
 export function HarborStatusWidget() {
-  const [cranes] = useState<CraneStatus[]>([
-    {
-      id: "1",
-      name: "Kran A",
-      status: "occupied",
-      currentJob: "Boot von M. Weber",
-      nextAvailable: "14:30",
-      queueLength: 2
-    },
-    {
-      id: "2", 
-      name: "Kran B",
-      status: "available",
-      queueLength: 0
-    },
-    {
-      id: "3",
-      name: "Kran C", 
-      status: "maintenance",
-      nextAvailable: "16:00",
-      queueLength: 1
-    }
-  ]);
+  const [cranes] = useState<CraneStatus[]>([]);
 
   const getStatusIcon = (status: CraneStatus["status"]) => {
     switch (status) {

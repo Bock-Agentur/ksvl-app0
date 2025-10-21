@@ -16,14 +16,14 @@ interface WeatherData {
 
 export function WeatherWidget() {
   const [weather, setWeather] = useState<WeatherData>({
-    temperature: 18,
-    humidity: 65,
-    windSpeed: 12,
-    windDirection: "SW",
-    waterTemp: 16,
+    temperature: 0,
+    humidity: 0,
+    windSpeed: 0,
+    windDirection: "-",
+    waterTemp: 0,
     condition: "cloudy",
-    description: "Bewölkt, gute Bedingungen",
-    suitable: true
+    description: "Keine Wetterdaten",
+    suitable: false
   });
 
   // Mock weather updates

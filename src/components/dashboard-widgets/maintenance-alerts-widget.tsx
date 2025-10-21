@@ -14,35 +14,7 @@ interface MaintenanceItem {
 }
 
 export function MaintenanceAlertsWidget() {
-  const maintenanceItems: MaintenanceItem[] = [
-    {
-      id: "1",
-      equipment: "Kran A",
-      type: "inspection",
-      priority: "high",
-      dueDate: "in 2 Tagen",
-      description: "Jährliche Sicherheitsprüfung",
-      status: "pending"
-    },
-    {
-      id: "2",
-      equipment: "Boot-Trailer", 
-      type: "routine",
-      priority: "medium",
-      dueDate: "nächste Woche",
-      description: "Ölwechsel und Wartung",
-      status: "scheduled"
-    },
-    {
-      id: "3",
-      equipment: "Kran C",
-      type: "repair", 
-      priority: "critical",
-      dueDate: "überfällig",
-      description: "Hydraulik-Leck beheben",
-      status: "pending"
-    }
-  ];
+  const maintenanceItems: MaintenanceItem[] = [];
 
   const getPriorityBadge = (priority: MaintenanceItem["priority"]) => {
     const variants = {

@@ -11,11 +11,11 @@ interface MemberStats {
 
 export function MemberStatsWidget() {
   const stats: MemberStats = {
-    totalMembers: 247,
-    activeThisMonth: 182,
-    newThisMonth: 8,
-    upcomingRenewals: 23,
-    trend: 12
+    totalMembers: 0,
+    activeThisMonth: 0,
+    newThisMonth: 0,
+    upcomingRenewals: 0,
+    trend: 0
   };
 
   const activityRate = Math.round((stats.activeThisMonth / stats.totalMembers) * 100);

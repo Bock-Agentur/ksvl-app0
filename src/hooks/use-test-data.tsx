@@ -344,10 +344,10 @@ const scenarios: TestDataScenario[] = [
 ];
 
 export function TestDataProvider({ children }: { children: ReactNode }) {
-  const [isTestMode, setIsTestMode] = useState(true);
+  const [isTestMode, setIsTestMode] = useState(false);
   const [currentScenarios, setCurrentScenarios] = useState(() => [...scenarios]);
   
-  // Initialize users and slots with fresh data
+  // Initialize users and slots as empty
   const [users, setUsers] = useState<User[]>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
 

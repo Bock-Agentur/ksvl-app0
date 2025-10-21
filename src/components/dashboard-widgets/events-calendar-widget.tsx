@@ -16,40 +16,7 @@ interface Event {
 }
 
 export function EventsCalendarWidget() {
-  const events: Event[] = [
-    {
-      id: "1",
-      title: "Kranführer-Schulung",
-      date: "15. Nov",
-      time: "14:00",
-      location: "Vereinsheim", 
-      type: "training",
-      participants: 8,
-      maxParticipants: 12,
-      status: "upcoming"
-    },
-    {
-      id: "2",
-      title: "Mitgliederversammlung",
-      date: "22. Nov",
-      time: "19:00",
-      location: "Großer Saal",
-      type: "meeting", 
-      participants: 34,
-      status: "upcoming"
-    },
-    {
-      id: "3",
-      title: "Herbstregatta",
-      date: "28. Nov",
-      time: "10:00",
-      location: "Hauptsteg",
-      type: "regatta",
-      participants: 16,
-      maxParticipants: 20,
-      status: "upcoming"
-    }
-  ];
+  const events: Event[] = [];
 
   const getEventIcon = (type: Event["type"]) => {
     switch (type) {

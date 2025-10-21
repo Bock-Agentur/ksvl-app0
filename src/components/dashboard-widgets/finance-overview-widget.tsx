@@ -18,33 +18,11 @@ interface FinanceData {
 
 export function FinanceOverviewWidget() {
   const finance: FinanceData = {
-    monthlyRevenue: 8420,
-    outstandingPayments: 1250,
-    totalDebts: 340,
-    growthPercent: 15,
-    recentTransactions: [
-      {
-        id: "1",
-        member: "M. Weber",
-        amount: 45,
-        type: "payment",
-        date: "heute"
-      },
-      {
-        id: "2", 
-        member: "A. Schmidt",
-        amount: 60,
-        type: "fee",
-        date: "gestern"
-      },
-      {
-        id: "3",
-        member: "K. Miller",
-        amount: 30,
-        type: "refund",
-        date: "vor 2 Tagen"
-      }
-    ]
+    monthlyRevenue: 0,
+    outstandingPayments: 0,
+    totalDebts: 0,
+    growthPercent: 0,
+    recentTransactions: []
   };
 
   const getTransactionIcon = (type: string) => {
