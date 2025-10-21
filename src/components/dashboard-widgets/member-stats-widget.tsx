@@ -1,24 +1,63 @@
 import { Users, TrendingUp, UserPlus, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface MemberStats {
-  totalMembers: number;
-  activeThisMonth: number;
-  newThisMonth: number;
-  upcomingRenewals: number;
-  trend: number; // percentage change
-}
+import { useUsers } from "@/hooks/use-users";
+import { useMemo } from "react";
 
 export function MemberStatsWidget() {
-  const stats: MemberStats = {
-    totalMembers: 0,
-    activeThisMonth: 0,
-    newThisMonth: 0,
-    upcomingRenewals: 0,
-    trend: 0
-  };
+  const { users, loading } = useUsers();
 
-  const activityRate = Math.round((stats.activeThisMonth / stats.totalMembers) * 100);
+  const stats = useMemo(() => {
+    if (loading) {
+      return {
+        totalMembers: 0,
+        activeThisMonth: 0,
+        newThisMonth: 0,
+        upcomingRenewals: 0,
+        trend: 0
+      };
+    }
+
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+
+    // Active members
+    const activeMembers = users.filter(u => u.status === 'active');
+    
+    // New members this month (based on created_at)
+    const newThisMonth = users.filter(u => {
+      if (!u.created_at) return false;
+      const createdDate = new Date(u.created_at);
+      return createdDate.getMonth() === thisMonth && 
+             createdDate.getFullYear() === thisYear;
+    }).length;
+
+    // Calculate trend (simple: compare new members this month vs last month)
+    const lastMonth = thisMonth === 0 ? 11 : thisMonth - 1;
+    const lastMonthYear = thisMonth === 0 ? thisYear - 1 : thisYear;
+    const newLastMonth = users.filter(u => {
+      if (!u.created_at) return false;
+      const createdDate = new Date(u.created_at);
+      return createdDate.getMonth() === lastMonth && 
+             createdDate.getFullYear() === lastMonthYear;
+    }).length;
+
+    const trend = newLastMonth > 0 
+      ? Math.round(((newThisMonth - newLastMonth) / newLastMonth) * 100)
+      : newThisMonth > 0 ? 100 : 0;
+
+    return {
+      totalMembers: users.length,
+      activeThisMonth: activeMembers.length,
+      newThisMonth,
+      upcomingRenewals: 0, // This would need a renewal_date field
+      trend
+    };
+  }, [users, loading]);
+
+  const activityRate = stats.totalMembers > 0 
+    ? Math.round((stats.activeThisMonth / stats.totalMembers) * 100)
+    : 0;
 
   return (
     <Card className="shadow-card-maritime">
@@ -48,8 +87,14 @@ export function MemberStatsWidget() {
             </div>
             <div className="flex items-center gap-1">
               <span className="font-medium">{stats.newThisMonth}</span>
-              <TrendingUp className="h-3 w-3 text-success" />
-              <span className="text-success text-xs">+{stats.trend}%</span>
+              {stats.trend !== 0 && (
+                <>
+                  <TrendingUp className={`h-3 w-3 ${stats.trend > 0 ? 'text-success' : 'text-destructive rotate-180'}`} />
+                  <span className={`text-xs ${stats.trend > 0 ? 'text-success' : 'text-destructive'}`}>
+                    {stats.trend > 0 ? '+' : ''}{stats.trend}%
+                  </span>
+                </>
+              )}
             </div>
           </div>
 

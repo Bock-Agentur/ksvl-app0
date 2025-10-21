@@ -13,6 +13,7 @@ export interface DatabaseUser {
   boatName?: string | null; // Alias for compatibility
   status: string | null;
   is_test_data: boolean | null;
+  created_at?: string; // Add created_at field
   roles: string[];
   role?: string; // Primary role for compatibility
   joinDate?: string;
@@ -68,10 +69,11 @@ export function useUsers() {
           boatName: profile.boat_name, // Alias
           status: profile.status,
           is_test_data: profile.is_test_data,
+          created_at: profile.created_at, // Include created_at
           roles,
           role: primaryRole,
           isActive: profile.status === 'active',
-          joinDate: profile.entry_date
+          joinDate: profile.entry_date || profile.created_at
         };
       });
 
