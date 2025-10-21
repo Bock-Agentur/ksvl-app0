@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key, Eye } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +13,7 @@ import { useSearchFilter, useCommonFilters } from "@/hooks/use-search-filter";
 import { useFormHandler, useCommonFieldConfigs } from "@/hooks/use-form-handler";
 import { User, UserRole, generateRolesFromPrimary } from "@/types";
 import { ProfileView } from "./profile-view";
+import { cn } from "@/lib/utils";
 import { UserRoleSelector } from "./user-role-selector";
 import { 
   getRoleLabel, 
@@ -31,14 +31,6 @@ import { useToast } from "@/hooks/use-toast";
 export function UserManagementRefactored() {
   const { users: dbUsers, loading, deleteUser: deleteDbUser, refreshUsers } = useUsers();
   const { toast } = useToast();
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  
-  // Get current user ID
-  useState(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setCurrentUserId(user?.id || null);
-    });
-  });
   
   // Convert DatabaseUser to User format for compatibility
   const users: User[] = dbUsers.map(u => ({
@@ -464,85 +456,29 @@ export function UserManagementRefactored() {
                       <h3 className="font-medium text-base sm:text-sm">{user.name}</h3>
                       
                       <div className="flex items-center gap-2 flex-wrap">
-                        {/* Role Checkboxes */}
-                        <div className="flex gap-2 flex-wrap items-center">
-                          <span className="text-xs text-muted-foreground">Rollen:</span>
-                          {(['gastmitglied', 'mitglied', 'kranfuehrer', 'admin', 'vorstand'] as UserRole[]).map((role) => {
-                            const isChecked = user.roles?.includes(role) || false;
-                            const roleLabels: Record<UserRole, string> = {
-                              gastmitglied: "Gast",
-                              mitglied: "Mitglied",
-                              kranfuehrer: "Kran",
-                              admin: "Admin",
-                              vorstand: "Vorstand"
-                            };
-                            
-                            return (
-                              <div key={role} className="flex items-center space-x-1">
-                                <Checkbox
-                                  id={`${user.id}-${role}`}
-                                  checked={isChecked}
-                                  disabled={role === 'admin' && user.id === currentUserId && isChecked}
-                                  onCheckedChange={async (checked) => {
-                                    const currentRoles = user.roles || [];
-                                    let newRoles: UserRole[];
-                                    
-                                    if (checked) {
-                                      newRoles = [...currentRoles, role];
-                                    } else {
-                                      newRoles = currentRoles.filter(r => r !== role);
-                                    }
-                                    
-                                    // Update via API
-                                    try {
-                                      const { data: { session } } = await supabase.auth.getSession();
-                                      if (!session) throw new Error('Nicht angemeldet');
-
-                                      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`, {
-                                        method: 'POST',
-                                        headers: {
-                                          'Content-Type': 'application/json',
-                                          'Authorization': `Bearer ${session.access_token}`
-                                        },
-                                        body: JSON.stringify({
-                                          action: 'update',
-                                          userId: user.id,
-                                          userData: {
-                                            roles: newRoles
-                                          }
-                                        })
-                                      });
-
-                                      const result = await response.json();
-                                      if (!response.ok || result.error) {
-                                        throw new Error(result.error || 'Rollen konnten nicht aktualisiert werden');
-                                      }
-
-                                      toast({
-                                        title: "Erfolg",
-                                        description: "Rollen wurden aktualisiert."
-                                      });
-                                      
-                                      refreshUsers();
-                                    } catch (error: any) {
-                                      toast({
-                                        title: "Fehler",
-                                        description: error.message,
-                                        variant: "destructive"
-                                      });
-                                    }
-                                  }}
-                                />
-                                <label
-                                  htmlFor={`${user.id}-${role}`}
-                                  className="text-xs cursor-pointer select-none"
-                                >
-                                  {roleLabels[role]}
-                                </label>
-                              </div>
-                            );
-                          })}
-                        </div>
+                        {/* Role Badges */}
+                        {user.roles?.map((role) => {
+                          const roleColors: Record<UserRole, string> = {
+                            gastmitglied: "bg-muted text-muted-foreground",
+                            mitglied: "bg-accent text-accent-foreground",
+                            kranfuehrer: "bg-gradient-ocean text-primary-foreground",
+                            admin: "bg-gradient-deep text-primary-foreground",
+                            vorstand: "bg-gradient-deep text-primary-foreground"
+                          };
+                          const roleLabels: Record<UserRole, string> = {
+                            gastmitglied: "Gast",
+                            mitglied: "Mitglied",
+                            kranfuehrer: "Kran",
+                            admin: "Admin",
+                            vorstand: "Vorstand"
+                          };
+                          
+                          return (
+                            <Badge key={role} className={cn("text-xs", roleColors[role])}>
+                              {roleLabels[role]}
+                            </Badge>
+                          );
+                        })}
                         
                         {/* Status Badge */}
                         <Badge 
