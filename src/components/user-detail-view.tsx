@@ -134,6 +134,71 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
             )}
           </div>
 
+          {/* Rollen Section - Nur für Admins, ganz oben */}
+          {isAdmin && (
+            <Card className="border-primary/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Rollen verwalten</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isEditing ? (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {Object.entries(roleLabels).map(([roleKey, roleLabel]) => {
+                      const role = roleKey as UserRole;
+                      const isChecked = editedUser.roles?.includes(role) || false;
+                      
+                      return (
+                        <div key={role} className="flex items-center space-x-2">
+                          <Checkbox
+                            id={`role-${role}`}
+                            checked={isChecked}
+                            onCheckedChange={(checked) => {
+                              const currentRoles = editedUser.roles || [];
+                              let newRoles: UserRole[];
+                              
+                              if (checked) {
+                                newRoles = [...currentRoles, role];
+                              } else {
+                                newRoles = currentRoles.filter(r => r !== role);
+                              }
+                              
+                              // Update primary role if needed
+                              const primaryRole = newRoles.find(r => r === 'vorstand') 
+                                || newRoles.find(r => r === 'admin') 
+                                || newRoles.find(r => r === 'kranfuehrer') 
+                                || newRoles.find(r => r === 'mitglied') 
+                                || 'gastmitglied';
+                              
+                              setEditedUser(prev => ({
+                                ...prev,
+                                roles: newRoles,
+                                role: primaryRole
+                              }));
+                            }}
+                          />
+                          <label
+                            htmlFor={`role-${role}`}
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                          >
+                            {roleLabel}
+                          </label>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {editedUser.roles?.map((role) => (
+                      <Badge key={role} className={cn("text-xs", roleColors[role])}>
+                        {roleLabels[role]}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
           {/* Profile Card */}
           <Card>
             <CardHeader>
@@ -229,65 +294,6 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                     )}
                   </div>
 
-                  {isAdmin && (
-                    <div className="space-y-2 md:col-span-2">
-                      <Label>Rollen: </Label>
-                      {isEditing ? (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                          {Object.entries(roleLabels).map(([roleKey, roleLabel]) => {
-                            const role = roleKey as UserRole;
-                            const isChecked = editedUser.roles?.includes(role) || false;
-                            
-                            return (
-                              <div key={role} className="flex items-center space-x-2">
-                                <Checkbox
-                                  id={`role-${role}`}
-                                  checked={isChecked}
-                                  onCheckedChange={(checked) => {
-                                    const currentRoles = editedUser.roles || [];
-                                    let newRoles: UserRole[];
-                                    
-                                    if (checked) {
-                                      newRoles = [...currentRoles, role];
-                                    } else {
-                                      newRoles = currentRoles.filter(r => r !== role);
-                                    }
-                                    
-                                    // Update primary role if needed
-                                    const primaryRole = newRoles.find(r => r === 'vorstand') 
-                                      || newRoles.find(r => r === 'admin') 
-                                      || newRoles.find(r => r === 'kranfuehrer') 
-                                      || newRoles.find(r => r === 'mitglied') 
-                                      || 'gastmitglied';
-                                    
-                                    setEditedUser(prev => ({
-                                      ...prev,
-                                      roles: newRoles,
-                                      role: primaryRole
-                                    }));
-                                  }}
-                                />
-                                <label
-                                  htmlFor={`role-${role}`}
-                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                                >
-                                  {roleLabel}
-                                </label>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        <div className="flex flex-wrap gap-2">
-                          {editedUser.roles?.map((role) => (
-                            <Badge key={role} className={cn("text-xs", roleColors[role])}>
-                              {roleLabels[role]}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  )}
 
                   <div className="space-y-2">
                     <Label>Status: </Label>
