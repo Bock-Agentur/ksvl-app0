@@ -33,7 +33,7 @@ export function useUsers() {
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
-        .order('user');
+        .order('name');
 
       if (profilesError) throw profilesError;
 
@@ -61,7 +61,7 @@ export function useUsers() {
         return {
           id: profile.id,
           email: profile.email,
-          name: profile.user,
+          name: profile.name,
           phone: profile.phone,
           member_number: profile.member_number,
           memberNumber: profile.member_number, // Alias

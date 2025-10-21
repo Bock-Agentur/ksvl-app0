@@ -18,7 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 const mockCurrentUsers: Record<UserRole, UserType> = {
   gastmitglied: {
     id: "0",
-    user: "Gast User",
+    name: "Gast User",
     email: "gast@email.com",
     phone: "+43 664 000 0000",
     boatName: "Gast Boot",
@@ -32,7 +32,7 @@ const mockCurrentUsers: Record<UserRole, UserType> = {
   },
   mitglied: {
     id: "1",
-    user: "Hans Müller",
+    name: "Hans Müller",
     email: "hans.mueller@email.com",
     phone: "+43 664 123 4567",
     boatName: "Seeadler",
@@ -46,7 +46,7 @@ const mockCurrentUsers: Record<UserRole, UserType> = {
   },
   kranfuehrer: {
     id: "3",
-    user: "Franz Weber",
+    name: "Franz Weber",
     email: "f.weber@email.com",
     phone: "+43 664 345 6789",
     memberNumber: "KSVL003",
@@ -59,7 +59,7 @@ const mockCurrentUsers: Record<UserRole, UserType> = {
   },
   admin: {
     id: "4",
-    user: "Anna Bauer",
+    name: "Anna Bauer",
     email: "anna.bauer@email.com",
     phone: "+43 664 456 7890",
     memberNumber: "KSVL004",
@@ -72,7 +72,7 @@ const mockCurrentUsers: Record<UserRole, UserType> = {
   },
   vorstand: {
     id: "5",
-    user: "Dr. Vorstand",
+    name: "Dr. Vorstand",
     email: "vorstand@email.com",
     phone: "+43 664 555 5555",
     memberNumber: "KSVL005",
@@ -186,7 +186,7 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
 
       const userData: UserType = {
         id: profile.id,
-        user: profile.user || '',
+        name: profile.name || '',
         firstName: profile.first_name || undefined,
         lastName: profile.last_name || undefined,
         email: profile.email,
@@ -234,7 +234,7 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
       const { error } = await supabase
         .from('profiles')
         .update({
-          user: editedUser.user,
+          name: editedUser.name,
           first_name: editedUser.firstName || null,
           last_name: editedUser.lastName || null,
           phone: editedUser.phone || null,
@@ -461,16 +461,16 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Label>User</Label>
+                <Label>Name</Label>
                 {isEditing ? (
                   <Input
-                    value={editedUser.user}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, user: e.target.value }))}
+                    value={editedUser.name}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev!, name: e.target.value }))}
                   />
                 ) : (
                   <div className="flex items-center gap-2">
                     <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{user.user}</span>
+                    <span className="text-sm">{user.name}</span>
                   </div>
                 )}
               </div>
@@ -480,7 +480,7 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
                 {isEditing ? (
                   <Input
                     value={editedUser.firstName || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, firstName: e.target.value }))}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev!, firstName: e.target.value }))}
                   />
                 ) : user.firstName ? (
                   <span className="text-sm">{user.firstName}</span>
@@ -494,7 +494,7 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
                 {isEditing ? (
                   <Input
                     value={editedUser.lastName || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, lastName: e.target.value }))}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev!, lastName: e.target.value }))}
                   />
                 ) : user.lastName ? (
                   <span className="text-sm">{user.lastName}</span>
@@ -508,7 +508,7 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
                 {isEditing ? (
                   <Input
                     value={editedUser.streetAddress || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, streetAddress: e.target.value }))}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev!, streetAddress: e.target.value }))}
                   />
                 ) : user.streetAddress ? (
                   <span className="text-sm">{user.streetAddress}</span>
@@ -522,7 +522,7 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
                 {isEditing ? (
                   <Input
                     value={editedUser.postalCode || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, postalCode: e.target.value }))}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev!, postalCode: e.target.value }))}
                   />
                 ) : user.postalCode ? (
                   <span className="text-sm">{user.postalCode}</span>
@@ -536,7 +536,7 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
                 {isEditing ? (
                   <Input
                     value={editedUser.city || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, city: e.target.value }))}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev!, city: e.target.value }))}
                   />
                 ) : user.city ? (
                   <span className="text-sm">{user.city}</span>

@@ -64,7 +64,7 @@ serve(async (req) => {
       await supabaseAdmin
         .from('profiles')
         .update({ 
-          user: `Test Kranführer ${i}`,
+          name: `Test Kranführer ${i}`,
           email: email,
           is_test_data: true
         })
@@ -116,7 +116,7 @@ serve(async (req) => {
       await supabaseAdmin
         .from('profiles')
         .update({ 
-          user: `Test Mitglied ${i}`,
+          name: `Test Mitglied ${i}`,
           email: email,
           is_test_data: true
         })

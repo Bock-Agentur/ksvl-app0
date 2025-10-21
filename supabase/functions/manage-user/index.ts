@@ -68,7 +68,7 @@ serve(async (req) => {
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .update({
-          user: userData.user || userData.name, // Support both old and new field names
+          name: userData.name,
           first_name: userData.firstName || null,
           last_name: userData.lastName || null,
           phone: userData.phone || null,
@@ -124,7 +124,7 @@ serve(async (req) => {
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .update({
-          user: userData.user || userData.name, // Support both old and new field names
+          name: userData.name,
           first_name: userData.firstName || null,
           last_name: userData.lastName || null,
           phone: userData.phone || null,

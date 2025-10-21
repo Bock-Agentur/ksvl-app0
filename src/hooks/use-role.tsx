@@ -36,7 +36,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
 
       const user: User = {
         id: profile.id,
-        user: profile.user || '',
+        name: profile.name || '',
         firstName: profile.first_name || undefined,
         lastName: profile.last_name || undefined,
         email: profile.email,

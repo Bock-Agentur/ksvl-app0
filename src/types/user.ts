@@ -8,7 +8,7 @@ export type UserRole = "mitglied" | "kranfuehrer" | "admin" | "gastmitglied" | "
 
 export interface User {
   id: string;
-  user: string; // Hauptfeld (ersetzt name)
+  name: string;
   firstName?: string;
   lastName?: string;
   email: string;
@@ -28,7 +28,7 @@ export interface User {
 
 // ===== API TYPES =====
 export interface CreateUserRequest {
-  user: string;
+  name: string;
   firstName?: string;
   lastName?: string;
   email: string;
@@ -44,7 +44,7 @@ export interface CreateUserRequest {
 }
 
 export interface UpdateUserRequest {
-  user?: string;
+  name?: string;
   firstName?: string;
   lastName?: string;
   email?: string;

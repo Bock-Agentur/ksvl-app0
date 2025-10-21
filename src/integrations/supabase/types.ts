@@ -132,13 +132,13 @@ export type Database = {
           is_test_data: boolean | null
           last_name: string | null
           member_number: string | null
+          name: string | null
           oesv_number: string | null
           phone: string | null
           postal_code: string | null
           status: string | null
           street_address: string | null
           updated_at: string | null
-          user: string | null
         }
         Insert: {
           address?: string | null
@@ -156,13 +156,13 @@ export type Database = {
           is_test_data?: boolean | null
           last_name?: string | null
           member_number?: string | null
+          name?: string | null
           oesv_number?: string | null
           phone?: string | null
           postal_code?: string | null
           status?: string | null
           street_address?: string | null
           updated_at?: string | null
-          user?: string | null
         }
         Update: {
           address?: string | null
@@ -180,13 +180,13 @@ export type Database = {
           is_test_data?: boolean | null
           last_name?: string | null
           member_number?: string | null
+          name?: string | null
           oesv_number?: string | null
           phone?: string | null
           postal_code?: string | null
           status?: string | null
           street_address?: string | null
           updated_at?: string | null
-          user?: string | null
         }
         Relationships: []
       }

@@ -38,10 +38,10 @@ export function UserListDatabase() {
       if (authError) throw authError;
       if (!authData.user) throw new Error("User creation failed");
 
-      // Update profile with user
+      // Update profile with name
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ user: newUser.name })
+        .update({ name: newUser.name })
         .eq('id', authData.user.id);
 
       if (profileError) throw profileError;
