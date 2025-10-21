@@ -573,7 +573,7 @@ export function UserManagementRefactored() {
               </Button>
               <Button 
                 onClick={handleFormSubmit}
-                disabled={userForm.isSubmitting || !userForm.isValid}
+                disabled={userForm.isSubmitting || !userForm.values.name || !userForm.values.email}
               >
                 {userForm.isSubmitting 
                   ? "Speichert..." 
