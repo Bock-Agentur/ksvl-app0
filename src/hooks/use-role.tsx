@@ -31,7 +31,13 @@ export function RoleProvider({ children }: { children: ReactNode }) {
         .select('role')
         .eq('user_id', authUser.id);
 
-      const roles = (userRoles?.map(r => r.role as UserRole) || ['mitglied']) as UserRole[];
+      let roles = (userRoles?.map(r => r.role as UserRole) || ['mitglied']) as UserRole[];
+      
+      // Ensure admin and kranfuehrer also have mitglied role for role switching
+      if ((roles.includes('admin') || roles.includes('kranfuehrer')) && !roles.includes('mitglied')) {
+        roles = [...roles, 'mitglied'];
+      }
+      
       const primaryRole = roles.find(r => r === 'vorstand') || roles.find(r => r === 'admin') || roles.find(r => r === 'kranfuehrer') || roles.find(r => r === 'mitglied') || 'gastmitglied';
 
       const user: User = {
