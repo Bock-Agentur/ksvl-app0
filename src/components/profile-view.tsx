@@ -271,8 +271,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   };
 
   const handleChangePassword = async () => {
-    if (!userId) return;
-    
     if (newPassword !== confirmPassword) {
       toast({
         title: "Fehler",
@@ -293,6 +291,19 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     
     try {
       setIsChangingPassword(true);
+      
+      // Determine target user ID
+      let targetUserId: string;
+      if (userId) {
+        // Admin editing another user
+        targetUserId = userId;
+      } else {
+        // User editing their own profile
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (!authUser) throw new Error('Nicht angemeldet');
+        targetUserId = authUser.id;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('Nicht angemeldet');
 
@@ -303,7 +314,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
-          userId: userId,
+          userId: targetUserId,
           newPassword: newPassword
         })
       });
@@ -722,22 +733,20 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
 
-              {isAdmin && userId && (
-                <div className="space-y-2">
-                  <Label>Passwort</Label>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm text-muted-foreground">********</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowPasswordDialog(true)}
-                    className="text-sm text-primary hover:underline flex items-center gap-1"
-                  >
-                    <Key className="w-3 h-3" />
-                    Passwort ändern
-                  </button>
+              <div className="space-y-2">
+                <Label>Passwort</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">********</span>
                 </div>
-              )}
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordDialog(true)}
+                  className="text-sm text-primary hover:underline flex items-center gap-1"
+                >
+                  <Key className="w-3 h-3" />
+                  Passwort ändern
+                </button>
+              </div>
             </div>
           </div>
           
