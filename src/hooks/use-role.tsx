@@ -32,7 +32,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
         .eq('user_id', authUser.id);
 
       const roles = (userRoles?.map(r => r.role as UserRole) || ['mitglied']) as UserRole[];
-      const primaryRole = roles.find(r => r === 'admin') || roles.find(r => r === 'kranfuehrer') || 'mitglied';
+      const primaryRole = roles.find(r => r === 'vorstand') || roles.find(r => r === 'admin') || roles.find(r => r === 'kranfuehrer') || roles.find(r => r === 'mitglied') || 'gastmitglied';
 
       const user: User = {
         id: profile.id,

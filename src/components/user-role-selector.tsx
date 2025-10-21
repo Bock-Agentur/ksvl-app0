@@ -11,9 +11,11 @@ interface UserRoleSelectorProps {
 }
 
 const roleLabels: Record<UserRole, string> = {
+  "gastmitglied": "Gastmitglied",
   "mitglied": "Mitglied",
   "kranfuehrer": "Kranführer", 
-  "admin": "Administrator"
+  "admin": "Administrator",
+  "vorstand": "Vorstand"
 };
 
 export function UserRoleSelector({ 
@@ -22,7 +24,7 @@ export function UserRoleSelector({
   disabled = false,
   showLabel = true 
 }: UserRoleSelectorProps) {
-  const allRoles: UserRole[] = ["mitglied", "kranfuehrer", "admin"];
+  const allRoles: UserRole[] = ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"];
   
   const handleRoleToggle = (role: UserRole, checked: boolean) => {
     let newRoles: UserRole[];
@@ -32,25 +34,33 @@ export function UserRoleSelector({
       newRoles = [...selectedRoles, role];
       
       // Auto-add dependent roles
-      if (role === "kranfuehrer" && !selectedRoles.includes("mitglied")) {
+      if (role === "kranfuehrer" && !selectedRoles.includes("mitglied") && !selectedRoles.includes("gastmitglied")) {
         newRoles.push("mitglied");
       }
       if (role === "admin") {
-        // Admin gets all roles
-        newRoles = ["admin", "kranfuehrer", "mitglied"];
+        // Admin gets all non-vorstand roles
+        newRoles = ["admin", "kranfuehrer", "mitglied", "gastmitglied"];
+      }
+      if (role === "vorstand") {
+        // Vorstand gets all roles
+        newRoles = ["vorstand", "admin", "kranfuehrer", "mitglied", "gastmitglied"];
       }
     } else {
       // Remove role
       newRoles = selectedRoles.filter(r => r !== role);
       
       // Auto-remove dependent roles  
-      if (role === "mitglied") {
-        // If removing member role, also remove kranfuehrer and admin
-        newRoles = newRoles.filter(r => r !== "kranfuehrer" && r !== "admin");
+      if (role === "mitglied" || role === "gastmitglied") {
+        // If removing base member roles, also remove higher roles
+        newRoles = newRoles.filter(r => r !== "kranfuehrer" && r !== "admin" && r !== "vorstand");
       }
       if (role === "kranfuehrer") {
-        // If removing kranfuehrer role, also remove admin
-        newRoles = newRoles.filter(r => r !== "admin");
+        // If removing kranfuehrer role, also remove admin and vorstand
+        newRoles = newRoles.filter(r => r !== "admin" && r !== "vorstand");
+      }
+      if (role === "admin") {
+        // If removing admin role, also remove vorstand
+        newRoles = newRoles.filter(r => r !== "vorstand");
       }
     }
     
@@ -85,8 +95,10 @@ export function UserRoleSelector({
         ))}
       </div>
       <div className="text-xs text-muted-foreground">
+        <p>• Gastmitglieder haben die gleichen Rechte wie Mitglieder</p>
         <p>• Kranführer sind automatisch auch Mitglieder</p>
-        <p>• Administratoren haben automatisch alle Rollen</p>
+        <p>• Administratoren haben automatisch alle Rollen außer Vorstand</p>
+        <p>• Vorstand hat automatisch alle Rollen</p>
       </div>
     </div>
   );

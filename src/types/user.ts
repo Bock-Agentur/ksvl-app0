@@ -4,7 +4,7 @@
  */
 
 // ===== USER TYPES =====
-export type UserRole = "mitglied" | "kranfuehrer" | "admin";
+export type UserRole = "mitglied" | "kranfuehrer" | "admin" | "gastmitglied" | "vorstand";
 
 export interface User {
   id: string;
@@ -59,12 +59,16 @@ export interface RoleContextType {
 // Helper function to generate roles based on primary role
 export const generateRolesFromPrimary = (primaryRole: UserRole): UserRole[] => {
   switch (primaryRole) {
+    case "vorstand":
+      return ["vorstand", "admin", "kranfuehrer", "mitglied", "gastmitglied"]; // Vorstand hat alle Rollen
     case "admin":
-      return ["admin", "kranfuehrer", "mitglied"]; // Admins haben alle Rollen
+      return ["admin", "kranfuehrer", "mitglied", "gastmitglied"]; // Admins haben alle Rollen
     case "kranfuehrer":
-      return ["kranfuehrer", "mitglied"]; // Kranführer sind auch Mitglieder
+      return ["kranfuehrer", "mitglied", "gastmitglied"]; // Kranführer sind auch Mitglieder
     case "mitglied":
       return ["mitglied"]; // Mitglieder haben nur ihre eigene Rolle
+    case "gastmitglied":
+      return ["gastmitglied"]; // Gastmitglieder haben nur ihre eigene Rolle
     default:
       return ["mitglied"];
   }
