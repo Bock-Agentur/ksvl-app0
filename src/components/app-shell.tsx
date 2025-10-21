@@ -288,8 +288,17 @@ export function AppShell({
                       variant="outline"
                       className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10"
                       onClick={async () => {
-                        await supabase.auth.signOut();
-                        window.location.href = '/auth';
+                        try {
+                          const { error } = await supabase.auth.signOut();
+                          if (error) {
+                            console.error('Logout error:', error);
+                          }
+                          // Force navigation to auth page
+                          window.location.replace('/auth');
+                        } catch (err) {
+                          console.error('Logout failed:', err);
+                          window.location.replace('/auth');
+                        }
                       }}
                     >
                       <LogOut className="w-4 h-4 mr-2" />
