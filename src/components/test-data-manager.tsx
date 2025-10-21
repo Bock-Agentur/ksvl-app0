@@ -149,42 +149,20 @@ export function TestDataManager() {
 
     setIsDeleting(true);
     try {
-      // Delete test slots
-      const { error: slotsError } = await supabase
-        .from('slots')
-        .delete()
-        .eq('is_test_data', true);
+      console.log('Calling delete-test-data function...');
+      
+      const { data, error } = await supabase.functions.invoke('delete-test-data');
 
-      if (slotsError) throw slotsError;
-
-      // Get test user IDs
-      const { data: testUsers, error: usersSelectError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('is_test_data', true);
-
-      if (usersSelectError) throw usersSelectError;
-
-      if (testUsers && testUsers.length > 0) {
-        // Delete user roles
-        const userIds = testUsers.map(u => u.id);
-        await supabase
-          .from('user_roles')
-          .delete()
-          .in('user_id', userIds);
-
-        // Delete profiles (auth users will be deleted by cascade)
-        const { error: profilesError } = await supabase
-          .from('profiles')
-          .delete()
-          .eq('is_test_data', true);
-
-        if (profilesError) throw profilesError;
+      if (error) {
+        console.error('Error from edge function:', error);
+        throw error;
       }
+
+      console.log('Test data deleted:', data);
 
       toast({
         title: "Testdaten gelöscht",
-        description: "Alle Test-Benutzer und Test-Slots wurden entfernt."
+        description: `${data.deleted} Test-Benutzer und alle zugehörigen Daten wurden entfernt.`
       });
 
     } catch (error) {

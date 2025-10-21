@@ -34,6 +34,16 @@ serve(async (req) => {
       const email = `kranfuehrer${i}@test.hafen.com`
       const password = `Test1234!${i}`
       
+      // Check if user already exists
+      const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
+      const userExists = existingUsers?.users.find(u => u.email === email)
+      
+      if (userExists) {
+        console.log(`User ${email} already exists, skipping...`)
+        createdUsers.push({ id: userExists.id, email, role: 'kranfuehrer', existed: true })
+        continue
+      }
+
       const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email,
         password,
@@ -68,7 +78,7 @@ serve(async (req) => {
           role: 'kranfuehrer'
         })
 
-      createdUsers.push({ id: authData.user.id, email, role: 'kranfuehrer' })
+      createdUsers.push({ id: authData.user.id, email, role: 'kranfuehrer', existed: false })
     }
 
     // Create Members
@@ -76,6 +86,16 @@ serve(async (req) => {
       const email = `mitglied${i}@test.hafen.com`
       const password = `Test1234!${i}`
       
+      // Check if user already exists
+      const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
+      const userExists = existingUsers?.users.find(u => u.email === email)
+      
+      if (userExists) {
+        console.log(`User ${email} already exists, skipping...`)
+        createdUsers.push({ id: userExists.id, email, role: 'mitglied', existed: true })
+        continue
+      }
+
       const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email,
         password,
@@ -102,8 +122,8 @@ serve(async (req) => {
         })
         .eq('id', authData.user.id)
 
-      // Member role is added automatically by trigger, but mark as test data
-      createdUsers.push({ id: authData.user.id, email, role: 'mitglied' })
+      // Member role is added automatically by trigger
+      createdUsers.push({ id: authData.user.id, email, role: 'mitglied', existed: false })
     }
 
     console.log(`Successfully created ${createdUsers.length} test users`)
