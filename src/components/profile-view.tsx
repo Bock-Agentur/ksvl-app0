@@ -320,23 +320,7 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
     
     if (!isEditing) {
       if (!value) return null;
-  if (loading) {
-    return (
-      <div className="p-4 text-center">
-        <p className="text-muted-foreground">Lade Profil...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="p-4 text-center">
-        <p className="text-destructive">Profil konnte nicht geladen werden.</p>
-      </div>
-    );
-  }
-
-  return (
+      return (
         <div key={field.id} className="space-y-1">
           <Label className="text-sm font-medium">{field.label}</Label>
           <p className="text-sm text-muted-foreground">{value}</p>
@@ -399,6 +383,22 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
         );
     }
   };
+
+  if (loading) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-muted-foreground">Lade Profil...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-destructive">Profil konnte nicht geladen werden.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 space-y-6 max-w-2xl mx-auto">
