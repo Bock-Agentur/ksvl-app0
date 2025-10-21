@@ -85,12 +85,21 @@ const Index = () => {
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (!session) {
           navigate("/auth");
+        } else if (event === 'SIGNED_IN') {
+          // Reset to dashboard after login
+          await supabase
+            .from('app_settings')
+            .upsert({ 
+              setting_key: 'activeTab', 
+              setting_value: 'dashboard',
+              user_id: session.user.id 
+            });
         }
       }
     );
