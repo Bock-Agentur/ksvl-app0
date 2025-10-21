@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useAppSettings } from "./use-app-settings";
 import { UserRole } from "@/types/user";
 
 const DEFAULT_MESSAGES: Record<UserRole, string> = {
@@ -8,19 +8,11 @@ const DEFAULT_MESSAGES: Record<UserRole, string> = {
 };
 
 export function useWelcomeMessages() {
-  const [messages, setMessages] = useState<Record<UserRole, string>>(DEFAULT_MESSAGES);
-
-  useEffect(() => {
-    const savedMessages = localStorage.getItem("roleWelcomeMessages");
-    if (savedMessages) {
-      try {
-        const parsed = JSON.parse(savedMessages);
-        setMessages({ ...DEFAULT_MESSAGES, ...parsed });
-      } catch (error) {
-        console.error("Error loading welcome messages:", error);
-      }
-    }
-  }, []);
+  const { value: messages, setValue: setMessages } = useAppSettings<Record<UserRole, string>>(
+    "roleWelcomeMessages",
+    DEFAULT_MESSAGES,
+    true // Global
+  );
 
   const getWelcomeMessage = (role: UserRole): string => {
     return messages[role] || DEFAULT_MESSAGES[role];
@@ -29,7 +21,6 @@ export function useWelcomeMessages() {
   const updateMessage = (role: UserRole, message: string) => {
     const newMessages = { ...messages, [role]: message };
     setMessages(newMessages);
-    localStorage.setItem("roleWelcomeMessages", JSON.stringify(newMessages));
   };
 
   return {

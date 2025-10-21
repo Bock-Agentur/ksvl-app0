@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useAppSettings } from "./use-app-settings";
 import { UserRole } from "@/types";
 
 export interface MenuItemConfig {
@@ -26,48 +26,17 @@ const DEFAULT_SETTINGS: MenuSettings = {
   defaultRole: "admin"
 };
 
-const STORAGE_KEY = "marina-menu-settings";
-
 export function useMenuSettings() {
-  const [settings, setSettings] = useState<MenuSettings>(DEFAULT_SETTINGS);
-
-  const loadSettingsFromStorage = () => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsedSettings = JSON.parse(stored);
-        setSettings({
-          ...DEFAULT_SETTINGS,
-          ...parsedSettings,
-          headerItems: parsedSettings.headerItems || DEFAULT_HEADER_ITEMS
-        });
-      }
-    } catch (error) {
-      console.error("Error loading menu settings:", error);
-    }
-  };
-
-  useEffect(() => {
-    loadSettingsFromStorage();
-    
-    const handleStorageChange = () => {
-      loadSettingsFromStorage();
-    };
-    
-    window.addEventListener("menuSettingsChanged", handleStorageChange);
-    return () => window.removeEventListener("menuSettingsChanged", handleStorageChange);
-  }, []);
+  const { value: settings, setValue } = useAppSettings<MenuSettings>(
+    "marina-menu-settings",
+    DEFAULT_SETTINGS,
+    true // Global setting for all users
+  );
 
   const saveSettings = (newSettings: MenuSettings) => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newSettings));
-      setSettings(newSettings);
-      
-      // Dispatch event to notify other components
-      window.dispatchEvent(new CustomEvent("menuSettingsChanged"));
-    } catch (error) {
-      console.error("Error saving menu settings:", error);
-    }
+    setValue(newSettings);
+    // Dispatch event to notify other components
+    window.dispatchEvent(new CustomEvent("menuSettingsChanged"));
   };
 
   const updateHeaderItemsOrder = (newOrder: MenuItemConfig[]) => {
@@ -87,14 +56,13 @@ export function useMenuSettings() {
   };
 
   const resetToDefaults = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    setSettings(DEFAULT_SETTINGS);
+    setValue(DEFAULT_SETTINGS);
     window.dispatchEvent(new CustomEvent("menuSettingsChanged"));
   };
 
   const forceRefresh = () => {
     // Force reload from defaults to pick up icon changes
-    setSettings(DEFAULT_SETTINGS);
+    setValue(DEFAULT_SETTINGS);
     window.dispatchEvent(new CustomEvent("menuSettingsChanged"));
   };
 

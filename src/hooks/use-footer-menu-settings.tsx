@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useAppSettings } from "./use-app-settings";
 import { UserRole } from "@/types/user";
 
 export interface FooterMenuItem {
@@ -66,68 +66,20 @@ const DEFAULT_FOOTER_SETTINGS: FooterMenuSettings = {
 };
 
 export function useFooterMenuSettings() {
-  const [settings, setSettings] = useState<FooterMenuSettings>(DEFAULT_FOOTER_SETTINGS);
-  const [displaySettings, setDisplaySettings] = useState<FooterDisplaySettings>(DEFAULT_DISPLAY_SETTINGS);
+  const { value: settings, setValue: setSettings } = useAppSettings<FooterMenuSettings>(
+    "footerMenuSettings",
+    DEFAULT_FOOTER_SETTINGS,
+    true // Global
+  );
 
-  // Funktion zum Laden der Einstellungen aus localStorage
-  const loadSettingsFromStorage = () => {
-    const savedSettings = localStorage.getItem("footerMenuSettings");
-    const savedDisplaySettings = localStorage.getItem("footerDisplaySettings");
-    
-    // Load menu settings
-    if (savedSettings) {
-      try {
-        const parsed = JSON.parse(savedSettings);
-        const mergedSettings = { ...DEFAULT_FOOTER_SETTINGS };
-        Object.keys(parsed).forEach(role => {
-          const roleItems = parsed[role] || [];
-          // Always save the parsed items, even if empty array
-          mergedSettings[role] = roleItems.slice(0, 6);
-        });
-        setSettings(mergedSettings);
-      } catch (error) {
-        console.error("Error loading footer menu settings:", error);
-        setSettings(DEFAULT_FOOTER_SETTINGS);
-      }
-    } else {
-      setSettings(DEFAULT_FOOTER_SETTINGS);
-    }
-    
-    // Load display settings
-    if (savedDisplaySettings) {
-      try {
-        const parsed = JSON.parse(savedDisplaySettings);
-        const mergedDisplaySettings = { ...DEFAULT_DISPLAY_SETTINGS, ...parsed };
-        setDisplaySettings(mergedDisplaySettings);
-      } catch (error) {
-        console.error("Error loading footer display settings:", error);
-        setDisplaySettings(DEFAULT_DISPLAY_SETTINGS);
-      }
-    } else {
-      setDisplaySettings(DEFAULT_DISPLAY_SETTINGS);
-    }
-  };
-
-  useEffect(() => {
-    // Initial load
-    loadSettingsFromStorage();
-    
-    // Listen for footer settings changes
-    const handleFooterSettingsChanged = () => {
-      loadSettingsFromStorage();
-    };
-    
-    window.addEventListener('footerSettingsChanged', handleFooterSettingsChanged);
-    
-    return () => {
-      window.removeEventListener('footerSettingsChanged', handleFooterSettingsChanged);
-    };
-  }, []);
+  const { value: displaySettings, setValue: setDisplaySettings } = useAppSettings<FooterDisplaySettings>(
+    "footerDisplaySettings",
+    DEFAULT_DISPLAY_SETTINGS,
+    true // Global
+  );
 
   const saveSettings = (newSettings: FooterMenuSettings) => {
     setSettings(newSettings);
-    localStorage.setItem("footerMenuSettings", JSON.stringify(newSettings));
-    
     // Notify other components immediately
     window.dispatchEvent(new CustomEvent('footerSettingsChanged'));
   };
@@ -139,8 +91,6 @@ export function useFooterMenuSettings() {
     };
     
     setDisplaySettings(updatedSettings);
-    localStorage.setItem("footerDisplaySettings", JSON.stringify(updatedSettings));
-    
     // Notify other components immediately
     window.dispatchEvent(new CustomEvent('footerSettingsChanged'));
   };
@@ -164,9 +114,6 @@ export function useFooterMenuSettings() {
   const resetToDefaults = () => {
     setSettings(DEFAULT_FOOTER_SETTINGS);
     setDisplaySettings(DEFAULT_DISPLAY_SETTINGS);
-    localStorage.removeItem("footerMenuSettings");
-    localStorage.removeItem("footerDisplaySettings");
-    
     // Notify about reset immediately
     window.dispatchEvent(new CustomEvent('footerSettingsChanged'));
   };

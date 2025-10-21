@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
+import { useAppSettings } from "./use-app-settings";
 
 export interface SlotDesignSettings {
   available: {
@@ -50,42 +51,12 @@ const DEFAULT_SLOT_DESIGN_STATE: SlotDesignState = {
   settings: DEFAULT_TRENDY_DESIGN
 };
 
-const STORAGE_KEY = "slot-design-settings";
-
 export function useSlotDesign() {
-  const [designState, setDesignState] = useState<SlotDesignState>(DEFAULT_SLOT_DESIGN_STATE);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Load settings from localStorage on mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setDesignState({ 
-          ...DEFAULT_SLOT_DESIGN_STATE, 
-          ...parsed,
-          settings: { ...DEFAULT_TRENDY_DESIGN, ...parsed.settings }
-        });
-      }
-    } catch (error) {
-      console.error("Failed to load slot design settings:", error);
-      setDesignState(DEFAULT_SLOT_DESIGN_STATE);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  // Auto-save settings when they change
-  useEffect(() => {
-    if (!isLoading) {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(designState));
-      } catch (error) {
-        console.error("Failed to save slot design settings:", error);
-      }
-    }
-  }, [designState, isLoading]);
+  const { value: designState, setValue: setDesignState, isLoading } = useAppSettings<SlotDesignState>(
+    "slot-design-settings",
+    DEFAULT_SLOT_DESIGN_STATE,
+    true // Global
+  );
 
   // Get current active settings - always trendy now
   const settings = designState.settings;
@@ -120,10 +91,10 @@ export function useSlotDesign() {
       ...designState.settings, 
       ...newSettings 
     };
-    setDesignState(prev => ({
-      ...prev,
+    setDesignState({
+      ...designState,
       settings: updatedSettings
-    }));
+    });
   };
 
   const updateSlotType = (slotType: keyof SlotDesignSettings, colorType: keyof SlotDesignSettings['available'], color: string) => {
@@ -135,19 +106,14 @@ export function useSlotDesign() {
       }
     };
     
-    setDesignState(prev => ({
-      ...prev,
+    setDesignState({
+      ...designState,
       settings: updatedSettings
-    }));
+    });
   };
 
   const resetToDefaults = () => {
     setDesignState(DEFAULT_SLOT_DESIGN_STATE);
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (error) {
-      console.error("Failed to reset slot design settings:", error);
-    }
   };
 
   const resetToOriginalDefaults = () => {
@@ -155,11 +121,6 @@ export function useSlotDesign() {
       settings: DEFAULT_TRENDY_DESIGN
     };
     setDesignState(originalDefaults);
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch (error) {
-      console.error("Failed to reset to original defaults:", error);
-    }
   };
 
   return {
