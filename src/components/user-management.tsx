@@ -8,8 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useTestData } from "@/hooks/use-test-data";
-import { useCrudOperations } from "@/hooks/use-crud-operations";
+import { useUsers, DatabaseUser } from "@/hooks/use-users";
 import { useSearchFilter, useCommonFilters } from "@/hooks/use-search-filter";
 import { useFormHandler, useCommonFieldConfigs } from "@/hooks/use-form-handler";
 import { User, UserRole, generateRolesFromPrimary } from "@/types";
@@ -21,28 +20,31 @@ import {
   downloadCSV, 
   generateMemberNumber 
 } from "@/lib/business-logic";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 /**
- * Refaktorierte Benutzer-Verwaltung mit wiederverwendbaren Hooks
- * Demonstriert die neue modulare Architektur
+ * Benutzer-Verwaltung mit Supabase Datenbank
  */
 export function UserManagementRefactored() {
-  const { users, addUser, updateUser, deleteUser } = useTestData();
+  const { users: dbUsers, loading, deleteUser: deleteDbUser, refreshUsers } = useUsers();
+  const { toast } = useToast();
   
-  // CRUD operations mit wiederverwendbarem Hook
-  const userCrud = useCrudOperations<User>({
-    entityName: "Benutzer",
-    onAdd: addUser,
-    onUpdate: (id, updates) => {
-      const existingUser = users.find(u => u.id === id);
-      if (existingUser) {
-        updateUser({ ...existingUser, ...updates });
-      }
-    },
-    onDelete: deleteUser,
-    onGet: (id) => users.find(u => u.id === id),
-    onList: () => users
-  });
+  // Convert DatabaseUser to User format for compatibility
+  const users: User[] = dbUsers.map(u => ({
+    id: u.id,
+    name: u.name || '',
+    email: u.email,
+    phone: u.phone || '',
+    boatName: u.boat_name || u.boatName || '',
+    memberNumber: u.member_number || u.memberNumber || '',
+    roles: u.roles as UserRole[],
+    role: u.role as UserRole,
+    status: (u.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
+    joinDate: u.joinDate || '',
+    joinedAt: u.joinDate || '',
+    isActive: u.isActive || false
+  }));
 
   // Such- und Filter-Funktionalität mit wiederverwendbarem Hook
   const { userRoleFilter, statusFilter } = useCommonFilters();
@@ -102,23 +104,77 @@ export function UserManagementRefactored() {
       try {
         const memberNumber = data.memberNumber || generateMemberNumber(users);
         
-        const userData: User = {
-          ...data,
-          id: editingUserId || Math.random().toString(36).substr(2, 9),
-          memberNumber,
-          roles: data.roles || generateRolesFromPrimary(data.role),
-          joinDate: new Date().toISOString().split('T')[0],
-          joinedAt: new Date().toISOString().split('T')[0], // backward compatibility
-          isActive: data.status === 'active'
-        };
-
         if (editingUserId) {
-          return await userCrud.update(editingUserId, userData);
+          // Update existing user
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .update({
+              name: data.name,
+              phone: data.phone,
+              member_number: memberNumber,
+              boat_name: data.boatName,
+              status: data.status
+            })
+            .eq('id', editingUserId);
+
+          if (profileError) throw profileError;
+
+          // Update roles
+          await supabase.from('user_roles').delete().eq('user_id', editingUserId);
+          
+          const rolesToInsert = data.roles || generateRolesFromPrimary(data.role);
+          for (const role of rolesToInsert) {
+            await supabase.from('user_roles').insert({ user_id: editingUserId, role });
+          }
+
+          toast({ title: "Erfolg", description: "Benutzer wurde aktualisiert." });
         } else {
-          return await userCrud.create(userData);
+          // Create new user
+          const { data: authData, error: authError } = await supabase.auth.signUp({
+            email: data.email,
+            password: 'changeme123', // Temporary password
+            options: {
+              data: { name: data.name }
+            }
+          });
+
+          if (authError) throw authError;
+          if (!authData.user) throw new Error("User creation failed");
+
+          // Update profile
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .update({
+              name: data.name,
+              phone: data.phone,
+              member_number: memberNumber,
+              boat_name: data.boatName,
+              status: data.status
+            })
+            .eq('id', authData.user.id);
+
+          if (profileError) throw profileError;
+
+          // Add additional roles
+          const rolesToInsert = data.roles || generateRolesFromPrimary(data.role);
+          for (const role of rolesToInsert) {
+            if (role !== 'mitglied') { // mitglied is added by trigger
+              await supabase.from('user_roles').insert({ user_id: authData.user.id, role });
+            }
+          }
+
+          toast({ title: "Erfolg", description: `Benutzer ${data.name} wurde erstellt.` });
         }
-      } catch (error) {
+
+        refreshUsers();
+        return true;
+      } catch (error: any) {
         console.error('Form submission error:', error);
+        toast({
+          title: "Fehler",
+          description: error.message || "Benutzer konnte nicht gespeichert werden.",
+          variant: "destructive"
+        });
         return false;
       }
     }
@@ -148,7 +204,9 @@ export function UserManagementRefactored() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    await userCrud.remove(userId);
+    if (confirm("Benutzer wirklich löschen?")) {
+      await deleteDbUser(userId);
+    }
   };
 
   const handleFormSubmit = async () => {
@@ -175,12 +233,16 @@ export function UserManagementRefactored() {
     downloadCSV(csvContent, `benutzer-${new Date().toISOString().split('T')[0]}.csv`);
   };
 
+  if (loading) {
+    return <div className="p-4">Lädt Benutzer...</div>;
+  }
+
   return (
     <div className="p-4 space-y-6">
       {/* Header mit Statistiken */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold">Mitgliederverwaltung (Refaktoriert)</h1>
+          <h1 className="text-2xl font-bold">Mitgliederverwaltung</h1>
           <p className="text-muted-foreground">
             {stats.total} Mitglieder • {stats.active} aktiv • {stats.byRole.admin || 0} Admins • {stats.activeRate}% Aktivitätsrate
           </p>
