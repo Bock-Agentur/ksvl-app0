@@ -178,7 +178,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         .select('role')
         .eq('user_id', currentUser.id);
       
-      setIsAdmin(roles?.some(r => r.role === 'admin') || false);
+      // Admin or Vorstand can edit restricted fields
+      setIsAdmin(roles?.some(r => r.role === 'admin' || r.role === 'vorstand') || false);
     }
   };
 
@@ -720,7 +721,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>User-Name</Label>
-                {isEditing ? (
+                {isEditing && isAdmin ? (
                   <Input
                     value={editedUser.name}
                     onChange={(e) => setEditedUser(prev => ({ ...prev!, name: e.target.value }))}
@@ -862,7 +863,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               
               <div className="space-y-2">
                 <Label>Geburtsdatum</Label>
-                {isEditing ? (
+                {isEditing && isAdmin ? (
                   <Input
                     type="date"
                     value={(editedUser as any).birthDate || ""}
@@ -877,7 +878,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               
               <div className="space-y-2">
                 <Label>Eintrittsdatum</Label>
-                {isEditing ? (
+                {isEditing && isAdmin ? (
                   <Input
                     type="date"
                     value={(editedUser as any).entryDate || ""}
@@ -899,7 +900,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>ÖSV Mitgliedsnummer</Label>
-                {isEditing ? (
+                {isEditing && isAdmin ? (
                   <Input
                     value={(editedUser as any).oesvNumber || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, oesvNumber: e.target.value } as any))}
@@ -912,7 +913,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               
               <div className="space-y-2">
                 <Label>Liegeplatznummer</Label>
-                {isEditing ? (
+                {isEditing && isAdmin ? (
                   <Input
                     value={(editedUser as any).berthNumber || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, berthNumber: e.target.value } as any))}
@@ -925,7 +926,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               
               <div className="space-y-2">
                 <Label>Beibootplatznummer</Label>
-                {isEditing ? (
+                {isEditing && isAdmin ? (
                   <Input
                     value={(editedUser as any).dinghyBerthNumber || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, dinghyBerthNumber: e.target.value } as any))}
@@ -1026,7 +1027,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Parkberechtigungs-Nummer</Label>
-                {isEditing ? (
+                {isEditing && isAdmin ? (
                   <Input
                     value={(editedUser as any).parkingPermitNumber || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, parkingPermitNumber: e.target.value } as any))}
@@ -1039,7 +1040,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               
               <div className="space-y-2">
                 <Label>Ausgabedatum</Label>
-                {isEditing ? (
+                {isEditing && isAdmin ? (
                   <Input
                     type="date"
                     value={(editedUser as any).parkingPermitIssueDate || ""}
@@ -1054,7 +1055,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               
               <div className="space-y-2">
                 <Label>Getränkechip-Nummer</Label>
-                {isEditing ? (
+                {isEditing && isAdmin ? (
                   <Input
                     value={(editedUser as any).beverageChipNumber || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, beverageChipNumber: e.target.value } as any))}
@@ -1067,7 +1068,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               
               <div className="space-y-2">
                 <Label>Ausgabedatum</Label>
-                {isEditing ? (
+                {isEditing && isAdmin ? (
                   <Input
                     type="date"
                     value={(editedUser as any).beverageChipIssueDate || ""}
