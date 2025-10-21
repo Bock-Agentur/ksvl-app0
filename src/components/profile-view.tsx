@@ -421,6 +421,112 @@ export function ProfileView({ currentRole }: ProfileViewProps) {
             </div>
           </div>
           
+          {/* Additional Information */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium text-foreground border-b pb-2">Zusätzliche Informationen</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <Label>OESV Nummer</Label>
+                {isEditing ? (
+                  <Input
+                    value={(editedUser as any).oesvNumber || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, oesvNumber: e.target.value } as any))}
+                    placeholder="OESV Mitgliedsnummer"
+                  />
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    {(user as any).oesvNumber || "-"}
+                  </span>
+                )}
+              </div>
+              
+              <div className="space-y-1">
+                <Label>Adresse</Label>
+                {isEditing ? (
+                  <Input
+                    value={(editedUser as any).address || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, address: e.target.value } as any))}
+                    placeholder="Ihre Adresse"
+                  />
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    {(user as any).address || "-"}
+                  </span>
+                )}
+              </div>
+              
+              <div className="space-y-1">
+                <Label>Liegeplatz Nummer</Label>
+                {isEditing ? (
+                  <Input
+                    value={(editedUser as any).berthNumber || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, berthNumber: e.target.value } as any))}
+                    placeholder="Liegeplatz Nummer"
+                  />
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    {(user as any).berthNumber || "-"}
+                  </span>
+                )}
+              </div>
+              
+              <div className="space-y-1">
+                <Label>Liegeplatz Typ</Label>
+                {isEditing ? (
+                  <Select
+                    value={(editedUser as any).berthType || ""}
+                    onValueChange={(value) => setEditedUser(prev => ({ ...prev, berthType: value } as any))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Typ auswählen" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="schwimmsteg">Schwimmsteg</SelectItem>
+                      <SelectItem value="festliegeplatz">Festliegeplatz</SelectItem>
+                      <SelectItem value="bojenplatz">Bojenplatz</SelectItem>
+                      <SelectItem value="trockenplatz">Trockenplatz</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    {(user as any).berthType || "-"}
+                  </span>
+                )}
+              </div>
+              
+              <div className="space-y-1">
+                <Label>Geburtsdatum</Label>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={(editedUser as any).birthDate || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, birthDate: e.target.value } as any))}
+                  />
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    {(user as any).birthDate ? new Date((user as any).birthDate).toLocaleDateString('de-AT') : "-"}
+                  </span>
+                )}
+              </div>
+              
+              <div className="space-y-1">
+                <Label>Eintrittsdatum</Label>
+                {isEditing ? (
+                  <Input
+                    type="date"
+                    value={(editedUser as any).entryDate || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, entryDate: e.target.value } as any))}
+                  />
+                ) : (
+                  <span className="text-sm text-muted-foreground">
+                    {(user as any).entryDate ? new Date((user as any).entryDate).toLocaleDateString('de-AT') : "-"}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+          
           {/* Custom Fields */}
           {customFields.length > 0 && (
             <div className="space-y-4">
