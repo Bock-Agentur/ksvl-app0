@@ -360,7 +360,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     if (!isEditing) {
       if (!value) return null;
       return (
-        <div key={field.id} className="space-y-1">
+        <div key={field.id} className="space-y-2">
           <Label className="text-sm font-medium">{field.label}</Label>
           <p className="text-sm text-muted-foreground">{value}</p>
         </div>
@@ -370,7 +370,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     switch (field.type) {
       case "textarea":
         return (
-          <div key={field.id} className="space-y-1">
+          <div key={field.id} className="space-y-2">
             <Label htmlFor={field.name}>
               {field.label} {field.required && <span className="text-destructive">*</span>}
             </Label>
@@ -385,7 +385,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       
       case "select":
         return (
-          <div key={field.id} className="space-y-1">
+          <div key={field.id} className="space-y-2">
             <Label htmlFor={field.name}>
               {field.label} {field.required && <span className="text-destructive">*</span>}
             </Label>
@@ -407,7 +407,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       
       default:
         return (
-          <div key={field.id} className="space-y-1">
+          <div key={field.id} className="space-y-2">
             <Label htmlFor={field.name}>
               {field.label} {field.required && <span className="text-destructive">*</span>}
             </Label>
@@ -491,8 +491,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             <h3 className="text-sm font-medium text-foreground border-b pb-2">Grunddaten</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label>Name</Label>
+              <div className="space-y-2">
+                <Label>Name:</Label>
                 {isEditing ? (
                   <Input
                     value={editedUser.name}
@@ -506,8 +506,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
 
-              <div className="space-y-1">
-                <Label>Vorname</Label>
+              <div className="space-y-2">
+                <Label>Vorname:</Label>
                 {isEditing ? (
                   <Input
                     value={editedUser.firstName || ''}
@@ -520,8 +520,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
 
-              <div className="space-y-1">
-                <Label>Nachname</Label>
+              <div className="space-y-2">
+                <Label>Nachname:</Label>
                 {isEditing ? (
                   <Input
                     value={editedUser.lastName || ''}
@@ -534,8 +534,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
 
-              <div className="space-y-1">
-                <Label>Adresse</Label>
+              <div className="space-y-2">
+                <Label>Adresse:</Label>
                 {isEditing ? (
                   <Input
                     value={editedUser.streetAddress || ''}
@@ -548,8 +548,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
 
-              <div className="space-y-1">
-                <Label>PLZ</Label>
+              <div className="space-y-2">
+                <Label>PLZ:</Label>
                 {isEditing ? (
                   <Input
                     value={editedUser.postalCode || ''}
@@ -562,8 +562,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
 
-              <div className="space-y-1">
-                <Label>Ort</Label>
+              <div className="space-y-2">
+                <Label>Ort:</Label>
                 {isEditing ? (
                   <Input
                     value={editedUser.city || ''}
@@ -576,8 +576,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
               
-              <div className="space-y-1">
-                <Label>E-Mail</Label>
+              <div className="space-y-2">
+                <Label>E-Mail:</Label>
                 {isEditing ? (
                   <Input
                     type="email"
@@ -592,8 +592,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
               
-              <div className="space-y-1">
-                <Label>Telefon</Label>
+              <div className="space-y-2">
+                <Label>Telefon:</Label>
                 {isEditing ? (
                   <Input
                     value={editedUser.phone}
@@ -607,8 +607,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
               
-              <div className="space-y-1">
-                <Label>Mitgliedsnummer</Label>
+              <div className="space-y-2">
+                <Label>Mitgliedsnummer:</Label>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-mono bg-muted px-2 py-1 rounded">
                     {user.memberNumber}
@@ -617,8 +617,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               {(user.boatName || isEditing) && (
-                <div className="space-y-1">
-                  <Label>Bootsname</Label>
+                <div className="space-y-2">
+                  <Label>Bootsname:</Label>
                   {isEditing ? (
                     <Input
                       value={editedUser.boatName || ""}
@@ -634,8 +634,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 </div>
               )}
               
-              <div className="space-y-1">
-                <Label>Mitglied seit</Label>
+              <div className="space-y-2">
+                <Label>Mitglied seit:</Label>
                 <span className="text-sm text-muted-foreground">
                   {new Date(user.joinedAt).toLocaleDateString('de-AT', {
                     year: 'numeric',
@@ -652,8 +652,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             <h3 className="text-sm font-medium text-foreground border-b pb-2">Zusätzliche Informationen</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <Label>OESV Nummer</Label>
+              <div className="space-y-2">
+                <Label>OESV Nummer:</Label>
                 {isEditing ? (
                   <Input
                     value={(editedUser as any).oesvNumber || ""}
@@ -667,8 +667,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
               
-              <div className="space-y-1">
-                <Label>Adresse</Label>
+              <div className="space-y-2">
+                <Label>Adresse:</Label>
                 {isEditing ? (
                   <Input
                     value={(editedUser as any).address || ""}
@@ -682,8 +682,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
               
-              <div className="space-y-1">
-                <Label>Liegeplatz Nummer</Label>
+              <div className="space-y-2">
+                <Label>Liegeplatz Nummer:</Label>
                 {isEditing ? (
                   <Input
                     value={(editedUser as any).berthNumber || ""}
@@ -697,8 +697,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
               
-              <div className="space-y-1">
-                <Label>Liegeplatz Typ</Label>
+              <div className="space-y-2">
+                <Label>Liegeplatz Typ:</Label>
                 {isEditing ? (
                   <Select
                     value={(editedUser as any).berthType || ""}
@@ -721,8 +721,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
               
-              <div className="space-y-1">
-                <Label>Geburtsdatum</Label>
+              <div className="space-y-2">
+                <Label>Geburtsdatum:</Label>
                 {isEditing ? (
                   <Input
                     type="date"
@@ -736,8 +736,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
               
-              <div className="space-y-1">
-                <Label>Eintrittsdatum</Label>
+              <div className="space-y-2">
+                <Label>Eintrittsdatum:</Label>
                 {isEditing ? (
                   <Input
                     type="date"
