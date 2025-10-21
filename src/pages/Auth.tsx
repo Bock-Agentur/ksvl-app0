@@ -49,14 +49,17 @@ export function Auth() {
           <CardTitle className="text-2xl text-center">Anmelden</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} className="space-y-4" autoComplete="on">
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
                 E-Mail
               </label>
               <Input
                 id="email"
+                name="email"
                 type="email"
+                autoComplete="email"
+                inputMode="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -69,7 +72,9 @@ export function Auth() {
               </label>
               <Input
                 id="password"
+                name="password"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required

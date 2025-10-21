@@ -723,6 +723,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>User-Name</Label>
                 {isEditing && isAdmin ? (
                   <Input
+                    name="username"
+                    autoComplete="username"
                     value={editedUser.name}
                     onChange={(e) => setEditedUser(prev => ({ ...prev!, name: e.target.value }))}
                   />
@@ -760,6 +762,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>Mitgliedernummer</Label>
                 {isEditing ? (
                   <Input
+                    name="member-number"
+                    autoComplete="off"
                     value={editedUser.memberNumber || ''}
                     onChange={(e) => setEditedUser(prev => ({ ...prev!, memberNumber: e.target.value }))}
                   />
@@ -774,6 +778,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>Vorname</Label>
                 {isEditing ? (
                   <Input
+                    name="given-name"
+                    autoComplete="given-name"
                     value={editedUser.firstName || ''}
                     onChange={(e) => setEditedUser(prev => ({ ...prev!, firstName: e.target.value }))}
                   />
@@ -786,6 +792,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>Nachname</Label>
                 {isEditing ? (
                   <Input
+                    name="family-name"
+                    autoComplete="family-name"
                     value={editedUser.lastName || ''}
                     onChange={(e) => setEditedUser(prev => ({ ...prev!, lastName: e.target.value }))}
                   />
@@ -799,6 +807,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 {isEditing ? (
                   <Input
                     type="email"
+                    name="email"
+                    autoComplete="email"
+                    inputMode="email"
                     value={editedUser.email}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, email: e.target.value }))}
                   />
@@ -814,6 +825,10 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>Telefonnummer</Label>
                 {isEditing ? (
                   <Input
+                    type="tel"
+                    name="tel"
+                    autoComplete="tel"
+                    inputMode="tel"
                     value={editedUser.phone}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, phone: e.target.value }))}
                   />
@@ -829,6 +844,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>Adresse</Label>
                 {isEditing ? (
                   <Input
+                    name="street-address"
+                    autoComplete="street-address"
                     value={editedUser.streetAddress || ''}
                     onChange={(e) => setEditedUser(prev => ({ ...prev!, streetAddress: e.target.value }))}
                   />
@@ -841,6 +858,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>PLZ</Label>
                 {isEditing ? (
                   <Input
+                    name="postal-code"
+                    autoComplete="postal-code"
+                    inputMode="numeric"
                     value={editedUser.postalCode || ''}
                     onChange={(e) => setEditedUser(prev => ({ ...prev!, postalCode: e.target.value }))}
                   />
@@ -853,6 +873,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>Stadt</Label>
                 {isEditing ? (
                   <Input
+                    name="address-level2"
+                    autoComplete="address-level2"
                     value={editedUser.city || ''}
                     onChange={(e) => setEditedUser(prev => ({ ...prev!, city: e.target.value }))}
                   />
@@ -866,6 +888,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 {isEditing && isAdmin ? (
                   <Input
                     type="date"
+                    name="bday"
+                    autoComplete="bday"
                     value={(editedUser as any).birthDate || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, birthDate: e.target.value } as any))}
                   />
@@ -881,6 +905,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 {isEditing && isAdmin ? (
                   <Input
                     type="date"
+                    name="entry-date"
+                    autoComplete="off"
                     value={(editedUser as any).entryDate || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, entryDate: e.target.value } as any))}
                   />
@@ -902,6 +928,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>ÖSV Mitgliedsnummer</Label>
                 {isEditing && isAdmin ? (
                   <Input
+                    name="oesv-number"
+                    autoComplete="off"
                     value={(editedUser as any).oesvNumber || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, oesvNumber: e.target.value } as any))}
                     placeholder="ÖSV Nummer"
@@ -915,6 +943,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>Liegeplatznummer</Label>
                 {isEditing && isAdmin ? (
                   <Input
+                    name="berth-number"
+                    autoComplete="off"
                     value={(editedUser as any).berthNumber || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, berthNumber: e.target.value } as any))}
                     placeholder="Liegeplatz Nummer"
@@ -928,6 +958,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>Beibootplatznummer</Label>
                 {isEditing && isAdmin ? (
                   <Input
+                    name="dinghy-berth-number"
+                    autoComplete="off"
                     value={(editedUser as any).dinghyBerthNumber || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, dinghyBerthNumber: e.target.value } as any))}
                     placeholder="Beibootplatz Nummer"
@@ -941,6 +973,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>Liegeplatztyp</Label>
                 {isEditing ? (
                   <Select
+                    name="berth-type"
                     value={(editedUser as any).berthType || ""}
                     onValueChange={(value) => setEditedUser(prev => ({ ...prev, berthType: value } as any))}
                   >
@@ -963,6 +996,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>Bootstyp</Label>
                 {isEditing ? (
                   <Input
+                    name="boat-type"
+                    autoComplete="off"
                     value={(editedUser as any).boatType || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, boatType: e.target.value } as any))}
                     placeholder="z.B. Segelboot, Motorboot"
@@ -976,6 +1011,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>Bootsname</Label>
                 {isEditing ? (
                   <Input
+                    name="boat-name"
+                    autoComplete="off"
                     value={editedUser.boatName || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, boatName: e.target.value }))}
                     placeholder="Name Ihres Bootes"
@@ -994,6 +1031,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                   <Input
                     type="number"
                     step="0.01"
+                    name="boat-length"
+                    autoComplete="off"
+                    inputMode="decimal"
                     value={(editedUser as any).boatLength || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, boatLength: e.target.value ? parseFloat(e.target.value) : undefined } as any))}
                     placeholder="z.B. 8.5"
@@ -1009,6 +1049,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                   <Input
                     type="number"
                     step="0.01"
+                    name="boat-width"
+                    autoComplete="off"
+                    inputMode="decimal"
                     value={(editedUser as any).boatWidth || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, boatWidth: e.target.value ? parseFloat(e.target.value) : undefined } as any))}
                     placeholder="z.B. 2.8"
@@ -1029,6 +1072,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>Parkberechtigungs-Nummer</Label>
                 {isEditing && isAdmin ? (
                   <Input
+                    name="parking-permit-number"
+                    autoComplete="off"
                     value={(editedUser as any).parkingPermitNumber || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, parkingPermitNumber: e.target.value } as any))}
                     placeholder="Parkausweis Nummer"
@@ -1043,6 +1088,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 {isEditing && isAdmin ? (
                   <Input
                     type="date"
+                    name="parking-permit-issue-date"
+                    autoComplete="off"
                     value={(editedUser as any).parkingPermitIssueDate || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, parkingPermitIssueDate: e.target.value } as any))}
                   />
@@ -1057,6 +1104,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Label>Getränkechip-Nummer</Label>
                 {isEditing && isAdmin ? (
                   <Input
+                    name="beverage-chip-number"
+                    autoComplete="off"
                     value={(editedUser as any).beverageChipNumber || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, beverageChipNumber: e.target.value } as any))}
                     placeholder="Chip Nummer"
@@ -1071,6 +1120,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 {isEditing && isAdmin ? (
                   <Input
                     type="date"
+                    name="beverage-chip-issue-date"
+                    autoComplete="off"
                     value={(editedUser as any).beverageChipIssueDate || ""}
                     onChange={(e) => setEditedUser(prev => ({ ...prev, beverageChipIssueDate: e.target.value } as any))}
                   />
