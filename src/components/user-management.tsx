@@ -31,6 +31,14 @@ import { useToast } from "@/hooks/use-toast";
 export function UserManagementRefactored() {
   const { users: dbUsers, loading, deleteUser: deleteDbUser, refreshUsers } = useUsers();
   const { toast } = useToast();
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  
+  // Get current user ID
+  useState(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setCurrentUserId(user?.id || null);
+    });
+  });
   
   // Convert DatabaseUser to User format for compatibility
   const users: User[] = dbUsers.map(u => ({
@@ -474,6 +482,7 @@ export function UserManagementRefactored() {
                                 <Checkbox
                                   id={`${user.id}-${role}`}
                                   checked={isChecked}
+                                  disabled={role === 'admin' && user.id === currentUserId && isChecked}
                                   onCheckedChange={async (checked) => {
                                     const currentRoles = user.roles || [];
                                     let newRoles: UserRole[];

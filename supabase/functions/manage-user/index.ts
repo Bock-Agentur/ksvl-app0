@@ -120,6 +120,14 @@ serve(async (req) => {
     } else if (action === 'update') {
       console.log('Updating user:', userId, userData);
 
+      // Prevent admins from removing their own admin role
+      if (userId === user.id && userData.roles) {
+        const hasAdminRole = userData.roles.includes('admin');
+        if (!hasAdminRole) {
+          throw new Error('Admins können sich nicht selbst die Admin-Rolle entziehen');
+        }
+      }
+
       // Update profile
       const { error: profileError } = await supabaseAdmin
         .from('profiles')
