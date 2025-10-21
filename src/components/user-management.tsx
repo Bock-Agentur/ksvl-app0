@@ -303,7 +303,7 @@ export function UserManagementRefactored() {
         <div>
           <h1 className="text-2xl font-bold">Mitgliederverwaltung</h1>
           <p className="text-muted-foreground">
-            {stats.total} Mitglieder • {stats.active} aktiv • {stats.byRole.admin || 0} Admins • {stats.activeRate}% Aktivitätsrate
+            {stats.total} Mitglieder • {stats.active} aktiv • {stats.roleCount.admin} Admins • {stats.activeRate}% Aktivitätsrate
           </p>
         </div>
         
@@ -335,19 +335,19 @@ export function UserManagementRefactored() {
         </Card>
         <Card>
           <CardContent className="pt-3 pb-2">
-            <div className="text-lg font-bold text-blue-600">{stats.byRole.mitglied || 0}</div>
+            <div className="text-lg font-bold text-blue-600">{stats.roleCount.mitglied}</div>
             <p className="text-[10px] text-muted-foreground">Mitglieder</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-3 pb-2">
-             <div className="text-lg font-bold text-purple-600">{stats.byRole.kranfuehrer + stats.byRole.admin || 0}</div>
+             <div className="text-lg font-bold text-purple-600">{stats.roleCount.kranfuehrer}</div>
              <p className="text-[10px] text-muted-foreground">Kranführer</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-3 pb-2">
-            <div className="text-lg font-bold text-red-600">{stats.byRole.admin || 0}</div>
+            <div className="text-lg font-bold text-red-600">{stats.roleCount.admin}</div>
             <p className="text-[10px] text-muted-foreground">Admins</p>
           </CardContent>
         </Card>

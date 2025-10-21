@@ -328,16 +328,47 @@ export function calculateUserStats(users: User[]) {
   const active = users.filter(u => u.isActive).length;
   const inactive = total - active;
   
-  const byRole = users.reduce((acc, user) => {
-    acc[user.role] = (acc[user.role] || 0) + 1;
-    return acc;
-  }, {} as Record<UserRole, number>);
+  // Initialize all role counts
+  const byRole: Record<UserRole, number> = {
+    gastmitglied: 0,
+    mitglied: 0,
+    kranfuehrer: 0,
+    admin: 0,
+    vorstand: 0
+  };
+  
+  // Count users by their primary role
+  users.forEach(user => {
+    if (user.role in byRole) {
+      byRole[user.role]++;
+    }
+  });
+  
+  // Count users with specific roles (can have multiple)
+  const roleCount: Record<UserRole, number> = {
+    gastmitglied: 0,
+    mitglied: 0,
+    kranfuehrer: 0,
+    admin: 0,
+    vorstand: 0
+  };
+  
+  users.forEach(user => {
+    if (user.roles && Array.isArray(user.roles)) {
+      user.roles.forEach(role => {
+        if (role in roleCount) {
+          roleCount[role as UserRole]++;
+        }
+      });
+    }
+  });
 
   return {
     total,
     active,
     inactive,
-    byRole,
+    byRole, // Primary role counts
+    roleCount, // All role counts (users can have multiple)
     activeRate: total > 0 ? Math.round((active / total) * 100) : 0
   };
 }
