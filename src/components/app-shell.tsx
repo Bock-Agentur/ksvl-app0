@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
-import { Calendar, Home, MessageSquare, Settings, User, Users, UserCheck, Menu, X, FileText, TestTube, Palette, Layers } from "lucide-react";
+import { Calendar, Home, MessageSquare, Settings, User, Users, UserCheck, Menu, X, FileText, TestTube, Palette, Layers, LogOut, LogIn } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { 
   Select,
   SelectContent,
@@ -53,12 +56,24 @@ export function AppShell({
   onTabChange, 
   children 
 }: AppShellProps) {
+  const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHeaderVisible, setIsHeaderVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [forceUpdate, setForceUpdate] = useState(0);
   const { getMenuItemsForRole, getDisplaySettingsForRole } = useFooterMenuSettings();
   const { getOrderedHeaderItems } = useMenuSettings();
+  
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast.success("Erfolgreich abgemeldet");
+      navigate('/auth');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error("Fehler beim Abmelden");
+    }
+  };
   
   // Get custom footer menu items for current role - always fresh data
   const footerItems = getMenuItemsForRole(currentRole);
@@ -154,6 +169,29 @@ export function AppShell({
             <Badge className={cn("text-xs hidden sm:flex", roleColors[currentRole])}>
               {roleLabels[currentRole]}
             </Badge>
+
+            {/* Login/Logout Button */}
+            {currentUser ? (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="gap-2"
+              >
+                <LogOut className="w-4 h-4" />
+                <span className="hidden sm:inline">Abmelden</span>
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/auth')}
+                className="gap-2"
+              >
+                <LogIn className="w-4 h-4" />
+                <span className="hidden sm:inline">Anmelden</span>
+              </Button>
+            )}
 
             {/* Burger Menu */}
             <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
