@@ -114,15 +114,19 @@ export function AppShell({
   }, [lastScrollY]);
   
   const roleLabels: Record<UserRole, string> = {
+    gastmitglied: "Gastmitglied",
     mitglied: "Mitglied",
     kranfuehrer: "Kranführer", 
-    admin: "Administrator"
+    admin: "Administrator",
+    vorstand: "Vorstand"
   };
 
   const roleColors: Record<UserRole, string> = {
+    gastmitglied: "bg-muted text-muted-foreground",
     mitglied: "bg-accent text-accent-foreground",
     kranfuehrer: "bg-gradient-ocean text-primary-foreground",
-    admin: "bg-gradient-deep text-primary-foreground"
+    admin: "bg-gradient-deep text-primary-foreground",
+    vorstand: "bg-gradient-deep text-primary-foreground"
   };
 
   return (
@@ -218,6 +222,9 @@ export function AppShell({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
+                        {currentUser?.roles?.includes("gastmitglied") && (
+                          <SelectItem value="gastmitglied">👋 Gastmitglied</SelectItem>
+                        )}
                         {currentUser?.roles?.includes("mitglied") && (
                           <SelectItem value="mitglied">👤 Mitglied</SelectItem>
                         )}
@@ -226,6 +233,9 @@ export function AppShell({
                         )}
                         {currentUser?.roles?.includes("admin") && (
                           <SelectItem value="admin">🔧 Administrator</SelectItem>
+                        )}
+                        {currentUser?.roles?.includes("vorstand") && (
+                          <SelectItem value="vorstand">🏛️ Vorstand</SelectItem>
                         )}
                       </SelectContent>
                     </Select>

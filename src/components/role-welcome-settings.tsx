@@ -25,9 +25,11 @@ interface RoleWelcomeMessage {
 }
 
 const DEFAULT_MESSAGES: Record<UserRole, string> = {
+  gastmitglied: "👋 Willkommen als Gast! \n\nAls Gastmitglied können Sie:\n• Termine einsehen 📅\n• Den Kalender ansehen 👀\n• Profil verwalten 📋\n\nSchön, dass Sie da sind! ⛵",
   mitglied: "🌊 Willkommen im Hafenverwaltungssystem! \n\nAls Mitglied können Sie:\n• Termine buchen 📅\n• Ihre Buchungen verwalten 📋\n• Den Kalender einsehen 👀\n\nViel Spaß beim Segeln! ⛵",
   kranfuehrer: "🚢 Willkommen Kranführer! \n\nIhre Aufgaben:\n• Termine erstellen und verwalten ⚙️\n• Kranführung koordinieren 🎯\n• Mitglieder unterstützen 🤝\n\nBereit für den Hafenbetrieb! ⚓",
-  admin: "⚙️ Administrator-Dashboard \n\nVollzugriff auf:\n• Benutzerverwaltung 👥\n• Systemeinstellungen 🔧\n• Alle Termine und Buchungen 📊\n• Dashboard-Konfiguration 📋\n\nSystem bereit! ✅"
+  admin: "⚙️ Administrator-Dashboard \n\nVollzugriff auf:\n• Benutzerverwaltung 👥\n• Systemeinstellungen 🔧\n• Alle Termine und Buchungen 📊\n• Dashboard-Konfiguration 📋\n\nSystem bereit! ✅",
+  vorstand: "🏛️ Vorstand-Dashboard \n\nVollzugriff auf:\n• Benutzerverwaltung 👥\n• Systemeinstellungen 🔧\n• Alle Termine und Buchungen 📊\n• Strategische Übersicht 📈\n\nGuten Tag, Vorstand! ✅"
 };
 
 export function RoleWelcomeSettings() {
@@ -64,17 +66,21 @@ export function RoleWelcomeSettings() {
 
   const getRoleDisplayName = (role: UserRole) => {
     switch (role) {
+      case "gastmitglied": return "Gastmitglied";
       case "mitglied": return "Mitglied";
       case "kranfuehrer": return "Kranführer";
       case "admin": return "Administrator";
+      case "vorstand": return "Vorstand";
     }
   };
 
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
+      case "gastmitglied": return Users;
       case "mitglied": return Users;
       case "kranfuehrer": return UserCheck;
       case "admin": return Shield;
+      case "vorstand": return Shield;
     }
   };
 
@@ -94,8 +100,8 @@ export function RoleWelcomeSettings() {
           {/* Role Selection */}
           <div className="space-y-3">
             <Label className="text-base font-medium">Rolle auswählen</Label>
-            <div className="flex gap-2 justify-center sm:justify-start">
-              {(["mitglied", "kranfuehrer", "admin"] as UserRole[]).map((role) => {
+            <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
+              {(["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] as UserRole[]).map((role) => {
                 const Icon = getRoleIcon(role);
                 return (
                   <Card 
@@ -117,7 +123,7 @@ export function RoleWelcomeSettings() {
                         "font-medium text-xs",
                         activeRole === role ? "text-primary" : "text-foreground"
                       )}>
-                        {role === "mitglied" ? "Mitgl." : role === "kranfuehrer" ? "Kran" : "Admin"}
+                        {role === "gastmitglied" ? "Gast" : role === "mitglied" ? "Mitgl." : role === "kranfuehrer" ? "Kran" : role === "vorstand" ? "Vorst." : "Admin"}
                       </p>
                     </CardContent>
                   </Card>
@@ -209,14 +215,14 @@ export function RoleWelcomeSettings() {
           <CardTitle className="text-lg">Zusammenfassung</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-3 gap-3">
-            {(["mitglied", "kranfuehrer", "admin"] as UserRole[]).map((role) => {
+          <div className="grid grid-cols-5 gap-2">
+            {(["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] as UserRole[]).map((role) => {
               const Icon = getRoleIcon(role);
               return (
                 <div key={role} className="text-center p-3 bg-muted/30 rounded-lg">
                   <Icon className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
                   <p className="font-medium text-xs mb-1">
-                    {role === "mitglied" ? "Mitgl." : role === "kranfuehrer" ? "Kran" : "Admin"}
+                    {role === "gastmitglied" ? "Gast" : role === "mitglied" ? "Mitgl." : role === "kranfuehrer" ? "Kran" : role === "vorstand" ? "Vorst." : "Admin"}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {messages[role]?.length || 0} Z.

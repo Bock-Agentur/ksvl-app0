@@ -30,15 +30,19 @@ import {
 } from "@/lib/business-logic";
 
 const roleLabels: Record<UserRole, string> = {
+  gastmitglied: "Gastmitglied",
   mitglied: "Mitglied",
   kranfuehrer: "Kranführer",
-  admin: "Administrator"
+  admin: "Administrator",
+  vorstand: "Vorstand"
 };
 
 const roleColors: Record<UserRole, string> = {
+  gastmitglied: "bg-muted text-muted-foreground",
   mitglied: "bg-accent text-accent-foreground",
   kranfuehrer: "bg-gradient-ocean text-primary-foreground",
-  admin: "bg-gradient-deep text-primary-foreground"
+  admin: "bg-gradient-deep text-primary-foreground",
+  vorstand: "bg-gradient-deep text-primary-foreground"
 };
 
 export function UserManagement() {

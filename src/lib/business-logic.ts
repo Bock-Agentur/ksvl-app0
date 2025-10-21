@@ -207,9 +207,11 @@ export function getUserDisplayName(user: User): string {
  */
 export function getRoleLabel(role: UserRole): string {
   const roleLabels: Record<UserRole, string> = {
-    admin: "Administrator",
+    gastmitglied: "Gastmitglied",
+    mitglied: "Mitglied",
     kranfuehrer: "Kranführer",
-    mitglied: "Mitglied"
+    admin: "Administrator",
+    vorstand: "Vorstand"
   };
   return roleLabels[role];
 }

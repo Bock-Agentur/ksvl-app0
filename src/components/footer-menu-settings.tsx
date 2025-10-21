@@ -156,17 +156,21 @@ export function FooterMenuSettings() {
 
   const getRoleDisplayName = (role: UserRole) => {
     switch (role) {
+      case "gastmitglied": return "Gastmitglied";
       case "mitglied": return "Mitglied";
       case "kranfuehrer": return "Kranführer";
       case "admin": return "Administrator";
+      case "vorstand": return "Vorstand";
     }
   };
 
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
+      case "gastmitglied": return User;
       case "mitglied": return Users;
       case "kranfuehrer": return UserCheck;
       case "admin": return Shield;
+      case "vorstand": return Shield;
     }
   };
 
@@ -191,8 +195,8 @@ export function FooterMenuSettings() {
           {/* Role Selector */}
           <div className="space-y-3">
             <Label className="text-base font-medium">Rolle auswählen</Label>
-            <div className="flex gap-2 justify-center sm:justify-start">
-              {(["admin", "kranfuehrer", "mitglied"] as UserRole[]).map((role) => {
+            <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
+              {(["vorstand", "admin", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
                 const Icon = getRoleIcon(role);
                 const items = getMenuItemsForRole(role);
                 return (
@@ -217,7 +221,7 @@ export function FooterMenuSettings() {
                         "font-medium text-xs",
                         activeRole === role ? "text-primary" : "text-foreground"
                       )}>
-                        {role === "mitglied" ? "Mitgl." : role === "kranfuehrer" ? "Kran" : "Admin"}
+                        {role === "gastmitglied" ? "Gast" : role === "mitglied" ? "Mitgl." : role === "kranfuehrer" ? "Kran" : role === "vorstand" ? "Vorst." : "Admin"}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {items.length}/6
@@ -441,8 +445,8 @@ export function FooterMenuSettings() {
         </CardHeader>
         <CardContent>
           {/* Summary for All Roles */}
-          <div className="grid grid-cols-3 gap-3">
-            {(["admin", "kranfuehrer", "mitglied"] as UserRole[]).map((role) => {
+          <div className="grid grid-cols-5 gap-2">
+            {(["vorstand", "admin", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
               const items = getMenuItemsForRole(role);
               const Icon = getRoleIcon(role);
               const displaySettings = getDisplaySettingsForRole(role);
@@ -450,7 +454,7 @@ export function FooterMenuSettings() {
                 <div key={role} className="text-center p-3 bg-muted/30 rounded-lg">
                   <Icon className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
                   <p className="font-medium text-xs mb-1">
-                    {role === "mitglied" ? "Mitgl." : role === "kranfuehrer" ? "Kran" : "Admin"}
+                    {role === "gastmitglied" ? "Gast" : role === "mitglied" ? "Mitgl." : role === "kranfuehrer" ? "Kran" : role === "vorstand" ? "Vorst." : "Admin"}
                   </p>
                   <p className="text-xs text-muted-foreground mb-1">
                     {items.length}/6

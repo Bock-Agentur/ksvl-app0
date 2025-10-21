@@ -15,6 +15,20 @@ import { User as UserType, UserRole, CustomField, ProfileViewProps, generateRole
 
 // Mock current users based on role
 const mockCurrentUsers: Record<UserRole, UserType> = {
+  gastmitglied: {
+    id: "0",
+    name: "Gast User",
+    email: "gast@email.com",
+    phone: "+43 664 000 0000",
+    boatName: "Gast Boot",
+    memberNumber: "KSVL000",
+    role: "gastmitglied",
+    roles: generateRolesFromPrimary("gastmitglied"),
+    status: "active",
+    joinDate: "2024-01-01",
+    joinedAt: "2024-01-01",
+    isActive: true
+  },
   mitglied: {
     id: "1",
     name: "Hans Müller",
@@ -54,6 +68,19 @@ const mockCurrentUsers: Record<UserRole, UserType> = {
     joinDate: "2022-01-01",
     joinedAt: "2022-01-01",
     isActive: true
+  },
+  vorstand: {
+    id: "5",
+    name: "Dr. Vorstand",
+    email: "vorstand@email.com",
+    phone: "+43 664 555 5555",
+    memberNumber: "KSVL005",
+    role: "vorstand",
+    roles: generateRolesFromPrimary("vorstand"),
+    status: "active",
+    joinDate: "2021-01-01",
+    joinedAt: "2021-01-01",
+    isActive: true
   }
 };
 
@@ -88,15 +115,19 @@ const initialCustomFields: CustomField[] = [
 // ProfileViewProps is now imported from @/types
 
 const roleLabels: Record<UserRole, string> = {
+  gastmitglied: "Gastmitglied",
   mitglied: "Mitglied",
   kranfuehrer: "Kranführer",
-  admin: "Administrator"
+  admin: "Administrator",
+  vorstand: "Vorstand"
 };
 
 const roleColors: Record<UserRole, string> = {
+  gastmitglied: "bg-muted text-muted-foreground",
   mitglied: "bg-accent text-accent-foreground",
   kranfuehrer: "bg-gradient-ocean text-primary-foreground",
-  admin: "bg-gradient-deep text-primary-foreground"
+  admin: "bg-gradient-deep text-primary-foreground",
+  vorstand: "bg-gradient-deep text-primary-foreground"
 };
 
 export function ProfileView({ currentRole }: ProfileViewProps) {
