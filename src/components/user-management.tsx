@@ -283,6 +283,18 @@ export function UserManagementRefactored() {
     return <div className="p-4">Lädt Benutzer...</div>;
   }
 
+  // Show user profile view if selected
+  if (selectedUserId) {
+    return (
+      <ProfileView
+        userId={selectedUserId}
+        currentRole="admin"
+        isDialog={false}
+        onBack={handleBackToList}
+      />
+    );
+  }
+
   return (
     <div className="p-4 space-y-6">
       {/* Header mit Statistiken */}
