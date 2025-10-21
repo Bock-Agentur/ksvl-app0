@@ -494,9 +494,9 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
                                       {slot.craneOperator.name}
                                     </div>
                                     {/* Member Info if booked */}
-                                    {slot.isBooked && slot.member && (
+                                    {slot.isBooked && (slot.memberName || slot.member) && (
                                       <div className="truncate text-xs opacity-90 leading-tight" style={{ color: getSlotColors(slotStatus).text }}>
-                                        {slot.member.name}
+                                        {slot.memberName || slot.member?.name}
                                       </div>
                                     )}
                                     {/* Duration */}
@@ -774,9 +774,9 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
                                   <div className="text-sm" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>
                                     Kranführer: {slot.craneOperator.name}
                                   </div>
-                                  {slot.isBooked && slot.bookedBy && (
+                                  {slot.isBooked && (slot.memberName || slot.bookedBy) && (
                                     <div className="text-sm" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>
-                                      Gebucht von: {slot.bookedBy}
+                                      Gebucht von: {slot.memberName || slot.bookedBy}
                                     </div>
                                   )}
                                   <div className="text-sm" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>

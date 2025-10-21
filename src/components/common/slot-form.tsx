@@ -77,6 +77,12 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
     ? [...craneOperators, currentUserAsCraneOperator]
     : craneOperators;
 
+  // Get all members for booking selection
+  const allMembers = users.filter(u => 
+    u.roles?.includes("mitglied") || 
+    u.role === "mitglied"
+  );
+
   // Popover states for auto-close functionality
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   const [timePopoverOpen, setTimePopoverOpen] = useState(false);
@@ -412,38 +418,57 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
                   
                   <div className="grid grid-cols-1 gap-3">
                     <div className="space-y-1">
-                      <Label htmlFor="member-name" className="text-xs">Name</Label>
-                      <Input
-                        id="member-name"
-                        placeholder="Name des Mitglieds"
-                        value={formData.memberName || ""}
-                        onChange={(e) => setFormData(prev => ({ ...prev, memberName: e.target.value }))}
-                        className="text-sm"
-                      />
+                      <Label htmlFor="member-select" className="text-xs">Mitglied auswählen *</Label>
+                      <Select
+                        value={formData.memberName || ''}
+                        onValueChange={(value) => {
+                          const selectedMember = allMembers.find(m => m.name === value);
+                          setFormData(prev => ({
+                            ...prev,
+                            memberName: value,
+                            memberEmail: selectedMember?.email || '',
+                            memberNumber: selectedMember?.memberNumber || ''
+                          }));
+                        }}
+                      >
+                        <SelectTrigger className="text-sm">
+                          <SelectValue placeholder="Mitglied wählen..." />
+                        </SelectTrigger>
+                        <SelectContent className="bg-popover border z-[9999]">
+                          {allMembers.map((member) => (
+                            <SelectItem key={member.id} value={member.name}>
+                              {member.name}
+                              {member.memberNumber && ` (Nr: ${member.memberNumber})`}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     
-                    <div className="space-y-1">
-                      <Label htmlFor="member-email" className="text-xs">E-Mail</Label>
-                      <Input
-                        id="member-email"
-                        type="email"
-                        placeholder="E-Mail des Mitglieds"
-                        value={formData.memberEmail || ""}
-                        onChange={(e) => setFormData(prev => ({ ...prev, memberEmail: e.target.value }))}
-                        className="text-sm"
-                      />
-                    </div>
-                    
-                    <div className="space-y-1">
-                      <Label htmlFor="member-number" className="text-xs">Mitgliedsnummer</Label>
-                      <Input
-                        id="member-number"
-                        placeholder="Mitgliedsnummer"
-                        value={formData.memberNumber || ""}
-                        onChange={(e) => setFormData(prev => ({ ...prev, memberNumber: e.target.value }))}
-                        className="text-sm"
-                      />
-                    </div>
+                    {formData.memberName && (
+                      <>
+                        <div className="space-y-1">
+                          <Label htmlFor="member-email" className="text-xs">E-Mail</Label>
+                          <Input
+                            id="member-email"
+                            type="email"
+                            value={formData.memberEmail || ""}
+                            disabled
+                            className="text-sm bg-muted/50"
+                          />
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <Label htmlFor="member-number" className="text-xs">Mitgliedsnummer</Label>
+                          <Input
+                            id="member-number"
+                            value={formData.memberNumber || ""}
+                            disabled
+                            className="text-sm bg-muted/50"
+                          />
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               )}

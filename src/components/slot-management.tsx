@@ -621,9 +621,9 @@ export function SlotManagement() {
                               </div>
                                <div className="text-sm font-medium truncate" style={{ color: getSlotColors(slotStatus).text }}>
                                  Kranführer: {slot.craneOperator.name}
-                                 {slot.isBooked && slot.member && (
+                                 {slot.isBooked && (slot.memberName || slot.member) && (
                                    <div className="text-xs opacity-90">
-                                     Mitglied: {slot.member.name}
+                                     Mitglied: {slot.memberName || slot.member?.name}
                                    </div>
                                  )}
                                </div>
