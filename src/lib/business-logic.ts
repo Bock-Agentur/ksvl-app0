@@ -325,19 +325,26 @@ export function filterSlotsByDateRange(
  */
 export function calculateUserStats(users: User[]) {
   const total = users.length;
-  const active = users.filter(u => u.isActive).length;
+  const active = users.filter(u => u.status === 'active').length;
   const inactive = total - active;
   
+  // Count by primary role
   const byRole = users.reduce((acc, user) => {
     acc[user.role] = (acc[user.role] || 0) + 1;
     return acc;
   }, {} as Record<UserRole, number>);
+  
+  // Count crane operators (anyone with kranfuehrer role)
+  const kranfuehrer = users.filter(u => 
+    u.roles?.includes('kranfuehrer') || u.role === 'kranfuehrer'
+  ).length;
 
   return {
     total,
     active,
     inactive,
     byRole,
+    kranfuehrer,
     activeRate: total > 0 ? Math.round((active / total) * 100) : 0
   };
 }
