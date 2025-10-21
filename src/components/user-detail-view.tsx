@@ -159,7 +159,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Name:</Label>
+                    <Label>Name: </Label>
                     {isEditing ? (
                       <Input
                         value={editedUser.name}
@@ -172,7 +172,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
 
                   <div className="space-y-2">
-                    <Label>E-Mail:</Label>
+                    <Label>E-Mail: </Label>
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">{editedUser.email}</span>
@@ -180,7 +180,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Telefon:</Label>
+                    <Label>Telefon: </Label>
                     {isEditing ? (
                       <Input
                         value={editedUser.phone || ""}
@@ -196,7 +196,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Mitgliedsnummer:</Label>
+                    <Label>Mitgliedsnummer: </Label>
                     {isEditing ? (
                       <Input
                         value={editedUser.memberNumber || ""}
@@ -212,7 +212,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Boot Name:</Label>
+                    <Label>Boot Name: </Label>
                     {isEditing ? (
                       <Input
                         value={editedUser.boatName || ""}
@@ -225,7 +225,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Rolle:</Label>
+                    <Label>Rolle: </Label>
                     {isEditing ? (
                       <Select
                         value={editedUser.role}
@@ -254,7 +254,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Status:</Label>
+                    <Label>Status: </Label>
                     {isEditing ? (
                       <Select
                         value={editedUser.status}
@@ -276,7 +276,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Beitrittsdatum:</Label>
+                    <Label>Beitrittsdatum: </Label>
                     <div className="text-sm text-muted-foreground">
                       {editedUser.joinDate ? new Date(editedUser.joinDate).toLocaleDateString('de-AT', {
                         year: 'numeric',
@@ -294,7 +294,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>OESV Nummer:</Label>
+                    <Label>OESV Nummer: </Label>
                     {isEditing ? (
                       <Input
                         value={(editedUser as any).oesvNumber || ""}
@@ -309,7 +309,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Adresse:</Label>
+                    <Label>Adresse: </Label>
                     {isEditing ? (
                       <Input
                         value={(editedUser as any).address || ""}
@@ -324,7 +324,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Liegeplatz Nummer:</Label>
+                    <Label>Liegeplatz Nummer: </Label>
                     {isEditing ? (
                       <Input
                         value={(editedUser as any).berthNumber || ""}
@@ -339,7 +339,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Liegeplatz Typ:</Label>
+                    <Label>Liegeplatz Typ: </Label>
                     {isEditing ? (
                       <Select
                         value={(editedUser as any).berthType || ""}
@@ -363,7 +363,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Geburtsdatum:</Label>
+                    <Label>Geburtsdatum: </Label>
                     {isEditing ? (
                       <Input
                         type="date"
@@ -378,7 +378,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
                   
                   <div className="space-y-2">
-                    <Label>Eintrittsdatum:</Label>
+                    <Label>Eintrittsdatum: </Label>
                     {isEditing ? (
                       <Input
                         type="date"
