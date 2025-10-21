@@ -41,10 +41,29 @@ const roleColors: Record<UserRole, string> = {
 export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<UserType>(user);
-  const { hasAnyRole } = useRole();
+  const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
   
-  const isAdmin = hasAnyRole(['admin']);
+  // Check admin status
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (currentUser) {
+        const { data: roles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', currentUser.id);
+        
+        const hasAdminRole = roles?.some(r => r.role === 'admin') || false;
+        console.log('User is admin:', hasAdminRole, roles);
+        setIsAdmin(hasAdminRole);
+      }
+    };
+    
+    if (isOpen) {
+      checkAdmin();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     setEditedUser(user);
