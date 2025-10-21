@@ -509,71 +509,88 @@ export function UserManagementRefactored() {
         ) : (
           searchFilter.filteredData.map((user) => (
             <Card key={user.id} className="transition-colors hover:bg-muted/50">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-medium truncate">{user.name}</h3>
-                      <div className="flex gap-1 flex-wrap">
-                        {user.roles?.map((role) => (
-                          <Badge 
-                            key={role}
-                            variant="outline" 
-                            className="text-xs"
-                          >
-                            {getRoleLabel(role)}
-                          </Badge>
-                        )) || (
-                          <Badge variant="outline" className="text-xs">
-                            {getRoleLabel(user.role)}
-                          </Badge>
-                        )}
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
+                  {/* User Info Section */}
+                  <div className="flex-1 min-w-0 space-y-2 sm:space-y-1">
+                    {/* Name and Badges Row */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <h3 className="font-medium text-base sm:text-sm">{user.name}</h3>
+                      
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {/* Role Badges */}
+                        <div className="flex gap-1 flex-wrap">
+                          {user.roles?.map((role) => (
+                            <Badge 
+                              key={role}
+                              variant="outline" 
+                              className="text-xs px-2 py-0.5 h-5"
+                            >
+                              {getRoleLabel(role)}
+                            </Badge>
+                          )) || (
+                            <Badge variant="outline" className="text-xs px-2 py-0.5 h-5">
+                              {getRoleLabel(user.role)}
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        {/* Status Badge */}
+                        <Badge 
+                          variant={user.status === "active" ? "default" : "secondary"}
+                          className="text-xs px-2 py-0.5 h-5"
+                        >
+                          {user.status === "active" ? "Aktiv" : "Inaktiv"}
+                        </Badge>
                       </div>
-                      <Badge variant={user.status === "active" ? "default" : "secondary"}>
-                        {user.status === "active" ? "Aktiv" : "Inaktiv"}
-                      </Badge>
                     </div>
                     
-                    <div className="space-y-1 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-3 h-3" />
-                        <span className="truncate">{user.email}</span>
+                    {/* Contact Info */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <Mail className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate text-xs sm:text-sm">{user.email}</span>
                       </div>
                       
                       {user.phone && (
                         <div className="flex items-center gap-2">
-                          <Phone className="w-3 h-3" />
-                          <span>{user.phone}</span>
+                          <Phone className="w-4 h-4 flex-shrink-0" />
+                          <span className="text-xs sm:text-sm">{user.phone}</span>
                         </div>
                       )}
-                      
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1">
-                          <Anchor className="w-3 h-3" />
-                          <span>{user.memberNumber}</span>
-                        </div>
-                        {user.boatName && (
-                          <span className="text-xs">Boot: {user.boatName}</span>
-                        )}
+                    </div>
+                    
+                    {/* Member Info */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <Anchor className="w-4 h-4 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm font-medium">{user.memberNumber}</span>
                       </div>
+                      {user.boatName && (
+                        <span className="text-xs sm:text-sm">Boot: {user.boatName}</span>
+                      )}
                     </div>
                   </div>
                   
-                  <div className="flex gap-2">
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 sm:ml-4 self-end sm:self-center">
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => handleEditUser(user)}
+                      className="h-8 w-8 p-0"
                     >
                       <Edit className="w-4 h-4" />
+                      <span className="sr-only">Bearbeiten</span>
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => handleDeleteUser(user.id)}
-                      className="hover:bg-destructive hover:text-destructive-foreground"
+                      className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
                     >
                       <Trash2 className="w-4 h-4" />
+                      <span className="sr-only">Löschen</span>
                     </Button>
                   </div>
                 </div>
