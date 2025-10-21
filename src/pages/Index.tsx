@@ -22,11 +22,16 @@ function AppContent() {
   const testData = useTestData();
   
   // Use database for active tab storage
-  const { value: activeTab, setValue: setActiveTab } = useAppSettings<string>(
+  const { value: activeTab, setValue: setActiveTabRaw } = useAppSettings<string>(
     "activeTab",
     "dashboard",
     false
   );
+  
+  // Wrapper to save without toast notification
+  const setActiveTab = (tab: string) => {
+    setActiveTabRaw(tab, true); // skipToast = true
+  };
   
   // Initialize slot design system
   useSlotDesign();
