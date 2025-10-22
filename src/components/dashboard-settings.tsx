@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { RotateCcw, Eye, EyeOff, Settings as SettingsIcon, Users, Shield, UserCheck, Zap, ArrowDown, MousePointer2, MoveHorizontal, Star, Sparkles } from "lucide-react";
 import { DASHBOARD_WIDGETS, getWidgetsForRole } from "@/lib/dashboard-config";
@@ -201,7 +202,7 @@ export function DashboardSettings() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Layout</label>
+                <Label>Layout</Label>
                 <Select 
                   value={settings.layout} 
                   onValueChange={(value: any) => saveSettings({ layout: value })}
@@ -220,7 +221,7 @@ export function DashboardSettings() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-medium">Aktualisierungsintervall</label>
+                <Label>Aktualisierungsintervall</Label>
                 <Select 
                   value={settings.refreshInterval.toString()} 
                   onValueChange={(value) => saveSettings({ refreshInterval: parseInt(value) })}
@@ -275,7 +276,7 @@ export function DashboardSettings() {
 
               {settings.animationEnabled && (
                 <div className="space-y-3">
-                  <label className="text-sm font-medium">Animations-Typ</label>
+                  <Label>Animations-Typ</Label>
                   <div className="grid gap-2">
                     {animationOptions.map((option) => {
                       const Icon = option.icon;

@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { useCrudOperations } from "@/hooks/use-crud-operations";
 
 export interface CrudManagerProps<T extends { id: string }> {
@@ -292,7 +293,7 @@ export function QuickCrudList<T extends QuickCrudItem>({
       renderForm={({ item, onSubmit, onCancel, isEditing }) => (
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium">Name *</label>
+            <Label>Name *</Label>
             <input
               type="text"
               value={item?.name || formData.name}
@@ -303,7 +304,7 @@ export function QuickCrudList<T extends QuickCrudItem>({
           </div>
           
           <div>
-            <label className="text-sm font-medium">Beschreibung</label>
+            <Label>Beschreibung</Label>
             <textarea
               value={item?.description || formData.description}
               onChange={(e) => handleFieldChange('description', e.target.value)}

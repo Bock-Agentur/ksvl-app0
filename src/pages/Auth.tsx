@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 
 export function Auth() {
@@ -71,9 +72,9 @@ export function Auth() {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4" autoComplete="on">
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
+              <Label htmlFor="email">
                 E-Mail oder Benutzername
-              </label>
+              </Label>
               <Input
                 id="email"
                 name="email"
@@ -86,9 +87,9 @@ export function Auth() {
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
+              <Label htmlFor="password">
                 Passwort
-              </label>
+              </Label>
               <Input
                 id="password"
                 name="password"
