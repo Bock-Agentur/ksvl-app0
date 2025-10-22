@@ -32,8 +32,8 @@ serve(async (req) => {
       .from('slots')
       .select(`
         *,
-        crane_operator:crane_operator_id(id, name, email),
-        member:member_id(id, name, email)
+        crane_operator:crane_operator_id(id, name, email, member_number),
+        member:member_id(id, name, email, member_number, boat_name)
       `)
       .gte('date', today)
       .lte('date', nextWeek)
@@ -44,6 +44,17 @@ serve(async (req) => {
       console.error('Fehler beim Laden der Slots:', slotsError);
     }
 
+    // Hole öffentliche Mitgliederdaten (nur wenn data_public_in_ksvl = true)
+    const { data: publicMembers, error: membersError } = await supabase
+      .from('profiles')
+      .select('id, name, member_number, boat_name, boat_type, berth_number, email')
+      .eq('data_public_in_ksvl', true)
+      .order('name', { ascending: true });
+
+    if (membersError) {
+      console.error('Fehler beim Laden der Mitglieder:', membersError);
+    }
+
     // Bereite Slots-Informationen auf
     const availableSlots = slots?.filter(s => !s.is_booked) || [];
     const bookedSlots = slots?.filter(s => s.is_booked) || [];
@@ -52,10 +63,10 @@ serve(async (req) => {
 AKTUELLE KRANTERMIN-DATEN (${today} bis ${nextWeek}):
 
 VERFÜGBARE TERMINE (${availableSlots.length}):
-${availableSlots.map(s => `- ${s.date} um ${s.time} Uhr (${s.duration} Min) - Kranführer: ${s.crane_operator?.name || 'Unbekannt'}`).join('\n') || 'Keine verfügbaren Termine'}
+${availableSlots.map(s => `- ${s.date} um ${s.time} Uhr (${s.duration} Min) - Kranführer: ${s.crane_operator?.name || 'Unbekannt'}${s.crane_operator?.member_number ? ` (Nr: ${s.crane_operator.member_number})` : ''}`).join('\n') || 'Keine verfügbaren Termine'}
 
 GEBUCHTE TERMINE (${bookedSlots.length}):
-${bookedSlots.map(s => `- ${s.date} um ${s.time} Uhr - gebucht von ${s.member?.name || 'Unbekannt'}`).join('\n') || 'Keine Buchungen'}
+${bookedSlots.map(s => `- ${s.date} um ${s.time} Uhr - gebucht von ${s.member?.name || 'Unbekannt'}${s.member?.boat_name ? ` (Boot: ${s.member.boat_name})` : ''}`).join('\n') || 'Keine Buchungen'}
 
 STATISTIK:
 - Gesamt Termine: ${slots?.length || 0}
@@ -64,25 +75,39 @@ STATISTIK:
 - Auslastung: ${slots?.length ? Math.round((bookedSlots.length / slots.length) * 100) : 0}%
 `;
 
+    const membersInfo = publicMembers && publicMembers.length > 0 ? `
+
+ÖFFENTLICHE MITGLIEDERDATEN (${publicMembers.length} Mitglieder):
+${publicMembers.map(m => `- ${m.name}${m.member_number ? ` (Nr: ${m.member_number})` : ''}${m.boat_name ? ` - Boot: ${m.boat_name}` : ''}${m.boat_type ? ` (${m.boat_type})` : ''}${m.berth_number ? ` - Liegeplatz: ${m.berth_number}` : ''}`).join('\n')}
+
+WICHTIG: Zeige nur Daten von Mitgliedern, die ihre Daten öffentlich freigegeben haben!
+` : '\n\nKEINE ÖFFENTLICHEN MITGLIEDERDATEN verfügbar (kein Mitglied hat Daten freigegeben).';
+
     console.log('Slots-Info für AI:', slotsInfo);
+    console.log('Mitglieder-Info für AI:', membersInfo);
 
-    const systemPrompt = `Du bist ein hilfreicher Assistent für das Hafenverwaltungssystem.
+    const systemPrompt = `Du bist ein hilfreicher Assistent für das KSVL Hafenverwaltungssystem.
 
-DEINE AUFGABE:
-- Beantworte Fragen zu Kranterminen
+DEINE AUFGABEN:
+- Beantworte Fragen zu Kranterminen und Slot-Buchungen
 - Zeige verfügbare Termine an
+- Gib Informationen zu Mitgliedern (NUR wenn sie ihre Daten freigegeben haben!)
 - Erkläre Buchungsoptionen
 - Gib freundliche, präzise Antworten auf Deutsch
 
 WICHTIGE REGELN:
-- Zeige maximal 5 Termine pro Antwort (außer explizit nach mehr gefragt)
-- Formatiere Termine übersichtlich
-- Erkläre, wie Mitglieder buchen können
+- Zeige maximal 5-7 Termine pro Antwort (außer explizit nach mehr gefragt)
+- Formatiere Termine und Daten übersichtlich mit Aufzählungen
+- Bei Fragen zu Mitgliedern: Zeige NUR Daten von Mitgliedern, die "Daten öffentlich im KSVL" aktiviert haben
+- NIEMALS Daten von nicht-öffentlichen Mitgliedern zeigen oder erwähnen
+- Erkläre, wie Mitglieder ihre Daten öffentlich machen können (Profil-Einstellungen)
 - Bei Fragen zu spezifischen Daten: durchsuche die Daten und antworte präzise
 
+VERFÜGBARE DATEN:
 ${slotsInfo}
+${membersInfo}
 
-Antworte immer höflich und hilfsbereit auf Deutsch.`;
+Antworte immer höflich und hilfsbereit auf Deutsch. Strukturiere deine Antworten übersichtlich.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',

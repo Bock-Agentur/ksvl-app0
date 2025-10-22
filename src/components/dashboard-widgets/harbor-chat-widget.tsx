@@ -16,7 +16,7 @@ export function HarborChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: '👋 Hallo! Ich bin Ihr Assistent für Krantermine. Wie kann ich Ihnen helfen?'
+      content: '👋 Hallo! Ich bin Ihr KSVL-Assistent. Ich kann Ihnen bei Kranterminen, Buchungen und Mitgliederdaten helfen. Was möchten Sie wissen?'
     }
   ]);
   const [input, setInput] = useState('');
@@ -88,7 +88,7 @@ export function HarborChatWidget() {
       <CardHeader className="pb-3 bg-gradient-to-r from-primary/10 to-primary/5">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-primary" />
-          Krantermin-Assistent
+          KSVL-Assistent
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
@@ -125,7 +125,7 @@ export function HarborChatWidget() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Frage zu Kranterminen eingeben..."
+              placeholder="Frage zu Terminen oder Mitgliedern..."
               disabled={isLoading}
               className="flex-1"
             />
@@ -143,7 +143,7 @@ export function HarborChatWidget() {
             </Button>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            💡 Fragen Sie nach verfügbaren Terminen, Buchungen oder Statistiken
+            💡 Fragen Sie nach Terminen, Buchungen, Mitgliederdaten oder Statistiken
           </p>
         </div>
       </CardContent>

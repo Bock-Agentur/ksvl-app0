@@ -130,6 +130,7 @@ export type Database = {
           boat_width: number | null
           city: string | null
           created_at: string | null
+          data_public_in_ksvl: boolean | null
           dinghy_berth_number: string | null
           email: string
           emergency_contact: string | null
@@ -165,6 +166,7 @@ export type Database = {
           boat_width?: number | null
           city?: string | null
           created_at?: string | null
+          data_public_in_ksvl?: boolean | null
           dinghy_berth_number?: string | null
           email: string
           emergency_contact?: string | null
@@ -200,6 +202,7 @@ export type Database = {
           boat_width?: number | null
           city?: string | null
           created_at?: string | null
+          data_public_in_ksvl?: boolean | null
           dinghy_berth_number?: string | null
           email?: string
           emergency_contact?: string | null
