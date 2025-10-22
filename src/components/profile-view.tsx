@@ -174,8 +174,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         emergencyContact: profile.emergency_contact || '',
         notes: profile.notes || '',
         vorstandFunktion: profile.vorstand_funktion || '',
-        dataPublicInKsvl: profile.data_public_in_ksvl || false,
-        contactPublicInKsvl: profile.contact_public_in_ksvl || false
+        dataPublicInKsvl: profile.data_public_in_ksvl === true,
+        contactPublicInKsvl: profile.contact_public_in_ksvl === true
       } as any;
 
       setUser(userData);
@@ -367,8 +367,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           emergency_contact: toNullIfEmpty((editedUser as any).emergencyContact),
           notes: toNullIfEmpty((editedUser as any).notes),
           vorstand_funktion: toNullIfEmpty((editedUser as any).vorstandFunktion),
-          data_public_in_ksvl: (editedUser as any).dataPublicInKsvl || false,
-          contact_public_in_ksvl: (editedUser as any).contactPublicInKsvl || false
+          data_public_in_ksvl: (editedUser as any).dataPublicInKsvl === true,
+          contact_public_in_ksvl: (editedUser as any).contactPublicInKsvl === true
         };
 
         const { error } = await supabase
