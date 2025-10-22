@@ -239,7 +239,9 @@ export function useSlots() {
           ...(updates.isBooked !== undefined && { 
             isBooked: updates.isBooked,
             memberId: updates.isBooked ? updates.memberId : undefined,
-            memberName: updates.isBooked ? updates.memberName : undefined
+            memberName: updates.isBooked ? updates.memberName : undefined,
+            bookedBy: updates.isBooked ? updates.memberName : undefined,
+            member: updates.isBooked ? slot.member : undefined
           })
         };
         return updated;
@@ -350,7 +352,7 @@ export function useSlots() {
       // Optimistic update - update UI immediately
       setSlots(prev => prev.map(slot => 
         slot.id === slotId 
-          ? { ...slot, isBooked: false, memberId: undefined, memberName: undefined, member: undefined }
+          ? { ...slot, isBooked: false, memberId: undefined, memberName: undefined, member: undefined, bookedBy: undefined }
           : slot
       ));
 
