@@ -88,9 +88,9 @@ export function LoginBackgroundSettings() {
   const [isInputBgColorOpen, setIsInputBgColorOpen] = useState(false);
 
   // Update local state when background changes from server
-  useState(() => {
+  useEffect(() => {
     setLocalSettings(background);
-  });
+  }, [background]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -149,16 +149,20 @@ export function LoginBackgroundSettings() {
         .from('login-media')
         .getPublicUrl(fileName);
 
-      // Update local settings
-      setLocalSettings({
+      // Update local settings and save to database
+      const newSettings = {
         ...localSettings,
-        type: isVideo ? 'video' : 'image',
+        type: (isVideo ? 'video' : 'image') as 'video' | 'image',
         url: publicUrl,
         filename: fileName
-      });
+      };
+      setLocalSettings(newSettings);
+      
+      // Automatically save to database
+      await setBackground(newSettings);
 
       toast({
-        title: "Erfolgreich hochgeladen",
+        title: "Erfolgreich hochgeladen und gespeichert",
         description: `Hintergrund wurde aktualisiert`
       });
     } catch (error: any) {
@@ -183,28 +187,32 @@ export function LoginBackgroundSettings() {
       }
 
       // Reset to gradient in local settings
-      setLocalSettings({
-        type: 'gradient',
+      const newSettings = {
+        type: 'gradient' as const,
         url: null,
         filename: null,
         videoOnMobile: false,
-        cardOpacity: 95,
-        cardBorderBlur: 8,
-        cardBorderRadius: 8,
-        overlayColor: '#000000',
-        overlayOpacity: 40,
-        mediaBlur: 0,
-        inputBgColor: '#FFFFFF',
-        inputBgOpacity: 10,
-        verticalPosition: 'center',
-        countdownEnabled: false,
-        countdownEndDate: null,
-        countdownText: 'bis zur neuen Segelsaison'
-      });
+        cardOpacity: localSettings.cardOpacity,
+        cardBorderBlur: localSettings.cardBorderBlur,
+        cardBorderRadius: localSettings.cardBorderRadius,
+        overlayColor: localSettings.overlayColor,
+        overlayOpacity: localSettings.overlayOpacity,
+        mediaBlur: localSettings.mediaBlur,
+        inputBgColor: localSettings.inputBgColor,
+        inputBgOpacity: localSettings.inputBgOpacity,
+        verticalPosition: localSettings.verticalPosition,
+        countdownEnabled: localSettings.countdownEnabled,
+        countdownEndDate: localSettings.countdownEndDate,
+        countdownText: localSettings.countdownText
+      };
+      setLocalSettings(newSettings);
+      
+      // Automatically save to database
+      await setBackground(newSettings);
 
       toast({
-        title: "Hintergrund gelöscht",
-        description: "Änderungen noch nicht gespeichert"
+        title: "Hintergrund gelöscht und gespeichert",
+        description: "Gradient wurde aktiviert"
       });
     } catch (error: any) {
       toast({
