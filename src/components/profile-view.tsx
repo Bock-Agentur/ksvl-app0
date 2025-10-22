@@ -901,21 +901,25 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
             </div>
             
-            {/* Vorstand Funktion (nur für Vorstandsmitglieder) */}
-            {user?.roles?.includes('vorstand') && (
-              <div className="space-y-2 pt-4 border-t">
-                <Label>Funktion im Vorstand</Label>
-                {isEditing ? (
-                  <Input
-                    name="vorstand-funktion"
-                    autoComplete="off"
-                    value={(editedUser as any).vorstandFunktion || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, vorstandFunktion: e.target.value } as any))}
-                    placeholder="z.B. Obmann, Kassier, Schriftführer"
-                  />
-                ) : (
-                  <span className="text-sm">{(user as any).vorstandFunktion || "-"}</span>
-                )}
+            {/* Vorstand Bereich (nur sichtbar wenn Vorstand-Rolle aktiv) */}
+            {(isEditing ? editedUser.roles?.includes('vorstand') : user?.roles?.includes('vorstand')) && (
+              <div className="space-y-4 pt-4 border-t">
+                <h3 className="text-sm font-medium text-foreground">Vorstand</h3>
+                
+                <div className="space-y-2">
+                  <Label>Funktion im Vorstand</Label>
+                  {isEditing ? (
+                    <Input
+                      name="vorstand-funktion"
+                      autoComplete="off"
+                      value={(editedUser as any).vorstandFunktion || ""}
+                      onChange={(e) => setEditedUser(prev => ({ ...prev, vorstandFunktion: e.target.value } as any))}
+                      placeholder="z.B. Obmann, Kassier, Schriftführer"
+                    />
+                  ) : (
+                    <span className="text-sm">{(user as any).vorstandFunktion || "-"}</span>
+                  )}
+                </div>
               </div>
             )}
           </div>
