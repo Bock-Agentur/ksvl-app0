@@ -54,6 +54,12 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
   const { currentRole, currentUser } = useRole();
   const { users } = useTestData();
   
+  console.log('👥 SLOT FORM - All users:', users.map(u => ({ 
+    name: u.name, 
+    roles: u.roles, 
+    role: u.role 
+  })));
+  
   // Get crane operators from database - Alle mit Kranführer, Admin oder Vorstand Rollen
   const craneOperators = users.filter(u => 
     u.roles?.includes("kranfuehrer") || 
@@ -63,6 +69,12 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
     u.role === "admin" ||
     u.role === "vorstand"
   );
+  
+  console.log('🏗️ SLOT FORM - Filtered crane operators:', craneOperators.map(u => ({ 
+    name: u.name, 
+    roles: u.roles, 
+    role: u.role 
+  })));
   
   // CRITICAL FIX: Ensure current user is included in crane operators if eligible
   const currentUserAsCraneOperator = currentUser && (
