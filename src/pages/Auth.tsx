@@ -195,11 +195,10 @@ export function Auth() {
       
       {/* Countdown Layer */}
       {background.countdownEnabled && background.countdownEndDate && (
-        <div className={`absolute inset-0 flex items-${
-          background.countdownVerticalPosition === 'top' ? 'start pt-12' :
-          background.countdownVerticalPosition === 'bottom' ? 'end pb-12' :
-          'start pt-[35%]'
-        } justify-center pointer-events-none z-0`}>
+        <div 
+          className="absolute inset-0 flex items-start justify-center pointer-events-none z-0" 
+          style={{ paddingTop: `${background.countdownVerticalPosition}%` }}
+        >
           <Countdown 
             endDate={background.countdownEndDate} 
             text={background.countdownText}

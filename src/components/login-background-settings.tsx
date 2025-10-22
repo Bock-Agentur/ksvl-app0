@@ -308,8 +308,8 @@ export function LoginBackgroundSettings() {
     setLocalSettings({ ...localSettings, countdownText: text });
   };
 
-  const handleCountdownVerticalPositionChange = (position: 'top' | 'center' | 'bottom') => {
-    setLocalSettings({ ...localSettings, countdownVerticalPosition: position });
+  const handleCountdownVerticalPositionChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, countdownVerticalPosition: value[0] });
   };
 
   const getJustifyClass = () => {
@@ -317,14 +317,6 @@ export function LoginBackgroundSettings() {
       case 'top': return 'justify-start pt-8';
       case 'bottom': return 'justify-end pb-8';
       default: return 'justify-center';
-    }
-  };
-
-  const getCountdownJustifyClass = () => {
-    switch (localSettings.countdownVerticalPosition) {
-      case 'top': return 'justify-start pt-8';
-      case 'bottom': return 'justify-end pb-8';
-      default: return 'justify-start pt-[35%]'; // Etwas über der Mitte
     }
   };
 
@@ -624,30 +616,22 @@ export function LoginBackgroundSettings() {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label>Countdown Position</Label>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Button
-                      variant={localSettings.countdownVerticalPosition === 'top' ? 'default' : 'outline'}
-                      onClick={() => handleCountdownVerticalPositionChange('top')}
-                      className="flex-1"
-                    >
-                      Oben
-                    </Button>
-                    <Button
-                      variant={localSettings.countdownVerticalPosition === 'center' ? 'default' : 'outline'}
-                      onClick={() => handleCountdownVerticalPositionChange('center')}
-                      className="flex-1"
-                    >
-                      Mitte
-                    </Button>
-                    <Button
-                      variant={localSettings.countdownVerticalPosition === 'bottom' ? 'default' : 'outline'}
-                      onClick={() => handleCountdownVerticalPositionChange('bottom')}
-                      className="flex-1"
-                    >
-                      Unten
-                    </Button>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>Countdown Position (vertikal)</Label>
+                    <span className="text-sm text-muted-foreground">{localSettings.countdownVerticalPosition}%</span>
+                  </div>
+                  <Slider
+                    value={[localSettings.countdownVerticalPosition]}
+                    onValueChange={handleCountdownVerticalPositionChange}
+                    min={0}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Oben</span>
+                    <span>Unten</span>
                   </div>
                 </div>
               </>
@@ -768,7 +752,7 @@ export function LoginBackgroundSettings() {
                 />
                 {/* Countdown Layer */}
                 {localSettings.countdownEnabled && localSettings.countdownEndDate && (
-                  <div className={`absolute inset-0 flex flex-col items-center ${getCountdownJustifyClass()} pointer-events-none`}>
+                  <div className="absolute inset-0 flex flex-col items-center pointer-events-none" style={{ paddingTop: `${localSettings.countdownVerticalPosition}%` }}>
                     <CountdownPreview 
                       endDate={localSettings.countdownEndDate}
                       text={localSettings.countdownText}
