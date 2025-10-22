@@ -346,33 +346,64 @@ export function ThemeManager() {
           <Card className="bg-muted/50">
             <CardContent className="pt-6">
               <p className="text-sm text-muted-foreground">
-                Passen Sie die Farben aller Badge-Varianten an. Badges werden in der gesamten Anwendung verwendet.
+                Passen Sie die Hintergrund- und Schriftfarben aller Badge-Varianten an. Badges werden in der gesamten Anwendung verwendet.
               </p>
             </CardContent>
           </Card>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {badgeColors.map(renderColorCard)}
-          </div>
           
-          {/* Badge Preview */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Vorschau</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="default">Standard</Badge>
-                <Badge variant="secondary">Sekundär</Badge>
-                <Badge variant="destructive">Destruktiv</Badge>
-                <Badge variant="outline">Outline</Badge>
-                <Badge variant="success">Erfolg</Badge>
-                <Badge variant="warning">Warnung</Badge>
-                <Badge variant="available">Verfügbar</Badge>
-                <Badge variant="booked">Gebucht</Badge>
-                <Badge variant="blocked">Blockiert</Badge>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Badge List View */}
+          <div className="space-y-3">
+            {['default', 'secondary', 'destructive', 'outline', 'success', 'warning', 'available', 'booked', 'blocked'].map((variant) => {
+              const bgSetting = badgeColors.find(s => s.name.toLowerCase().includes(variant) && s.name.toLowerCase().includes('hintergrund'));
+              const fgSetting = badgeColors.find(s => s.name.toLowerCase().includes(variant) && s.name.toLowerCase().includes('schrift'));
+              
+              if (!bgSetting || !fgSetting) return null;
+              
+              const bgValue = editedColors[bgSetting.id] || bgSetting.hsl_value;
+              const fgValue = editedColors[fgSetting.id] || fgSetting.hsl_value;
+              const hasChanges = editedColors[bgSetting.id] !== undefined || editedColors[fgSetting.id] !== undefined;
+              
+              return (
+                <Card key={variant}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base font-semibold capitalize">{variant}</CardTitle>
+                      <Badge variant={variant as any} style={{ backgroundColor: `hsl(${bgValue})`, color: `hsl(${fgValue})` }}>
+                        Beispiel
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <ColorPicker
+                        color={bgValue}
+                        onChange={(newValue) => handleColorChange(bgSetting.id, newValue)}
+                        label="Hintergrundfarbe"
+                      />
+                      <ColorPicker
+                        color={fgValue}
+                        onChange={(newValue) => handleColorChange(fgSetting.id, newValue)}
+                        label="Schriftfarbe"
+                      />
+                    </div>
+                    {hasChanges && (
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          if (editedColors[bgSetting.id]) handleSave(bgSetting.id);
+                          if (editedColors[fgSetting.id]) handleSave(fgSetting.id);
+                        }}
+                        className="w-full mt-3"
+                      >
+                        <Save className="w-3 h-3 mr-2" />
+                        Speichern
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         </TabsContent>
 
         <TabsContent value="slots" className="space-y-4 mt-6">

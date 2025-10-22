@@ -54,25 +54,25 @@ All colors MUST be HSL for proper theme support.
     
     /* Badge Colors - Ocean Blue as Default */
     --badge-default: 202 85% 23%; /* Ocean Blue */
-    --badge-default-foreground: 0 0% 100%;
-    --badge-secondary: 210 40% 88%;
-    --badge-secondary-foreground: 210 60% 25%;
-    --badge-destructive: 0 75% 55%;
-    --badge-destructive-foreground: 0 75% 95%;
-    --badge-outline: 210 25% 85%;
-    --badge-outline-foreground: 210 60% 25%;
+    --badge-default-foreground: 0 0% 100%; /* White */
+    --badge-secondary: 202 85% 23%; /* Ocean Blue */
+    --badge-secondary-foreground: 0 0% 100%; /* White */
+    --badge-destructive: 202 85% 23%; /* Ocean Blue */
+    --badge-destructive-foreground: 0 0% 100%; /* White */
+    --badge-outline: 202 85% 23%; /* Ocean Blue */
+    --badge-outline-foreground: 0 0% 100%; /* White */
     --badge-outline-hover: 195 50% 90%;
     --badge-outline-hover-foreground: 210 60% 25%;
-    --badge-success: 160 60% 35%;
-    --badge-success-foreground: 160 60% 95%;
-    --badge-warning: 45 85% 55%;
-    --badge-warning-foreground: 45 85% 10%;
-    --badge-available: 160 60% 35%;
-    --badge-available-foreground: 160 60% 95%;
-    --badge-booked: 210 80% 35%;
-    --badge-booked-foreground: 210 80% 95%;
-    --badge-blocked: 0 75% 55%;
-    --badge-blocked-foreground: 0 75% 95%;
+    --badge-success: 202 85% 23%; /* Ocean Blue */
+    --badge-success-foreground: 0 0% 100%; /* White */
+    --badge-warning: 202 85% 23%; /* Ocean Blue */
+    --badge-warning-foreground: 0 0% 100%; /* White */
+    --badge-available: 202 85% 23%; /* Ocean Blue */
+    --badge-available-foreground: 0 0% 100%; /* White */
+    --badge-booked: 202 85% 23%; /* Ocean Blue */
+    --badge-booked-foreground: 0 0% 100%; /* White */
+    --badge-blocked: 202 85% 23%; /* Ocean Blue */
+    --badge-blocked-foreground: 0 0% 100%; /* White */
 
     /* Maritime Status Colors */
     --success: 160 60% 35%;
