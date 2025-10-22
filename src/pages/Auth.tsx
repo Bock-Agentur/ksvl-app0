@@ -25,9 +25,11 @@ export function Auth() {
         // Username → E-Mail aus profiles Tabelle holen (case-insensitive)
         const { data, error } = await supabase
           .from('profiles')
-          .select('email')
+          .select('email, name')
           .ilike('name', email)
           .maybeSingle();
+        
+        console.log('Username search result:', { data, error, searchTerm: email });
         
         if (error || !data) {
           throw new Error('Benutzer nicht gefunden');
