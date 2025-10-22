@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { WeekCalendar } from "./week-calendar";
 import { MonthCalendar } from "./month-calendar";
 import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Calendar, CalendarDays } from "lucide-react";
 import { useRole } from "@/hooks/use-role";
 import { SlotFormDialog } from "./slot-form-dialog";
@@ -81,87 +82,94 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
   });
 
   return (
-    <div className="h-full space-y-4">
-      {/* View Toggle - Responsive */}
-      <div className="flex items-center justify-center gap-2">
-        {/* Mobile: Only Day and Month */}
-        <div className="flex items-center gap-2 lg:hidden">
-          <Button
-            variant={viewMode === "day" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("day")}
-            className="flex items-center gap-2"
-          >
-            <Calendar className="w-4 h-4" />
-            Tagesansicht
-          </Button>
-          {/* Show Week button on tablet (md) but not mobile (sm) */}
-          <Button
-            variant={viewMode === "week" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("week")}
-            className="hidden sm:flex items-center gap-2 lg:hidden"
-          >
-            <Calendar className="w-4 h-4" />
-            Wochenansicht
-          </Button>
-          <Button
-            variant={viewMode === "month" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("month")}
-            className="flex items-center gap-2"
-          >
-            <CalendarDays className="w-4 h-4" />
-            Monatsansicht
-          </Button>
-        </div>
+    <div className="p-4 max-w-7xl mx-auto">
+      <Card className="bg-card/75 backdrop-blur-xl border-border/50 shadow-xl">
+        <CardHeader>
+          <CardTitle>Kalender</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* View Toggle - Responsive */}
+          <div className="flex items-center justify-center gap-2">
+            {/* Mobile: Only Day and Month */}
+            <div className="flex items-center gap-2 lg:hidden">
+              <Button
+                variant={viewMode === "day" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("day")}
+                className="flex items-center gap-2"
+              >
+                <Calendar className="w-4 h-4" />
+                Tagesansicht
+              </Button>
+              {/* Show Week button on tablet (md) but not mobile (sm) */}
+              <Button
+                variant={viewMode === "week" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("week")}
+                className="hidden sm:flex items-center gap-2 lg:hidden"
+              >
+                <Calendar className="w-4 h-4" />
+                Wochenansicht
+              </Button>
+              <Button
+                variant={viewMode === "month" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("month")}
+                className="flex items-center gap-2"
+              >
+                <CalendarDays className="w-4 h-4" />
+                Monatsansicht
+              </Button>
+            </div>
 
-        {/* Desktop: All three buttons */}
-        <div className="hidden lg:flex items-center gap-2">
-          <Button
-            variant={viewMode === "day" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("day")}
-            className="flex items-center gap-2"
-          >
-            <Calendar className="w-4 h-4" />
-            Tagesansicht
-          </Button>
-          <Button
-            variant={viewMode === "week" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("week")}
-            className="flex items-center gap-2"
-          >
-            <Calendar className="w-4 h-4" />
-            Wochenansicht
-          </Button>
-          <Button
-            variant={viewMode === "month" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("month")}
-            className="flex items-center gap-2"
-          >
-            <CalendarDays className="w-4 h-4" />
-            Monatsansicht
-          </Button>
-        </div>
-      </div>
+            {/* Desktop: All three buttons */}
+            <div className="hidden lg:flex items-center gap-2">
+              <Button
+                variant={viewMode === "day" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("day")}
+                className="flex items-center gap-2"
+              >
+                <Calendar className="w-4 h-4" />
+                Tagesansicht
+              </Button>
+              <Button
+                variant={viewMode === "week" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("week")}
+                className="flex items-center gap-2"
+              >
+                <Calendar className="w-4 h-4" />
+                Wochenansicht
+              </Button>
+              <Button
+                variant={viewMode === "month" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setViewMode("month")}
+                className="flex items-center gap-2"
+              >
+                <CalendarDays className="w-4 h-4" />
+                Monatsansicht
+              </Button>
+            </div>
+          </div>
 
-      {/* Calendar Content */}
-      {viewMode === "day" || viewMode === "week" ? (
-        <WeekCalendar 
-          key={selectedDate.toISOString()} // Force re-render when date changes
-          onSlotEdit={handleSlotEdit} 
-          selectedDate={selectedDate}
-          viewMode={viewMode === "day" ? "day" : "week"}
-        />
-      ) : (
-        <MonthCalendar 
-          onDayClick={handleDayClick}
-          onSlotCreate={handleSlotEdit}
-        />
-      )}
+          {/* Calendar Content */}
+          {viewMode === "day" || viewMode === "week" ? (
+            <WeekCalendar 
+              key={selectedDate.toISOString()} // Force re-render when date changes
+              onSlotEdit={handleSlotEdit} 
+              selectedDate={selectedDate}
+              viewMode={viewMode === "day" ? "day" : "week"}
+            />
+          ) : (
+            <MonthCalendar 
+              onDayClick={handleDayClick}
+              onSlotCreate={handleSlotEdit}
+            />
+          )}
+        </CardContent>
+      </Card>
 
       {/* Slot Form Dialog */}
       <SlotFormDialog 

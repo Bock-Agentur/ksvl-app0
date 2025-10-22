@@ -338,7 +338,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
   };
 
   return (
-    <div className="w-full space-y-4 px-2 sm:px-4">
+    <div className="w-full space-y-4">
       {/* Header with Navigation */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
         <div className="flex items-center gap-2 sm:gap-4 w-full sm:w-auto justify-center sm:justify-start">
