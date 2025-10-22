@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useLoginBackground } from "@/hooks/use-login-background";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function Auth() {
   const [email, setEmail] = useState("");
@@ -13,6 +15,8 @@ export function Auth() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { background } = useLoginBackground();
+  const isMobile = useIsMobile();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,9 +67,63 @@ export function Auth() {
     }
   };
 
+  const renderBackground = () => {
+    if (background.type === 'image' && background.url) {
+      return (
+        <>
+          <img 
+            src={background.url} 
+            alt="Login background"
+            className="fixed inset-0 w-full h-full object-cover -z-10"
+          />
+          <div className="fixed inset-0 bg-black/40 -z-10" />
+        </>
+      );
+    }
+    
+    if (background.type === 'video' && background.url) {
+      const shouldShowVideo = !isMobile || background.videoOnMobile;
+      
+      return (
+        <>
+          {shouldShowVideo ? (
+            <video 
+              autoPlay 
+              muted 
+              loop 
+              playsInline
+              className="fixed inset-0 w-full h-full object-cover -z-10"
+            >
+              <source src={background.url} type="video/mp4" />
+            </video>
+          ) : (
+            <div className="fixed inset-0 bg-gradient-to-br from-background to-muted -z-10" />
+          )}
+          <div className="fixed inset-0 bg-black/40 -z-10" />
+        </>
+      );
+    }
+    
+    return null;
+  };
+
+  const cardOpacity = background.type !== 'gradient' && background.url 
+    ? background.cardOpacity 
+    : 95;
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted">
-      <Card className="w-full max-w-md">
+    <div className={`min-h-screen flex items-center justify-center p-4 relative ${
+      background.type === 'gradient' || !background.url 
+        ? 'bg-gradient-to-br from-background to-muted' 
+        : ''
+    }`}>
+      {renderBackground()}
+      <Card 
+        className="w-full max-w-md backdrop-blur-sm relative z-10"
+        style={{ 
+          backgroundColor: `hsl(var(--background) / ${cardOpacity / 100})` 
+        }}
+      >
         <CardHeader>
           <CardTitle className="text-2xl text-center">Anmelden</CardTitle>
         </CardHeader>

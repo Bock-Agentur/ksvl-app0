@@ -11,10 +11,13 @@ import { ThemeManager } from "@/components/theme-manager";
 import { TestDataManager } from "@/components/test-data-manager";
 import { UserListDatabase } from "@/components/user-list-database";
 import { CustomFieldsManager } from "@/components/custom-fields-manager";
+import { LoginBackgroundSettings } from "@/components/login-background-settings";
 import { cn } from "@/lib/utils";
+import { useRole } from "@/hooks/use-role";
 
 export function Settings() {
   const [activeSection, setActiveSection] = useState("dashboard");
+  const { currentRole } = useRole();
 
   const sections = [
     { id: "dashboard", label: "Dashboard", component: DashboardSettings },
@@ -26,6 +29,7 @@ export function Settings() {
     { id: "customfields", label: "Custom Fields", component: CustomFieldsManager },
     { id: "system", label: "System", component: ConsecutiveSlotsSettings },
     { id: "testdata", label: "Testdaten", component: TestDataManager },
+    ...(currentRole === 'admin' ? [{ id: "loginpage", label: "Login-Seite", component: LoginBackgroundSettings }] : []),
   ];
 
   const ActiveComponent = sections.find(section => section.id === activeSection)?.component || DashboardSettings;
