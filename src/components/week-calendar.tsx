@@ -142,20 +142,26 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
         return false;
       }
       
-      // For mini-slots (15-minute), check exact time match
-      if (slot.isMiniSlot && slot.duration === 15) {
-        return slotMinute === minute;
+      console.log(`🔍 Checking slot ${slot.id} (${slot.time}) for ${hour}:${minute.toString().padStart(2, '0')} - slotMinute: ${slotMinute}, minute: ${minute}`);
+      
+      // Check exact time match for ANY slot (not just mini-slots)
+      if (slotMinute === minute) {
+        console.log(`✅ Exact match found for ${slot.id} at ${slot.time}`);
+        return true;
       }
       
-      // For regular slots (30, 45, 60-minute), they start at minute 0 but occupy multiple 15-min intervals
-      if (!slot.isMiniSlot && slotMinute === 0) {
-        // Check if this minute interval is covered by the slot duration
-        const slotEndMinute = slotMinute + slot.duration;
-        const currentMinute = minute;
-        return currentMinute >= slotMinute && currentMinute < slotEndMinute;
+      // For slots that don't start at this exact minute, check if they cover this time interval
+      // A 60-minute slot at 10:00 covers 10:00, 10:15, 10:30, 10:45
+      // A 30-minute slot at 10:15 covers 10:15 and 10:30
+      const slotStartMinute = slotMinute;
+      const slotEndMinute = slotMinute + slot.duration;
+      const matches = minute >= slotStartMinute && minute < slotEndMinute;
+      
+      if (matches) {
+        console.log(`✅ Slot ${slot.id} at ${slot.time} covers interval ${hour}:${minute.toString().padStart(2, '0')}`);
       }
       
-      return false;
+      return matches;
     });
   };
 
