@@ -125,8 +125,8 @@ export function Auth() {
         className="w-full max-w-md relative z-10 transition-all duration-300"
         style={{ 
           backgroundColor: `hsl(var(--background) / ${cardOpacity / 100})`,
-          backdropFilter: `blur(${cardBorderBlur}px)`,
-          WebkitBackdropFilter: `blur(${cardBorderBlur}px)`,
+          filter: `blur(${cardBorderBlur}px)`,
+          WebkitFilter: `blur(${cardBorderBlur}px)`,
           borderRadius: `${cardBorderRadius}px`
         }}
       >

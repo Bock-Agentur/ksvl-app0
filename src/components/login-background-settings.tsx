@@ -300,7 +300,7 @@ export function LoginBackgroundSettings() {
           {/* Border Blur Slider */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <Label>Rand-Blur (Weichzeichnung)</Label>
+              <Label>Box-Blur (Weichzeichnung)</Label>
               <span className="text-sm text-muted-foreground">{background.cardBorderBlur}px</span>
             </div>
             <Slider
@@ -363,7 +363,7 @@ export function LoginBackgroundSettings() {
                     className="bg-background p-6 shadow-lg"
                     style={{ 
                       opacity: background.cardOpacity / 100,
-                      backdropFilter: `blur(${background.cardBorderBlur}px)`,
+                      filter: `blur(${background.cardBorderBlur}px)`,
                       borderRadius: `${background.cardBorderRadius}px`
                     }}
                   >
