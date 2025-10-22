@@ -203,7 +203,8 @@ export function LoginBackgroundSettings() {
         verticalPosition: localSettings.verticalPosition,
         countdownEnabled: localSettings.countdownEnabled,
         countdownEndDate: localSettings.countdownEndDate,
-        countdownText: localSettings.countdownText
+        countdownText: localSettings.countdownText,
+        countdownVerticalPosition: localSettings.countdownVerticalPosition
       };
       setLocalSettings(newSettings);
       
@@ -297,6 +298,10 @@ export function LoginBackgroundSettings() {
 
   const handleCountdownTextChange = (text: string) => {
     setLocalSettings({ ...localSettings, countdownText: text });
+  };
+
+  const handleCountdownVerticalPositionChange = (position: 'top' | 'center' | 'bottom') => {
+    setLocalSettings({ ...localSettings, countdownVerticalPosition: position });
   };
 
   const getJustifyClass = () => {
@@ -601,6 +606,33 @@ export function LoginBackgroundSettings() {
                     value={localSettings.countdownText}
                     onChange={(e) => handleCountdownTextChange(e.target.value)}
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Countdown Position</Label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      variant={localSettings.countdownVerticalPosition === 'top' ? 'default' : 'outline'}
+                      onClick={() => handleCountdownVerticalPositionChange('top')}
+                      className="flex-1"
+                    >
+                      Oben
+                    </Button>
+                    <Button
+                      variant={localSettings.countdownVerticalPosition === 'center' ? 'default' : 'outline'}
+                      onClick={() => handleCountdownVerticalPositionChange('center')}
+                      className="flex-1"
+                    >
+                      Mitte
+                    </Button>
+                    <Button
+                      variant={localSettings.countdownVerticalPosition === 'bottom' ? 'default' : 'outline'}
+                      onClick={() => handleCountdownVerticalPositionChange('bottom')}
+                      className="flex-1"
+                    >
+                      Unten
+                    </Button>
+                  </div>
                 </div>
               </>
             )}
