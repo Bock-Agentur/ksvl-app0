@@ -711,17 +711,20 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
 
                               {/* Action icons - bottom right */}
                               <div className="absolute bottom-2 right-2 flex gap-2 z-20">
-                                <Edit2 
-                                  className="w-5 h-5 cursor-pointer transition-colors"
-                                  style={{ 
-                                    color: getSlotColors(getSlotStatus(slot, weekSlots)).text,
-                                    opacity: 0.7
-                                  }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onSlotEdit(slot);
-                                  }}
-                                />
+                                {/* Edit button - only for own booked slots (members) or admin/kranfuehrer */}
+                                {((slot.isBooked && slot.memberId === currentUser?.id) || canManageSlots) && (
+                                  <Edit2 
+                                    className="w-5 h-5 cursor-pointer transition-colors"
+                                    style={{ 
+                                      color: getSlotColors(getSlotStatus(slot, weekSlots)).text,
+                                      opacity: 0.7
+                                    }}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      onSlotEdit(slot);
+                                    }}
+                                  />
+                                )}
                                 {(() => {
                                   const status = getSlotStatus(slot, weekSlots);
                                   return status === 'available' && canBookSlots && (
@@ -738,7 +741,8 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
                                     />
                                   );
                                 })()}
-                                {slot.isBooked && canBookSlots && (
+                                {/* Cancel button - only for own booked slots (members) or admin/kranfuehrer */}
+                                {slot.isBooked && ((slot.memberId === currentUser?.id && canBookSlots) || canManageSlots) && (
                                   <X 
                                     className="w-5 h-5 cursor-pointer transition-colors hover:opacity-100"
                                     style={{ 
@@ -751,6 +755,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
                                     }}
                                   />
                                 )}
+                                {/* Delete button - only for admin/kranfuehrer */}
                                 {canManageSlots && (
                                   <Trash2 
                                     className="w-5 h-5 cursor-pointer transition-colors hover:text-destructive"
@@ -1021,17 +1026,20 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
 
                             {/* Action icons - bottom right */}
                             <div className="absolute bottom-2 right-2 flex gap-2 z-20">
-                              <Edit2 
-                                className="w-5 h-5 cursor-pointer transition-colors"
-                                style={{ 
-                                  color: getSlotColors(getSlotStatus(slot, weekSlots)).text,
-                                  opacity: 0.7
-                                }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onSlotEdit(slot);
-                                }}
-                              />
+                              {/* Edit button - only for own booked slots (members) or admin/kranfuehrer */}
+                              {((slot.isBooked && slot.memberId === currentUser?.id) || canManageSlots) && (
+                                <Edit2 
+                                  className="w-5 h-5 cursor-pointer transition-colors"
+                                  style={{ 
+                                    color: getSlotColors(getSlotStatus(slot, weekSlots)).text,
+                                    opacity: 0.7
+                                  }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onSlotEdit(slot);
+                                  }}
+                                />
+                              )}
                               {(() => {
                                 const status = getSlotStatus(slot, weekSlots);
                                 return status === 'available' && canBookSlots && (
@@ -1048,7 +1056,8 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
                                   />
                                 );
                               })()}
-                              {slot.isBooked && canBookSlots && (
+                              {/* Cancel button - only for own booked slots (members) or admin/kranfuehrer */}
+                              {slot.isBooked && ((slot.memberId === currentUser?.id && canBookSlots) || canManageSlots) && (
                                 <X 
                                   className="w-5 h-5 cursor-pointer transition-colors hover:opacity-100"
                                   style={{ 
@@ -1061,6 +1070,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
                                   }}
                                 />
                               )}
+                              {/* Delete button - only for admin/kranfuehrer */}
                               {canManageSlots && (
                                 <Trash2 
                                   className="w-5 h-5 cursor-pointer transition-colors hover:text-destructive"
