@@ -584,27 +584,32 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
 
       {/* Profile Card */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-              <User className="w-6 h-6 text-primary" />
+        <CardHeader className="pb-6">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground text-2xl font-bold">
+              {user.name.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1">
-              <CardTitle className="text-lg">{user.name}</CardTitle>
-              <div className="flex items-center gap-2 mt-1">
-                <Badge variant={user.status === "active" ? "default" : "secondary"} className="text-xs">
-                  {user.status === "active" ? "Aktiv" : "Inaktiv"}
-                </Badge>
+              <CardTitle className="text-2xl mb-1">{user.name}</CardTitle>
+              {user?.roles?.includes('vorstand') && (user as any).vorstandFunktion && (
+                <p className="text-sm text-muted-foreground mb-2">{(user as any).vorstandFunktion}</p>
+              )}
+              <div className="flex flex-wrap gap-2">
+                {user.roles?.map((role) => (
+                  <Badge key={role} className={cn("text-xs", roleColors[role])}>
+                    {roleLabels[role]}
+                  </Badge>
+                ))}
               </div>
             </div>
           </div>
         </CardHeader>
         
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-8">
           {/* Rollen - Nur für Admins sichtbar */}
           {isAdmin && userId && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-foreground border-b pb-2">Rollen</h3>
+            <div className="space-y-4 pb-4 border-b">
+              <h3 className="text-lg font-semibold text-foreground">Rollen</h3>
               {isEditing ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {/* Reihenfolge: Admin, Vorstand, Kranführer, Mitglied, Gastmitglied */}
@@ -667,12 +672,12 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           )}
           
           {/* Grunddaten - User-Name und Passwort */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-foreground border-b pb-2">Grunddaten</h3>
+          <div className="space-y-4 pb-4 border-b">
+            <h3 className="text-lg font-semibold text-foreground">Grunddaten</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label>User-Name</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>User-Name:</Label>
                 {isEditing && isAdmin ? (
                   <Input
                     name="username"
@@ -689,7 +694,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
 
               <div className="space-y-2">
-                <Label>Passwort</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Passwort:</Label>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">********</span>
                 </div>
@@ -706,12 +711,12 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           </div>
           
           {/* Stammdaten */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-foreground border-b pb-2">Stammdaten</h3>
+          <div className="space-y-4 pb-4 border-b">
+            <h3 className="text-lg font-semibold text-foreground">Stammdaten</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label>Mitgliedernummer</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Mitgliedernummer:</Label>
                 {isEditing ? (
                   <Input
                     name="member-number"
@@ -727,7 +732,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Vorname</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Vorname:</Label>
                 {isEditing ? (
                   <Input
                     name="given-name"
@@ -741,7 +746,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
 
               <div className="space-y-2">
-                <Label>Nachname</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Nachname:</Label>
                 {isEditing ? (
                   <Input
                     name="family-name"
@@ -755,7 +760,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
 
               <div className="space-y-2">
-                <Label>Email</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Email:</Label>
                 {isEditing ? (
                   <Input
                     type="email"
@@ -774,7 +779,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Telefonnummer</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Telefonnummer:</Label>
                 {isEditing ? (
                   <Input
                     type="tel"
@@ -793,7 +798,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Adresse</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Adresse:</Label>
                 {isEditing ? (
                   <Input
                     name="street-address"
@@ -807,7 +812,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
 
               <div className="space-y-2">
-                <Label>PLZ</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>PLZ:</Label>
                 {isEditing ? (
                   <Input
                     name="postal-code"
@@ -822,7 +827,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
 
               <div className="space-y-2">
-                <Label>Stadt</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Stadt:</Label>
                 {isEditing ? (
                   <Input
                     name="address-level2"
@@ -836,7 +841,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Geburtsdatum</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Geburtsdatum:</Label>
                 {isEditing && isAdmin ? (
                   <Input
                     type="date"
@@ -853,7 +858,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Eintrittsdatum</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Eintrittsdatum:</Label>
                 {isEditing && isAdmin ? (
                   <Input
                     type="date"
@@ -871,7 +876,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             </div>
             
             {/* Öffentliche Daten im KSVL */}
-            <div className="space-y-4 pt-4 border-t">
+            <div className="space-y-3 pt-4 mt-4 border-t">
+              <h4 className="text-sm font-medium text-foreground">Öffentliche Anzeige</h4>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="data-public"
@@ -900,37 +906,37 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 </Label>
               </div>
             </div>
-            
-            {/* Vorstand Bereich (nur sichtbar wenn Vorstand-Rolle aktiv) */}
-            {(isEditing ? editedUser.roles?.includes('vorstand') : user?.roles?.includes('vorstand')) && (
-              <div className="space-y-4 pt-4 border-t">
-                <h3 className="text-sm font-medium text-foreground">Vorstand</h3>
-                
-                <div className="space-y-2">
-                  <Label>Funktion im Vorstand</Label>
-                  {isEditing ? (
-                    <Input
-                      name="vorstand-funktion"
-                      autoComplete="off"
-                      value={(editedUser as any).vorstandFunktion || ""}
-                      onChange={(e) => setEditedUser(prev => ({ ...prev, vorstandFunktion: e.target.value } as any))}
-                      placeholder="z.B. Obmann, Kassier, Schriftführer"
-                    />
-                  ) : (
-                    <span className="text-sm">{(user as any).vorstandFunktion || "-"}</span>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
           
-          {/* Segeldaten */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-foreground border-b pb-2">Segeldaten</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Vorstand Bereich (nur sichtbar wenn Vorstand-Rolle aktiv) */}
+          {(isEditing ? editedUser.roles?.includes('vorstand') : user?.roles?.includes('vorstand')) && (
+            <div className="space-y-4 pb-4 border-b">
+              <h3 className="text-lg font-semibold text-foreground">Vorstand</h3>
+              
               <div className="space-y-2">
-                <Label>ÖSV Mitgliedsnummer</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Funktion im Vorstand:</Label>
+                {isEditing ? (
+                  <Input
+                    name="vorstand-funktion"
+                    autoComplete="off"
+                    value={(editedUser as any).vorstandFunktion || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, vorstandFunktion: e.target.value } as any))}
+                    placeholder="z.B. Obmann, Kassier, Schriftführer"
+                  />
+                ) : (
+                  <span className="text-sm">{(user as any).vorstandFunktion || "-"}</span>
+                )}
+              </div>
+            </div>
+          )}
+          
+          {/* Segeldaten */}
+          <div className="space-y-4 pb-4 border-b">
+            <h3 className="text-lg font-semibold text-foreground">Segeldaten</h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>ÖSV Mitgliedsnummer:</Label>
                 {isEditing && isAdmin ? (
                   <Input
                     name="oesv-number"
@@ -945,7 +951,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Liegeplatznummer</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Liegeplatznummer:</Label>
                 {isEditing && isAdmin ? (
                   <Input
                     name="berth-number"
@@ -960,7 +966,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Beibootplatznummer</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Beibootplatznummer:</Label>
                 {isEditing && isAdmin ? (
                   <Input
                     name="dinghy-berth-number"
@@ -975,7 +981,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Liegeplatztyp</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Liegeplatztyp:</Label>
                 {isEditing ? (
                   <Select
                     name="berth-type"
@@ -998,7 +1004,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Bootstyp</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Bootstyp:</Label>
                 {isEditing ? (
                   <Input
                     name="boat-type"
@@ -1013,7 +1019,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Bootsname</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Bootsname:</Label>
                 {isEditing ? (
                   <Input
                     name="boat-name"
@@ -1031,7 +1037,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Bootslänge (m)</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Bootslänge (m):</Label>
                 {isEditing ? (
                   <Input
                     type="number"
@@ -1049,7 +1055,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Bootsbreite (m)</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Bootsbreite (m):</Label>
                 {isEditing ? (
                   <Input
                     type="number"
@@ -1069,12 +1075,12 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           </div>
           
           {/* Parkplatz und Getränke */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-foreground border-b pb-2">Parkplatz und Getränke</h3>
+          <div className="space-y-4 pb-4 border-b">
+            <h3 className="text-lg font-semibold text-foreground">Parkplatz und Getränke</h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label>Parkberechtigungs-Nummer</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Parkberechtigungs-Nummer:</Label>
                 {isEditing && isAdmin ? (
                   <Input
                     name="parking-permit-number"
@@ -1089,7 +1095,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Ausgabedatum</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Ausgabedatum:</Label>
                 {isEditing && isAdmin ? (
                   <Input
                     type="date"
@@ -1106,7 +1112,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Getränkechip-Nummer</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Getränkechip-Nummer:</Label>
                 {isEditing && isAdmin ? (
                   <Input
                     name="beverage-chip-number"
@@ -1121,7 +1127,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
-                <Label>Ausgabedatum</Label>
+                <Label style={{ color: 'hsl(202 85% 23%)' }}>Ausgabedatum:</Label>
                 {isEditing && isAdmin ? (
                   <Input
                     type="date"
@@ -1141,19 +1147,20 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           
           {/* Zusätzliche Informationen (Custom Fields) */}
           {customFields.length > 0 && (
-            <div className="space-y-4">
-              <h3 className="text-sm font-medium text-foreground border-b pb-2">Zusätzliche Informationen</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4 pb-4 border-b">
+              <h3 className="text-lg font-semibold text-foreground">Zusätzliche Informationen</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {customFields.map(field => renderCustomField(field, isEditing))}
               </div>
             </div>
           )}
           
           {/* Notfallkontakt */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-foreground border-b pb-2">Notfallkontakt</h3>
+          <div className="space-y-4 pb-4 border-b">
+            <h3 className="text-lg font-semibold text-foreground">Notfallkontakt</h3>
             
             <div className="space-y-2">
+              <Label style={{ color: 'hsl(202 85% 23%)' }}>Kontaktinformationen:</Label>
               {isEditing ? (
                 <Textarea
                   value={(editedUser as any).emergencyContact || ""}
@@ -1168,10 +1175,11 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           </div>
           
           {/* Notizen */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-foreground border-b pb-2">Notizen</h3>
+          <div className="space-y-4 pb-4 border-b">
+            <h3 className="text-lg font-semibold text-foreground">Notizen</h3>
             
             <div className="space-y-2">
+              <Label style={{ color: 'hsl(202 85% 23%)' }}>Zusätzliche Informationen:</Label>
               {isEditing ? (
                 <Textarea
                   value={(editedUser as any).notes || ""}
