@@ -8,6 +8,166 @@ import { useThemeSettings, ThemeSetting } from "@/hooks/use-theme-settings";
 import { Palette, Save, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { HexColorPicker, RgbaColorPicker } from "react-colorful";
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from "@/components/ui/popover";
+
+interface ColorPickerProps {
+  color: string;
+  onChange: (color: string) => void;
+  label: string;
+  description?: string;
+}
+
+function ColorPicker({ color, onChange, label, description }: ColorPickerProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // Trendy Color Palette - same as in DesignSettings
+  const trendyColors = [
+    { name: "Ocean Blue", value: "202 85% 23%" },
+    { name: "Coral Pink", value: "348 77% 67%" },
+    { name: "Sea Green", value: "133 28% 68%" },
+    { name: "Bright Cyan", value: "194 99% 47%" },
+    { name: "Light Sea Foam", value: "87 66% 84%" },
+    { name: "Deep Navy", value: "210 60% 25%" },
+    { name: "Light Gray", value: "210 40% 88%" },
+    { name: "White", value: "0 0% 100%" },
+  ];
+  
+  // Parse HSL to get RGB for color picker
+  const hslToRgb = (hslString: string) => {
+    const match = hslString.match(/^(\d+)\s+(\d+)%\s+(\d+)%$/);
+    if (!match) return { r: 0, g: 0, b: 0, a: 1 };
+    
+    const h = parseInt(match[1]) / 360;
+    const s = parseInt(match[2]) / 100;
+    const l = parseInt(match[3]) / 100;
+    
+    let r, g, b;
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      const hue2rgb = (p: number, q: number, t: number) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1/6) return p + (q - p) * 6 * t;
+        if (t < 1/2) return q;
+        if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1/3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1/3);
+    }
+    
+    return {
+      r: Math.round(r * 255),
+      g: Math.round(g * 255),
+      b: Math.round(b * 255),
+      a: 1
+    };
+  };
+  
+  // Convert RGB to HSL string
+  const rgbToHsl = (rgba: { r: number; g: number; b: number; a: number }) => {
+    const r = rgba.r / 255;
+    const g = rgba.g / 255;
+    const b = rgba.b / 255;
+    
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    let h = 0, s = 0, l = (max + min) / 2;
+    
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      
+      switch (max) {
+        case r: h = ((g - b) / d + (g < b ? 6 : 0)) / 6; break;
+        case g: h = ((b - r) / d + 2) / 6; break;
+        case b: h = ((r - g) / d + 4) / 6; break;
+      }
+    }
+    
+    return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(l * 100)}%`;
+  };
+  
+  const rgbaColor = hslToRgb(color);
+
+  return (
+    <div className="space-y-2">
+      <Label className="text-sm font-medium">{label}</Label>
+      {description && (
+        <p className="text-xs text-muted-foreground">{description}</p>
+      )}
+      <Popover open={isOpen} onOpenChange={setIsOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className="w-full h-10 p-2 justify-start"
+          >
+            <div 
+              className="w-6 h-6 rounded border mr-2 flex-shrink-0"
+              style={{ backgroundColor: `hsl(${color})` }}
+            />
+            <span className="text-sm font-mono truncate">{color}</span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-4" align="start">
+          <div className="space-y-4">
+            {/* Color Picker */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-muted-foreground">Individuelle Farbauswahl</Label>
+              <RgbaColorPicker
+                color={rgbaColor}
+                onChange={(newColor) => onChange(rgbToHsl(newColor))}
+              />
+            </div>
+            
+            <Separator />
+            
+            {/* Trendy Color Palette */}
+            <div className="space-y-2">
+              <Label className="text-xs font-medium text-muted-foreground">Farbpalette</Label>
+              <div className="grid grid-cols-4 gap-2">
+                {trendyColors.map((trendyColor) => (
+                  <Button
+                    key={trendyColor.value}
+                    variant="outline"
+                    size="sm"
+                    className="h-8 w-full p-1"
+                    onClick={() => onChange(trendyColor.value)}
+                    title={trendyColor.name}
+                  >
+                    <div 
+                      className="w-full h-full rounded border"
+                      style={{ 
+                        backgroundColor: `hsl(${trendyColor.value})`
+                      }}
+                    />
+                  </Button>
+                ))}
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <div 
+                className="w-8 h-8 rounded border"
+                style={{ backgroundColor: `hsl(${color})` }}
+              />
+              <span className="text-xs font-mono">{color}</span>
+            </div>
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
 
 export function ThemeManager() {
   const { settings, isLoading, updateSetting, applyTheme } = useThemeSettings();
@@ -48,45 +208,54 @@ export function ThemeManager() {
     return null;
   };
 
-  const hslToHex = (hslString: string): string => {
-    const hsl = parseHSL(hslString);
-    if (!hsl) return "#000000";
-
-    const { h, s, l } = hsl;
-    const sDecimal = s / 100;
-    const lDecimal = l / 100;
-
-    const c = (1 - Math.abs(2 * lDecimal - 1)) * sDecimal;
-    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-    const m = lDecimal - c / 2;
-
-    let r = 0, g = 0, b = 0;
-    if (h >= 0 && h < 60) {
-      r = c; g = x; b = 0;
-    } else if (h >= 60 && h < 120) {
-      r = x; g = c; b = 0;
-    } else if (h >= 120 && h < 180) {
-      r = 0; g = c; b = x;
-    } else if (h >= 180 && h < 240) {
-      r = 0; g = x; b = c;
-    } else if (h >= 240 && h < 300) {
-      r = x; g = 0; b = c;
-    } else if (h >= 300 && h < 360) {
-      r = c; g = 0; b = x;
-    }
-
-    const toHex = (value: number) => {
-      const hex = Math.round((value + m) * 255).toString(16);
-      return hex.length === 1 ? "0" + hex : hex;
-    };
-
-    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-  };
-
   const renderColorCard = (setting: ThemeSetting) => {
     const currentValue = editedColors[setting.id] || setting.hsl_value;
-    const hexColor = setting.category !== 'gradient' ? hslToHex(currentValue) : '#000000';
     const hasChanges = editedColors[setting.id] !== undefined;
+
+    // Skip gradients in this view - they're handled separately
+    if (setting.category === 'gradient') {
+      return (
+        <Card key={setting.id} className="overflow-hidden">
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <CardTitle className="text-base font-semibold">{setting.name}</CardTitle>
+                {setting.description && (
+                  <CardDescription className="text-xs mt-1">{setting.description}</CardDescription>
+                )}
+              </div>
+              {setting.is_default && (
+                <Badge variant="outline" className="text-xs">Standard</Badge>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div 
+              className="w-full h-16 rounded-lg border-2 border-border shadow-sm"
+              style={{ background: currentValue }}
+            />
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground">CSS Gradient</Label>
+              <Input
+                value={currentValue}
+                onChange={(e) => handleColorChange(setting.id, e.target.value)}
+                className="font-mono text-xs"
+              />
+            </div>
+            {hasChanges && (
+              <Button
+                size="sm"
+                onClick={() => handleSave(setting.id)}
+                className="w-full"
+              >
+                <Save className="w-3 h-3 mr-2" />
+                Speichern
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      );
+    }
 
     return (
       <Card key={setting.id} className="overflow-hidden">
@@ -104,42 +273,11 @@ export function ThemeManager() {
           </div>
         </CardHeader>
         <CardContent className="space-y-3">
-          {setting.category !== 'gradient' ? (
-            <>
-              <div className="flex items-center gap-3">
-                <div 
-                  className="w-16 h-16 rounded-lg border-2 border-border shadow-sm"
-                  style={{ backgroundColor: `hsl(${currentValue})` }}
-                />
-                <div className="flex-1 space-y-2">
-                  <Label className="text-xs text-muted-foreground">HSL Wert</Label>
-                  <Input
-                    value={currentValue}
-                    onChange={(e) => handleColorChange(setting.id, e.target.value)}
-                    placeholder="202 85% 23%"
-                    className="font-mono text-sm"
-                  />
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Label className="text-xs text-muted-foreground">Hex:</Label>
-                <code className="text-xs font-mono bg-muted px-2 py-1 rounded">{hexColor}</code>
-              </div>
-            </>
-          ) : (
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground">CSS Gradient</Label>
-              <div 
-                className="w-full h-16 rounded-lg border-2 border-border shadow-sm"
-                style={{ background: currentValue }}
-              />
-              <Input
-                value={currentValue}
-                onChange={(e) => handleColorChange(setting.id, e.target.value)}
-                className="font-mono text-xs"
-              />
-            </div>
-          )}
+          <ColorPicker
+            color={currentValue}
+            onChange={(newValue) => handleColorChange(setting.id, newValue)}
+            label="Farbe"
+          />
           {hasChanges && (
             <Button
               size="sm"
