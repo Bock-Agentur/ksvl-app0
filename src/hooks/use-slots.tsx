@@ -310,6 +310,8 @@ export function useSlots() {
   // Book a slot
   const bookSlot = async (slotId: string, memberId: string) => {
     try {
+      console.log('🔄 BOOK SLOT - START:', slotId, 'for member:', memberId);
+      
       // Get member profile first for optimistic update
       const { data: memberProfile } = await supabase
         .from('profiles')
@@ -317,25 +319,33 @@ export function useSlots() {
         .eq('id', memberId)
         .single();
 
-      // Optimistic update - update UI immediately with full member data
-      setSlots(prev => prev.map(slot => 
-        slot.id === slotId 
-          ? { 
-              ...slot, 
-              isBooked: true, 
-              memberId,
-              memberName: memberProfile?.name,
-              bookedBy: memberProfile?.name,
-              member: memberProfile ? {
-                id: memberProfile.id,
-                name: memberProfile.name || '',
-                email: memberProfile.email || '',
-                memberNumber: memberProfile.member_number || ''
-              } : undefined
-            }
-          : slot
-      ));
+      console.log('👤 Member profile fetched:', memberProfile?.name);
 
+      // Optimistic update - update UI immediately with full member data
+      setSlots(prev => {
+        const updated = prev.map(slot => 
+          slot.id === slotId 
+            ? { 
+                ...slot, 
+                isBooked: true, 
+                memberId,
+                memberName: memberProfile?.name,
+                bookedBy: memberProfile?.name,
+                member: memberProfile ? {
+                  id: memberProfile.id,
+                  name: memberProfile.name || '',
+                  email: memberProfile.email || '',
+                  memberNumber: memberProfile.member_number || ''
+                } : undefined
+              }
+            : slot
+        );
+        console.log('✅ OPTIMISTIC UPDATE COMPLETE - Slot booked:', slotId);
+        return updated;
+      });
+
+
+      console.log('📡 UPDATING DATABASE...');
       const { data, error } = await supabase
         .from('slots')
         .update({
@@ -346,15 +356,23 @@ export function useSlots() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ DATABASE UPDATE FAILED:', error);
+        throw error;
+      }
 
-      // Fetch full data with profiles in background to ensure consistency
+      console.log('✅ DATABASE UPDATED SUCCESSFULLY');
+      console.log('🔄 FETCHING LATEST DATA...');
+
+      // Fetch full data with profiles to ensure consistency
       await fetchSlots();
 
+      console.log('✅ BOOK SLOT - COMPLETE');
       return data;
     } catch (error) {
-      console.error('Error booking slot:', error);
+      console.error('❌ ERROR BOOKING SLOT:', error);
       // Revert optimistic update on error
+      console.log('🔄 REVERTING OPTIMISTIC UPDATE...');
       await fetchSlots();
       toast({
         title: 'Fehler',
