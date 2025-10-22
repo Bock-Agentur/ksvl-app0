@@ -68,6 +68,10 @@ export function Auth() {
   };
 
   const renderBackground = () => {
+    const overlayStyle = {
+      backgroundColor: `${background.overlayColor}${Math.round((background.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
+    };
+
     if (background.type === 'image' && background.url) {
       return (
         <>
@@ -75,8 +79,9 @@ export function Auth() {
             src={background.url} 
             alt="Login background"
             className="fixed inset-0 w-full h-full object-cover -z-10"
+            style={{ filter: `blur(${background.mediaBlur}px)` }}
           />
-          <div className="fixed inset-0 bg-black/40 -z-10" />
+          <div className="fixed inset-0 -z-10" style={overlayStyle} />
         </>
       );
     }
@@ -93,13 +98,14 @@ export function Auth() {
               loop 
               playsInline
               className="fixed inset-0 w-full h-full object-cover -z-10"
+              style={{ filter: `blur(${background.mediaBlur}px)` }}
             >
               <source src={background.url} type="video/mp4" />
             </video>
           ) : (
             <div className="fixed inset-0 bg-gradient-to-br from-background to-muted -z-10" />
           )}
-          <div className="fixed inset-0 bg-black/40 -z-10" />
+          <div className="fixed inset-0 -z-10" style={overlayStyle} />
         </>
       );
     }

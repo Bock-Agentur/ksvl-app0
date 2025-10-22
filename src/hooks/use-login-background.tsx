@@ -8,6 +8,9 @@ export interface LoginBackground {
   cardOpacity: number;
   cardBorderBlur: number;
   cardBorderRadius: number;
+  overlayColor: string;
+  overlayOpacity: number;
+  mediaBlur: number;
 }
 
 const DEFAULT_BACKGROUND: LoginBackground = {
@@ -17,7 +20,10 @@ const DEFAULT_BACKGROUND: LoginBackground = {
   videoOnMobile: false,
   cardOpacity: 95,
   cardBorderBlur: 8,
-  cardBorderRadius: 8
+  cardBorderRadius: 8,
+  overlayColor: '#000000',
+  overlayOpacity: 40,
+  mediaBlur: 0
 };
 
 export function useLoginBackground() {

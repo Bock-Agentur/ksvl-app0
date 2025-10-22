@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { HexColorPicker } from "react-colorful";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -118,7 +119,10 @@ export function LoginBackgroundSettings() {
         videoOnMobile: false,
         cardOpacity: 95,
         cardBorderBlur: 8,
-        cardBorderRadius: 8
+        cardBorderRadius: 8,
+        overlayColor: '#000000',
+        overlayOpacity: 40,
+        mediaBlur: 0
       });
 
       toast({
@@ -160,6 +164,18 @@ export function LoginBackgroundSettings() {
 
   const handleBorderRadiusChange = async (value: number[]) => {
     await setBackground({ ...background, cardBorderRadius: value[0] });
+  };
+
+  const handleOverlayColorChange = async (color: string) => {
+    await setBackground({ ...background, overlayColor: color });
+  };
+
+  const handleOverlayOpacityChange = async (value: number[]) => {
+    await setBackground({ ...background, overlayOpacity: value[0] });
+  };
+
+  const handleMediaBlurChange = async (value: number[]) => {
+    await setBackground({ ...background, mediaBlur: value[0] });
   };
 
   return (
@@ -272,6 +288,82 @@ export function LoginBackgroundSettings() {
             </div>
           )}
 
+          {/* Media Blur Slider */}
+          {background.url && (
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label>Hintergrund-Weichzeichnung</Label>
+                <span className="text-sm text-muted-foreground">{background.mediaBlur}px</span>
+              </div>
+              <Slider
+                value={[background.mediaBlur]}
+                onValueChange={handleMediaBlurChange}
+                min={0}
+                max={20}
+                step={1}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Kein Blur</span>
+                <span>Stark verschwommen</span>
+              </div>
+            </div>
+          )}
+
+          {/* Overlay Color Picker */}
+          {background.url && (
+            <div className="space-y-3">
+              <Label>Overlay-Farbe</Label>
+              <div className="flex gap-4 items-start">
+                <HexColorPicker 
+                  color={background.overlayColor} 
+                  onChange={handleOverlayColorChange}
+                  style={{ width: '200px', height: '150px' }}
+                />
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-12 h-12 rounded border-2 border-border"
+                      style={{ backgroundColor: background.overlayColor }}
+                    />
+                    <Input
+                      type="text"
+                      value={background.overlayColor}
+                      onChange={(e) => handleOverlayColorChange(e.target.value)}
+                      className="flex-1 font-mono"
+                      placeholder="#000000"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Farbe des Overlays über Bild/Video
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Overlay Opacity Slider */}
+          {background.url && (
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label>Overlay-Transparenz</Label>
+                <span className="text-sm text-muted-foreground">{background.overlayOpacity}%</span>
+              </div>
+              <Slider
+                value={[background.overlayOpacity]}
+                onValueChange={handleOverlayOpacityChange}
+                min={0}
+                max={100}
+                step={5}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Transparent</span>
+                <span>Undurchsichtig</span>
+              </div>
+            </div>
+          )}
+
           {/* Preview */}
           {background.url && (
             <div className="space-y-2">
@@ -285,15 +377,22 @@ export function LoginBackgroundSettings() {
                     muted
                     loop
                     playsInline
+                    style={{ filter: `blur(${background.mediaBlur}px)` }}
                   />
                 ) : (
                   <img
                     src={background.url}
                     alt="Background preview"
                     className="w-full h-full object-cover"
+                    style={{ filter: `blur(${background.mediaBlur}px)` }}
                   />
                 )}
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <div 
+                  className="absolute inset-0 flex items-center justify-center"
+                  style={{ 
+                    backgroundColor: `${background.overlayColor}${Math.round((background.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
+                  }}
+                >
                   <div 
                     className="relative overflow-hidden shadow-lg"
                     style={{ 
