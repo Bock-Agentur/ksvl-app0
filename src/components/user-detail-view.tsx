@@ -37,7 +37,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
   const [editedUser, setEditedUser] = useState<UserType>(user);
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
-  const { getRoleBadgeStyle } = useRoleBadgeSettings();
+  const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
   
   // Check admin status
   useEffect(() => {
@@ -159,7 +159,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   <CardTitle className="text-lg">{editedUser.name}</CardTitle>
                   <div className="flex items-center gap-2 mt-1">
                     {editedUser.roles?.map((role) => (
-                      <Badge key={role} className={cn("text-xs", getRoleBadgeStyle(role))}>
+                      <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
                         {roleLabels[role]}
                       </Badge>
                     ))}
@@ -224,7 +224,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       {editedUser.roles?.map((role) => (
-                        <Badge key={role} className={cn("text-xs", getRoleBadgeStyle(role))}>
+                        <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
                           {roleLabels[role]}
                         </Badge>
                       ))}

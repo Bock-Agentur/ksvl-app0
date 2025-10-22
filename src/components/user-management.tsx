@@ -32,7 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 export function UserManagementRefactored() {
   const { users: dbUsers, loading, deleteUser: deleteDbUser, refreshUsers } = useUsers();
   const { toast } = useToast();
-  const { getRoleBadgeStyle } = useRoleBadgeSettings();
+  const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
   
   // Convert DatabaseUser to User format for compatibility
   const users: User[] = dbUsers.map(u => ({
@@ -469,7 +469,7 @@ export function UserManagementRefactored() {
                           };
                           
                           return (
-                            <Badge key={role} className={cn("text-xs", getRoleBadgeStyle(role))}>
+                            <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
                               {roleLabels[role]}
                             </Badge>
                           );

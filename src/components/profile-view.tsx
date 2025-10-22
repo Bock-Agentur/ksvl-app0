@@ -58,7 +58,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   // Load custom field values for the user
   const targetUserId = userId || roleCurrentUser?.id;
   const { customValues, saveCustomValue, saveAllCustomValues } = useCustomFieldValues(targetUserId || '');
-  const { getRoleBadgeStyle } = useRoleBadgeSettings();
+  const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
 
   // New custom field form
   const [newField, setNewField] = useState<Partial<CustomField>>({
@@ -591,7 +591,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               )}
               <div className="flex flex-wrap gap-2">
                 {user.roles?.map((role) => (
-                  <Badge key={role} className={cn("text-xs", getRoleBadgeStyle(role))}>
+                  <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
                     {roleLabels[role]}
                   </Badge>
                 ))}
@@ -657,7 +657,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                   {(['admin', 'vorstand', 'kranfuehrer', 'mitglied', 'gastmitglied'] as UserRole[])
                     .filter(role => user.roles?.includes(role))
                     .map((role) => (
-                      <Badge key={role} className={cn("text-xs", getRoleBadgeStyle(role))}>
+                      <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
                         {roleLabels[role]}
                       </Badge>
                     ))}

@@ -40,5 +40,16 @@ export function useRoleBadgeSettings() {
     return `bg-[${bgTailwind}] text-[${textTailwind}]`;
   };
 
-  return { settings, isLoading, getRoleBadgeStyle };
+  const getRoleBadgeInlineStyle = (role: string): React.CSSProperties => {
+    if (!settings || !settings[role]) {
+      return { backgroundColor: 'hsl(202, 85%, 23%)', color: 'hsl(0, 0%, 100%)' };
+    }
+    const { bgColor, textColor } = settings[role];
+    return {
+      backgroundColor: bgColor,
+      color: textColor,
+    };
+  };
+
+  return { settings, isLoading, getRoleBadgeStyle, getRoleBadgeInlineStyle };
 }
