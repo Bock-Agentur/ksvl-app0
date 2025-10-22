@@ -5,9 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useThemeSettings, ThemeSetting } from "@/hooks/use-theme-settings";
+import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
 import { Palette, Save, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { HexColorPicker, RgbaColorPicker } from "react-colorful";
 import { 
   Popover, 
@@ -171,7 +174,10 @@ function ColorPicker({ color, onChange, label, description }: ColorPickerProps) 
 
 export function ThemeManager() {
   const { settings, isLoading, updateSetting, applyTheme } = useThemeSettings();
+  const { settings: roleBadgeSettings, isLoading: roleSettingsLoading } = useRoleBadgeSettings();
+  const { toast } = useToast();
   const [editedColors, setEditedColors] = useState<Record<string, string>>({});
+  const [editedRoleBadges, setEditedRoleBadges] = useState<Record<string, { bg: string; text: string }>>({});
 
   // Apply theme on load and when settings change
   useEffect(() => {
@@ -190,6 +196,37 @@ export function ThemeManager() {
       updateSetting({ id, hsl_value: newValue });
       setEditedColors(prev => {
         const { [id]: _, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
+  const handleRoleBadgeSave = async (role: string) => {
+    const edited = editedRoleBadges[role];
+    if (!edited) return;
+
+    const { error } = await supabase
+      .from('role_badge_settings')
+      .update({
+        bg_color: edited.bg,
+        text_color: edited.text,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('role', role);
+
+    if (error) {
+      toast({
+        title: "Fehler",
+        description: "Konnte Rollen-Badge-Einstellungen nicht speichern",
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Gespeichert",
+        description: "Rollen-Badge-Einstellungen wurden aktualisiert",
+      });
+      setEditedRoleBadges(prev => {
+        const { [role]: _, ...rest } = prev;
         return rest;
       });
     }
@@ -327,9 +364,10 @@ export function ThemeManager() {
       </Card>
 
       <Tabs defaultValue="base" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="base">Basis-Farben</TabsTrigger>
           <TabsTrigger value="badges">Badges</TabsTrigger>
+          <TabsTrigger value="role-badges">Rollen-Badges</TabsTrigger>
           <TabsTrigger value="slots">Slot-Status</TabsTrigger>
           <TabsTrigger value="slots-alt">Slot-Alt</TabsTrigger>
           <TabsTrigger value="theme">Theme</TabsTrigger>
@@ -403,6 +441,93 @@ export function ThemeManager() {
                           if (editedColors[bgSetting.id]) handleSave(bgSetting.id);
                           if (editedColors[fgSetting.id]) handleSave(fgSetting.id);
                         }}
+                        className="w-full mt-3"
+                      >
+                        <Save className="w-3 h-3 mr-2" />
+                        Speichern
+                      </Button>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="role-badges" className="space-y-4 mt-6">
+          <Card className="bg-muted/50">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground">
+                Passen Sie die Hintergrund- und Schriftfarben aller Rollen-Badges an.
+              </p>
+            </CardContent>
+          </Card>
+          
+          {/* Role Badge List View */}
+          <div className="space-y-3">
+            {[
+              { role: 'admin', label: 'Admin' },
+              { role: 'vorstand', label: 'Vorstand' },
+              { role: 'kranfuehrer', label: 'Kranführer' },
+              { role: 'mitglied', label: 'Mitglied' },
+              { role: 'gastmitglied', label: 'Gastmitglied' },
+            ].map(({ role, label }) => {
+              const settings = roleBadgeSettings?.[role];
+              if (!settings) return null;
+              
+              const currentBg = editedRoleBadges[role]?.bg || settings.bgColor;
+              const currentText = editedRoleBadges[role]?.text || settings.textColor;
+              const hasChanges = editedRoleBadges[role] !== undefined;
+              
+              return (
+                <Card key={role}>
+                  <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-base font-semibold">{label}</CardTitle>
+                      <Badge 
+                        className="text-xs"
+                        style={{ 
+                          backgroundColor: currentBg.includes('hsl(') ? currentBg : `hsl(${currentBg})`,
+                          color: currentText.includes('hsl(') ? currentText : `hsl(${currentText})`
+                        }}
+                      >
+                        Beispiel
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <ColorPicker
+                        color={currentBg.replace(/hsl\(([\d.]+),\s*([\d.]+)%,\s*([\d.]+)%\)/, '$1 $2% $3%')}
+                        onChange={(newValue) => {
+                          setEditedRoleBadges(prev => ({
+                            ...prev,
+                            [role]: {
+                              bg: `hsl(${newValue})`,
+                              text: prev[role]?.text || settings.textColor
+                            }
+                          }));
+                        }}
+                        label="Hintergrundfarbe"
+                      />
+                      <ColorPicker
+                        color={currentText.replace(/hsl\(([\d.]+),\s*([\d.]+)%,\s*([\d.]+)%\)/, '$1 $2% $3%')}
+                        onChange={(newValue) => {
+                          setEditedRoleBadges(prev => ({
+                            ...prev,
+                            [role]: {
+                              bg: prev[role]?.bg || settings.bgColor,
+                              text: `hsl(${newValue})`
+                            }
+                          }));
+                        }}
+                        label="Schriftfarbe"
+                      />
+                    </div>
+                    {hasChanges && (
+                      <Button
+                        size="sm"
+                        onClick={() => handleRoleBadgeSave(role)}
                         className="w-full mt-3"
                       >
                         <Save className="w-3 h-3 mr-2" />
