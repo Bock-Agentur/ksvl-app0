@@ -606,6 +606,53 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                       </div>
                     )}
                   </div>
+                  
+                  {/* Custom Fields - Boot */}
+                  {!fieldsLoading && customFields.filter(f => f.group === 'Boot').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
+                    <div key={field.id} className="space-y-2">
+                      <Label>{field.label}{field.required && " *"}</Label>
+                      {isEditing ? (
+                        <>
+                          {field.type === 'textarea' ? (
+                            <Textarea
+                              value={editedCustomValues[field.name] || ""}
+                              onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                              placeholder={field.placeholder}
+                              required={field.required}
+                            />
+                          ) : field.type === 'select' && field.options ? (
+                            <Select
+                              value={editedCustomValues[field.name] || ""}
+                              onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder={field.placeholder || "Auswählen..."} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {field.options.map((option) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input
+                              type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
+                              value={editedCustomValues[field.name] || ""}
+                              onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                              placeholder={field.placeholder}
+                              required={field.required}
+                            />
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-sm text-muted-foreground">
+                          {customValues[field.name] || "-"}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -672,6 +719,53 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                       </div>
                     )}
                   </div>
+                  
+                  {/* Custom Fields - Liegeplatz */}
+                  {!fieldsLoading && customFields.filter(f => f.group === 'Liegeplatz').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
+                    <div key={field.id} className="space-y-2">
+                      <Label>{field.label}{field.required && " *"}</Label>
+                      {isEditing ? (
+                        <>
+                          {field.type === 'textarea' ? (
+                            <Textarea
+                              value={editedCustomValues[field.name] || ""}
+                              onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                              placeholder={field.placeholder}
+                              required={field.required}
+                            />
+                          ) : field.type === 'select' && field.options ? (
+                            <Select
+                              value={editedCustomValues[field.name] || ""}
+                              onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
+                            >
+                              <SelectTrigger>
+                                <SelectValue placeholder={field.placeholder || "Auswählen..."} />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {field.options.map((option) => (
+                                  <SelectItem key={option} value={option}>
+                                    {option}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Input
+                              type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
+                              value={editedCustomValues[field.name] || ""}
+                              onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                              placeholder={field.placeholder}
+                              required={field.required}
+                            />
+                          )}
+                        </>
+                      ) : (
+                        <div className="text-sm text-muted-foreground">
+                          {customValues[field.name] || "-"}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -771,78 +865,6 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
 
               <Separator />
 
-              {/* Custom Fields - Gruppiert */}
-              {!fieldsLoading && customFields.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="text-sm font-medium text-foreground border-b pb-2">
-                    Zusätzliche Felder
-                  </h3>
-                  
-                  {/* Group custom fields by group property */}
-                  {['Kontakt', 'Persönlich', 'Mitgliedschaft', 'Boot', 'Liegeplatz', 'Sonstiges', undefined].map((group) => {
-                    const fieldsInGroup = customFields.filter(f => f.group === group);
-                    if (fieldsInGroup.length === 0) return null;
-
-                    return (
-                      <div key={group || 'ungrouped'} className="space-y-3">
-                        {group && (
-                          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            {group}
-                          </h4>
-                        )}
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {fieldsInGroup.map((field) => (
-                            <div key={field.id} className="space-y-2">
-                              <Label>{field.label}{field.required && " *"}</Label>
-                              {isEditing ? (
-                                <>
-                                  {field.type === 'textarea' ? (
-                                    <Textarea
-                                      value={editedCustomValues[field.name] || ""}
-                                      onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                                      placeholder={field.placeholder}
-                                      required={field.required}
-                                    />
-                                  ) : field.type === 'select' && field.options ? (
-                                    <Select
-                                      value={editedCustomValues[field.name] || ""}
-                                      onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
-                                    >
-                                      <SelectTrigger>
-                                        <SelectValue placeholder={field.placeholder || "Auswählen..."} />
-                                      </SelectTrigger>
-                                      <SelectContent>
-                                        {field.options.map((option) => (
-                                          <SelectItem key={option} value={option}>
-                                            {option}
-                                          </SelectItem>
-                                        ))}
-                                      </SelectContent>
-                                    </Select>
-                                  ) : (
-                                    <Input
-                                      type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : 'text'}
-                                      value={editedCustomValues[field.name] || ""}
-                                      onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                                      placeholder={field.placeholder}
-                                      required={field.required}
-                                    />
-                                  )}
-                                </>
-                              ) : (
-                                <div className="text-sm text-muted-foreground">
-                                  {customValues[field.name] || "-"}
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
 
               <Separator />
 

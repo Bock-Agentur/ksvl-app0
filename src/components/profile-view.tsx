@@ -868,6 +868,53 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                   </span>
                 )}
               </div>
+              
+              {/* Custom Fields - Persönlich */}
+              {!fieldsLoading && customFields.filter(f => f.group === 'Persönlich').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
+                <div key={field.id} className="space-y-2">
+                  <Label>{field.label}{field.required && " *"}</Label>
+                  {isEditing ? (
+                    <>
+                      {field.type === 'textarea' ? (
+                        <Textarea
+                          value={editedCustomValues[field.name] || ""}
+                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                        />
+                      ) : field.type === 'select' && field.options ? (
+                        <Select
+                          value={editedCustomValues[field.name] || ""}
+                          onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={field.placeholder || "Auswählen..."} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
+                          value={editedCustomValues[field.name] || ""}
+                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-sm">
+                      {customValues[field.name] || "-"}
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
             
             {/* Öffentliche Daten im KSVL */}
@@ -1066,6 +1113,53 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                   <span className="text-sm">{(user as any).boatWidth ? `${(user as any).boatWidth} m` : "-"}</span>
                 )}
               </div>
+              
+              {/* Custom Fields - Boot */}
+              {!fieldsLoading && customFields.filter(f => f.group === 'Boot').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
+                <div key={field.id} className="space-y-2">
+                  <Label>{field.label}{field.required && " *"}</Label>
+                  {isEditing ? (
+                    <>
+                      {field.type === 'textarea' ? (
+                        <Textarea
+                          value={editedCustomValues[field.name] || ""}
+                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                        />
+                      ) : field.type === 'select' && field.options ? (
+                        <Select
+                          value={editedCustomValues[field.name] || ""}
+                          onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={field.placeholder || "Auswählen..."} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
+                          value={editedCustomValues[field.name] || ""}
+                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-sm">
+                      {customValues[field.name] || "-"}
+                    </span>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
           
@@ -1140,15 +1234,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             </div>
           </div>
           
-          {/* Zusätzliche Informationen (Custom Fields) */}
-          {customFields.length > 0 && (
-            <div className="space-y-4 pb-4 border-b">
-              <h3 className="text-lg font-semibold text-foreground">Zusätzliche Informationen</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {customFields.map(field => renderCustomField(field, isEditing))}
-              </div>
-            </div>
-          )}
           
           {/* Notfallkontakt */}
           <div className="space-y-4 pb-4 border-b">
@@ -1188,76 +1273,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             </div>
           </div>
 
-          {/* Custom Fields - Gruppiert */}
-          {!fieldsLoading && customFields.length > 0 && (
-            <div className="space-y-4 pb-4 border-b">
-              <h3 className="text-lg font-semibold text-foreground">Zusätzliche Felder</h3>
-              
-              {/* Group custom fields by group property */}
-              {['Kontakt', 'Persönlich', 'Mitgliedschaft', 'Boot', 'Liegeplatz', 'Sonstiges', undefined].map((group) => {
-                const fieldsInGroup = customFields.filter(f => f.group === group).sort((a, b) => (a.order || 0) - (b.order || 0));
-                if (fieldsInGroup.length === 0) return null;
-
-                return (
-                  <div key={group || 'ungrouped'} className="space-y-3">
-                    {group && (
-                      <h4 className="text-sm font-medium text-muted-foreground">
-                        {group}
-                      </h4>
-                    )}
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {fieldsInGroup.map((field) => (
-                        <div key={field.id} className="space-y-2">
-                          <Label>{field.label}{field.required && " *"}</Label>
-                          {isEditing ? (
-                            <>
-                              {field.type === 'textarea' ? (
-                                <Textarea
-                                  value={editedCustomValues[field.name] || ""}
-                                  onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                                  placeholder={field.placeholder}
-                                  required={field.required}
-                                />
-                              ) : field.type === 'select' && field.options ? (
-                                <Select
-                                  value={editedCustomValues[field.name] || ""}
-                                  onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder={field.placeholder || "Auswählen..."} />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {field.options.map((option) => (
-                                      <SelectItem key={option} value={option}>
-                                        {option}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                              ) : (
-                                <Input
-                                  type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
-                                  value={editedCustomValues[field.name] || ""}
-                                  onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                                  placeholder={field.placeholder}
-                                  required={field.required}
-                                />
-                              )}
-                            </>
-                          ) : (
-                            <span className="text-sm">
-                              {customValues[field.name] || "-"}
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
 
           {/* Save/Cancel Buttons */}
           {isEditing && (
