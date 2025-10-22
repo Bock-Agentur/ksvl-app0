@@ -128,24 +128,17 @@ export function Auth() {
     }`}>
       {renderBackground()}
       
-      <div className="w-full max-w-md relative z-10 flex flex-col items-center flex-1 justify-center">
+      <div className="w-full max-w-md sm:max-w-[85%] relative z-10 flex flex-col items-center flex-1 justify-center">
         {/* Login Form */}
         <form onSubmit={handleLogin} className="w-full space-y-4" autoComplete="on">
           {/* Email Input with Glass Effect */}
           <div 
             className="relative overflow-hidden transition-all duration-300"
             style={{ 
-              borderRadius: `${cardBorderRadius}px`
+              borderRadius: `${cardBorderRadius}px`,
+              backgroundColor: `${background.inputBgColor}${Math.round(background.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
             }}
           >
-            <div 
-              className="absolute inset-0 -z-10"
-              style={{
-                backgroundColor: `hsl(var(--background) / ${cardOpacity / 100})`,
-                backdropFilter: `blur(${cardBorderBlur}px)`,
-                WebkitBackdropFilter: `blur(${cardBorderBlur}px)`,
-              }}
-            />
             <div className="relative flex items-center gap-3 px-4 py-4">
               <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -168,17 +161,10 @@ export function Auth() {
           <div 
             className="relative overflow-hidden transition-all duration-300"
             style={{ 
-              borderRadius: `${cardBorderRadius}px`
+              borderRadius: `${cardBorderRadius}px`,
+              backgroundColor: `${background.inputBgColor}${Math.round(background.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
             }}
           >
-            <div 
-              className="absolute inset-0 -z-10"
-              style={{
-                backgroundColor: `hsl(var(--background) / ${cardOpacity / 100})`,
-                backdropFilter: `blur(${cardBorderBlur}px)`,
-                WebkitBackdropFilter: `blur(${cardBorderBlur}px)`,
-              }}
-            />
             <div className="relative flex items-center gap-3 px-4 py-4">
               <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />

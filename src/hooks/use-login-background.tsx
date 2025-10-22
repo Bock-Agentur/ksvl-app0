@@ -11,6 +11,8 @@ export interface LoginBackground {
   overlayColor: string;
   overlayOpacity: number;
   mediaBlur: number;
+  inputBgColor: string;
+  inputBgOpacity: number;
 }
 
 const DEFAULT_BACKGROUND: LoginBackground = {
@@ -23,7 +25,9 @@ const DEFAULT_BACKGROUND: LoginBackground = {
   cardBorderRadius: 8,
   overlayColor: '#000000',
   overlayOpacity: 40,
-  mediaBlur: 0
+  mediaBlur: 0,
+  inputBgColor: '#FFFFFF',
+  inputBgOpacity: 10
 };
 
 export function useLoginBackground() {
