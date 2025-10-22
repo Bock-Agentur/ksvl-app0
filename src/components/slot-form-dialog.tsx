@@ -50,14 +50,18 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
 
   const canManageSlots = currentUser?.roles?.includes("kranfuehrer") || 
                          currentUser?.roles?.includes("admin") ||
+                         currentUser?.roles?.includes("vorstand") ||
                          currentRole === "kranfuehrer" || 
-                         currentRole === "admin";
+                         currentRole === "admin" ||
+                         currentRole === "vorstand";
   const canBookSlots = currentUser?.roles?.includes("mitglied") || 
                        currentUser?.roles?.includes("kranfuehrer") || 
                        currentUser?.roles?.includes("admin") ||
+                       currentUser?.roles?.includes("vorstand") ||
                        currentRole === "mitglied" || 
                        currentRole === "kranfuehrer" || 
-                       currentRole === "admin";
+                       currentRole === "admin" ||
+                       currentRole === "vorstand";
 
   const handleFormSubmit = async (formData: SlotFormData) => {
     console.log('🚀 HANDLE_FORM_SUBMIT called with:', formData);
