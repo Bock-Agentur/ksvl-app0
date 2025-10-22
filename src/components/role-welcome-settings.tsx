@@ -100,27 +100,27 @@ export function RoleWelcomeSettings() {
           {/* Role Selection */}
           <div className="space-y-3">
             <Label className="text-base font-medium">Rolle auswählen</Label>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
               {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
                 const Icon = getRoleIcon(role);
                 return (
                   <Card 
                     key={role}
                     className={cn(
-                      "cursor-pointer transition-colors hover:bg-muted/50",
+                      "cursor-pointer transition-colors hover:bg-muted/50 w-20 sm:w-24",
                       activeRole === role 
                         ? "ring-2 ring-primary bg-primary/5" 
                         : "hover:shadow-sm"
                     )}
                     onClick={() => setActiveRole(role)}
                   >
-                    <CardContent className="p-4 text-center">
+                    <CardContent className="p-3 text-center">
                       <Icon className={cn(
-                        "h-8 w-8 mx-auto mb-2",
+                        "h-6 w-6 mx-auto mb-1",
                         activeRole === role ? "text-primary" : "text-muted-foreground"
                       )} />
                       <p className={cn(
-                        "font-medium text-sm",
+                        "font-medium text-xs",
                         activeRole === role ? "text-primary" : "text-foreground"
                       )}>
                         {getRoleDisplayName(role)}
@@ -218,27 +218,27 @@ export function RoleWelcomeSettings() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
             {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
               const Icon = getRoleIcon(role);
               return (
                 <Card 
                   key={role}
                   className={cn(
-                    "cursor-pointer transition-colors hover:bg-muted/50",
+                    "cursor-pointer transition-colors hover:bg-muted/50 w-20 sm:w-24",
                     activeRole === role 
                       ? "ring-2 ring-primary bg-primary/5" 
                       : "hover:shadow-sm"
                   )}
                   onClick={() => setActiveRole(role)}
                 >
-                  <CardContent className="p-4 text-center">
+                  <CardContent className="p-3 text-center">
                     <Icon className={cn(
-                      "h-8 w-8 mx-auto mb-2",
+                      "h-6 w-6 mx-auto mb-1",
                       activeRole === role ? "text-primary" : "text-muted-foreground"
                     )} />
                     <p className={cn(
-                      "font-medium text-sm",
+                      "font-medium text-xs",
                       activeRole === role ? "text-primary" : "text-foreground"
                     )}>
                       {getRoleDisplayName(role)}
