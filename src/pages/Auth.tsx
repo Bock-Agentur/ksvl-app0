@@ -18,8 +18,26 @@ export function Auth() {
     setLoading(true);
 
     try {
+      let loginEmail = email;
+      
+      // Prüfen ob es eine E-Mail ist (enthält @)
+      if (!email.includes('@')) {
+        // Username → E-Mail aus profiles Tabelle holen
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('name', email)
+          .maybeSingle();
+        
+        if (error || !data) {
+          throw new Error('Benutzer nicht gefunden');
+        }
+        
+        loginEmail = data.email;
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: loginEmail,
         password,
       });
 
@@ -52,18 +70,17 @@ export function Auth() {
           <form onSubmit={handleLogin} className="space-y-4" autoComplete="on">
             <div className="space-y-2">
               <label htmlFor="email" className="text-sm font-medium">
-                E-Mail
+                E-Mail oder Benutzername
               </label>
               <Input
                 id="email"
                 name="email"
-                type="email"
-                autoComplete="email"
-                inputMode="email"
+                type="text"
+                autoComplete="username"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="ihre@email.de"
+                placeholder="E-Mail oder Benutzername"
               />
             </div>
             <div className="space-y-2">
