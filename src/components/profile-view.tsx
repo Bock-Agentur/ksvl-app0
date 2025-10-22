@@ -16,6 +16,7 @@ import { User as UserType, UserRole, CustomField, ProfileViewProps, generateRole
 import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/hooks/use-role";
 import { useCustomFields, useCustomFieldValues } from "@/hooks/use-custom-fields";
+import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
 
 // ProfileViewProps is now imported from @/types
 
@@ -27,13 +28,6 @@ const roleLabels: Record<UserRole, string> = {
   vorstand: "Vorstand"
 };
 
-const roleColors: Record<UserRole, string> = {
-  gastmitglied: "bg-[hsl(202_85%_23%)] text-white",
-  mitglied: "bg-[hsl(202_85%_23%)] text-white",
-  kranfuehrer: "bg-[hsl(202_85%_23%)] text-white",
-  admin: "bg-[hsl(202_85%_23%)] text-white",
-  vorstand: "bg-[hsl(202_85%_23%)] text-white"
-};
 
 interface ProfileComponentProps {
   currentRole?: UserRole;
@@ -64,6 +58,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   // Load custom field values for the user
   const targetUserId = userId || roleCurrentUser?.id;
   const { customValues, saveCustomValue, saveAllCustomValues } = useCustomFieldValues(targetUserId || '');
+  const { getRoleBadgeStyle } = useRoleBadgeSettings();
 
   // New custom field form
   const [newField, setNewField] = useState<Partial<CustomField>>({
@@ -596,7 +591,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               )}
               <div className="flex flex-wrap gap-2">
                 {user.roles?.map((role) => (
-                  <Badge key={role} className={cn("text-xs", roleColors[role])}>
+                  <Badge key={role} className={cn("text-xs", getRoleBadgeStyle(role))}>
                     {roleLabels[role]}
                   </Badge>
                 ))}
@@ -662,7 +657,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                   {(['admin', 'vorstand', 'kranfuehrer', 'mitglied', 'gastmitglied'] as UserRole[])
                     .filter(role => user.roles?.includes(role))
                     .map((role) => (
-                      <Badge key={role} className={cn("text-xs", roleColors[role])}>
+                      <Badge key={role} className={cn("text-xs", getRoleBadgeStyle(role))}>
                         {roleLabels[role]}
                       </Badge>
                     ))}

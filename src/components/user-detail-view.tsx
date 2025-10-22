@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { User as UserType, UserRole, generateRolesFromPrimary } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { generateMemberNumber } from "@/lib/business-logic";
+import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
 
 interface UserDetailViewProps {
   user: UserType;
@@ -30,19 +31,13 @@ const roleLabels: Record<UserRole, string> = {
   vorstand: "Vorstand"
 };
 
-const roleColors: Record<UserRole, string> = {
-  gastmitglied: "bg-[hsl(202_85%_23%)] text-white",
-  mitglied: "bg-[hsl(202_85%_23%)] text-white",
-  kranfuehrer: "bg-[hsl(202_85%_23%)] text-white",
-  admin: "bg-[hsl(202_85%_23%)] text-white",
-  vorstand: "bg-[hsl(202_85%_23%)] text-white"
-};
 
 export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<UserType>(user);
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
+  const { getRoleBadgeStyle } = useRoleBadgeSettings();
   
   // Check admin status
   useEffect(() => {
@@ -164,7 +159,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   <CardTitle className="text-lg">{editedUser.name}</CardTitle>
                   <div className="flex items-center gap-2 mt-1">
                     {editedUser.roles?.map((role) => (
-                      <Badge key={role} className={cn("text-xs", roleColors[role])}>
+                      <Badge key={role} className={cn("text-xs", getRoleBadgeStyle(role))}>
                         {roleLabels[role]}
                       </Badge>
                     ))}
@@ -229,7 +224,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       {editedUser.roles?.map((role) => (
-                        <Badge key={role} className={cn("text-xs", roleColors[role])}>
+                        <Badge key={role} className={cn("text-xs", getRoleBadgeStyle(role))}>
                           {roleLabels[role]}
                         </Badge>
                       ))}

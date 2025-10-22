@@ -15,6 +15,7 @@ import { User, UserRole, generateRolesFromPrimary } from "@/types";
 import { ProfileView } from "./profile-view";
 import { cn } from "@/lib/utils";
 import { UserRoleSelector } from "./user-role-selector";
+import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
 import { 
   getRoleLabel, 
   calculateUserStats, 
@@ -31,6 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 export function UserManagementRefactored() {
   const { users: dbUsers, loading, deleteUser: deleteDbUser, refreshUsers } = useUsers();
   const { toast } = useToast();
+  const { getRoleBadgeStyle } = useRoleBadgeSettings();
   
   // Convert DatabaseUser to User format for compatibility
   const users: User[] = dbUsers.map(u => ({
@@ -458,13 +460,6 @@ export function UserManagementRefactored() {
                       <div className="flex items-center gap-2 flex-wrap">
                         {/* Role Badges */}
                         {user.roles?.map((role) => {
-                          const roleColors: Record<UserRole, string> = {
-                            gastmitglied: "bg-[hsl(202_85%_23%)] text-white",
-                            mitglied: "bg-[hsl(202_85%_23%)] text-white",
-                            kranfuehrer: "bg-[hsl(202_85%_23%)] text-white",
-                            admin: "bg-[hsl(202_85%_23%)] text-white",
-                            vorstand: "bg-[hsl(202_85%_23%)] text-white"
-                          };
                           const roleLabels: Record<UserRole, string> = {
                             gastmitglied: "Gast",
                             mitglied: "Mitglied",
@@ -474,7 +469,7 @@ export function UserManagementRefactored() {
                           };
                           
                           return (
-                            <Badge key={role} className={cn("text-xs", roleColors[role])}>
+                            <Badge key={role} className={cn("text-xs", getRoleBadgeStyle(role))}>
                               {roleLabels[role]}
                             </Badge>
                           );

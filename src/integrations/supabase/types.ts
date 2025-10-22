@@ -232,6 +232,33 @@ export type Database = {
         }
         Relationships: []
       }
+      role_badge_settings: {
+        Row: {
+          bg_color: string
+          created_at: string | null
+          id: string
+          role: string
+          text_color: string
+          updated_at: string | null
+        }
+        Insert: {
+          bg_color?: string
+          created_at?: string | null
+          id?: string
+          role: string
+          text_color?: string
+          updated_at?: string | null
+        }
+        Update: {
+          bg_color?: string
+          created_at?: string | null
+          id?: string
+          role?: string
+          text_color?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       slots: {
         Row: {
           block_id: string | null
