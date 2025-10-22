@@ -12,13 +12,86 @@ import { Plus, Pencil, Trash2, GripVertical } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import type { CustomField } from "@/types/common";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 type CustomFieldGroup = 'Kontakt' | 'Persönlich' | 'Mitgliedschaft' | 'Boot' | 'Liegeplatz' | 'Sonstiges';
 
 const fieldGroups: CustomFieldGroup[] = ['Kontakt', 'Persönlich', 'Mitgliedschaft', 'Boot', 'Liegeplatz', 'Sonstiges'];
 
+interface SortableFieldItemProps {
+  field: CustomField;
+  onDelete: (id: string) => void;
+}
+
+function SortableFieldItem({ field, onDelete }: SortableFieldItemProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: field.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent"
+    >
+      <div className="flex items-center gap-3 flex-1">
+        <div
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing"
+        >
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <div className="flex-1">
+          <div className="font-medium">{field.label}</div>
+          <div className="text-sm text-muted-foreground">
+            {field.name} • {field.type}
+            {field.required && " • Pflichtfeld"}
+          </div>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onDelete(field.id)}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function CustomFieldsManager() {
-  const { customFields, loading, addCustomField, deleteCustomField, refreshCustomFields } = useCustomFields();
+  const { customFields, loading, addCustomField, deleteCustomField, reorderCustomFields, refreshCustomFields } = useCustomFields();
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingField, setEditingField] = useState<CustomField | null>(null);
@@ -30,6 +103,13 @@ export function CustomFieldsManager() {
     placeholder: '',
     group: 'Sonstiges',
   });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   const handleSubmit = async () => {
     if (!formData.name || !formData.label) {
@@ -82,6 +162,35 @@ export function CustomFieldsManager() {
       toast({
         title: "Fehler",
         description: "Custom Field konnte nicht gelöscht werden",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDragEnd = async (event: DragEndEvent, groupName: string) => {
+    const { active, over } = event;
+
+    if (!over || active.id === over.id) return;
+
+    const fields = groupedFields[groupName] || [];
+    const oldIndex = fields.findIndex((f) => f.id === active.id);
+    const newIndex = fields.findIndex((f) => f.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reorderedFields = arrayMove(fields, oldIndex, newIndex);
+    const fieldIds = reorderedFields.map((f) => f.id);
+
+    try {
+      await reorderCustomFields(fieldIds);
+      toast({
+        title: "Erfolg",
+        description: "Reihenfolge wurde aktualisiert",
+      });
+    } catch (error) {
+      toast({
+        title: "Fehler",
+        description: "Reihenfolge konnte nicht gespeichert werden",
         variant: "destructive",
       });
     }
@@ -212,34 +321,26 @@ export function CustomFieldsManager() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-2">
-                  {fields.sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
-                    <div
-                      key={field.id}
-                      className="flex items-center justify-between p-3 border rounded-lg hover:bg-accent"
-                    >
-                      <div className="flex items-center gap-3 flex-1">
-                        <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
-                        <div className="flex-1">
-                          <div className="font-medium">{field.label}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {field.name} • {field.type}
-                            {field.required && " • Pflichtfeld"}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(field.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={(event) => handleDragEnd(event, groupName)}
+                >
+                  <SortableContext
+                    items={fields.map((f) => f.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="space-y-2">
+                      {fields.sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
+                        <SortableFieldItem
+                          key={field.id}
+                          field={field}
+                          onDelete={handleDelete}
+                        />
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </SortableContext>
+                </DndContext>
               </CardContent>
             </Card>
           );
