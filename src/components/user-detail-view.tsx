@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, Save, X, User, Mail, Phone, Anchor } from "lucide-react";
+import { Edit, Save, X, User, Mail, Phone, Anchor, Calendar, Home, Ship, Ticket } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,13 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
 import { cn } from "@/lib/utils";
-import { User as UserType, UserRole, generateRolesFromPrimary } from "@/types";
+import { User as UserType, UserRole, CustomField, generateRolesFromPrimary } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { generateMemberNumber } from "@/lib/business-logic";
 import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
+import { useCustomFields, useCustomFieldValues } from "@/hooks/use-custom-fields";
 
 interface UserDetailViewProps {
   user: UserType;
@@ -35,9 +38,16 @@ const roleLabels: Record<UserRole, string> = {
 export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<UserType>(user);
+  const [editedCustomValues, setEditedCustomValues] = useState<Record<string, any>>({});
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
+  
+  // Load custom fields from database
+  const { customFields, loading: fieldsLoading } = useCustomFields();
+  
+  // Load custom field values for the user
+  const { customValues, saveAllCustomValues } = useCustomFieldValues(user.id);
   
   // Check admin status
   useEffect(() => {
@@ -63,6 +73,12 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
   useEffect(() => {
     setEditedUser(user);
   }, [user]);
+  
+  useEffect(() => {
+    if (customValues) {
+      setEditedCustomValues(customValues);
+    }
+  }, [customValues]);
 
   const handleSaveProfile = async () => {
     try {
@@ -82,9 +98,14 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
           userId: user.id,
           userData: {
             name: editedUser.name,
+            firstName: editedUser.firstName,
+            lastName: editedUser.lastName,
             phone: editedUser.phone,
             memberNumber: editedUser.memberNumber,
             boatName: editedUser.boatName,
+            streetAddress: editedUser.streetAddress,
+            postalCode: editedUser.postalCode,
+            city: editedUser.city,
             status: editedUser.status,
             roles: editedUser.roles || generateRolesFromPrimary(editedUser.role),
             oesvNumber: (editedUser as any).oesvNumber,
@@ -92,7 +113,20 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
             berthNumber: (editedUser as any).berthNumber,
             berthType: (editedUser as any).berthType,
             birthDate: (editedUser as any).birthDate,
-            entryDate: (editedUser as any).entryDate
+            entryDate: (editedUser as any).entryDate,
+            dinghyBerthNumber: (editedUser as any).dinghyBerthNumber,
+            boatType: (editedUser as any).boatType,
+            boatLength: (editedUser as any).boatLength,
+            boatWidth: (editedUser as any).boatWidth,
+            parkingPermitNumber: (editedUser as any).parkingPermitNumber,
+            parkingPermitIssueDate: (editedUser as any).parkingPermitIssueDate,
+            beverageChipNumber: (editedUser as any).beverageChipNumber,
+            beverageChipIssueDate: (editedUser as any).beverageChipIssueDate,
+            emergencyContact: (editedUser as any).emergencyContact,
+            notes: (editedUser as any).notes,
+            vorstandFunktion: (editedUser as any).vorstandFunktion,
+            dataPublicInKsvl: (editedUser as any).dataPublicInKsvl,
+            contactPublicInKsvl: (editedUser as any).contactPublicInKsvl
           }
         })
       });
@@ -100,6 +134,11 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
       const result = await response.json();
       if (!response.ok || result.error) {
         throw new Error(result.error || 'Benutzer konnte nicht aktualisiert werden');
+      }
+
+      // Save custom field values to database
+      if (Object.keys(editedCustomValues).length > 0) {
+        await saveAllCustomValues(customFields, editedCustomValues);
       }
 
       setIsEditing(false);
@@ -233,13 +272,42 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                 </div>
               )}
               
-              {/* Grunddaten */}
+              {/* Persönliche Daten */}
               <div className="space-y-4">
-                <h3 className="text-sm font-medium text-foreground border-b pb-2">Grunddaten</h3>
+                <h3 className="text-sm font-medium text-foreground flex items-center gap-2 border-b pb-2">
+                  <User className="w-4 h-4" />
+                  Persönliche Daten
+                </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Name: </Label>
+                    <Label>Vorname</Label>
+                    {isEditing ? (
+                      <Input
+                        value={editedUser.firstName || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, firstName: e.target.value }))}
+                        placeholder="Vorname"
+                      />
+                    ) : (
+                      <div className="text-sm text-muted-foreground">{editedUser.firstName || "-"}</div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Nachname</Label>
+                    {isEditing ? (
+                      <Input
+                        value={editedUser.lastName || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, lastName: e.target.value }))}
+                        placeholder="Nachname"
+                      />
+                    ) : (
+                      <div className="text-sm text-muted-foreground">{editedUser.lastName || "-"}</div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Vollständiger Name</Label>
                     {isEditing ? (
                       <Input
                         value={editedUser.name}
@@ -247,12 +315,42 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                         placeholder="Vollständiger Name"
                       />
                     ) : (
-                      <div className="flex items-center gap-2 text-sm text-muted-foreground">{editedUser.name}</div>
+                      <div className="text-sm text-muted-foreground">{editedUser.name}</div>
                     )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label>E-Mail: </Label>
+                    <Label>Geburtsdatum</Label>
+                    {isEditing ? (
+                      <Input
+                        type="date"
+                        value={(editedUser as any).birthDate || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, birthDate: e.target.value } as any))}
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {(editedUser as any).birthDate ? new Date((editedUser as any).birthDate).toLocaleDateString('de-AT') : "-"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Kontaktdaten */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-foreground flex items-center gap-2 border-b pb-2">
+                  <Mail className="w-4 h-4" />
+                  Kontaktdaten
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>E-Mail</Label>
                     <div className="flex items-center gap-2">
                       <Mail className="w-4 h-4 text-muted-foreground" />
                       <span className="text-sm text-muted-foreground">{editedUser.email}</span>
@@ -260,7 +358,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Telefon: </Label>
+                    <Label>Telefon</Label>
                     {isEditing ? (
                       <Input
                         value={editedUser.phone || ""}
@@ -276,7 +374,76 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Mitgliedsnummer: </Label>
+                    <Label>Straße & Hausnummer</Label>
+                    {isEditing ? (
+                      <Input
+                        value={editedUser.streetAddress || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, streetAddress: e.target.value }))}
+                        placeholder="Musterstraße 1"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Home className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">{editedUser.streetAddress || "-"}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>PLZ</Label>
+                    {isEditing ? (
+                      <Input
+                        value={editedUser.postalCode || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, postalCode: e.target.value }))}
+                        placeholder="1010"
+                      />
+                    ) : (
+                      <div className="text-sm text-muted-foreground">{editedUser.postalCode || "-"}</div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Stadt</Label>
+                    {isEditing ? (
+                      <Input
+                        value={editedUser.city || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, city: e.target.value }))}
+                        placeholder="Wien"
+                      />
+                    ) : (
+                      <div className="text-sm text-muted-foreground">{editedUser.city || "-"}</div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Notfallkontakt</Label>
+                    {isEditing ? (
+                      <Textarea
+                        value={(editedUser as any).emergencyContact || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, emergencyContact: e.target.value } as any))}
+                        placeholder="Name und Telefonnummer"
+                      />
+                    ) : (
+                      <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {(editedUser as any).emergencyContact || "-"}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Mitgliedsdaten */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-foreground flex items-center gap-2 border-b pb-2">
+                  <Anchor className="w-4 h-4" />
+                  Mitgliedsdaten
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Mitgliedsnummer</Label>
                     {isEditing ? (
                       <Input
                         value={editedUser.memberNumber || ""}
@@ -292,21 +459,40 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Boot Name: </Label>
+                    <Label>ÖSV Nummer</Label>
                     {isEditing ? (
                       <Input
-                        value={editedUser.boatName || ""}
-                        onChange={(e) => setEditedUser(prev => ({ ...prev, boatName: e.target.value }))}
-                        placeholder="Name des Bootes"
+                        value={(editedUser as any).oesvNumber || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, oesvNumber: e.target.value } as any))}
+                        placeholder="ÖSV Mitgliedsnummer"
                       />
                     ) : (
-                      <div className="text-sm text-muted-foreground">{editedUser.boatName || "-"}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {(editedUser as any).oesvNumber || "-"}
+                      </div>
                     )}
                   </div>
 
+                  <div className="space-y-2">
+                    <Label>Eintrittsdatum</Label>
+                    {isEditing ? (
+                      <Input
+                        type="date"
+                        value={(editedUser as any).entryDate || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, entryDate: e.target.value } as any))}
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {(editedUser as any).entryDate ? new Date((editedUser as any).entryDate).toLocaleDateString('de-AT') : "-"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
 
                   <div className="space-y-2">
-                    <Label>Status: </Label>
+                    <Label>Status</Label>
                     {isEditing ? (
                       <Select
                         value={editedUser.status}
@@ -327,61 +513,119 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Beitrittsdatum: </Label>
-                    <div className="text-sm text-muted-foreground">
-                      {editedUser.joinDate ? new Date(editedUser.joinDate).toLocaleDateString('de-AT', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      }) : "-"}
+                  {(editedUser as any).vorstandFunktion && (
+                    <div className="space-y-2">
+                      <Label>Vorstand Funktion</Label>
+                      {isEditing ? (
+                        <Input
+                          value={(editedUser as any).vorstandFunktion || ""}
+                          onChange={(e) => setEditedUser(prev => ({ ...prev, vorstandFunktion: e.target.value } as any))}
+                          placeholder="z.B. Präsident, Kassier"
+                        />
+                      ) : (
+                        <div className="text-sm text-muted-foreground">
+                          {(editedUser as any).vorstandFunktion || "-"}
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
-              
-              {/* Zusätzliche Informationen */}
+
+              <Separator />
+
+              {/* Bootsdaten */}
               <div className="space-y-4">
-                <h3 className="text-sm font-medium text-foreground border-b pb-2">Zusätzliche Informationen</h3>
+                <h3 className="text-sm font-medium text-foreground flex items-center gap-2 border-b pb-2">
+                  <Ship className="w-4 h-4" />
+                  Bootsdaten
+                </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>OESV Nummer: </Label>
+                    <Label>Bootsname</Label>
                     {isEditing ? (
                       <Input
-                        value={(editedUser as any).oesvNumber || ""}
-                        onChange={(e) => setEditedUser(prev => ({ ...prev, oesvNumber: e.target.value } as any))}
-                        placeholder="OESV Mitgliedsnummer"
+                        value={editedUser.boatName || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, boatName: e.target.value }))}
+                        placeholder="Name des Bootes"
                       />
                     ) : (
-                      <div className="text-sm text-muted-foreground">
-                        {(editedUser as any).oesvNumber || "-"}
+                      <div className="flex items-center gap-2">
+                        <Ship className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">{editedUser.boatName || "-"}</span>
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label>Adresse: </Label>
+                    <Label>Bootstyp</Label>
                     {isEditing ? (
                       <Input
-                        value={(editedUser as any).address || ""}
-                        onChange={(e) => setEditedUser(prev => ({ ...prev, address: e.target.value } as any))}
-                        placeholder="Ihre Adresse"
+                        value={(editedUser as any).boatType || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, boatType: e.target.value } as any))}
+                        placeholder="z.B. Segelboot, Motorboot"
                       />
                     ) : (
                       <div className="text-sm text-muted-foreground">
-                        {(editedUser as any).address || "-"}
+                        {(editedUser as any).boatType || "-"}
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label>Liegeplatz Nummer: </Label>
+                    <Label>Bootslänge (m)</Label>
+                    {isEditing ? (
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={(editedUser as any).boatLength || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, boatLength: e.target.value ? parseFloat(e.target.value) : undefined } as any))}
+                        placeholder="8.5"
+                      />
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        {(editedUser as any).boatLength ? `${(editedUser as any).boatLength} m` : "-"}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Bootsbreite (m)</Label>
+                    {isEditing ? (
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={(editedUser as any).boatWidth || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, boatWidth: e.target.value ? parseFloat(e.target.value) : undefined } as any))}
+                        placeholder="2.5"
+                      />
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        {(editedUser as any).boatWidth ? `${(editedUser as any).boatWidth} m` : "-"}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Liegeplatz */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-foreground flex items-center gap-2 border-b pb-2">
+                  <Anchor className="w-4 h-4" />
+                  Liegeplatz
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label>Liegeplatz Nummer</Label>
                     {isEditing ? (
                       <Input
                         value={(editedUser as any).berthNumber || ""}
                         onChange={(e) => setEditedUser(prev => ({ ...prev, berthNumber: e.target.value } as any))}
-                        placeholder="Liegeplatz Nummer"
+                        placeholder="z.B. A-42"
                       />
                     ) : (
                       <div className="text-sm text-muted-foreground">
@@ -389,9 +633,9 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label>Liegeplatz Typ: </Label>
+                    <Label>Liegeplatz Typ</Label>
                     {isEditing ? (
                       <Select
                         value={(editedUser as any).berthType || ""}
@@ -413,35 +657,240 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label>Geburtsdatum: </Label>
+                    <Label>Dingi Liegeplatz</Label>
                     {isEditing ? (
                       <Input
-                        type="date"
-                        value={(editedUser as any).birthDate || ""}
-                        onChange={(e) => setEditedUser(prev => ({ ...prev, birthDate: e.target.value } as any))}
+                        value={(editedUser as any).dinghyBerthNumber || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, dinghyBerthNumber: e.target.value } as any))}
+                        placeholder="z.B. D-12"
                       />
                     ) : (
                       <div className="text-sm text-muted-foreground">
-                        {(editedUser as any).birthDate ? new Date((editedUser as any).birthDate).toLocaleDateString('de-AT') : "-"}
+                        {(editedUser as any).dinghyBerthNumber || "-"}
                       </div>
                     )}
                   </div>
-                  
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Sonstiges */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-foreground flex items-center gap-2 border-b pb-2">
+                  <Ticket className="w-4 h-4" />
+                  Sonstiges
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Eintrittsdatum: </Label>
+                    <Label>Parkausweis Nummer</Label>
                     {isEditing ? (
                       <Input
-                        type="date"
-                        value={(editedUser as any).entryDate || ""}
-                        onChange={(e) => setEditedUser(prev => ({ ...prev, entryDate: e.target.value } as any))}
+                        value={(editedUser as any).parkingPermitNumber || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, parkingPermitNumber: e.target.value } as any))}
+                        placeholder="P-123"
                       />
                     ) : (
                       <div className="text-sm text-muted-foreground">
-                        {(editedUser as any).entryDate ? new Date((editedUser as any).entryDate).toLocaleDateString('de-AT') : "-"}
+                        {(editedUser as any).parkingPermitNumber || "-"}
                       </div>
                     )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Parkausweis Ausstellungsdatum</Label>
+                    {isEditing ? (
+                      <Input
+                        type="date"
+                        value={(editedUser as any).parkingPermitIssueDate || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, parkingPermitIssueDate: e.target.value } as any))}
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {(editedUser as any).parkingPermitIssueDate ? new Date((editedUser as any).parkingPermitIssueDate).toLocaleDateString('de-AT') : "-"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Getränkechip Nummer</Label>
+                    {isEditing ? (
+                      <Input
+                        value={(editedUser as any).beverageChipNumber || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, beverageChipNumber: e.target.value } as any))}
+                        placeholder="G-456"
+                      />
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        {(editedUser as any).beverageChipNumber || "-"}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Getränkechip Ausstellungsdatum</Label>
+                    {isEditing ? (
+                      <Input
+                        type="date"
+                        value={(editedUser as any).beverageChipIssueDate || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, beverageChipIssueDate: e.target.value } as any))}
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm text-muted-foreground">
+                          {(editedUser as any).beverageChipIssueDate ? new Date((editedUser as any).beverageChipIssueDate).toLocaleDateString('de-AT') : "-"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2 md:col-span-2">
+                    <Label>Notizen</Label>
+                    {isEditing ? (
+                      <Textarea
+                        value={(editedUser as any).notes || ""}
+                        onChange={(e) => setEditedUser(prev => ({ ...prev, notes: e.target.value } as any))}
+                        placeholder="Zusätzliche Notizen"
+                        rows={3}
+                      />
+                    ) : (
+                      <div className="text-sm text-muted-foreground whitespace-pre-wrap">
+                        {(editedUser as any).notes || "-"}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Custom Fields - Gruppiert */}
+              {!fieldsLoading && customFields.length > 0 && (
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium text-foreground border-b pb-2">
+                    Zusätzliche Felder
+                  </h3>
+                  
+                  {/* Group custom fields by group property */}
+                  {['Kontakt', 'Persönlich', 'Mitgliedschaft', 'Boot', 'Liegeplatz', 'Sonstiges', undefined].map((group) => {
+                    const fieldsInGroup = customFields.filter(f => f.group === group);
+                    if (fieldsInGroup.length === 0) return null;
+
+                    return (
+                      <div key={group || 'ungrouped'} className="space-y-3">
+                        {group && (
+                          <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            {group}
+                          </h4>
+                        )}
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {fieldsInGroup.map((field) => (
+                            <div key={field.id} className="space-y-2">
+                              <Label>{field.label}{field.required && " *"}</Label>
+                              {isEditing ? (
+                                <>
+                                  {field.type === 'textarea' ? (
+                                    <Textarea
+                                      value={editedCustomValues[field.name] || ""}
+                                      onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                                      placeholder={field.placeholder}
+                                      required={field.required}
+                                    />
+                                  ) : field.type === 'select' && field.options ? (
+                                    <Select
+                                      value={editedCustomValues[field.name] || ""}
+                                      onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder={field.placeholder || "Auswählen..."} />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        {field.options.map((option) => (
+                                          <SelectItem key={option} value={option}>
+                                            {option}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                  ) : (
+                                    <Input
+                                      type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : 'text'}
+                                      value={editedCustomValues[field.name] || ""}
+                                      onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                                      placeholder={field.placeholder}
+                                      required={field.required}
+                                    />
+                                  )}
+                                </>
+                              ) : (
+                                <div className="text-sm text-muted-foreground">
+                                  {customValues[field.name] || "-"}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <Separator />
+
+              {/* Datenschutz */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-foreground border-b pb-2">
+                  Datenschutz & KSVL-Verzeichnis
+                </h3>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="dataPublic"
+                      checked={(editedUser as any).dataPublicInKsvl === true}
+                      onCheckedChange={(checked) => 
+                        isEditing && setEditedUser(prev => ({ ...prev, dataPublicInKsvl: checked === true } as any))
+                      }
+                      disabled={!isEditing}
+                    />
+                    <Label
+                      htmlFor="dataPublic"
+                      className={cn(
+                        "text-sm font-normal cursor-pointer",
+                        !isEditing && "cursor-default"
+                      )}
+                    >
+                      Meine Daten dürfen im KSVL-Verzeichnis veröffentlicht werden
+                    </Label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="contactPublic"
+                      checked={(editedUser as any).contactPublicInKsvl === true}
+                      onCheckedChange={(checked) => 
+                        isEditing && setEditedUser(prev => ({ ...prev, contactPublicInKsvl: checked === true } as any))
+                      }
+                      disabled={!isEditing}
+                    />
+                    <Label
+                      htmlFor="contactPublic"
+                      className={cn(
+                        "text-sm font-normal cursor-pointer",
+                        !isEditing && "cursor-default"
+                      )}
+                    >
+                      Meine Kontaktdaten dürfen im KSVL-Verzeichnis veröffentlicht werden
+                    </Label>
                   </div>
                 </div>
               </div>
@@ -455,6 +904,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                 variant="outline" 
                 onClick={() => {
                   setEditedUser(user);
+                  setEditedCustomValues(customValues);
                   setIsEditing(false);
                 }}
               >
