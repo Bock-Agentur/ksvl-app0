@@ -210,27 +210,6 @@ export function Auth() {
             {loading ? "Wird geladen..." : "Anmelden"}
           </Button>
         </form>
-
-        {/* Test Admin Info with Glass Effect */}
-        <div 
-          className="mt-6 w-full relative overflow-hidden transition-all duration-300"
-          style={{ 
-            borderRadius: `${cardBorderRadius}px`
-          }}
-        >
-          <div 
-            className="absolute inset-0 -z-10"
-            style={{
-              backgroundColor: `hsl(var(--background) / ${Math.max(cardOpacity - 10, 50) / 100})`,
-              backdropFilter: `blur(${cardBorderBlur}px)`,
-              WebkitBackdropFilter: `blur(${cardBorderBlur}px)`,
-            }}
-          />
-          <div className="relative p-4 text-sm text-center">
-            <p className="font-semibold mb-1 text-muted-foreground">Test-Admin</p>
-            <p className="text-xs text-muted-foreground">h@jorgson.com • 123456</p>
-          </div>
-        </div>
       </div>
     </div>
   );
