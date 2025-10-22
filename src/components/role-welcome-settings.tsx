@@ -100,30 +100,30 @@ export function RoleWelcomeSettings() {
           {/* Role Selection */}
           <div className="space-y-3">
             <Label className="text-base font-medium">Rolle auswählen</Label>
-            <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
                 const Icon = getRoleIcon(role);
                 return (
                   <Card 
                     key={role}
                     className={cn(
-                      "cursor-pointer transition-colors hover:bg-muted/50 w-20 sm:w-24",
+                      "cursor-pointer transition-colors hover:bg-muted/50",
                       activeRole === role 
                         ? "ring-2 ring-primary bg-primary/5" 
                         : "hover:shadow-sm"
                     )}
                     onClick={() => setActiveRole(role)}
                   >
-                    <CardContent className="p-3 text-center">
+                    <CardContent className="p-4 text-center">
                       <Icon className={cn(
-                        "h-6 w-6 mx-auto mb-1",
+                        "h-8 w-8 mx-auto mb-2",
                         activeRole === role ? "text-primary" : "text-muted-foreground"
                       )} />
                       <p className={cn(
-                        "font-medium text-xs",
+                        "font-medium text-sm",
                         activeRole === role ? "text-primary" : "text-foreground"
                       )}>
-                        {role === "gastmitglied" ? "Gast" : role === "mitglied" ? "Mitgl." : role === "kranfuehrer" ? "Kran" : role === "vorstand" ? "Vorst." : "Admin"}
+                        {getRoleDisplayName(role)}
                       </p>
                     </CardContent>
                   </Card>
@@ -215,17 +215,17 @@ export function RoleWelcomeSettings() {
           <CardTitle className="text-lg">Zusammenfassung</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-5 gap-2">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
               const Icon = getRoleIcon(role);
               return (
-                <div key={role} className="text-center p-3 bg-muted/30 rounded-lg">
-                  <Icon className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
-                  <p className="font-medium text-xs mb-1">
-                    {role === "gastmitglied" ? "Gast" : role === "mitglied" ? "Mitgl." : role === "kranfuehrer" ? "Kran" : role === "vorstand" ? "Vorst." : "Admin"}
+                <div key={role} className="text-center p-4 bg-muted/30 rounded-lg">
+                  <Icon className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
+                  <p className="font-medium text-sm mb-1">
+                    {getRoleDisplayName(role)}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {messages[role]?.length || 0} Z.
+                    {messages[role]?.length || 0} Zeichen
                   </p>
                 </div>
               );
