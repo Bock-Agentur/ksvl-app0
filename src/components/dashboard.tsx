@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useRole } from "@/hooks/use-role";
+import { useSlots } from "@/hooks/use-slots";
+import { useUsers } from "@/hooks/use-users";
 import { useTestData } from "@/hooks/use-test-data";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { useWelcomeMessages } from "@/hooks/use-welcome-messages";
@@ -55,7 +57,9 @@ interface DashboardProps {
 
 export function Dashboard({ onNavigate }: DashboardProps = {}) {
   const { currentRole, currentUser } = useRole();
-  const { users, slots, activeScenario } = useTestData();
+  const { slots } = useSlots();
+  const { users } = useUsers();
+  const { activeScenario } = useTestData();
   const isAdmin = currentUser?.roles?.includes("admin") || currentRole === "admin";
   const { settings, isLoading } = useDashboardSettings(currentRole, false); // Regular users don't use admin mode
   const { getWelcomeMessage } = useWelcomeMessages();
