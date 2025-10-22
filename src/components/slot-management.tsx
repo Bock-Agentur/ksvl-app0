@@ -77,7 +77,7 @@ export function SlotManagement() {
     setIsEditing(true);
   };
 
-  const handleFormSubmit = (formData: SharedSlotFormData) => {
+  const handleFormSubmit = async (formData: SharedSlotFormData) => {
     if (!formData.date || !formData.time || !formData.craneOperatorId) {
       toast({
         title: "Fehler",
@@ -122,130 +122,65 @@ export function SlotManagement() {
     } else {
       // Create new slot(s) - always as block now
       const durations = formData.slotBlockDurations || [60];
+      const dateString = format(formData.date!, 'yyyy-MM-dd');
       
-      // Find all existing slots by same operator on same day
-      const slotsOnSameDay = slots.filter(s => 
-        s.date === format(formData.date, 'yyyy-MM-dd') && 
-        s.craneOperator.id === formData.craneOperatorId
-      );
+      console.log('📝 CREATING NEW SLOTS:', {
+        date: dateString,
+        time: formData.time,
+        durations,
+        operator: craneOperator.name
+      });
       
-      // Calculate new slot times and check for conflicts or connections
-      const newSlotTimes = [];
+      // Build slots array
+      const slotsToCreate = [];
       let currentTime = formData.time;
-      const startTime = parse(`${format(formData.date, 'yyyy-MM-dd')} ${formData.time}`, 'yyyy-MM-dd HH:mm', new Date());
-      const totalDuration = durations.reduce((sum, d) => sum + d, 0);
-      const endTime = addMinutes(startTime, totalDuration);
-      
-      // Build array of all new slot time ranges
-      for (let i = 0; i < durations.length; i++) {
-        const slotStart = parse(`${format(formData.date, 'yyyy-MM-dd')} ${currentTime}`, 'yyyy-MM-dd HH:mm', new Date());
-        const slotEnd = addMinutes(slotStart, durations[i]);
-        newSlotTimes.push({ start: slotStart, end: slotEnd, time: currentTime });
-        currentTime = format(slotEnd, 'HH:mm');
-      }
-      
-      // Find all slots that should be merged into one superblock
-      let connectedSlots = [];
-      
-      // Check which existing slots connect to the new block
-      for (const existingSlot of slotsOnSameDay) {
-        const existingStart = parse(`${existingSlot.date} ${existingSlot.time}`, 'yyyy-MM-dd HH:mm', new Date());
-        const existingEnd = addMinutes(existingStart, existingSlot.duration);
-        
-        // Check if existing slot overlaps or connects with any new slot
-        for (const newSlotTime of newSlotTimes) {
-          const isConnected = 
-            // New slot starts where existing ends or overlaps
-            (newSlotTime.start.getTime() >= existingStart.getTime() && newSlotTime.start.getTime() <= existingEnd.getTime()) ||
-            // New slot ends where existing starts or overlaps
-            (newSlotTime.end.getTime() >= existingStart.getTime() && newSlotTime.end.getTime() <= existingEnd.getTime()) ||
-            // Existing starts within new slot time
-            (existingStart.getTime() >= newSlotTime.start.getTime() && existingStart.getTime() <= newSlotTime.end.getTime()) ||
-            // Existing ends within new slot time
-            (existingEnd.getTime() >= newSlotTime.start.getTime() && existingEnd.getTime() <= newSlotTime.end.getTime()) ||
-            // Direct connection: new starts where existing ends
-            (newSlotTime.start.getTime() === existingEnd.getTime()) ||
-            // Direct connection: existing starts where new ends
-            (existingStart.getTime() === newSlotTime.end.getTime());
-          
-          if (isConnected && !connectedSlots.find(s => s.id === existingSlot.id)) {
-            connectedSlots.push(existingSlot);
-            break; // Found connection, no need to check other new slot times
-          }
-        }
-      }
-      
-      // Generate a unique UUID blockId for the entire superblock
-      const blockIdToUse = crypto.randomUUID();
-      
-      // Create new slots
-      const newSlotIds = [];
-      let slotCurrentTime = formData.time;
       
       for (let i = 0; i < durations.length; i++) {
         const duration = durations[i];
-        const slotId = crypto.randomUUID();
-        newSlotIds.push(slotId);
         
-        const newSlot: Slot = {
-          id: slotId,
-          date: format(formData.date, 'yyyy-MM-dd'),
-          time: slotCurrentTime,
+        slotsToCreate.push({
+          date: dateString,
+          time: currentTime,
           duration: duration,
-          craneOperator,
-          isBooked: false,
-          notes: formData.notes || "",
-          blockId: blockIdToUse
-        };
-
-        // Check for overlapping slots for each slot
-        const overlappingSlot = slots.find(s => 
-          s.date === format(formData.date, 'yyyy-MM-dd') && 
-          s.craneOperator.id === formData.craneOperatorId &&
-          s.id !== slotId && // Don't check against itself
-          ((s.time === slotCurrentTime) ||
-           (s.time < slotCurrentTime && 
-            addMinutes(parse(`${s.date} ${s.time}`, 'yyyy-MM-dd HH:mm', new Date()), s.duration) > 
-            parse(`${format(formData.date, 'yyyy-MM-dd')} ${slotCurrentTime}`, 'yyyy-MM-dd HH:mm', new Date())) ||
-           (slotCurrentTime < s.time && 
-            addMinutes(parse(`${format(formData.date, 'yyyy-MM-dd')} ${slotCurrentTime}`, 'yyyy-MM-dd HH:mm', new Date()), duration) > 
-            parse(`${s.date} ${s.time}`, 'yyyy-MM-dd HH:mm', new Date())))
-        );
-
-        if (overlappingSlot && !connectedSlots.find(cs => cs.id === overlappingSlot.id)) {
-          toast({
-            title: "Zeitkonflikt",
-            description: `Termin ${i + 1} würde mit einem bestehenden Slot zur Zeit ${overlappingSlot.time} kollidieren.`,
-            variant: "destructive",
-          });
-          return; 
-        }
-
-        addSlot(newSlot);
+          craneOperator: {
+            id: craneOperator.id,
+            name: craneOperator.name,
+            email: craneOperator.email || ''
+          },
+          notes: formData.notes || ''
+        });
         
         // Calculate next time slot
-        const nextTime = addMinutes(parse(`${format(formData.date, 'yyyy-MM-dd')} ${slotCurrentTime}`, 'yyyy-MM-dd HH:mm', new Date()), duration);
-        slotCurrentTime = format(nextTime, 'HH:mm');
+        const nextTime = addMinutes(
+          parse(`${dateString} ${currentTime}`, 'yyyy-MM-dd HH:mm', new Date()), 
+          duration
+        );
+        currentTime = format(nextTime, 'HH:mm');
       }
       
-      // Update all connected existing slots to use the same superblock ID
-      connectedSlots.forEach(existingSlot => {
-        if (existingSlot.blockId !== blockIdToUse) {
-          updateSlot(existingSlot.id, { 
-            ...existingSlot, 
-            blockId: blockIdToUse 
-          });
-        }
-      });
+      console.log('📤 Slots to create:', slotsToCreate);
       
-      const message = connectedSlots.length > 0 
-        ? `${durations.length} Termine erfolgreich erstellt und mit ${connectedSlots.length} bestehenden Terminen zu einem Superblock zusammengeführt.`
-        : `${durations.length === 1 ? 'Termin' : 'Terminblock'} mit ${durations.length} ${durations.length === 1 ? 'Termin' : 'Terminen'} erfolgreich erstellt.`;
-      
-      toast({
-        title: "Erfolg",
-        description: message,
-      });
+      // Create all slots as a block
+      try {
+        await addSlotBlock(slotsToCreate);
+        
+        const message = durations.length === 1 
+          ? 'Termin erfolgreich erstellt.'
+          : `Terminblock mit ${durations.length} Terminen erfolgreich erstellt.`;
+        
+        toast({
+          title: "Erfolg",
+          description: message,
+        });
+      } catch (error) {
+        console.error('❌ Error creating slots:', error);
+        toast({
+          title: "Fehler",
+          description: "Die Termine konnten nicht erstellt werden.",
+          variant: "destructive"
+        });
+        return;
+      }
     }
 
     setIsEditing(false);
