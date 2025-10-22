@@ -306,9 +306,17 @@ export function LoginBackgroundSettings() {
 
   const getJustifyClass = () => {
     switch (localSettings.verticalPosition) {
-      case 'top': return 'justify-start pt-12';
-      case 'bottom': return 'justify-end pb-12';
+      case 'top': return 'justify-start pt-8';
+      case 'bottom': return 'justify-end pb-8';
       default: return 'justify-center';
+    }
+  };
+
+  const getCountdownJustifyClass = () => {
+    switch (localSettings.countdownVerticalPosition) {
+      case 'top': return 'justify-start pt-8';
+      case 'bottom': return 'justify-end pb-8';
+      default: return 'justify-start pt-[30%]'; // Etwas über der Mitte
     }
   };
 
@@ -725,7 +733,7 @@ export function LoginBackgroundSettings() {
                   </DialogContent>
                 </Dialog>
               </div>
-              <div className="relative w-full rounded-lg overflow-hidden border" style={{ aspectRatio: '9/16' }}>
+              <div className="relative w-full rounded-lg overflow-hidden border mx-auto" style={{ aspectRatio: '9/19.5', maxWidth: '280px' }}>
                 {localSettings.type === 'video' ? (
                   <video
                     src={localSettings.url}
@@ -750,28 +758,32 @@ export function LoginBackgroundSettings() {
                     backgroundColor: `${localSettings.overlayColor}${Math.round((localSettings.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
                   }}
                 />
-                <div className={`absolute inset-0 flex flex-col items-center p-4 ${getJustifyClass()}`}>
-                  <div className="w-full max-w-[280px] space-y-2">
-                    {localSettings.countdownEnabled && (
-                      <CountdownPreview 
-                        endDate={localSettings.countdownEndDate}
-                        text={localSettings.countdownText}
-                        small
-                      />
-                    )}
+                {/* Countdown Layer */}
+                {localSettings.countdownEnabled && localSettings.countdownEndDate && (
+                  <div className={`absolute inset-0 flex flex-col items-center ${getCountdownJustifyClass()} pointer-events-none`}>
+                    <CountdownPreview 
+                      endDate={localSettings.countdownEndDate}
+                      text={localSettings.countdownText}
+                      small
+                    />
+                  </div>
+                )}
+                {/* Login Form Layer */}
+                <div className={`absolute inset-0 flex flex-col items-center ${getJustifyClass()} p-4`}>
+                  <div className="w-full max-w-[240px] space-y-2">
                     <div 
                       className="flex items-center gap-2 px-3 text-xs"
                       style={{
                         backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
                         borderRadius: `${localSettings.cardBorderRadius}px`,
                         height: '36px',
-                        color: 'rgba(0, 0, 0, 0.5)'
+                        color: '#000000'
                       }}
                     >
                       <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(0, 0, 0, 0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
-                      <span className="truncate">E-Mail</span>
+                      <span className="truncate" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>E-Mail</span>
                     </div>
                     <div 
                       className="flex items-center gap-2 px-3 text-xs"
@@ -779,13 +791,13 @@ export function LoginBackgroundSettings() {
                         backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
                         borderRadius: `${localSettings.cardBorderRadius}px`,
                         height: '36px',
-                        color: 'rgba(0, 0, 0, 0.5)'
+                        color: '#000000'
                       }}
                     >
                       <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(0, 0, 0, 0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
-                      <span className="truncate">Passwort</span>
+                      <span className="truncate" style={{ color: 'rgba(0, 0, 0, 0.5)' }}>Passwort</span>
                     </div>
                     <div 
                       className="w-full bg-primary text-primary-foreground text-xs font-medium text-center shadow-lg flex items-center justify-center"
