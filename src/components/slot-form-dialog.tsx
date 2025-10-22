@@ -55,7 +55,7 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
                        currentRole === "kranfuehrer" || 
                        currentRole === "admin";
 
-  const handleFormSubmit = (formData: SlotFormData) => {
+  const handleFormSubmit = async (formData: SlotFormData) => {
     console.log('🚀 HANDLE_FORM_SUBMIT called with:', formData);
     
     if (!formData.date || !formData.time || !formData.craneOperatorId) {
@@ -130,93 +130,10 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
       return;
     }
     
-    if (slot) {
-      // Update existing slot
-      updateSlot(slot.id, {
-        date: dateString,
-        time: formData.time,
-        duration: formData.slotBlockDurations[0],
-        craneOperator: {
-          id: craneOperator.id,
-          name: craneOperator.name,
-          email: craneOperator.email
-        },
-        notes: formData.notes
-      }).then(() => {
-        toast({
-          title: "Slot aktualisiert",
-          description: "Der Slot wurde erfolgreich aktualisiert."
-        });
-        onClose();
-      });
-    } else {
-      // Create slot/slot-block - always create as block now
-      if (formData.slotBlockDurations.length > 1) {
-        // Create slot-block with different durations
-        const [startHour, startMinute] = formData.time.split(':').map(Number);
-        let currentMinutes = startHour * 60 + startMinute;
-        
-        console.log('🔧 SLOT BLOCK CREATION:', {
-          dateString,
-          startTime: formData.time,
-          durations: formData.slotBlockDurations
-        });
-        
-        const slotsToCreate: CreateSlotData[] = [];
-        
-        for (let i = 0; i < formData.slotBlockDurations.length; i++) {
-          const duration = formData.slotBlockDurations[i];
-          const slotHour = Math.floor(currentMinutes / 60);
-          const slotMinute = currentMinutes % 60;
-          const slotTime = `${slotHour.toString().padStart(2, '0')}:${slotMinute.toString().padStart(2, '0')}`;
-          
-          // Check for existing overlapping slots
-          const slotEndMinutes = currentMinutes + duration;
-          const hasOverlap = allSlots.some(s => {
-            if (s.date !== dateString) return false;
-            const [existingHour, existingMinute] = s.time.split(':').map(Number);
-            const existingStart = existingHour * 60 + existingMinute;
-            const existingEnd = existingStart + s.duration;
-            return (currentMinutes < existingEnd && slotEndMinutes > existingStart);
-          });
-          
-          if (hasOverlap) {
-            toast({
-              title: "Fehler",
-              description: `Slot ${i + 1} (${slotTime}) würde mit einem bestehenden Slot überlappen.`,
-              variant: "destructive"
-            });
-            return;
-          }
-          
-          slotsToCreate.push({
-            date: dateString,
-            time: slotTime,
-            duration: duration,
-            craneOperator: {
-              id: craneOperator.id,
-              name: craneOperator.name,
-              email: craneOperator.email
-            },
-            notes: formData.notes
-          });
-          
-          currentMinutes += duration; // Move to next slot start time
-        }
-        
-        console.log('📝 CREATING SLOT BLOCK with slots:', slotsToCreate.map(s => `${s.time} (${s.duration}min)`));
-        
-        // Create all slots as a block
-        addSlotBlock(slotsToCreate).then(() => {
-          toast({
-            title: "Slotblock erstellt",
-            description: `${slotsToCreate.length} aufeinanderfolgende Termine wurden erfolgreich erstellt.`
-          });
-          onClose(formData.date);
-        });
-      } else {
-        // Create single slot
-        addSlot({
+    try {
+      if (slot) {
+        // Update existing slot
+        await updateSlot(slot.id, {
           date: dateString,
           time: formData.time,
           duration: formData.slotBlockDurations[0],
@@ -226,51 +143,148 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
             email: craneOperator.email
           },
           notes: formData.notes
-        }).then(() => {
+        });
+        
+        toast({
+          title: "Slot aktualisiert",
+          description: "Der Slot wurde erfolgreich aktualisiert."
+        });
+        onClose();
+      } else {
+        // Create slot/slot-block - always create as block now
+        if (formData.slotBlockDurations.length > 1) {
+          // Create slot-block with different durations
+          const [startHour, startMinute] = formData.time.split(':').map(Number);
+          let currentMinutes = startHour * 60 + startMinute;
+          
+          console.log('🔧 SLOT BLOCK CREATION:', {
+            dateString,
+            startTime: formData.time,
+            durations: formData.slotBlockDurations
+          });
+          
+          const slotsToCreate: CreateSlotData[] = [];
+          
+          for (let i = 0; i < formData.slotBlockDurations.length; i++) {
+            const duration = formData.slotBlockDurations[i];
+            const slotHour = Math.floor(currentMinutes / 60);
+            const slotMinute = currentMinutes % 60;
+            const slotTime = `${slotHour.toString().padStart(2, '0')}:${slotMinute.toString().padStart(2, '0')}`;
+            
+            // Check for existing overlapping slots
+            const slotEndMinutes = currentMinutes + duration;
+            const hasOverlap = allSlots.some(s => {
+              if (s.date !== dateString) return false;
+              const [existingHour, existingMinute] = s.time.split(':').map(Number);
+              const existingStart = existingHour * 60 + existingMinute;
+              const existingEnd = existingStart + s.duration;
+              return (currentMinutes < existingEnd && slotEndMinutes > existingStart);
+            });
+            
+            if (hasOverlap) {
+              toast({
+                title: "Fehler",
+                description: `Slot ${i + 1} (${slotTime}) würde mit einem bestehenden Slot überlappen.`,
+                variant: "destructive"
+              });
+              return;
+            }
+            
+            slotsToCreate.push({
+              date: dateString,
+              time: slotTime,
+              duration: duration,
+              craneOperator: {
+                id: craneOperator.id,
+                name: craneOperator.name,
+                email: craneOperator.email
+              },
+              notes: formData.notes
+            });
+            
+            currentMinutes += duration; // Move to next slot start time
+          }
+          
+          console.log('📝 CREATING SLOT BLOCK with slots:', slotsToCreate.map(s => `${s.time} (${s.duration}min)`));
+          
+          // Create all slots as a block
+          await addSlotBlock(slotsToCreate);
+          
+          toast({
+            title: "Slotblock erstellt",
+            description: `${slotsToCreate.length} aufeinanderfolgende Termine wurden erfolgreich erstellt.`
+          });
+          onClose(formData.date);
+        } else {
+          // Create single slot
+          await addSlot({
+            date: dateString,
+            time: formData.time,
+            duration: formData.slotBlockDurations[0],
+            craneOperator: {
+              id: craneOperator.id,
+              name: craneOperator.name,
+              email: craneOperator.email
+            },
+            notes: formData.notes
+          });
+          
           toast({
             title: "Termin erstellt",
             description: "Der neue Termin wurde erfolgreich erstellt."
           });
           onClose(formData.date);
-        });
+        }
       }
+    } catch (error) {
+      console.error('Error in handleFormSubmit:', error);
+      // Error toast already shown by use-slots hook
     }
   };
 
-  const handleBookSlot = () => {
+  const handleBookSlot = async () => {
     if (!slot || !currentUser) return;
     
-    bookSlot(slot.id, currentUser.id).then(() => {
+    try {
+      await bookSlot(slot.id, currentUser.id);
       toast({
         title: "Slot gebucht",
         description: "Der Slot wurde erfolgreich gebucht."
       });
       onClose();
-    });
+    } catch (error) {
+      console.error('Error booking slot:', error);
+    }
   };
 
-  const handleCancelSlot = () => {
+  const handleCancelSlot = async () => {
     if (!slot) return;
     
-    cancelBooking(slot.id).then(() => {
+    try {
+      await cancelBooking(slot.id);
       toast({
         title: "Buchung storniert",
         description: "Die Buchung wurde erfolgreich storniert."
       });
       onClose();
-    });
+    } catch (error) {
+      console.error('Error canceling slot:', error);
+    }
   };
 
-  const handleDeleteSlot = () => {
+  const handleDeleteSlot = async () => {
     if (!slot) return;
     
-    deleteSlot(slot.id).then(() => {
+    try {
+      await deleteSlot(slot.id);
       toast({
         title: "Slot gelöscht",
         description: "Der Slot wurde erfolgreich gelöscht."
       });
       onClose();
-    });
+    } catch (error) {
+      console.error('Error deleting slot:', error);
+    }
   };
 
   // Wenn bereits ein Slot existiert, zeige Slot-Details an
