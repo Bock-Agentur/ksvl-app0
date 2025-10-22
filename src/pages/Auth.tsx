@@ -37,20 +37,34 @@ function Countdown({ endDate, text }: { endDate: string; text: string }) {
 
   return (
     <div className="w-full flex flex-col items-center justify-center mb-8">
-      <div className="flex justify-center items-center text-4xl md:text-6xl lg:text-8xl font-thin text-white tracking-tighter tabular-nums">
-        <span>{String(timeLeft.days).padStart(2, '0')}</span>
-        <span className="mx-0">:</span>
-        <span>{String(timeLeft.hours).padStart(2, '0')}</span>
-        <span className="mx-0">:</span>
-        <span>{String(timeLeft.minutes).padStart(2, '0')}</span>
-        <span className="mx-0">:</span>
-        <span>{String(timeLeft.seconds).padStart(2, '0')}</span>
-        <span className="mx-0">:</span>
-        <span>{String(timeLeft.tenths)}</span>
-        <span>{String(timeLeft.hundredths)}</span>
+      <div className="flex justify-center items-start gap-1 md:gap-2">
+        <div className="flex flex-col items-center">
+          <span className="text-4xl md:text-6xl lg:text-8xl font-thin text-white tabular-nums">{String(timeLeft.days).padStart(2, '0')}</span>
+          <span className="text-xs md:text-sm text-white/70 mt-1">Tage</span>
+        </div>
+        <span className="text-4xl md:text-6xl lg:text-8xl font-thin text-white">:</span>
+        <div className="flex flex-col items-center">
+          <span className="text-4xl md:text-6xl lg:text-8xl font-thin text-white tabular-nums">{String(timeLeft.hours).padStart(2, '0')}</span>
+          <span className="text-xs md:text-sm text-white/70 mt-1">Stunden</span>
+        </div>
+        <span className="text-4xl md:text-6xl lg:text-8xl font-thin text-white">:</span>
+        <div className="flex flex-col items-center">
+          <span className="text-4xl md:text-6xl lg:text-8xl font-thin text-white tabular-nums">{String(timeLeft.minutes).padStart(2, '0')}</span>
+          <span className="text-xs md:text-sm text-white/70 mt-1">Minuten</span>
+        </div>
+        <span className="text-4xl md:text-6xl lg:text-8xl font-thin text-white">:</span>
+        <div className="flex flex-col items-center">
+          <span className="text-4xl md:text-6xl lg:text-8xl font-thin text-white tabular-nums">{String(timeLeft.seconds).padStart(2, '0')}</span>
+          <span className="text-xs md:text-sm text-white/70 mt-1">Sekunden</span>
+        </div>
+        <span className="text-4xl md:text-6xl lg:text-8xl font-thin text-white">:</span>
+        <div className="flex flex-col items-center">
+          <span className="text-4xl md:text-6xl lg:text-8xl font-thin text-white tabular-nums">{String(timeLeft.tenths)}{String(timeLeft.hundredths)}</span>
+          <span className="text-xs md:text-sm text-white/70 mt-1">1/100 Sek</span>
+        </div>
       </div>
       {text && (
-        <p className="text-white/90 text-sm md:text-base mt-3">{text}</p>
+        <p className="text-white/90 text-sm md:text-base mt-4">{text}</p>
       )}
     </div>
   );
@@ -168,28 +182,30 @@ export function Auth() {
   const cardBorderRadius = background.cardBorderRadius || 8;
 
   return (
-    <div className={`min-h-screen flex flex-col items-center p-4 relative ${
+    <div className={`min-h-screen flex flex-col items-center justify-center p-4 relative ${
       background.type === 'gradient' || !background.url 
         ? 'bg-gradient-to-br from-background to-muted' 
         : ''
-    } ${
-      background.verticalPosition === 'top' ? 'justify-start pt-12' :
-      background.verticalPosition === 'bottom' ? 'justify-end pb-12' :
-      'justify-center'
     }`}>
       {renderBackground()}
       
-      <div className="w-full max-w-md sm:max-w-[85%] md:max-w-md relative z-10 flex flex-col">
-        {/* Countdown */}
-        {background.countdownEnabled && background.countdownEndDate && (
+      {/* Countdown zentriert */}
+      {background.countdownEnabled && background.countdownEndDate && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0">
           <Countdown 
             endDate={background.countdownEndDate} 
             text={background.countdownText}
           />
-        )}
-        
-        {/* Login Form */}
-        <form onSubmit={handleLogin} className="w-full space-y-4 mb-8" autoComplete="on">
+        </div>
+      )}
+      
+      {/* Login Form */}
+      <div className={`w-full max-w-md sm:max-w-[85%] md:max-w-md relative z-10 ${
+        background.verticalPosition === 'top' ? 'self-start mt-12' :
+        background.verticalPosition === 'bottom' ? 'self-end mb-12' :
+        ''
+      }`}>
+        <form onSubmit={handleLogin} className="w-full space-y-4 mb-8 pointer-events-auto" autoComplete="on">
           {/* Email Input with Glass Effect */}
           <div 
             className="relative overflow-hidden transition-all duration-300 h-12"
