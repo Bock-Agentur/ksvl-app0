@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,59 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+function Countdown({ endDate, text }: { endDate: string; text: string }) {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const difference = new Date(endDate).getTime() - new Date().getTime();
+      
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60)
+        });
+      }
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(timer);
+  }, [endDate]);
+
+  return (
+    <div className="text-center space-y-3 mb-6">
+      <div className="flex justify-center gap-3 text-2xl md:text-3xl font-bold text-white">
+        <div className="flex flex-col items-center">
+          <span className="text-3xl md:text-4xl">{timeLeft.days.toString().padStart(2, '0')}</span>
+          <span className="text-white/70 text-sm">Tage</span>
+        </div>
+        <span className="self-start mt-1">:</span>
+        <div className="flex flex-col items-center">
+          <span className="text-3xl md:text-4xl">{timeLeft.hours.toString().padStart(2, '0')}</span>
+          <span className="text-white/70 text-sm">Stunden</span>
+        </div>
+        <span className="self-start mt-1">:</span>
+        <div className="flex flex-col items-center">
+          <span className="text-3xl md:text-4xl">{timeLeft.minutes.toString().padStart(2, '0')}</span>
+          <span className="text-white/70 text-sm">Minuten</span>
+        </div>
+        <span className="self-start mt-1">:</span>
+        <div className="flex flex-col items-center">
+          <span className="text-3xl md:text-4xl">{timeLeft.seconds.toString().padStart(2, '0')}</span>
+          <span className="text-white/70 text-sm">Sekunden</span>
+        </div>
+      </div>
+      {text && (
+        <p className="text-white/90 text-base md:text-lg">{text}</p>
+      )}
+    </div>
+  );
+}
 
 export function Auth() {
   const [email, setEmail] = useState("");
@@ -132,19 +185,27 @@ export function Auth() {
     }`}>
       {renderBackground()}
       
-      <div className="w-full max-w-md sm:max-w-[85%] relative z-10 flex flex-col">
+      <div className="w-full max-w-md sm:max-w-[85%] md:max-w-md relative z-10 flex flex-col">
+        {/* Countdown */}
+        {background.countdownEnabled && background.countdownEndDate && (
+          <Countdown 
+            endDate={background.countdownEndDate} 
+            text={background.countdownText}
+          />
+        )}
+        
         {/* Login Form */}
         <form onSubmit={handleLogin} className="w-full space-y-4 mb-8" autoComplete="on">
           {/* Email Input with Glass Effect */}
           <div 
-            className="relative overflow-hidden transition-all duration-300"
+            className="relative overflow-hidden transition-all duration-300 h-12"
             style={{ 
               borderRadius: `${cardBorderRadius}px`,
               backgroundColor: `${background.inputBgColor}${Math.round(background.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
             }}
           >
-            <div className="relative flex items-center gap-3 px-4 py-4">
-              <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="relative flex items-center gap-3 px-4 h-full">
+              <svg className="w-5 h-5 text-white/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
               <input
@@ -156,21 +217,21 @@ export function Auth() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="E-Mail oder Benutzername"
-                className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground"
+                className="flex-1 bg-transparent border-none outline-none text-white placeholder:text-white/60"
               />
             </div>
           </div>
 
           {/* Password Input with Glass Effect */}
           <div 
-            className="relative overflow-hidden transition-all duration-300"
+            className="relative overflow-hidden transition-all duration-300 h-12"
             style={{ 
               borderRadius: `${cardBorderRadius}px`,
               backgroundColor: `${background.inputBgColor}${Math.round(background.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
             }}
           >
-            <div className="relative flex items-center gap-3 px-4 py-4">
-              <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="relative flex items-center gap-3 px-4 h-full">
+              <svg className="w-5 h-5 text-white/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
               <input
@@ -182,7 +243,7 @@ export function Auth() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 placeholder="Passwort"
-                className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground"
+                className="flex-1 bg-transparent border-none outline-none text-white placeholder:text-white/60"
               />
             </div>
           </div>
@@ -190,7 +251,7 @@ export function Auth() {
           {/* Sign In Button */}
           <Button 
             type="submit" 
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-6 text-lg shadow-lg transition-all duration-300"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg transition-all duration-300 h-12"
             disabled={loading}
             style={{ borderRadius: `${cardBorderRadius}px` }}
           >

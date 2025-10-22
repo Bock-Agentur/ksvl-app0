@@ -14,6 +14,9 @@ export interface LoginBackground {
   inputBgColor: string;
   inputBgOpacity: number;
   verticalPosition: 'top' | 'center' | 'bottom';
+  countdownEnabled: boolean;
+  countdownEndDate: string | null;
+  countdownText: string;
 }
 
 const DEFAULT_BACKGROUND: LoginBackground = {
@@ -29,7 +32,10 @@ const DEFAULT_BACKGROUND: LoginBackground = {
   mediaBlur: 0,
   inputBgColor: '#FFFFFF',
   inputBgOpacity: 10,
-  verticalPosition: 'center'
+  verticalPosition: 'center',
+  countdownEnabled: false,
+  countdownEndDate: null,
+  countdownText: 'bis zur neuen Segelsaison'
 };
 
 export function useLoginBackground() {

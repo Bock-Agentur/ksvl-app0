@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +17,63 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
+
+function CountdownPreview({ endDate, text, small }: { endDate: string | null; text: string; small?: boolean }) {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+  useEffect(() => {
+    if (!endDate) return;
+
+    const calculateTimeLeft = () => {
+      const difference = new Date(endDate).getTime() - new Date().getTime();
+      
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60)
+        });
+      }
+    };
+
+    calculateTimeLeft();
+    const timer = setInterval(calculateTimeLeft, 1000);
+
+    return () => clearInterval(timer);
+  }, [endDate]);
+
+  if (!endDate) return null;
+
+  return (
+    <div className="text-center space-y-2 mb-4">
+      <div className={`flex justify-center gap-${small ? '1' : '2'} ${small ? 'text-xs' : 'text-lg'} font-bold text-white`}>
+        <div className="flex flex-col items-center">
+          <span className={small ? 'text-sm' : 'text-2xl'}>{timeLeft.days.toString().padStart(2, '0')}</span>
+          <span className="text-white/60 text-xs">Tage</span>
+        </div>
+        <span className="self-start">:</span>
+        <div className="flex flex-col items-center">
+          <span className={small ? 'text-sm' : 'text-2xl'}>{timeLeft.hours.toString().padStart(2, '0')}</span>
+          <span className="text-white/60 text-xs">Std</span>
+        </div>
+        <span className="self-start">:</span>
+        <div className="flex flex-col items-center">
+          <span className={small ? 'text-sm' : 'text-2xl'}>{timeLeft.minutes.toString().padStart(2, '0')}</span>
+          <span className="text-white/60 text-xs">Min</span>
+        </div>
+        <span className="self-start">:</span>
+        <div className="flex flex-col items-center">
+          <span className={small ? 'text-sm' : 'text-2xl'}>{timeLeft.seconds.toString().padStart(2, '0')}</span>
+          <span className="text-white/60 text-xs">Sek</span>
+        </div>
+      </div>
+      {text && (
+        <p className={`text-white/80 ${small ? 'text-xs' : 'text-sm'}`}>{text}</p>
+      )}
+    </div>
+  );
+}
 
 export function LoginBackgroundSettings() {
   const { background, setBackground } = useLoginBackground();
@@ -138,7 +196,10 @@ export function LoginBackgroundSettings() {
         mediaBlur: 0,
         inputBgColor: '#FFFFFF',
         inputBgOpacity: 10,
-        verticalPosition: 'center'
+        verticalPosition: 'center',
+        countdownEnabled: false,
+        countdownEndDate: null,
+        countdownText: 'bis zur neuen Segelsaison'
       });
 
       toast({
@@ -216,6 +277,18 @@ export function LoginBackgroundSettings() {
 
   const handleVerticalPositionChange = (position: 'top' | 'center' | 'bottom') => {
     setLocalSettings({ ...localSettings, verticalPosition: position });
+  };
+
+  const handleCountdownEnabledChange = (checked: boolean) => {
+    setLocalSettings({ ...localSettings, countdownEnabled: checked });
+  };
+
+  const handleCountdownEndDateChange = (date: string) => {
+    setLocalSettings({ ...localSettings, countdownEndDate: date });
+  };
+
+  const handleCountdownTextChange = (text: string) => {
+    setLocalSettings({ ...localSettings, countdownText: text });
   };
 
   const getJustifyClass = () => {
@@ -488,6 +561,43 @@ export function LoginBackgroundSettings() {
             </div>
           </div>
 
+          {/* Countdown Settings */}
+          <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="countdown-enabled">Countdown aktivieren</Label>
+              <Switch
+                id="countdown-enabled"
+                checked={localSettings.countdownEnabled}
+                onCheckedChange={handleCountdownEnabledChange}
+              />
+            </div>
+            
+            {localSettings.countdownEnabled && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="countdown-date">Enddatum</Label>
+                  <Input
+                    id="countdown-date"
+                    type="datetime-local"
+                    value={localSettings.countdownEndDate || ''}
+                    onChange={(e) => handleCountdownEndDateChange(e.target.value)}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="countdown-text">Countdown-Text</Label>
+                  <Input
+                    id="countdown-text"
+                    type="text"
+                    placeholder="z.B. bis zur neuen Segelsaison"
+                    value={localSettings.countdownText}
+                    onChange={(e) => handleCountdownTextChange(e.target.value)}
+                  />
+                </div>
+              </>
+            )}
+          </div>
+
           {/* Preview */}
           {localSettings.url && (
             <div className="space-y-2">
@@ -528,28 +638,44 @@ export function LoginBackgroundSettings() {
                       />
                       <div className={`absolute inset-0 flex flex-col items-center p-4 ${getJustifyClass()}`}>
                         <div className="w-full max-w-xs space-y-3">
-                          <Input 
-                            placeholder="E-Mail oder Benutzername" 
-                            disabled
-                            style={{
-                              backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
-                              borderRadius: `${localSettings.cardBorderRadius}px`
-                            }}
-                            className="border-white/20 text-white placeholder:text-white/60"
-                          />
-                          <Input 
-                            type="password"
-                            placeholder="Passwort" 
-                            disabled
-                            style={{
-                              backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
-                              borderRadius: `${localSettings.cardBorderRadius}px`
-                            }}
-                            className="border-white/20 text-white placeholder:text-white/60"
-                          />
+                          {localSettings.countdownEnabled && (
+                            <CountdownPreview 
+                              endDate={localSettings.countdownEndDate}
+                              text={localSettings.countdownText}
+                            />
+                          )}
                           <div 
-                            className="w-full bg-primary text-primary-foreground font-medium py-3 px-4 text-center shadow-lg"
-                            style={{ borderRadius: `${localSettings.cardBorderRadius}px` }}
+                            className="flex items-center gap-3 px-4 text-white"
+                            style={{
+                              backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
+                              borderRadius: `${localSettings.cardBorderRadius}px`,
+                              height: '48px'
+                            }}
+                          >
+                            <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                            </svg>
+                            <span className="text-white/60">E-Mail oder Benutzername</span>
+                          </div>
+                          <div 
+                            className="flex items-center gap-3 px-4 text-white"
+                            style={{
+                              backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
+                              borderRadius: `${localSettings.cardBorderRadius}px`,
+                              height: '48px'
+                            }}
+                          >
+                            <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            <span className="text-white/60">Passwort</span>
+                          </div>
+                          <div 
+                            className="w-full bg-primary text-primary-foreground font-medium text-center shadow-lg flex items-center justify-center"
+                            style={{ 
+                              borderRadius: `${localSettings.cardBorderRadius}px`,
+                              height: '48px'
+                            }}
                           >
                             Anmelden
                           </div>
@@ -586,28 +712,45 @@ export function LoginBackgroundSettings() {
                 />
                 <div className={`absolute inset-0 flex flex-col items-center p-4 ${getJustifyClass()}`}>
                   <div className="w-full max-w-[280px] space-y-2">
-                    <Input 
-                      placeholder="E-Mail oder Benutzername" 
-                      disabled
-                      style={{
-                        backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
-                        borderRadius: `${localSettings.cardBorderRadius}px`
-                      }}
-                      className="border-white/20 text-white placeholder:text-white/60 text-sm"
-                    />
-                    <Input 
-                      type="password"
-                      placeholder="Passwort" 
-                      disabled
-                      style={{
-                        backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
-                        borderRadius: `${localSettings.cardBorderRadius}px`
-                      }}
-                      className="border-white/20 text-white placeholder:text-white/60 text-sm"
-                    />
+                    {localSettings.countdownEnabled && (
+                      <CountdownPreview 
+                        endDate={localSettings.countdownEndDate}
+                        text={localSettings.countdownText}
+                        small
+                      />
+                    )}
                     <div 
-                      className="w-full bg-primary text-primary-foreground text-sm font-medium py-2.5 px-4 text-center shadow-lg"
-                      style={{ borderRadius: `${localSettings.cardBorderRadius}px` }}
+                      className="flex items-center gap-2 px-3 text-white text-xs"
+                      style={{
+                        backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
+                        borderRadius: `${localSettings.cardBorderRadius}px`,
+                        height: '36px'
+                      }}
+                    >
+                      <svg className="w-4 h-4 text-white/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-white/60 truncate">E-Mail</span>
+                    </div>
+                    <div 
+                      className="flex items-center gap-2 px-3 text-white text-xs"
+                      style={{
+                        backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
+                        borderRadius: `${localSettings.cardBorderRadius}px`,
+                        height: '36px'
+                      }}
+                    >
+                      <svg className="w-4 h-4 text-white/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      <span className="text-white/60 truncate">Passwort</span>
+                    </div>
+                    <div 
+                      className="w-full bg-primary text-primary-foreground text-xs font-medium text-center shadow-lg flex items-center justify-center"
+                      style={{ 
+                        borderRadius: `${localSettings.cardBorderRadius}px`,
+                        height: '36px'
+                      }}
                     >
                       Anmelden
                     </div>
