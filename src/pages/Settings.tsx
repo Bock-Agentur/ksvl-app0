@@ -7,6 +7,7 @@ import { RoleWelcomeSettings } from "@/components/role-welcome-settings";
 import { FooterMenuSettings } from "@/components/footer-menu-settings";
 import { MenuSettings } from "@/components/menu-settings";
 import { DesignSettings } from "@/components/design-settings";
+import { ThemeManager } from "@/components/theme-manager";
 import { TestDataManager } from "@/components/test-data-manager";
 import { UserListDatabase } from "@/components/user-list-database";
 import { cn } from "@/lib/utils";
@@ -20,6 +21,7 @@ export function Settings() {
     { id: "menu", label: "Menü", component: MenuSettings },
     { id: "footer", label: "Footer-Menü", component: FooterMenuSettings },
     { id: "design", label: "Design", component: DesignSettings },
+    { id: "theme", label: "Theme", component: ThemeManager },
     { id: "system", label: "System", component: ConsecutiveSlotsSettings },
     { id: "testdata", label: "Testdaten", component: TestDataManager },
   ];

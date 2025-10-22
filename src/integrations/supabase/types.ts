@@ -313,6 +313,39 @@ export type Database = {
         }
         Relationships: []
       }
+      theme_settings: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string | null
+          hsl_value: string
+          id: string
+          is_default: boolean | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description?: string | null
+          hsl_value: string
+          id?: string
+          is_default?: boolean | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string | null
+          hsl_value?: string
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string | null
