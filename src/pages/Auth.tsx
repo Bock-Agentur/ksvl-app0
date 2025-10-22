@@ -121,30 +121,39 @@ export function Auth() {
         : ''
     }`}>
       {renderBackground()}
-      <Card 
-        className="w-full max-w-md relative z-10 overflow-hidden transition-all duration-300"
-        style={{ 
-          borderRadius: `${cardBorderRadius}px`
-        }}
-      >
-        <div 
-          className="absolute inset-0 -z-10"
-          style={{
-            backgroundColor: `hsl(var(--background) / ${cardOpacity / 100})`,
-            filter: `blur(${cardBorderBlur}px)`,
-            WebkitFilter: `blur(${cardBorderBlur}px)`,
-          }}
-        />
-        <CardHeader className="relative">
-          <CardTitle className="text-2xl text-center">Anmelden</CardTitle>
-        </CardHeader>
-        <CardContent className="relative">
-          <form onSubmit={handleLogin} className="space-y-4" autoComplete="on">
-            <div className="space-y-2">
-              <Label htmlFor="email">
-                E-Mail oder Benutzername
-              </Label>
-              <Input
+      
+      <div className="w-full max-w-md relative z-10 flex flex-col items-center">
+        {/* Logo */}
+        <div className="mb-12">
+          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-2xl">
+            <svg viewBox="0 0 24 24" fill="white" className="w-16 h-16">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+            </svg>
+          </div>
+        </div>
+
+        {/* Login Form */}
+        <form onSubmit={handleLogin} className="w-full space-y-4" autoComplete="on">
+          {/* Email Input with Glass Effect */}
+          <div 
+            className="relative overflow-hidden transition-all duration-300"
+            style={{ 
+              borderRadius: `${cardBorderRadius}px`
+            }}
+          >
+            <div 
+              className="absolute inset-0 -z-10"
+              style={{
+                backgroundColor: `hsl(var(--background) / ${cardOpacity / 100})`,
+                backdropFilter: `blur(${cardBorderBlur}px)`,
+                WebkitBackdropFilter: `blur(${cardBorderBlur}px)`,
+              }}
+            />
+            <div className="relative flex items-center gap-3 px-4 py-4">
+              <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <input
                 id="email"
                 name="email"
                 type="text"
@@ -153,13 +162,31 @@ export function Auth() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 placeholder="E-Mail oder Benutzername"
+                className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground"
               />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">
-                Passwort
-              </Label>
-              <Input
+          </div>
+
+          {/* Password Input with Glass Effect */}
+          <div 
+            className="relative overflow-hidden transition-all duration-300"
+            style={{ 
+              borderRadius: `${cardBorderRadius}px`
+            }}
+          >
+            <div 
+              className="absolute inset-0 -z-10"
+              style={{
+                backgroundColor: `hsl(var(--background) / ${cardOpacity / 100})`,
+                backdropFilter: `blur(${cardBorderBlur}px)`,
+                WebkitBackdropFilter: `blur(${cardBorderBlur}px)`,
+              }}
+            />
+            <div className="relative flex items-center gap-3 px-4 py-4">
+              <svg className="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+              <input
                 id="password"
                 name="password"
                 type="password"
@@ -167,21 +194,44 @@ export function Auth() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                placeholder="••••••"
+                placeholder="Passwort"
+                className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted-foreground"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Wird geladen..." : "Anmelden"}
-            </Button>
-          </form>
-          
-          <div className="mt-4 p-4 bg-muted rounded-lg text-sm">
-            <p className="font-semibold mb-2">Test-Admin:</p>
-            <p>E-Mail: h@jorgson.com</p>
-            <p>Passwort: 123456</p>
           </div>
-        </CardContent>
-      </Card>
+
+          {/* Sign In Button */}
+          <Button 
+            type="submit" 
+            className="w-full bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-500 hover:to-cyan-600 text-white font-medium py-6 text-lg shadow-lg transition-all duration-300"
+            disabled={loading}
+            style={{ borderRadius: `${cardBorderRadius}px` }}
+          >
+            {loading ? "Wird geladen..." : "Anmelden"}
+          </Button>
+        </form>
+
+        {/* Test Admin Info with Glass Effect */}
+        <div 
+          className="mt-6 w-full relative overflow-hidden transition-all duration-300"
+          style={{ 
+            borderRadius: `${cardBorderRadius}px`
+          }}
+        >
+          <div 
+            className="absolute inset-0 -z-10"
+            style={{
+              backgroundColor: `hsl(var(--background) / ${Math.max(cardOpacity - 10, 50) / 100})`,
+              backdropFilter: `blur(${cardBorderBlur}px)`,
+              WebkitBackdropFilter: `blur(${cardBorderBlur}px)`,
+            }}
+          />
+          <div className="relative p-4 text-sm text-center">
+            <p className="font-semibold mb-1 text-muted-foreground">Test-Admin</p>
+            <p className="text-xs text-muted-foreground">h@jorgson.com • 123456</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
