@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
+import { useLoginBackground } from "@/hooks/use-login-background";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
@@ -63,6 +64,7 @@ export function AppShell({
   const [forceUpdate, setForceUpdate] = useState(0);
   const { getMenuItemsForRole, getDisplaySettingsForRole } = useFooterMenuSettings();
   const { getOrderedHeaderItems } = useMenuSettings();
+  const { background } = useLoginBackground();
   
   const handleLogout = async () => {
     try {
@@ -144,8 +146,57 @@ export function AppShell({
     vorstand: "bg-gradient-deep text-primary-foreground"
   };
 
+  const renderBackground = () => {
+    if (background.type === 'gradient') {
+      return null;
+    }
+
+    if (background.type === 'video' && background.url) {
+      return (
+        <video
+          className="fixed inset-0 w-full h-full object-cover -z-20"
+          autoPlay
+          muted
+          loop
+          playsInline
+          style={{ filter: `blur(${background.mediaBlur}px)` }}
+        >
+          <source src={background.url} type="video/mp4" />
+        </video>
+      );
+    }
+
+    if (background.type === 'image' && background.url) {
+      return (
+        <div
+          className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat -z-20"
+          style={{
+            backgroundImage: `url(${background.url})`,
+            filter: `blur(${background.mediaBlur}px)`
+          }}
+        />
+      );
+    }
+
+    return null;
+  };
+
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <>
+      {/* Background Layer */}
+      {renderBackground()}
+      
+      {/* Overlay Layer */}
+      {background.type !== 'gradient' && background.url && (
+        <div
+          className="fixed inset-0 -z-10"
+          style={{
+            backgroundColor: `${background.overlayColor}${Math.round((background.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
+          }}
+        />
+      )}
+
+      <div className="min-h-screen flex flex-col relative z-0">
       {/* Header */}
       <header className={cn(
         "sticky top-0 z-40 bg-card/90 backdrop-blur-sm border-b border-border px-4 py-3 shadow-card-maritime transition-transform duration-300 ease-in-out",
@@ -359,6 +410,7 @@ export function AppShell({
           })}
         </div>
       </nav>
-    </div>
+      </div>
+    </>
   );
 }
