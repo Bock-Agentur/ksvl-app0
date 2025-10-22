@@ -387,8 +387,8 @@ export function useSlots() {
 
       if (error) throw error;
 
-      // Fetch full data in background
-      fetchSlots();
+      // Fetch full data in background to ensure consistency
+      await fetchSlots();
 
       return data;
     } catch (error) {
@@ -406,6 +406,7 @@ export function useSlots() {
 
   // Set up realtime subscription
   useEffect(() => {
+    console.log('🔄 Setting up slots realtime subscription');
     fetchSlots();
 
     const channel = supabase
@@ -417,14 +418,18 @@ export function useSlots() {
           schema: 'public',
           table: 'slots'
         },
-        () => {
+        (payload) => {
+          console.log('🔔 REALTIME UPDATE RECEIVED:', payload.eventType, payload);
           // Refetch all slots on any change
           fetchSlots();
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('📡 Realtime subscription status:', status);
+      });
 
     return () => {
+      console.log('🔌 Cleaning up realtime subscription');
       supabase.removeChannel(channel);
     };
   }, []);
