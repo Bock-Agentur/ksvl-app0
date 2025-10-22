@@ -735,6 +735,7 @@ export function SlotManagement() {
               </div>
             )}
           </div>
+          </div>
           )}
         </CardContent>
       </Card>
