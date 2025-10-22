@@ -15,105 +15,7 @@ import { cn } from "@/lib/utils";
 import { User as UserType, UserRole, CustomField, ProfileViewProps, generateRolesFromPrimary } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/hooks/use-role";
-
-// Mock current users based on role
-const mockCurrentUsers: Record<UserRole, UserType> = {
-  gastmitglied: {
-    id: "0",
-    name: "Gast User",
-    email: "gast@email.com",
-    phone: "+43 664 000 0000",
-    boatName: "Gast Boot",
-    memberNumber: "KSVL000",
-    role: "gastmitglied",
-    roles: generateRolesFromPrimary("gastmitglied"),
-    status: "active",
-    joinDate: "2024-01-01",
-    joinedAt: "2024-01-01",
-    isActive: true
-  },
-  mitglied: {
-    id: "1",
-    name: "Hans Müller",
-    email: "hans.mueller@email.com",
-    phone: "+43 664 123 4567",
-    boatName: "Seeadler",
-    memberNumber: "KSVL001",
-    role: "mitglied",
-    roles: generateRolesFromPrimary("mitglied"),
-    status: "active",
-    joinDate: "2023-01-15",
-    joinedAt: "2023-01-15",
-    isActive: true
-  },
-  kranfuehrer: {
-    id: "3",
-    name: "Franz Weber",
-    email: "f.weber@email.com",
-    phone: "+43 664 345 6789",
-    memberNumber: "KSVL003",
-    role: "kranfuehrer",
-    roles: generateRolesFromPrimary("kranfuehrer"),
-    status: "active",
-    joinDate: "2022-05-10",
-    joinedAt: "2022-05-10",
-    isActive: true
-  },
-  admin: {
-    id: "4",
-    name: "Anna Bauer",
-    email: "anna.bauer@email.com",
-    phone: "+43 664 456 7890",
-    memberNumber: "KSVL004",
-    role: "admin",
-    roles: generateRolesFromPrimary("admin"),
-    status: "active",
-    joinDate: "2022-01-01",
-    joinedAt: "2022-01-01",
-    isActive: true
-  },
-  vorstand: {
-    id: "5",
-    name: "Dr. Vorstand",
-    email: "vorstand@email.com",
-    phone: "+43 664 555 5555",
-    memberNumber: "KSVL005",
-    role: "vorstand",
-    roles: generateRolesFromPrimary("vorstand"),
-    status: "active",
-    joinDate: "2021-01-01",
-    joinedAt: "2021-01-01",
-    isActive: true
-  }
-};
-
-// Mock custom fields (globally defined by admin)
-const initialCustomFields: CustomField[] = [
-  {
-    id: "emergency_contact",
-    name: "emergencyContact",
-    label: "Notfallkontakt",
-    type: "text",
-    required: false,
-    placeholder: "Name und Telefonnummer"
-  },
-  {
-    id: "sailing_experience",
-    name: "sailingExperience",
-    label: "Segelerfahrung",
-    type: "select",
-    required: false,
-    options: ["Anfänger", "Fortgeschritten", "Profi", "Instructor"]
-  },
-  {
-    id: "notes",
-    name: "notes",
-    label: "Notizen",
-    type: "textarea",
-    required: false,
-    placeholder: "Zusätzliche Informationen..."
-  }
-];
+import { useCustomFields, useCustomFieldValues } from "@/hooks/use-custom-fields";
 
 // ProfileViewProps is now imported from @/types
 
@@ -144,8 +46,6 @@ interface ProfileComponentProps {
 export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, onBack }: ProfileComponentProps = {}) {
   const [user, setUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
-  const [customFields, setCustomFields] = useState<CustomField[]>(initialCustomFields);
-  const [customValues, setCustomValues] = useState<Record<string, any>>({});
   const [isEditing, setIsEditing] = useState(false);
   const [isManagingFields, setIsManagingFields] = useState(false);
   const [editedUser, setEditedUser] = useState<UserType | null>(null);
@@ -157,6 +57,13 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const { toast } = useToast();
   const { currentUser: roleCurrentUser, currentRole: roleCurrentRole } = useRole();
+  
+  // Load custom fields from database
+  const { customFields, loading: fieldsLoading, addCustomField, deleteCustomField } = useCustomFields();
+  
+  // Load custom field values for the user
+  const targetUserId = userId || roleCurrentUser?.id;
+  const { customValues, saveCustomValue, saveAllCustomValues } = useCustomFieldValues(targetUserId || '');
 
   // New custom field form
   const [newField, setNewField] = useState<Partial<CustomField>>({
@@ -171,6 +78,12 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     loadCurrentUser();
     checkAdminStatus();
   }, [userId, roleCurrentUser]);
+  
+  useEffect(() => {
+    if (customValues) {
+      setEditedCustomValues(customValues);
+    }
+  }, [customValues]);
   
   const checkAdminStatus = async () => {
     const { data: { user: currentUser } } = await supabase.auth.getUser();
@@ -458,7 +371,12 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       }
 
       setUser(editedUser);
-      setCustomValues(editedCustomValues);
+      
+      // Save custom field values to database
+      if (Object.keys(editedCustomValues).length > 0) {
+        await saveAllCustomValues(customFields, editedCustomValues);
+      }
+      
       setIsEditing(false);
       toast({
         title: "Profil gespeichert",
@@ -483,7 +401,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     }
   };
 
-  const handleAddCustomField = () => {
+  const handleAddCustomField = async () => {
     if (!newField.name || !newField.label) {
       toast({
         title: "Fehler",
@@ -493,46 +411,56 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       return;
     }
 
-    const field: CustomField = {
-      id: Date.now().toString(),
-      name: newField.name,
-      label: newField.label,
-      type: newField.type || "text",
-      required: newField.required || false,
-      placeholder: newField.placeholder,
-      options: newField.type === "select" ? newField.options : undefined
-    };
+    try {
+      await addCustomField({
+        name: newField.name!,
+        label: newField.label!,
+        type: newField.type || "text",
+        required: newField.required || false,
+        placeholder: newField.placeholder,
+        options: newField.type === "select" ? newField.options : undefined
+      });
 
-    setCustomFields(prev => [...prev, field]);
-    setNewField({
-      name: "",
-      label: "",
-      type: "text",
-      required: false,
-      placeholder: ""
-    });
+      setNewField({
+        name: "",
+        label: "",
+        type: "text",
+        required: false,
+        placeholder: ""
+      });
 
-    toast({
-      title: "Feld hinzugefügt",
-      description: `Das Feld "${field.label}" wurde zu allen Profilen hinzugefügt.`
-    });
+      toast({
+        title: "Feld hinzugefügt",
+        description: `Das Feld "${newField.label}" wurde zu allen Profilen hinzugefügt.`
+      });
+    } catch (error) {
+      console.error('Error adding custom field:', error);
+      toast({
+        title: "Fehler",
+        description: "Feld konnte nicht hinzugefügt werden.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeleteCustomField = (fieldId: string) => {
+  const handleDeleteCustomField = async (fieldId: string) => {
     const field = customFields.find(f => f.id === fieldId);
-    setCustomFields(prev => prev.filter(f => f.id !== fieldId));
     
-    // Remove values for this field
-    setCustomValues(prev => {
-      const newValues = { ...prev };
-      delete newValues[field?.name || ""];
-      return newValues;
-    });
+    try {
+      await deleteCustomField(fieldId);
 
-    toast({
-      title: "Feld entfernt",
-      description: `Das Feld "${field?.label}" wurde von allen Profilen entfernt.`
-    });
+      toast({
+        title: "Feld entfernt",
+        description: `Das Feld "${field?.label}" wurde von allen Profilen entfernt.`
+      });
+    } catch (error) {
+      console.error('Error deleting custom field:', error);
+      toast({
+        title: "Fehler",
+        description: "Feld konnte nicht entfernt werden.",
+        variant: "destructive"
+      });
+    }
   };
 
   const renderCustomField = (field: CustomField, isEditing: boolean) => {
