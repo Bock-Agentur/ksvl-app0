@@ -410,10 +410,10 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
       <div className="hidden md:block">
         {viewMode === "week" ? (
           <div className="border rounded-lg overflow-hidden bg-background">
-          {/* Calendar Header */}
-          <div className="grid grid-cols-7 bg-muted/30">
+          {/* Calendar Header - Sticky */}
+          <div className="sticky top-0 z-10 grid grid-cols-7 bg-muted/30 backdrop-blur-sm border-b">
             {weekDays.map((day, dayIndex) => (
-              <div key={dayIndex} className="p-2 sm:p-3 border-b border-r last:border-r-0 text-center min-w-0 relative">
+              <div key={dayIndex} className="p-2 sm:p-3 border-r last:border-r-0 text-center min-w-0 relative">
                 <div className="text-xs font-medium text-muted-foreground truncate">
                   {format(day, "EEE", { locale: de })}
                 </div>
@@ -436,7 +436,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
           </div>
 
           {/* Calendar Grid - Card-based Slots */}
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto max-h-[calc(100vh-350px)] overflow-y-auto">
             <div className="grid grid-cols-7 gap-2 p-4 min-w-[700px]">
               {/* Day Columns */}
               {weekDays.map((day, dayIndex) => (
@@ -861,7 +861,8 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
 
       {/* Tablet/Mobile Calendar View - Day Calendar with 15-minute slots */}
       <div className="md:hidden">
-        <div className="flex justify-center mb-4">
+        {/* Sticky Day Selector */}
+        <div className="sticky top-0 z-10 bg-background pb-2 backdrop-blur-sm border-b mb-4">
             <div className="grid grid-cols-7 gap-1 px-2 sm:px-4 w-full">
               {weekDays.map((day, index) => {
                 // Prüfe ob es Slots für diesen Tag gibt

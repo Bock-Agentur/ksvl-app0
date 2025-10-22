@@ -167,8 +167,8 @@ export function MonthCalendar({ onDayClick, onSlotCreate }: MonthCalendarProps) 
       <div className="space-y-4">
       <Card>
         <CardContent className="p-0">
-          {/* Calendar Header - Weekday Names */}
-          <div className="grid grid-cols-7 border-b bg-muted/30">
+          {/* Calendar Header - Weekday Names - Sticky */}
+          <div className="sticky top-0 z-10 grid grid-cols-7 border-b bg-muted/30 backdrop-blur-sm">
             {weekDayNames.map((dayName) => (
               <div
                 key={dayName}
