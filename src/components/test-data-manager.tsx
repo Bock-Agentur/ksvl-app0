@@ -201,9 +201,9 @@ export function TestDataManager() {
 
   return (
     <div className="space-y-6">
-      <Alert>
-        <AlertTriangle className="h-4 w-4" />
-        <AlertDescription>
+      <Alert className="bg-[hsl(348_77%_67%)] text-white border-[hsl(348_77%_67%)]">
+        <AlertTriangle className="h-4 w-4 text-white" />
+        <AlertDescription className="text-white">
           Dies ist ein Testsystem. Mit dieser Funktion können Sie Test-Benutzer und Test-Termine in der echten Datenbank anlegen.
           Alle Testdaten werden mit dem Flag `is_test_data: true` versehen und können jederzeit vollständig gelöscht werden.
         </AlertDescription>
