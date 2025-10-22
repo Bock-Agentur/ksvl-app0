@@ -78,17 +78,26 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   }, [settings.defaultRole, currentUser]);
   
   const setRole = async (role: UserRole) => {
+    // Check if role switching is enabled
+    const { data: roleSwitchingSetting } = await supabase
+      .from('app_settings')
+      .select('setting_value')
+      .eq('setting_key', 'role_switching_enabled')
+      .eq('is_global', true)
+      .single();
+    
+    const settingValue = roleSwitchingSetting?.setting_value as { enabled?: boolean } | null;
+    const isRoleSwitchingEnabled = settingValue?.enabled !== false;
+    
     setCurrentRole(role);
     
-    // Check if we should load a role user
-    const roleUserEmail = `${role}-rolle@ksvl.test`;
-    
-    // Don't switch for admin role - keep current user
-    if (role === 'admin') {
+    // If role switching is disabled or switching to admin, keep current user
+    if (!isRoleSwitchingEnabled || role === 'admin') {
       return;
     }
     
     // Try to fetch the role user
+    const roleUserEmail = `${role}-rolle@ksvl.test`;
     const { data: roleProfile } = await supabase
       .from('profiles')
       .select('*')

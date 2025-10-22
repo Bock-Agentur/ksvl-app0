@@ -260,21 +260,11 @@ export function AppShell({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {currentUser?.roles?.includes("gastmitglied") && (
-                          <SelectItem value="gastmitglied">👋 Gastmitglied</SelectItem>
-                        )}
-                        {currentUser?.roles?.includes("mitglied") && (
-                          <SelectItem value="mitglied">👤 Mitglied</SelectItem>
-                        )}
-                        {currentUser?.roles?.includes("kranfuehrer") && (
-                          <SelectItem value="kranfuehrer">⚓ Kranführer</SelectItem>
-                        )}
-                        {currentUser?.roles?.includes("admin") && (
-                          <SelectItem value="admin">🔧 Administrator</SelectItem>
-                        )}
-                        {currentUser?.roles?.includes("vorstand") && (
-                          <SelectItem value="vorstand">🏛️ Vorstand</SelectItem>
-                        )}
+                        <SelectItem value="gastmitglied">👋 Gastmitglied</SelectItem>
+                        <SelectItem value="mitglied">👤 Mitglied</SelectItem>
+                        <SelectItem value="kranfuehrer">⚓ Kranführer</SelectItem>
+                        <SelectItem value="admin">🔧 Administrator</SelectItem>
+                        <SelectItem value="vorstand">🏛️ Vorstand</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

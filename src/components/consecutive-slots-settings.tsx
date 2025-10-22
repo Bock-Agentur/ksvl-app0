@@ -1,13 +1,98 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Clock, Settings, Eye, EyeOff } from "lucide-react";
+import { AlertCircle, Clock, Settings, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { useConsecutiveSlots } from "@/hooks/use-consecutive-slots";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
 
 export function ConsecutiveSlotsSettings() {
   const { consecutiveSlotsEnabled, setConsecutiveSlotsEnabled } = useConsecutiveSlots();
+  const [roleSwitchingEnabled, setRoleSwitchingEnabled] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadRoleSwitchingSetting();
+  }, []);
+
+  const loadRoleSwitchingSetting = async () => {
+    try {
+      const { data } = await supabase
+        .from('app_settings')
+        .select('setting_value')
+        .eq('setting_key', 'role_switching_enabled')
+        .eq('is_global', true)
+        .single();
+
+      if (data) {
+        const settingValue = data.setting_value as { enabled?: boolean };
+        setRoleSwitchingEnabled(settingValue.enabled ?? true);
+      }
+    } catch (error) {
+      console.error('Error loading role switching setting:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRoleSwitchingChange = async (enabled: boolean) => {
+    try {
+      const { data: existing } = await supabase
+        .from('app_settings')
+        .select('id')
+        .eq('setting_key', 'role_switching_enabled')
+        .eq('is_global', true)
+        .single();
+
+      const settingValue = { enabled };
+
+      if (existing) {
+        const { error } = await supabase
+          .from('app_settings')
+          .update({ setting_value: settingValue })
+          .eq('id', existing.id);
+
+        if (error) throw error;
+      } else {
+        const { error } = await supabase
+          .from('app_settings')
+          .insert({
+            setting_key: 'role_switching_enabled',
+            setting_value: settingValue,
+            is_global: true
+          });
+
+        if (error) throw error;
+      }
+
+      setRoleSwitchingEnabled(enabled);
+      toast.success(enabled ? 'Rollenwechsel aktiviert' : 'Rollenwechsel deaktiviert');
+    } catch (error) {
+      console.error('Error saving role switching setting:', error);
+      toast.error('Fehler beim Speichern der Einstellung');
+    }
+  };
+
+  const createRoleUsers = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.functions.invoke('create-role-users');
+
+      if (error) throw error;
+
+      toast.success('Rollen-Benutzer wurden erstellt');
+      console.log('Role users created:', data);
+    } catch (error) {
+      console.error('Error creating role users:', error);
+      toast.error('Fehler beim Erstellen der Rollen-Benutzer');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Card>
@@ -21,6 +106,52 @@ export function ConsecutiveSlotsSettings() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Role Switching Setting */}
+        <div className="space-y-4">
+          <Label className="text-base font-medium">Rollenwechsel-System</Label>
+          <div className="flex items-center justify-between p-3 border rounded-lg transition-colors bg-card border-border">
+            <div className="flex items-center gap-3">
+              {roleSwitchingEnabled ? (
+                <RefreshCw className="h-4 w-4 text-success" />
+              ) : (
+                <RefreshCw className="h-4 w-4 text-muted-foreground" />
+              )}
+              <div>
+                <p className="font-medium">Rollenwechsel aktivieren</p>
+                <p className="text-sm text-muted-foreground">
+                  Ermöglicht das Wechseln zwischen Test-Rollen-Benutzern
+                </p>
+              </div>
+            </div>
+            <Switch
+              checked={roleSwitchingEnabled}
+              onCheckedChange={handleRoleSwitchingChange}
+              disabled={loading}
+            />
+          </div>
+          
+          <Button 
+            onClick={createRoleUsers} 
+            disabled={loading}
+            variant="outline"
+            className="w-full"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Rollen-Benutzer erstellen
+          </Button>
+          
+          {roleSwitchingEnabled && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <strong>Aktiviert:</strong> Beim Rollenwechsel werden automatisch Test-Benutzer geladen 
+                (z.B. mitglied-rolle@ksvl.test). Diese Benutzer haben Namen wie "Mitglied Rolle" und 
+                werden mit einem roten "Rolle" Label gekennzeichnet.
+              </AlertDescription>
+            </Alert>
+          )}
+        </div>
+
         {/* Consecutive Slots Setting */}
         <div className="space-y-4">
           <Label className="text-base font-medium">Buchungsrichtlinien</Label>
