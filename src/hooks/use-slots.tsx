@@ -286,6 +286,13 @@ export function useSlots() {
   // Book a slot
   const bookSlot = async (slotId: string, memberId: string) => {
     try {
+      // Optimistic update - update UI immediately
+      setSlots(prev => prev.map(slot => 
+        slot.id === slotId 
+          ? { ...slot, isBooked: true, memberId, member: slot.member }
+          : slot
+      ));
+
       const { data, error } = await supabase
         .from('slots')
         .update({
@@ -298,12 +305,14 @@ export function useSlots() {
 
       if (error) throw error;
 
-      // Refetch to get updated data with profiles
-      await fetchSlots();
+      // Fetch full data with profiles in background
+      fetchSlots();
 
       return data;
     } catch (error) {
       console.error('Error booking slot:', error);
+      // Revert optimistic update on error
+      await fetchSlots();
       toast({
         title: 'Fehler',
         description: 'Slot konnte nicht gebucht werden.',
@@ -316,6 +325,13 @@ export function useSlots() {
   // Cancel a booking
   const cancelBooking = async (slotId: string) => {
     try {
+      // Optimistic update - update UI immediately
+      setSlots(prev => prev.map(slot => 
+        slot.id === slotId 
+          ? { ...slot, isBooked: false, memberId: undefined, memberName: undefined, member: undefined }
+          : slot
+      ));
+
       const { data, error } = await supabase
         .from('slots')
         .update({
@@ -328,12 +344,14 @@ export function useSlots() {
 
       if (error) throw error;
 
-      // Refetch to get updated data
-      await fetchSlots();
+      // Fetch full data in background
+      fetchSlots();
 
       return data;
     } catch (error) {
       console.error('Error canceling booking:', error);
+      // Revert optimistic update on error
+      await fetchSlots();
       toast({
         title: 'Fehler',
         description: 'Buchung konnte nicht storniert werden.',
