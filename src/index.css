@@ -52,6 +52,28 @@ All colors MUST be HSL for proper theme support.
     --action-cancelled-foreground: 30 80% 95%;
     --action-cancelled-bg: 30 80% 90%;
     
+    /* Badge Colors - Ocean Blue as Default */
+    --badge-default: 202 85% 23%; /* Ocean Blue */
+    --badge-default-foreground: 0 0% 100%;
+    --badge-secondary: 210 40% 88%;
+    --badge-secondary-foreground: 210 60% 25%;
+    --badge-destructive: 0 75% 55%;
+    --badge-destructive-foreground: 0 75% 95%;
+    --badge-outline: 210 25% 85%;
+    --badge-outline-foreground: 210 60% 25%;
+    --badge-outline-hover: 195 50% 90%;
+    --badge-outline-hover-foreground: 210 60% 25%;
+    --badge-success: 160 60% 35%;
+    --badge-success-foreground: 160 60% 95%;
+    --badge-warning: 45 85% 55%;
+    --badge-warning-foreground: 45 85% 10%;
+    --badge-available: 160 60% 35%;
+    --badge-available-foreground: 160 60% 95%;
+    --badge-booked: 210 80% 35%;
+    --badge-booked-foreground: 210 80% 95%;
+    --badge-blocked: 0 75% 55%;
+    --badge-blocked-foreground: 0 75% 95%;
+
     /* Maritime Status Colors */
     --success: 160 60% 35%;
     --success-foreground: 160 60% 95%;
@@ -160,6 +182,28 @@ All colors MUST be HSL for proper theme support.
 
     --accent: 195 50% 20%;
     --accent-foreground: 195 70% 90%;
+
+    /* Badge Colors - Dark Mode */
+    --badge-default: 194 99% 47%; /* Bright Cyan for dark mode */
+    --badge-default-foreground: 210 50% 8%;
+    --badge-secondary: 210 40% 15%;
+    --badge-secondary-foreground: 210 25% 95%;
+    --badge-destructive: 0 75% 65%;
+    --badge-destructive-foreground: 0 75% 95%;
+    --badge-outline: 210 40% 18%;
+    --badge-outline-foreground: 195 70% 90%;
+    --badge-outline-hover: 195 50% 20%;
+    --badge-outline-hover-foreground: 195 70% 90%;
+    --badge-success: 160 60% 45%;
+    --badge-success-foreground: 160 60% 95%;
+    --badge-warning: 45 85% 65%;
+    --badge-warning-foreground: 45 85% 10%;
+    --badge-available: 160 60% 45%;
+    --badge-available-foreground: 160 60% 95%;
+    --badge-booked: 217 80% 70%;
+    --badge-booked-foreground: 217 91% 95%;
+    --badge-blocked: 0 75% 65%;
+    --badge-blocked-foreground: 0 75% 95%;
 
     /* Dark Mode Slot Status Colors - using trendy colors */
     --action-created: 85 70% 50%; /* Green Dark */

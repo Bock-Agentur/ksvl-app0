@@ -99,13 +99,45 @@ export function useThemeSettings() {
     if (!settings) return;
 
     const root = document.documentElement;
+    
+    // Create a mapping from DB names to CSS variable names
+    const badgeMapping: Record<string, string> = {
+      'Badge Standard': 'badge-default',
+      'Badge Standard Vordergrund': 'badge-default-foreground',
+      'Badge Sekundär': 'badge-secondary',
+      'Badge Sekundär Vordergrund': 'badge-secondary-foreground',
+      'Badge Destruktiv': 'badge-destructive',
+      'Badge Destruktiv Vordergrund': 'badge-destructive-foreground',
+      'Badge Outline': 'badge-outline',
+      'Badge Outline Vordergrund': 'badge-outline-foreground',
+      'Badge Outline Hover': 'badge-outline-hover',
+      'Badge Outline Hover Vordergrund': 'badge-outline-hover-foreground',
+      'Badge Erfolg': 'badge-success',
+      'Badge Erfolg Vordergrund': 'badge-success-foreground',
+      'Badge Warnung': 'badge-warning',
+      'Badge Warnung Vordergrund': 'badge-warning-foreground',
+      'Badge Verfügbar': 'badge-available',
+      'Badge Verfügbar Vordergrund': 'badge-available-foreground',
+      'Badge Gebucht': 'badge-booked',
+      'Badge Gebucht Vordergrund': 'badge-booked-foreground',
+      'Badge Blockiert': 'badge-blocked',
+      'Badge Blockiert Vordergrund': 'badge-blocked-foreground',
+    };
+    
     settings.forEach(setting => {
+      let cssVarName = setting.name;
+      
+      // Check if it's a badge setting and map to correct CSS variable
+      if (setting.category === 'badge' && badgeMapping[setting.name]) {
+        cssVarName = badgeMapping[setting.name];
+      }
+      
       if (setting.category === 'gradient') {
         // Gradients are stored as full CSS values
-        root.style.setProperty(`--${setting.name}`, setting.hsl_value);
+        root.style.setProperty(`--${cssVarName}`, setting.hsl_value);
       } else {
         // Colors are HSL values
-        root.style.setProperty(`--${setting.name}`, setting.hsl_value);
+        root.style.setProperty(`--${cssVarName}`, setting.hsl_value);
       }
     });
   };

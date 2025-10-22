@@ -1,0 +1,22 @@
+-- Insert Badge color settings into theme_settings table
+INSERT INTO public.theme_settings (name, category, hsl_value, description, is_default) VALUES
+  ('Badge Standard', 'badge', '202 85% 23%', 'Hauptfarbe für Standard-Badges (Ocean Blue)', true),
+  ('Badge Standard Vordergrund', 'badge', '0 0% 100%', 'Textfarbe für Standard-Badges', true),
+  ('Badge Sekundär', 'badge', '210 40% 88%', 'Hintergrundfarbe für sekundäre Badges', true),
+  ('Badge Sekundär Vordergrund', 'badge', '210 60% 25%', 'Textfarbe für sekundäre Badges', true),
+  ('Badge Destruktiv', 'badge', '0 75% 55%', 'Hintergrundfarbe für destruktive Badges', true),
+  ('Badge Destruktiv Vordergrund', 'badge', '0 75% 95%', 'Textfarbe für destruktive Badges', true),
+  ('Badge Outline', 'badge', '210 25% 85%', 'Rahmenfarbe für Outline-Badges', true),
+  ('Badge Outline Vordergrund', 'badge', '210 60% 25%', 'Textfarbe für Outline-Badges', true),
+  ('Badge Outline Hover', 'badge', '195 50% 90%', 'Hover-Hintergrundfarbe für Outline-Badges', true),
+  ('Badge Outline Hover Vordergrund', 'badge', '210 60% 25%', 'Hover-Textfarbe für Outline-Badges', true),
+  ('Badge Erfolg', 'badge', '160 60% 35%', 'Hintergrundfarbe für Erfolg-Badges', true),
+  ('Badge Erfolg Vordergrund', 'badge', '160 60% 95%', 'Textfarbe für Erfolg-Badges', true),
+  ('Badge Warnung', 'badge', '45 85% 55%', 'Hintergrundfarbe für Warnungs-Badges', true),
+  ('Badge Warnung Vordergrund', 'badge', '45 85% 10%', 'Textfarbe für Warnungs-Badges', true),
+  ('Badge Verfügbar', 'badge', '160 60% 35%', 'Hintergrundfarbe für Verfügbar-Badges', true),
+  ('Badge Verfügbar Vordergrund', 'badge', '160 60% 95%', 'Textfarbe für Verfügbar-Badges', true),
+  ('Badge Gebucht', 'badge', '210 80% 35%', 'Hintergrundfarbe für Gebucht-Badges', true),
+  ('Badge Gebucht Vordergrund', 'badge', '210 80% 95%', 'Textfarbe für Gebucht-Badges', true),
+  ('Badge Blockiert', 'badge', '0 75% 55%', 'Hintergrundfarbe für Blockiert-Badges', true),
+  ('Badge Blockiert Vordergrund', 'badge', '0 75% 95%', 'Textfarbe für Blockiert-Badges', true);

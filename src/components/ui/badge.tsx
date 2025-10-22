@@ -9,17 +9,17 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-transparent bg-primary text-primary-foreground hover:bg-primary/80",
+          "border-transparent bg-badge-default text-badge-default-foreground hover:bg-badge-default/80",
         secondary:
-          "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80",
+          "border-transparent bg-badge-secondary text-badge-secondary-foreground hover:bg-badge-secondary/80",
         destructive:
-          "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80",
-        outline: "text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground",
-        success: "border-transparent bg-success text-success-foreground hover:bg-success/80",
-        warning: "border-transparent bg-warning text-warning-foreground hover:bg-warning/80",
-        available: "border-transparent bg-status-available text-status-available-foreground hover:bg-status-available/80",
-        booked: "border-transparent bg-status-booked text-status-booked-foreground hover:bg-status-booked/80",
-        blocked: "border-transparent bg-status-blocked text-status-blocked-foreground hover:bg-status-blocked/80",
+          "border-transparent bg-badge-destructive text-badge-destructive-foreground hover:bg-badge-destructive/80",
+        outline: "text-badge-outline-foreground border-badge-outline hover:bg-badge-outline-hover hover:text-badge-outline-hover-foreground",
+        success: "border-transparent bg-badge-success text-badge-success-foreground hover:bg-badge-success/80",
+        warning: "border-transparent bg-badge-warning text-badge-warning-foreground hover:bg-badge-warning/80",
+        available: "border-transparent bg-badge-available text-badge-available-foreground hover:bg-badge-available/80",
+        booked: "border-transparent bg-badge-booked text-badge-booked-foreground hover:bg-badge-booked/80",
+        blocked: "border-transparent bg-badge-blocked text-badge-blocked-foreground hover:bg-badge-blocked/80",
       },
     },
     defaultVariants: {

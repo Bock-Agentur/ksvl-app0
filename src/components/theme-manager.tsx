@@ -304,6 +304,7 @@ export function ThemeManager() {
   }
 
   const baseColors = settings?.filter(s => s.category === 'base') || [];
+  const badgeColors = settings?.filter(s => s.category === 'badge') || [];
   const slotColors = settings?.filter(s => s.category === 'slot-status') || [];
   const slotAltColors = settings?.filter(s => s.category === 'slot-status-alt') || [];
   const themeColors = settings?.filter(s => s.category === 'theme') || [];
@@ -326,8 +327,9 @@ export function ThemeManager() {
       </Card>
 
       <Tabs defaultValue="base" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="base">Basis-Farben</TabsTrigger>
+          <TabsTrigger value="badges">Badges</TabsTrigger>
           <TabsTrigger value="slots">Slot-Status</TabsTrigger>
           <TabsTrigger value="slots-alt">Slot-Alt</TabsTrigger>
           <TabsTrigger value="theme">Theme</TabsTrigger>
@@ -338,6 +340,39 @@ export function ThemeManager() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {baseColors.map(renderColorCard)}
           </div>
+        </TabsContent>
+
+        <TabsContent value="badges" className="space-y-4 mt-6">
+          <Card className="bg-muted/50">
+            <CardContent className="pt-6">
+              <p className="text-sm text-muted-foreground">
+                Passen Sie die Farben aller Badge-Varianten an. Badges werden in der gesamten Anwendung verwendet.
+              </p>
+            </CardContent>
+          </Card>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {badgeColors.map(renderColorCard)}
+          </div>
+          
+          {/* Badge Preview */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Vorschau</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="default">Standard</Badge>
+                <Badge variant="secondary">Sekundär</Badge>
+                <Badge variant="destructive">Destruktiv</Badge>
+                <Badge variant="outline">Outline</Badge>
+                <Badge variant="success">Erfolg</Badge>
+                <Badge variant="warning">Warnung</Badge>
+                <Badge variant="available">Verfügbar</Badge>
+                <Badge variant="booked">Gebucht</Badge>
+                <Badge variant="blocked">Blockiert</Badge>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="slots" className="space-y-4 mt-6">
