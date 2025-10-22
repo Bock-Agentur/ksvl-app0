@@ -293,7 +293,7 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
       {/* Overlay Layer */}
       {background.type !== 'gradient' && background.url && (
         <div
-          className="fixed inset-0 -z-10"
+          className="fixed inset-0 z-0"
           style={{
             backgroundColor: `${background.overlayColor}${Math.round((background.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
           }}
@@ -301,7 +301,7 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
       )}
 
       {/* Content */}
-      <div className="p-4 space-y-6">
+      <div className="relative z-10 p-4 space-y-6">
       {/* Welcome Section */}
       {settings.showWelcomeSection && (
         <div className={cn(
