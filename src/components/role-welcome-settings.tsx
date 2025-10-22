@@ -211,23 +211,40 @@ export function RoleWelcomeSettings() {
 
       {/* Summary */}
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg">Zusammenfassung</CardTitle>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquare className="w-5 h-5" />
+            Rolle auswählen
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
             {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
               const Icon = getRoleIcon(role);
               return (
-                <div key={role} className="text-center p-4 bg-muted/30 rounded-lg">
-                  <Icon className="h-6 w-6 mx-auto mb-2 text-muted-foreground" />
-                  <p className="font-medium text-sm mb-1">
-                    {getRoleDisplayName(role)}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {messages[role]?.length || 0} Zeichen
-                  </p>
-                </div>
+                <Card 
+                  key={role}
+                  className={cn(
+                    "cursor-pointer transition-colors hover:bg-muted/50",
+                    activeRole === role 
+                      ? "ring-2 ring-primary bg-primary/5" 
+                      : "hover:shadow-sm"
+                  )}
+                  onClick={() => setActiveRole(role)}
+                >
+                  <CardContent className="p-4 text-center">
+                    <Icon className={cn(
+                      "h-8 w-8 mx-auto mb-2",
+                      activeRole === role ? "text-primary" : "text-muted-foreground"
+                    )} />
+                    <p className={cn(
+                      "font-medium text-sm",
+                      activeRole === role ? "text-primary" : "text-foreground"
+                    )}>
+                      {getRoleDisplayName(role)}
+                    </p>
+                  </CardContent>
+                </Card>
               );
             })}
           </div>
