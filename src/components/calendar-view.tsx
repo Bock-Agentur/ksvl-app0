@@ -12,7 +12,7 @@ export function CalendarView() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [prefilledDateTime, setPrefilledDateTime] = useState<{ date: string; time: string } | null>(null);
-  const [viewMode, setViewMode] = useState<"day" | "week" | "month">("week");
+  const [viewMode, setViewMode] = useState<"day" | "week" | "month">("day");
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const handleSlotEdit = (slot?: Slot, dateTime?: { date: string; time: string }) => {
