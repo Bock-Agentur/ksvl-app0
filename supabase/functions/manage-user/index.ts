@@ -83,7 +83,10 @@ serve(async (req) => {
           berth_number: userData.berthNumber || null,
           berth_type: userData.berthType || null,
           birth_date: userData.birthDate || null,
-          entry_date: userData.entryDate || null
+          entry_date: userData.entryDate || null,
+          vorstand_funktion: userData.vorstandFunktion || null,
+          data_public_in_ksvl: userData.dataPublicInKsvl === true,
+          contact_public_in_ksvl: userData.contactPublicInKsvl === true
         })
         .eq('id', authData.user.id);
 
@@ -147,7 +150,10 @@ serve(async (req) => {
           berth_number: userData.berthNumber || null,
           berth_type: userData.berthType || null,
           birth_date: userData.birthDate || null,
-          entry_date: userData.entryDate || null
+          entry_date: userData.entryDate || null,
+          vorstand_funktion: userData.vorstandFunktion || null,
+          data_public_in_ksvl: userData.dataPublicInKsvl === true,
+          contact_public_in_ksvl: userData.contactPublicInKsvl === true
         })
         .eq('id', userId);
 
