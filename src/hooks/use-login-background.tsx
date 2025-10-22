@@ -6,6 +6,8 @@ export interface LoginBackground {
   filename: string | null;
   videoOnMobile: boolean;
   cardOpacity: number;
+  cardBorderBlur: number;
+  cardBorderRadius: number;
 }
 
 const DEFAULT_BACKGROUND: LoginBackground = {
@@ -13,7 +15,9 @@ const DEFAULT_BACKGROUND: LoginBackground = {
   url: null,
   filename: null,
   videoOnMobile: false,
-  cardOpacity: 95
+  cardOpacity: 95,
+  cardBorderBlur: 8,
+  cardBorderRadius: 8
 };
 
 export function useLoginBackground() {

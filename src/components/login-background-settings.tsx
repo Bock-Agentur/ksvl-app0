@@ -116,7 +116,9 @@ export function LoginBackgroundSettings() {
         url: null,
         filename: null,
         videoOnMobile: false,
-        cardOpacity: 95
+        cardOpacity: 95,
+        cardBorderBlur: 8,
+        cardBorderRadius: 8
       });
 
       toast({
@@ -150,6 +152,14 @@ export function LoginBackgroundSettings() {
 
   const handleOpacityChange = async (value: number[]) => {
     await setBackground({ ...background, cardOpacity: value[0] });
+  };
+
+  const handleBorderBlurChange = async (value: number[]) => {
+    await setBackground({ ...background, cardBorderBlur: value[0] });
+  };
+
+  const handleBorderRadiusChange = async (value: number[]) => {
+    await setBackground({ ...background, cardBorderRadius: value[0] });
   };
 
   return (
@@ -287,6 +297,46 @@ export function LoginBackgroundSettings() {
             )}
           </div>
 
+          {/* Border Blur Slider */}
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <Label>Rand-Blur (Weichzeichnung)</Label>
+              <span className="text-sm text-muted-foreground">{background.cardBorderBlur}px</span>
+            </div>
+            <Slider
+              value={[background.cardBorderBlur]}
+              onValueChange={handleBorderBlurChange}
+              min={0}
+              max={24}
+              step={2}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Kein Blur</span>
+              <span>Stark verschwommen</span>
+            </div>
+          </div>
+
+          {/* Border Radius Slider */}
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <Label>Ecken-Abrundung</Label>
+              <span className="text-sm text-muted-foreground">{background.cardBorderRadius}px</span>
+            </div>
+            <Slider
+              value={[background.cardBorderRadius]}
+              onValueChange={handleBorderRadiusChange}
+              min={0}
+              max={32}
+              step={2}
+              className="w-full"
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Eckig</span>
+              <span>Sehr rund</span>
+            </div>
+          </div>
+
           {/* Preview */}
           {background.url && (
             <div className="space-y-2">
@@ -310,8 +360,12 @@ export function LoginBackgroundSettings() {
                 )}
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                   <div 
-                    className="bg-background rounded-lg p-6 shadow-lg backdrop-blur-sm"
-                    style={{ opacity: background.cardOpacity / 100 }}
+                    className="bg-background p-6 shadow-lg"
+                    style={{ 
+                      opacity: background.cardOpacity / 100,
+                      backdropFilter: `blur(${background.cardBorderBlur}px)`,
+                      borderRadius: `${background.cardBorderRadius}px`
+                    }}
                   >
                     <p className="text-sm font-medium">Login-Card Vorschau</p>
                   </div>

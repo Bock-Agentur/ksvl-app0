@@ -110,6 +110,9 @@ export function Auth() {
   const cardOpacity = background.type !== 'gradient' && background.url 
     ? background.cardOpacity 
     : 95;
+  
+  const cardBorderBlur = background.cardBorderBlur || 8;
+  const cardBorderRadius = background.cardBorderRadius || 8;
 
   return (
     <div className={`min-h-screen flex items-center justify-center p-4 relative ${
@@ -119,9 +122,12 @@ export function Auth() {
     }`}>
       {renderBackground()}
       <Card 
-        className="w-full max-w-md backdrop-blur-sm relative z-10"
+        className="w-full max-w-md relative z-10 transition-all duration-300"
         style={{ 
-          backgroundColor: `hsl(var(--background) / ${cardOpacity / 100})` 
+          backgroundColor: `hsl(var(--background) / ${cardOpacity / 100})`,
+          backdropFilter: `blur(${cardBorderBlur}px)`,
+          WebkitBackdropFilter: `blur(${cardBorderBlur}px)`,
+          borderRadius: `${cardBorderRadius}px`
         }}
       >
         <CardHeader>
