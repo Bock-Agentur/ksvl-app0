@@ -123,15 +123,6 @@ export function Auth() {
       {renderBackground()}
       
       <div className="w-full max-w-md relative z-10 flex flex-col items-center">
-        {/* Logo */}
-        <div className="mb-12">
-          <div className="w-24 h-24 rounded-3xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center shadow-2xl">
-            <svg viewBox="0 0 24 24" fill="white" className="w-16 h-16">
-              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
-            </svg>
-          </div>
-        </div>
-
         {/* Login Form */}
         <form onSubmit={handleLogin} className="w-full space-y-4" autoComplete="on">
           {/* Email Input with Glass Effect */}
