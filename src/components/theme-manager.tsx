@@ -395,21 +395,27 @@ export function ThemeManager() {
               { variant: 'default', bgName: 'Badge Standard', fgName: 'Badge Standard Vordergrund' },
               { variant: 'secondary', bgName: 'Badge Sekundär', fgName: 'Badge Sekundär Vordergrund' },
               { variant: 'destructive', bgName: 'Badge Destruktiv', fgName: 'Badge Destruktiv Vordergrund' },
-              { variant: 'outline', bgName: 'Badge Outline', fgName: 'Badge Outline Vordergrund' },
+              { variant: 'outline', bgName: 'Badge Outline', fgName: 'Badge Outline Vordergrund', hoverBgName: 'Badge Outline Hover', hoverFgName: 'Badge Outline Hover Vordergrund' },
               { variant: 'success', bgName: 'Badge Erfolg', fgName: 'Badge Erfolg Vordergrund' },
               { variant: 'warning', bgName: 'Badge Warnung', fgName: 'Badge Warnung Vordergrund' },
               { variant: 'available', bgName: 'Badge Verfügbar', fgName: 'Badge Verfügbar Vordergrund' },
               { variant: 'booked', bgName: 'Badge Gebucht', fgName: 'Badge Gebucht Vordergrund' },
               { variant: 'blocked', bgName: 'Badge Blockiert', fgName: 'Badge Blockiert Vordergrund' },
-            ].map(({ variant, bgName, fgName }) => {
+            ].map(({ variant, bgName, fgName, hoverBgName, hoverFgName }) => {
               const bgSetting = badgeColors.find(s => s.name === bgName);
               const fgSetting = badgeColors.find(s => s.name === fgName);
+              const hoverBgSetting = hoverBgName ? badgeColors.find(s => s.name === hoverBgName) : null;
+              const hoverFgSetting = hoverFgName ? badgeColors.find(s => s.name === hoverFgName) : null;
               
               if (!bgSetting || !fgSetting) return null;
               
               const bgValue = editedColors[bgSetting.id] || bgSetting.hsl_value;
               const fgValue = editedColors[fgSetting.id] || fgSetting.hsl_value;
-              const hasChanges = editedColors[bgSetting.id] !== undefined || editedColors[fgSetting.id] !== undefined;
+              const hoverBgValue = hoverBgSetting ? (editedColors[hoverBgSetting.id] || hoverBgSetting.hsl_value) : null;
+              const hoverFgValue = hoverFgSetting ? (editedColors[hoverFgSetting.id] || hoverFgSetting.hsl_value) : null;
+              const hasChanges = editedColors[bgSetting.id] !== undefined || editedColors[fgSetting.id] !== undefined || 
+                                 (hoverBgSetting && editedColors[hoverBgSetting.id] !== undefined) ||
+                                 (hoverFgSetting && editedColors[hoverFgSetting.id] !== undefined);
               
               return (
                 <Card key={variant}>
@@ -433,6 +439,22 @@ export function ThemeManager() {
                         onChange={(newValue) => handleColorChange(fgSetting.id, newValue)}
                         label="Schriftfarbe"
                       />
+                      {hoverBgSetting && hoverBgValue && (
+                        <>
+                          <ColorPicker
+                            color={hoverBgValue}
+                            onChange={(newValue) => handleColorChange(hoverBgSetting.id, newValue)}
+                            label="Hover Hintergrund"
+                          />
+                          {hoverFgSetting && hoverFgValue && (
+                            <ColorPicker
+                              color={hoverFgValue}
+                              onChange={(newValue) => handleColorChange(hoverFgSetting.id, newValue)}
+                              label="Hover Schrift"
+                            />
+                          )}
+                        </>
+                      )}
                     </div>
                     {hasChanges && (
                       <Button
@@ -440,6 +462,8 @@ export function ThemeManager() {
                         onClick={() => {
                           if (editedColors[bgSetting.id]) handleSave(bgSetting.id);
                           if (editedColors[fgSetting.id]) handleSave(fgSetting.id);
+                          if (hoverBgSetting && editedColors[hoverBgSetting.id]) handleSave(hoverBgSetting.id);
+                          if (hoverFgSetting && editedColors[hoverFgSetting.id]) handleSave(hoverFgSetting.id);
                         }}
                         className="w-full mt-3"
                       >
