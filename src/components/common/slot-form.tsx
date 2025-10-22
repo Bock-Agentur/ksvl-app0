@@ -102,6 +102,7 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
   // Popover states for auto-close functionality
   const [datePopoverOpen, setDatePopoverOpen] = useState(false);
   const [timePopoverOpen, setTimePopoverOpen] = useState(false);
+  const [memberPopoverOpen, setMemberPopoverOpen] = useState(false);
 
   const [formData, setFormData] = useState<SlotFormData>({
     date: new Date(), // Heutiges Datum als Standard
@@ -413,9 +414,9 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
               {/* Buchungsschalter */}
               <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border">
                 <div className="space-y-1">
-                  <Label htmlFor="booking-status">Slot gebucht</Label>
+                  <Label htmlFor="booking-status">Slot manuell buchen</Label>
                   <p className="text-xs text-muted-foreground">
-                    Slot als gebucht oder verfügbar markieren
+                    Slot manuell für ein Mitglied buchen
                   </p>
                 </div>
                 <Switch
@@ -440,31 +441,57 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
                   <div className="grid grid-cols-1 gap-3">
                     <div className="space-y-1">
                       <Label htmlFor="member-select" className="text-xs">Mitglied auswählen *</Label>
-                      <Select
-                        value={formData.memberName || ''}
-                        onValueChange={(value) => {
-                          const selectedMember = allMembers.find(m => m.name === value);
-                          setFormData(prev => ({
-                            ...prev,
-                            memberName: value,
-                            memberEmail: selectedMember?.email || '',
-                            memberNumber: selectedMember?.memberNumber || '',
-                            memberId: selectedMember?.id || '' // Store member ID for role-switched users
-                          }));
-                        }}
-                      >
-                        <SelectTrigger className="text-sm">
-                          <SelectValue placeholder="Mitglied wählen..." />
-                        </SelectTrigger>
-                        <SelectContent className="bg-popover border z-[9999]">
-                          {allMembers.map((member) => (
-                            <SelectItem key={member.id} value={member.name}>
-                              {member.name}
-                              {member.memberNumber && ` (Nr: ${member.memberNumber})`}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <Popover open={memberPopoverOpen} onOpenChange={setMemberPopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className={cn(
+                              "w-full justify-start text-left font-normal text-sm",
+                              !formData.memberName && "text-muted-foreground"
+                            )}
+                          >
+                            {formData.memberName || "Mitglied wählen..."}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0 z-[9999] bg-popover border" align="start">
+                          <Command>
+                            <CommandInput placeholder="Mitglied suchen..." />
+                            <CommandList className="max-h-[240px] overflow-y-auto">
+                              <CommandEmpty>Kein Mitglied gefunden.</CommandEmpty>
+                              <CommandGroup>
+                                {allMembers.map((member) => (
+                                  <CommandItem
+                                    key={member.id}
+                                    value={member.name}
+                                    onSelect={() => {
+                                      setFormData(prev => ({
+                                        ...prev,
+                                        memberName: member.name,
+                                        memberEmail: member.email || '',
+                                        memberNumber: member.memberNumber || '',
+                                        memberId: member.id || ''
+                                      }));
+                                      setMemberPopoverOpen(false);
+                                    }}
+                                    className="cursor-pointer flex items-center gap-2 px-3 py-2"
+                                  >
+                                    <Check
+                                      className={cn(
+                                        "h-4 w-4",
+                                        formData.memberName === member.name ? "opacity-100" : "opacity-0"
+                                      )}
+                                    />
+                                    <span className="flex-1">
+                                      {member.name}
+                                      {member.memberNumber && ` (Nr: ${member.memberNumber})`}
+                                    </span>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
                     </div>
                     
                     {formData.memberName && (
