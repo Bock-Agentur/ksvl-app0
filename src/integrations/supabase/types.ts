@@ -82,10 +82,13 @@ export type Database = {
       custom_fields: {
         Row: {
           created_at: string | null
+          group: string | null
           id: string
           label: string
+          monday_column_id: string | null
           name: string
           options: string[] | null
+          order: number | null
           placeholder: string | null
           required: boolean | null
           type: string
@@ -93,10 +96,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          group?: string | null
           id?: string
           label: string
+          monday_column_id?: string | null
           name: string
           options?: string[] | null
+          order?: number | null
           placeholder?: string | null
           required?: boolean | null
           type?: string
@@ -104,16 +110,105 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          group?: string | null
           id?: string
           label?: string
+          monday_column_id?: string | null
           name?: string
           options?: string[] | null
+          order?: number | null
           placeholder?: string | null
           required?: boolean | null
           type?: string
           updated_at?: string | null
         }
         Relationships: []
+      }
+      monday_settings: {
+        Row: {
+          api_key_set: boolean | null
+          auto_sync_enabled: boolean | null
+          board_id: string | null
+          column_mapping: Json | null
+          created_at: string | null
+          id: string
+          last_sync_at: string | null
+          updated_at: string | null
+          webhook_url: string | null
+        }
+        Insert: {
+          api_key_set?: boolean | null
+          auto_sync_enabled?: boolean | null
+          board_id?: string | null
+          column_mapping?: Json | null
+          created_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          updated_at?: string | null
+          webhook_url?: string | null
+        }
+        Update: {
+          api_key_set?: boolean | null
+          auto_sync_enabled?: boolean | null
+          board_id?: string | null
+          column_mapping?: Json | null
+          created_at?: string | null
+          id?: string
+          last_sync_at?: string | null
+          updated_at?: string | null
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
+      monday_sync_logs: {
+        Row: {
+          action: string
+          board_id: string | null
+          completed_at: string | null
+          direction: string
+          error_details: Json | null
+          id: string
+          item_id: string | null
+          started_at: string | null
+          success: boolean
+          sync_type: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          board_id?: string | null
+          completed_at?: string | null
+          direction: string
+          error_details?: Json | null
+          id?: string
+          item_id?: string | null
+          started_at?: string | null
+          success: boolean
+          sync_type: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          board_id?: string | null
+          completed_at?: string | null
+          direction?: string
+          error_details?: Json | null
+          id?: string
+          item_id?: string | null
+          started_at?: string | null
+          success?: boolean
+          sync_type?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monday_sync_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -142,6 +237,7 @@ export type Database = {
           is_test_data: boolean | null
           last_name: string | null
           member_number: string | null
+          monday_item_id: string | null
           name: string | null
           notes: string | null
           oesv_number: string | null
@@ -180,6 +276,7 @@ export type Database = {
           is_test_data?: boolean | null
           last_name?: string | null
           member_number?: string | null
+          monday_item_id?: string | null
           name?: string | null
           notes?: string | null
           oesv_number?: string | null
@@ -218,6 +315,7 @@ export type Database = {
           is_test_data?: boolean | null
           last_name?: string | null
           member_number?: string | null
+          monday_item_id?: string | null
           name?: string | null
           notes?: string | null
           oesv_number?: string | null

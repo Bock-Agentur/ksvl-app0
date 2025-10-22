@@ -61,6 +61,9 @@ export interface CustomField {
   required: boolean;
   placeholder?: string;
   options?: string[];
+  order?: number;
+  group?: string;
+  monday_column_id?: string;
   validation?: {
     min?: number;
     max?: number;

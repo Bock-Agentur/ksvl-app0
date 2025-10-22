@@ -22,10 +22,13 @@ export function useCustomFields() {
         id: field.id,
         name: field.name,
         label: field.label,
-        type: field.type as 'text' | 'textarea' | 'number' | 'date' | 'select',
+        type: field.type as CustomField['type'],
         required: field.required || false,
         placeholder: field.placeholder || undefined,
-        options: field.options || undefined
+        options: field.options || undefined,
+        order: field.order || 0,
+        group: field.group || undefined,
+        monday_column_id: field.monday_column_id || undefined
       }));
 
       setCustomFields(fields);
@@ -68,7 +71,10 @@ export function useCustomFields() {
           type: field.type,
           required: field.required || false,
           placeholder: field.placeholder || null,
-          options: field.options || null
+          options: field.options || null,
+          order: field.order || 0,
+          group: field.group || null,
+          monday_column_id: field.monday_column_id || null
         });
 
       if (error) throw error;
@@ -87,6 +93,74 @@ export function useCustomFields() {
         variant: "destructive"
       });
     }
+  };
+
+  const updateCustomField = async (fieldId: string, updates: Partial<CustomField>) => {
+    const { error } = await supabase
+      .from("custom_fields")
+      .update(updates)
+      .eq("id", fieldId);
+
+    if (error) throw error;
+    await fetchCustomFields();
+  };
+
+  const reorderCustomFields = async (fieldIds: string[]) => {
+    const updates = fieldIds.map((id, index) => ({ id, order: index }));
+    
+    for (const update of updates) {
+      await supabase
+        .from("custom_fields")
+        .update({ order: update.order })
+        .eq("id", update.id);
+    }
+    
+    await fetchCustomFields();
+  };
+
+  const getFieldsByGroup = (group?: string) => {
+    if (!group) return customFields;
+    return customFields.filter(f => f.group === group);
+  };
+
+  const validateFieldValue = (field: CustomField, value: any): { isValid: boolean; error?: string } => {
+    if (field.required && !value) {
+      return { isValid: false, error: `${field.label} ist erforderlich` };
+    }
+
+    if (!value) return { isValid: true };
+
+    switch (field.type) {
+      case 'email':
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+          return { isValid: false, error: 'Ungültige E-Mail-Adresse' };
+        }
+        break;
+      case 'phone':
+        const phoneRegex = /^[+]?[(]?[0-9]{1,4}[)]?[-\s./0-9]*$/;
+        if (!phoneRegex.test(value)) {
+          return { isValid: false, error: 'Ungültige Telefonnummer' };
+        }
+        break;
+      case 'number':
+        if (isNaN(Number(value))) {
+          return { isValid: false, error: `${field.label} muss eine Zahl sein` };
+        }
+        break;
+      case 'date':
+        if (isNaN(Date.parse(value))) {
+          return { isValid: false, error: 'Ungültiges Datum' };
+        }
+        break;
+      case 'select':
+        if (field.options && !field.options.includes(value)) {
+          return { isValid: false, error: `Ungültiger Wert für ${field.label}` };
+        }
+        break;
+    }
+
+    return { isValid: true };
   };
 
   const deleteCustomField = async (fieldId: string) => {
@@ -118,7 +192,11 @@ export function useCustomFields() {
     customFields,
     loading,
     addCustomField,
+    updateCustomField,
     deleteCustomField,
+    reorderCustomFields,
+    getFieldsByGroup,
+    validateFieldValue,
     refreshCustomFields: fetchCustomFields
   };
 }

@@ -10,6 +10,7 @@ import { DesignSettings } from "@/components/design-settings";
 import { ThemeManager } from "@/components/theme-manager";
 import { TestDataManager } from "@/components/test-data-manager";
 import { UserListDatabase } from "@/components/user-list-database";
+import { CustomFieldsManager } from "@/components/custom-fields-manager";
 import { cn } from "@/lib/utils";
 
 export function Settings() {
@@ -22,6 +23,7 @@ export function Settings() {
     { id: "footer", label: "Footer-Menü", component: FooterMenuSettings },
     { id: "design", label: "Design", component: DesignSettings },
     { id: "theme", label: "Theme", component: ThemeManager },
+    { id: "customfields", label: "Custom Fields", component: CustomFieldsManager },
     { id: "system", label: "System", component: ConsecutiveSlotsSettings },
     { id: "testdata", label: "Testdaten", component: TestDataManager },
   ];
