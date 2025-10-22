@@ -405,7 +405,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
       </div>
 
       {/* Desktop Calendar View - Week or Day Calendar */}
-      <div className="hidden xl:block">
+      <div className="hidden lg:block">
         {viewMode === "week" ? (
           <div className="border rounded-lg overflow-hidden bg-background">
           {/* Calendar Header */}
@@ -858,7 +858,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
       </div>
 
       {/* Tablet/Mobile Calendar View - Day Calendar with 15-minute slots */}
-      <div className="xl:hidden">
+      <div className="lg:hidden">
         <div className="flex justify-center mb-4">
             <div className="grid grid-cols-7 gap-1 px-2 sm:px-4 w-full">
               {weekDays.map((day, index) => {
