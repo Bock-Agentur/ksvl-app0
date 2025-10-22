@@ -3,13 +3,14 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useSlots, CreateSlotData } from "@/hooks/use-slots";
 import { useUsers } from "@/hooks/use-users";
 import { Slot, SlotFormDialogProps } from "@/types";
 import { useRole } from "@/hooks/use-role";
 import { useConsecutiveSlots } from "@/hooks/use-consecutive-slots";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import { Calendar, Clock, User, Trash2, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -21,6 +22,11 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
   const { slots: allSlots, addSlot, addSlotBlock, updateSlot, deleteSlot, bookSlot, cancelBooking } = useSlots();
   const { users } = useUsers();
   const { validateConsecutiveSlots } = useConsecutiveSlots();
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [existingBookedSlot, setExistingBookedSlot] = useState<Slot | null>(null);
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [pendingBookingSlotId, setPendingBookingSlotId] = useState<string | null>(null);
   
   // Get crane operators from users
   const craneOperators = users.filter(u => 
@@ -41,8 +47,6 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
     !craneOperators.find(op => op.id === currentUserAsCraneOperator.id)
     ? [...craneOperators, currentUserAsCraneOperator]
     : craneOperators;
-  
-  const [isEditing, setIsEditing] = useState(false);
 
   const canManageSlots = currentUser?.roles?.includes("kranfuehrer") || 
                          currentUser?.roles?.includes("admin") ||
@@ -271,6 +275,25 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
   const handleBookSlot = async () => {
     if (!slot || !currentUser) return;
     
+    // Check if user is admin
+    const isAdmin = currentUser.roles?.includes('admin') || currentRole === 'admin';
+    
+    // If not admin, check for existing bookings
+    if (!isAdmin) {
+      const userBookedSlots = allSlots.filter(s => 
+        s.isBooked && s.memberId === currentUser.id && s.id !== slot.id
+      );
+      
+      if (userBookedSlots.length > 0) {
+        // User already has a booking, show warning dialog
+        setExistingBookedSlot(userBookedSlots[0]);
+        setPendingBookingSlotId(slot.id);
+        setShowCancelDialog(true);
+        return;
+      }
+    }
+    
+    // Proceed with booking
     try {
       await bookSlot(slot.id, currentUser.id);
       toast({
@@ -282,6 +305,44 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
     } catch (error) {
       console.error('Error booking slot:', error);
     }
+  };
+
+  const handleConfirmCancelAndBook = async () => {
+    if (!existingBookedSlot || !pendingBookingSlotId || !currentUser) return;
+    
+    try {
+      // First, cancel the existing booking
+      await cancelBooking(existingBookedSlot.id);
+      
+      // Then book the new slot
+      await bookSlot(pendingBookingSlotId, currentUser.id);
+      
+      toast({
+        title: "Termin umgebucht",
+        description: "Ihr alter Termin wurde storniert und der neue Termin wurde gebucht."
+      });
+      
+      // Reset dialog state
+      setShowCancelDialog(false);
+      setExistingBookedSlot(null);
+      setPendingBookingSlotId(null);
+      
+      // Close dialog after short delay
+      setTimeout(() => onClose(), 100);
+    } catch (error) {
+      console.error('Error rebooking slot:', error);
+      toast({
+        title: "Fehler",
+        description: "Die Umbuchung konnte nicht durchgeführt werden.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleCancelRebooking = () => {
+    setShowCancelDialog(false);
+    setExistingBookedSlot(null);
+    setPendingBookingSlotId(null);
   };
 
   const handleCancelSlot = async () => {
@@ -330,53 +391,54 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Slot bereits gebucht
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
+              <Calendar className="w-5 h-5" />
+              Slot bereits gebucht
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Badge 
+                className="bg-status-booked text-status-booked-foreground border-status-booked"
+              >
+                Gebucht
+              </Badge>
+              <span className="text-sm text-muted-foreground">
+                von {slot.bookedBy}
+              </span>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
               <div className="flex items-center gap-2">
-                <Badge 
-                  className="bg-status-booked text-status-booked-foreground border-status-booked"
-                >
-                  Gebucht
-                </Badge>
-                <span className="text-sm text-muted-foreground">
-                  von {slot.bookedBy}
+                <Calendar className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm">
+                  {format(new Date(slot.date), "EEEE, dd. MMMM yyyy", { locale: de })}
                 </span>
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    {format(new Date(slot.date), "EEEE, dd. MMMM yyyy", { locale: de })}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-sm">{slot.time} Uhr ({slot.duration} Min.)</span>
-                </div>
-              </div>
-              
               <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-muted-foreground" />
-                <span className="text-sm">Kranführer: {slot.craneOperator.name}</span>
+                <Clock className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm">{slot.time} Uhr ({slot.duration} Min.)</span>
               </div>
-            </CardContent>
-          </Card>
-          
-          <div className="flex justify-center pt-2">
-            <Button onClick={() => onClose()} variant="ghost" className="text-muted-foreground">
-              Schließen
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm">Kranführer: {slot.craneOperator.name}</span>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <div className="flex justify-center pt-2">
+          <Button onClick={() => onClose()} variant="ghost" className="text-muted-foreground">
+            Schließen
+          </Button>
+        </div>
+      </SheetContent>
+    </Sheet>
     );
   }
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="bottom" className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <SheetHeader>
@@ -533,7 +595,51 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
             </CardContent>
           </Card>
         )}
-        </SheetContent>
+      </SheetContent>
     </Sheet>
+    
+    {/* Cancel and Rebook Confirmation Dialog */}
+    <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Bestehenden Termin stornieren?</AlertDialogTitle>
+          <AlertDialogDescription className="space-y-4">
+            <p>
+              Sie haben bereits einen Termin gebucht. Sie können nur einen Termin gleichzeitig buchen.
+            </p>
+            {existingBookedSlot && (
+              <Card className="bg-muted">
+                <CardContent className="pt-4 space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Calendar className="w-4 h-4" />
+                    <span className="font-medium">
+                      {format(parseISO(existingBookedSlot.date), "dd. MMMM yyyy", { locale: de })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Clock className="w-4 h-4" />
+                    <span>{existingBookedSlot.time} Uhr ({existingBookedSlot.duration} Min)</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <User className="w-4 h-4" />
+                    <span>{existingBookedSlot.craneOperator.name}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+            <p className="font-medium">
+              Möchten Sie Ihren bestehenden Termin stornieren und den neuen Termin buchen?
+            </p>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={handleCancelRebooking}>Nein, abbrechen</AlertDialogCancel>
+          <AlertDialogAction onClick={handleConfirmCancelAndBook}>
+            Ja, umbuchen
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+    </>
   );
 }
