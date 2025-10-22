@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useSlots, CreateSlotData } from "@/hooks/use-slots";
-import { useTestData } from "@/hooks/use-test-data";
+import { useUsers } from "@/hooks/use-users";
 import { Slot, SlotFormDialogProps } from "@/types";
 import { useRole } from "@/hooks/use-role";
 import { useConsecutiveSlots } from "@/hooks/use-consecutive-slots";
@@ -19,7 +19,7 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
   const { toast } = useToast();
   const { currentRole, currentUser } = useRole();
   const { slots: allSlots, addSlot, addSlotBlock, updateSlot, deleteSlot, bookSlot, cancelBooking } = useSlots();
-  const { users } = useTestData();
+  const { users } = useUsers();
   const { validateConsecutiveSlots } = useConsecutiveSlots();
   
   // Get crane operators from users
