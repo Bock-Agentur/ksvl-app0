@@ -718,20 +718,35 @@ export function LoginBackgroundSettings() {
                           style={{ filter: `blur(${localSettings.mediaBlur}px)` }}
                         />
                       )}
+                      {/* Overlay Layer - z-index: 1 */}
                       <div 
                         className="absolute inset-0"
                         style={{ 
-                          backgroundColor: `${localSettings.overlayColor}${Math.round((localSettings.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
+                          backgroundColor: `${localSettings.overlayColor}${Math.round((localSettings.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`,
+                          zIndex: 1
                         }}
                       />
-                      <div className={`absolute inset-0 flex flex-col items-center p-4 ${getJustifyClass()}`}>
+                      {/* Countdown Layer - z-index: 2 */}
+                      {localSettings.countdownEnabled && localSettings.countdownEndDate && (
+                        <div 
+                          className="absolute inset-0 flex flex-col items-center pointer-events-none" 
+                          style={{ 
+                            paddingTop: `${localSettings.countdownVerticalPositionDesktop}%`,
+                            zIndex: 2
+                          }}
+                        >
+                          <CountdownPreview 
+                            endDate={localSettings.countdownEndDate}
+                            text={localSettings.countdownText}
+                          />
+                        </div>
+                      )}
+                      {/* Login Form Layer - z-index: 3 */}
+                      <div 
+                        className={`absolute inset-0 flex flex-col items-center p-4 ${getJustifyClass()}`}
+                        style={{ zIndex: 3 }}
+                      >
                         <div className="w-full max-w-xs space-y-3">
-                          {localSettings.countdownEnabled && (
-                            <CountdownPreview 
-                              endDate={localSettings.countdownEndDate}
-                              text={localSettings.countdownText}
-                            />
-                          )}
                           <div 
                             className="flex items-center gap-3 px-4"
                             style={{
@@ -792,15 +807,23 @@ export function LoginBackgroundSettings() {
                     style={{ filter: `blur(${localSettings.mediaBlur}px)` }}
                   />
                 )}
+                {/* Overlay Layer - z-index: 1 */}
                 <div 
                   className="absolute inset-0"
                   style={{ 
-                    backgroundColor: `${localSettings.overlayColor}${Math.round((localSettings.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
+                    backgroundColor: `${localSettings.overlayColor}${Math.round((localSettings.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`,
+                    zIndex: 1
                   }}
                 />
-                {/* Countdown Layer */}
+                {/* Countdown Layer - z-index: 2 */}
                 {localSettings.countdownEnabled && localSettings.countdownEndDate && (
-                  <div className="absolute inset-0 flex flex-col items-center pointer-events-none" style={{ paddingTop: `${localSettings.countdownVerticalPositionMobile}%` }}>
+                  <div 
+                    className="absolute inset-0 flex flex-col items-center pointer-events-none" 
+                    style={{ 
+                      paddingTop: `${localSettings.countdownVerticalPositionMobile}%`,
+                      zIndex: 2
+                    }}
+                  >
                     <CountdownPreview 
                       endDate={localSettings.countdownEndDate}
                       text={localSettings.countdownText}
@@ -808,8 +831,11 @@ export function LoginBackgroundSettings() {
                     />
                   </div>
                 )}
-                {/* Login Form Layer */}
-                <div className={`absolute inset-0 flex flex-col items-center ${getJustifyClass()} p-4`}>
+                {/* Login Form Layer - z-index: 3 */}
+                <div 
+                  className={`absolute inset-0 flex flex-col items-center ${getJustifyClass()} p-4`}
+                  style={{ zIndex: 3 }}
+                >
                   <div className="w-full max-w-[240px] space-y-2">
                     <div 
                       className="flex items-center gap-2 px-3 text-xs"
