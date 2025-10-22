@@ -352,118 +352,119 @@ export function SlotManagement() {
 
       {/* Show slots list only when not editing */}
       {!isEditing && (
-        <>
-          {/* Stats Cards - Collapsible */}
-          <Collapsible open={isStatsOpen} onOpenChange={setIsStatsOpen}>
-            <CollapsibleTrigger asChild>
-              <Button variant="outline" className="w-full justify-between">
-                <span className="flex items-center gap-2">
-                  <CalendarDays className="w-4 h-4" />
-                  Statistiken
-                </span>
-                {isStatsOpen ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-3 pt-3">
-              <div className="grid grid-cols-3 gap-3">
-                <Card 
-                  className={`border bg-card cursor-pointer transition-colors hover:bg-muted/50 ${activeFilter === "all" ? "ring-2 ring-primary" : ""}`}
-                  onClick={() => setActiveFilter("all")}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground">Gesamt Slots</p>
-                        <p className="text-lg font-bold text-foreground">{stats.total}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card 
-                  className={`border bg-card cursor-pointer transition-colors hover:bg-muted/50 ${activeFilter === "booked" ? "ring-2 ring-primary" : ""}`}
-                  onClick={() => setActiveFilter("booked")}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground">Gebucht</p>
-                        <p className="text-lg font-bold text-status-booked">{stats.booked}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-                
-                <Card 
-                  className={`border bg-card cursor-pointer transition-colors hover:bg-muted/50 ${activeFilter === "available" ? "ring-2 ring-primary" : ""}`}
-                  onClick={() => setActiveFilter("available")}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground">Verfügbar</p>
-                        <p className="text-lg font-bold text-status-available">{stats.available}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </CollapsibleContent>
-          </Collapsible>
-
-          {/* Filters - Collapsible */}
-          <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
-            <CollapsibleTrigger asChild>
-              <Button variant="outline" className="w-full justify-between">
-                <span className="flex items-center gap-2">
-                  <Filter className="w-4 h-4" />
-                  Filter & Sortierung
-                  {(selectedDate || selectedCraneOperator) && (
-                    <Badge variant="secondary" className="ml-2">
-                      {[selectedDate && "Datum", selectedCraneOperator && "Kranführer"].filter(Boolean).length}
-                    </Badge>
+        <Card>
+          <CardContent className="pt-6 space-y-6">
+            {/* Stats Cards - Collapsible */}
+            <Collapsible open={isStatsOpen} onOpenChange={setIsStatsOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" className="w-full justify-between">
+                  <span className="flex items-center gap-2">
+                    <CalendarDays className="w-4 h-4" />
+                    Statistiken
+                  </span>
+                  {isStatsOpen ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
                   )}
-                </span>
-                {isFiltersOpen ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-              </Button>
-            </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-3 pt-3">
-              <div className="flex flex-col sm:flex-row gap-2">
-                {/* Date Filter */}
-                <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "justify-start text-left font-normal flex-1 sm:flex-initial min-w-[200px]",
-                        !selectedDate && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarDays className="w-4 h-4 mr-2" />
-                      {selectedDate ? format(selectedDate, "dd. MMMM yyyy", { locale: de }) : "Datum wählen"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <UICalendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={(date) => {
-                        setSelectedDate(date);
-                        setIsDatePickerOpen(false);
-                      }}
-                      initialFocus
-                      className={cn("p-3 pointer-events-auto")}
-                    />
-                  </PopoverContent>
-                </Popover>
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-3 pt-3">
+                <div className="grid grid-cols-3 gap-3">
+                  <Card 
+                    className={`border bg-card cursor-pointer transition-colors hover:bg-muted/50 ${activeFilter === "all" ? "ring-2 ring-primary" : ""}`}
+                    onClick={() => setActiveFilter("all")}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">Gesamt Slots</p>
+                          <p className="text-lg font-bold text-foreground">{stats.total}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card 
+                    className={`border bg-card cursor-pointer transition-colors hover:bg-muted/50 ${activeFilter === "booked" ? "ring-2 ring-primary" : ""}`}
+                    onClick={() => setActiveFilter("booked")}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">Gebucht</p>
+                          <p className="text-lg font-bold text-status-booked">{stats.booked}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card 
+                    className={`border bg-card cursor-pointer transition-colors hover:bg-muted/50 ${activeFilter === "available" ? "ring-2 ring-primary" : ""}`}
+                    onClick={() => setActiveFilter("available")}
+                  >
+                    <CardContent className="p-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground">Verfügbar</p>
+                          <p className="text-lg font-bold text-status-available">{stats.available}</p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+
+            {/* Filters - Collapsible */}
+            <Collapsible open={isFiltersOpen} onOpenChange={setIsFiltersOpen}>
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" className="w-full justify-between">
+                  <span className="flex items-center gap-2">
+                    <Filter className="w-4 h-4" />
+                    Filter & Sortierung
+                    {(selectedDate || selectedCraneOperator) && (
+                      <Badge variant="secondary" className="ml-2">
+                        {[selectedDate && "Datum", selectedCraneOperator && "Kranführer"].filter(Boolean).length}
+                      </Badge>
+                    )}
+                  </span>
+                  {isFiltersOpen ? (
+                    <ChevronUp className="w-4 h-4" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4" />
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="space-y-3 pt-3">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  {/* Date Filter */}
+                  <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "justify-start text-left font-normal flex-1 sm:flex-initial min-w-[200px]",
+                          !selectedDate && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarDays className="w-4 h-4 mr-2" />
+                        {selectedDate ? format(selectedDate, "dd. MMMM yyyy", { locale: de }) : "Datum wählen"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <UICalendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(date) => {
+                          setSelectedDate(date);
+                          setIsDatePickerOpen(false);
+                        }}
+                        initialFocus
+                        className={cn("p-3 pointer-events-auto")}
+                      />
+                    </PopoverContent>
+                  </Popover>
 
                 {/* Crane Operator Filter */}
                 <Select value={selectedCraneOperator} onValueChange={setSelectedCraneOperator}>
@@ -738,7 +739,8 @@ export function SlotManagement() {
               </div>
             )}
           </div>
-        </>
+          </CardContent>
+        </Card>
       )}
 
       {/* Slot Details Dialog */}

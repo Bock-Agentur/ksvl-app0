@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
 import { useLoginBackground } from "@/hooks/use-login-background";
+import { useDesktopBackground } from "@/hooks/use-desktop-background";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
@@ -65,6 +66,7 @@ export function AppShell({
   const { getMenuItemsForRole, getDisplaySettingsForRole } = useFooterMenuSettings();
   const { getOrderedHeaderItems } = useMenuSettings();
   const { background } = useLoginBackground();
+  const { settings: desktopBackgroundSettings } = useDesktopBackground();
   
   const handleLogout = async () => {
     try {
@@ -147,6 +149,11 @@ export function AppShell({
   };
 
   const renderBackground = () => {
+    // Only show background if enabled in settings
+    if (!desktopBackgroundSettings.enabled) {
+      return null;
+    }
+
     if (background.type === 'gradient') {
       return null;
     }
@@ -187,7 +194,7 @@ export function AppShell({
       {renderBackground()}
       
       {/* Overlay Layer */}
-      {background.type !== 'gradient' && background.url && (
+      {desktopBackgroundSettings.enabled && background.type !== 'gradient' && background.url && (
         <div
           className="fixed inset-0 -z-10"
           style={{
@@ -196,7 +203,7 @@ export function AppShell({
         />
       )}
 
-      <div className="min-h-screen flex flex-col relative z-0">
+      <div className={`min-h-screen flex flex-col relative z-0 ${!desktopBackgroundSettings.enabled ? 'bg-background' : ''}`}>
       {/* Header */}
       <header className={cn(
         "sticky top-0 z-40 bg-card/90 backdrop-blur-sm border-b border-border px-4 py-3 shadow-card-maritime transition-transform duration-300 ease-in-out",

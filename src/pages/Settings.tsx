@@ -12,6 +12,7 @@ import { TestDataManager } from "@/components/test-data-manager";
 import { UserListDatabase } from "@/components/user-list-database";
 import { CustomFieldsManager } from "@/components/custom-fields-manager";
 import { LoginBackgroundSettings } from "@/components/login-background-settings";
+import { DesktopBackgroundSettings } from "@/components/desktop-background-settings";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/hooks/use-role";
 
@@ -29,7 +30,10 @@ export function Settings() {
     { id: "customfields", label: "Custom Fields", component: CustomFieldsManager },
     { id: "system", label: "System", component: ConsecutiveSlotsSettings },
     { id: "testdata", label: "Testdaten", component: TestDataManager },
-    ...(currentRole === 'admin' ? [{ id: "loginpage", label: "Login-Seite", component: LoginBackgroundSettings }] : []),
+    ...(currentRole === 'admin' ? [
+      { id: "loginpage", label: "Login-Seite", component: LoginBackgroundSettings },
+      { id: "desktopbg", label: "Desktop-Hintergrund", component: DesktopBackgroundSettings }
+    ] : []),
   ];
 
   const ActiveComponent = sections.find(section => section.id === activeSection)?.component || DashboardSettings;
