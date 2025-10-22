@@ -459,11 +459,11 @@ export function UserManagementRefactored() {
                         {/* Role Badges */}
                         {user.roles?.map((role) => {
                           const roleColors: Record<UserRole, string> = {
-                            gastmitglied: "bg-muted text-muted-foreground",
-                            mitglied: "bg-accent text-accent-foreground",
-                            kranfuehrer: "bg-gradient-ocean text-primary-foreground",
-                            admin: "bg-gradient-deep text-primary-foreground",
-                            vorstand: "bg-gradient-deep text-primary-foreground"
+                            gastmitglied: "bg-[hsl(202_85%_23%)] text-white",
+                            mitglied: "bg-[hsl(202_85%_23%)] text-white",
+                            kranfuehrer: "bg-[hsl(202_85%_23%)] text-white",
+                            admin: "bg-[hsl(202_85%_23%)] text-white",
+                            vorstand: "bg-[hsl(202_85%_23%)] text-white"
                           };
                           const roleLabels: Record<UserRole, string> = {
                             gastmitglied: "Gast",
