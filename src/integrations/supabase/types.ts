@@ -129,6 +129,7 @@ export type Database = {
           boat_type: string | null
           boat_width: number | null
           city: string | null
+          contact_public_in_ksvl: boolean | null
           created_at: string | null
           data_public_in_ksvl: boolean | null
           dinghy_berth_number: string | null
@@ -151,6 +152,7 @@ export type Database = {
           status: string | null
           street_address: string | null
           updated_at: string | null
+          vorstand_funktion: string | null
         }
         Insert: {
           address?: string | null
@@ -165,6 +167,7 @@ export type Database = {
           boat_type?: string | null
           boat_width?: number | null
           city?: string | null
+          contact_public_in_ksvl?: boolean | null
           created_at?: string | null
           data_public_in_ksvl?: boolean | null
           dinghy_berth_number?: string | null
@@ -187,6 +190,7 @@ export type Database = {
           status?: string | null
           street_address?: string | null
           updated_at?: string | null
+          vorstand_funktion?: string | null
         }
         Update: {
           address?: string | null
@@ -201,6 +205,7 @@ export type Database = {
           boat_type?: string | null
           boat_width?: number | null
           city?: string | null
+          contact_public_in_ksvl?: boolean | null
           created_at?: string | null
           data_public_in_ksvl?: boolean | null
           dinghy_berth_number?: string | null
@@ -223,6 +228,7 @@ export type Database = {
           status?: string | null
           street_address?: string | null
           updated_at?: string | null
+          vorstand_funktion?: string | null
         }
         Relationships: []
       }

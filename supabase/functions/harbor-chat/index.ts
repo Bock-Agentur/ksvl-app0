@@ -66,12 +66,30 @@ serve(async (req) => {
     // Hole öffentliche Mitgliederdaten (nur wenn data_public_in_ksvl = true)
     const { data: publicMembers, error: membersError } = await supabase
       .from('profiles')
-      .select('id, name, member_number, boat_name, boat_type, berth_number, email')
+      .select('id, name, member_number, boat_name, boat_type, berth_number, email, phone, contact_public_in_ksvl, vorstand_funktion')
       .eq('data_public_in_ksvl', true)
       .order('name', { ascending: true });
 
     if (membersError) {
       console.error('Fehler beim Laden der Mitglieder:', membersError);
+    }
+
+    // Filtere Vorstandsmitglieder separat
+    const { data: vorstandMembers, error: vorstandError } = await supabase
+      .from('profiles')
+      .select(`
+        id,
+        name,
+        vorstand_funktion,
+        email,
+        phone,
+        contact_public_in_ksvl
+      `)
+      .not('vorstand_funktion', 'is', null)
+      .order('name', { ascending: true });
+
+    if (vorstandError) {
+      console.error('Fehler beim Laden des Vorstands:', vorstandError);
     }
 
     // Bereite Slots-Informationen auf
@@ -103,13 +121,32 @@ STATISTIK:
     const membersInfo = publicMembers && publicMembers.length > 0 ? `
 
 ÖFFENTLICHE MITGLIEDERDATEN (${publicMembers.length} Mitglieder):
-${publicMembers.map(m => `- ${m.name}${m.member_number ? ` (Nr: ${m.member_number})` : ''}${m.boat_name ? ` - Boot: ${m.boat_name}` : ''}${m.boat_type ? ` (${m.boat_type})` : ''}${m.berth_number ? ` - Liegeplatz: ${m.berth_number}` : ''}`).join('\n')}
+${publicMembers.map(m => {
+  let info = `- ${m.name}${m.member_number ? ` (Nr: ${m.member_number})` : ''}${m.boat_name ? ` - Boot: ${m.boat_name}` : ''}${m.boat_type ? ` (${m.boat_type})` : ''}${m.berth_number ? ` - Liegeplatz: ${m.berth_number}` : ''}`;
+  if (m.contact_public_in_ksvl) {
+    info += `${m.email ? ` - Email: ${m.email}` : ''}${m.phone ? ` - Tel: ${m.phone}` : ''}`;
+  }
+  return info;
+}).join('\n')}
 
 WICHTIG: Zeige nur Daten von Mitgliedern, die ihre Daten öffentlich freigegeben haben!
 ` : '\n\nKEINE ÖFFENTLICHEN MITGLIEDERDATEN verfügbar (kein Mitglied hat Daten freigegeben).';
 
+    const vorstandInfo = vorstandMembers && vorstandMembers.length > 0 ? `
+
+VORSTAND (${vorstandMembers.length} Mitglieder):
+${vorstandMembers.map(v => {
+  let info = `- ${v.name}${v.vorstand_funktion ? ` - ${v.vorstand_funktion}` : ''}`;
+  if (v.contact_public_in_ksvl) {
+    info += `${v.email ? ` - Email: ${v.email}` : ''}${v.phone ? ` - Tel: ${v.phone}` : ''}`;
+  }
+  return info;
+}).join('\n')}
+` : '';
+
     console.log('Slots-Info für AI:', slotsInfo);
     console.log('Mitglieder-Info für AI:', membersInfo);
+    console.log('Vorstand-Info für AI:', vorstandInfo);
 
     const systemPrompt = `Du bist ein hilfreicher Assistent für das KSVL Hafenverwaltungssystem.
 
@@ -117,6 +154,7 @@ DEINE AUFGABEN:
 - Beantworte Fragen zu Kranterminen und Slot-Buchungen
 - Zeige verfügbare Termine an
 - Gib Informationen zu Mitgliedern (NUR wenn sie ihre Daten freigegeben haben!)
+- Zeige Vorstandsmitglieder und deren Kontaktdaten (falls öffentlich)
 - Erkläre Buchungsoptionen
 - Gib freundliche, präzise Antworten auf Deutsch
 
@@ -126,13 +164,16 @@ WICHTIGE REGELN:
 - Nutze die Markdown-Links in den Termindaten, um auf Details zu verweisen
 - Datumsformat ist bereits korrekt formatiert (z.B. "Mi. 22.10.2025")
 - Bei Fragen zu Mitgliedern: Zeige NUR Daten von Mitgliedern, die "Daten öffentlich im KSVL" aktiviert haben
+- Zeige Email/Telefon nur wenn "contact_public_in_ksvl" true ist
 - NIEMALS Daten von nicht-öffentlichen Mitgliedern zeigen oder erwähnen
+- Bei Fragen zum Vorstand: Liste alle Vorstandsmitglieder mit Funktion und (falls freigegeben) Kontaktdaten
 - Erkläre, wie Mitglieder ihre Daten öffentlich machen können (Profil-Einstellungen)
 - Bei Fragen zu spezifischen Daten: durchsuche die Daten und antworte präzise
 
 VERFÜGBARE DATEN:
 ${slotsInfo}
 ${membersInfo}
+${vorstandInfo}
 
 Antworte immer höflich und hilfsbereit auf Deutsch. Strukturiere deine Antworten übersichtlich.`;
 

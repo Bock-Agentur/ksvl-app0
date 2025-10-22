@@ -172,7 +172,10 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         beverageChipNumber: profile.beverage_chip_number || '',
         beverageChipIssueDate: profile.beverage_chip_issue_date || '',
         emergencyContact: profile.emergency_contact || '',
-        notes: profile.notes || ''
+        notes: profile.notes || '',
+        vorstandFunktion: profile.vorstand_funktion || '',
+        dataPublicInKsvl: profile.data_public_in_ksvl || false,
+        contactPublicInKsvl: profile.contact_public_in_ksvl || false
       } as any;
 
       setUser(userData);
@@ -317,7 +320,10 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               beverageChipNumber: (editedUser as any).beverageChipNumber,
               beverageChipIssueDate: (editedUser as any).beverageChipIssueDate,
               emergencyContact: (editedUser as any).emergencyContact,
-              notes: (editedUser as any).notes
+              notes: (editedUser as any).notes,
+              vorstandFunktion: (editedUser as any).vorstandFunktion,
+              dataPublicInKsvl: (editedUser as any).dataPublicInKsvl,
+              contactPublicInKsvl: (editedUser as any).contactPublicInKsvl
             }
           })
         });
@@ -359,7 +365,10 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           beverage_chip_number: toNullIfEmpty((editedUser as any).beverageChipNumber),
           beverage_chip_issue_date: toNullIfEmpty((editedUser as any).beverageChipIssueDate),
           emergency_contact: toNullIfEmpty((editedUser as any).emergencyContact),
-          notes: toNullIfEmpty((editedUser as any).notes)
+          notes: toNullIfEmpty((editedUser as any).notes),
+          vorstand_funktion: toNullIfEmpty((editedUser as any).vorstandFunktion),
+          data_public_in_ksvl: (editedUser as any).dataPublicInKsvl || false,
+          contact_public_in_ksvl: (editedUser as any).contactPublicInKsvl || false
         };
 
         const { error } = await supabase
@@ -860,6 +869,55 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
             </div>
+            
+            {/* Öffentliche Daten im KSVL */}
+            <div className="space-y-4 pt-4 border-t">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="data-public"
+                  checked={(editedUser as any).dataPublicInKsvl || false}
+                  onCheckedChange={(checked) => 
+                    setEditedUser(prev => ({ ...prev, dataPublicInKsvl: checked } as any))
+                  }
+                  disabled={!isEditing}
+                />
+                <Label htmlFor="data-public" className="text-sm font-normal cursor-pointer">
+                  Meine Daten öffentlich im KSVL anzeigen (Name, Mitgliedsnummer, Boot, Liegeplatz)
+                </Label>
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="contact-public"
+                  checked={(editedUser as any).contactPublicInKsvl || false}
+                  onCheckedChange={(checked) => 
+                    setEditedUser(prev => ({ ...prev, contactPublicInKsvl: checked } as any))
+                  }
+                  disabled={!isEditing}
+                />
+                <Label htmlFor="contact-public" className="text-sm font-normal cursor-pointer">
+                  Email und Telefonnummer öffentlich im KSVL anzeigen
+                </Label>
+              </div>
+            </div>
+            
+            {/* Vorstand Funktion (nur für Vorstandsmitglieder) */}
+            {user?.roles?.includes('vorstand') && (
+              <div className="space-y-2 pt-4 border-t">
+                <Label>Funktion im Vorstand</Label>
+                {isEditing ? (
+                  <Input
+                    name="vorstand-funktion"
+                    autoComplete="off"
+                    value={(editedUser as any).vorstandFunktion || ""}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, vorstandFunktion: e.target.value } as any))}
+                    placeholder="z.B. Obmann, Kassier, Schriftführer"
+                  />
+                ) : (
+                  <span className="text-sm">{(user as any).vorstandFunktion || "-"}</span>
+                )}
+              </div>
+            )}
           </div>
           
           {/* Segeldaten */}
