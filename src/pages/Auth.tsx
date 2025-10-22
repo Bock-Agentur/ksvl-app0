@@ -22,11 +22,11 @@ export function Auth() {
       
       // Prüfen ob es eine E-Mail ist (enthält @)
       if (!email.includes('@')) {
-        // Username → E-Mail aus profiles Tabelle holen
+        // Username → E-Mail aus profiles Tabelle holen (case-insensitive)
         const { data, error } = await supabase
           .from('profiles')
           .select('email')
-          .eq('name', email)
+          .ilike('name', email)
           .maybeSingle();
         
         if (error || !data) {
