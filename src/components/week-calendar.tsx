@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useTestData } from "@/hooks/use-test-data";
+import { useSlots } from "@/hooks/use-slots";
 import { Slot, WeekCalendarProps } from "@/types";
 import { useRole } from "@/hooks/use-role";
 import { useToast } from "@/hooks/use-toast";
@@ -29,8 +30,8 @@ export function WeekCalendar({ onSlotEdit, selectedDate, viewMode = "week" }: We
 
 function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: WeekCalendarProps) {
   const { toast } = useToast();
-  const { slots, deleteSlot, updateSlot } = useTestData();
   const { currentRole, currentUser } = useRole();
+  const { slots, deleteSlot, updateSlot } = useSlots();
   const { consecutiveSlotsEnabled, getSlotBlocks, getSlotStatus, isSlotBookable } = useConsecutiveSlots();
   const { settings } = useSlotDesign();
   const [currentWeek, setCurrentWeek] = useState(selectedDate || new Date());
@@ -249,8 +250,8 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
     if (selectedSlotForAction) {
       updateSlot(selectedSlotForAction.id, {
         isBooked: false,
-        bookedBy: undefined,
-        member: undefined
+        memberId: undefined,
+        memberName: undefined
       });
       toast({
         title: "Slot storniert",

@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTestData } from "@/hooks/use-test-data";
+import { useSlots } from "@/hooks/use-slots";
 import { useRole } from "@/hooks/use-role";
 import { useConsecutiveSlots } from "@/hooks/use-consecutive-slots";
 import { cn } from "@/lib/utils";
@@ -27,7 +28,7 @@ import { Slot, MonthCalendarProps, DayStats } from "@/types";
 // MonthCalendarProps and DayStats are now imported from @/types
 
 export function MonthCalendar({ onDayClick, onSlotCreate }: MonthCalendarProps) {
-  const { slots } = useTestData();
+  const { slots } = useSlots();
   const { getSlotStatus } = useConsecutiveSlots();
   const { currentUser, currentRole } = useRole();
   const [currentMonth, setCurrentMonth] = useState(new Date());

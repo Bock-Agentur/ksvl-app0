@@ -14,6 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useTestData } from "@/hooks/use-test-data";
+import { useSlots } from "@/hooks/use-slots";
 import { useRole } from "@/hooks/use-role";
 import { Slot } from "@/types";
 import { useConsecutiveSlots } from "@/hooks/use-consecutive-slots";
@@ -23,7 +24,8 @@ import { SlotForm, SlotFormData as SharedSlotFormData } from "@/components/commo
 
 export function SlotManagement() {
   const { toast } = useToast();
-  const { slots, users, addSlot, addSlotBlock, updateSlot, deleteSlot } = useTestData();
+  const { users } = useTestData();
+  const { slots, addSlot, addSlotBlock, updateSlot, deleteSlot } = useSlots();
   const { getSlotStatus } = useConsecutiveSlots();
   const { settings } = useSlotDesign();
   const [isEditing, setIsEditing] = useState(false);
@@ -103,7 +105,6 @@ export function SlotManagement() {
         craneOperator, 
         notes: formData.notes,
         isBooked: formData.isBooked || false,
-        member: memberData,
         memberName: memberData?.name,
         memberId: memberData?.id
       });
@@ -274,9 +275,7 @@ export function SlotManagement() {
     }
 
     updateSlot(slotId, {
-      ...slot,
       isBooked: false,
-      member: undefined,
       memberName: undefined,
       memberId: undefined
     });
