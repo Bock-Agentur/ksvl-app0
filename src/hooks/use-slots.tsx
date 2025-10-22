@@ -225,6 +225,26 @@ export function useSlots() {
   // Update an existing slot
   const updateSlot = async (id: string, updates: Partial<CreateSlotData> & { memberId?: string; memberName?: string }) => {
     try {
+      // Optimistic update - update UI immediately
+      setSlots(prev => prev.map(slot => {
+        if (slot.id !== id) return slot;
+        
+        const updated: Slot = {
+          ...slot,
+          ...(updates.date && { date: updates.date }),
+          ...(updates.time && { time: updates.time }),
+          ...(updates.duration && { duration: updates.duration as 15 | 30 | 45 | 60 }),
+          ...(updates.craneOperator && { craneOperator: updates.craneOperator }),
+          ...(updates.notes !== undefined && { notes: updates.notes }),
+          ...(updates.isBooked !== undefined && { 
+            isBooked: updates.isBooked,
+            memberId: updates.isBooked ? updates.memberId : undefined,
+            memberName: updates.isBooked ? updates.memberName : undefined
+          })
+        };
+        return updated;
+      }));
+
       const updateData: any = {};
       
       if (updates.date) updateData.date = updates.date;
@@ -246,12 +266,14 @@ export function useSlots() {
 
       if (error) throw error;
 
-      // Refetch to get updated data with profiles
-      await fetchSlots();
+      // Fetch full data with profiles in background
+      fetchSlots();
 
       return data;
     } catch (error) {
       console.error('Error updating slot:', error);
+      // Revert optimistic update on error
+      await fetchSlots();
       toast({
         title: 'Fehler',
         description: 'Slot konnte nicht aktualisiert werden.',

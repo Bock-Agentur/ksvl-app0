@@ -277,7 +277,8 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
         title: "Slot gebucht",
         description: "Der Slot wurde erfolgreich gebucht."
       });
-      onClose();
+      // Close dialog after short delay to allow UI update
+      setTimeout(() => onClose(), 100);
     } catch (error) {
       console.error('Error booking slot:', error);
     }
@@ -292,7 +293,8 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
         title: "Buchung storniert",
         description: "Die Buchung wurde erfolgreich storniert."
       });
-      onClose();
+      // Close dialog after short delay to allow UI update
+      setTimeout(() => onClose(), 100);
     } catch (error) {
       console.error('Error canceling slot:', error);
     }
