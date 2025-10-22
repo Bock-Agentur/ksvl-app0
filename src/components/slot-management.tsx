@@ -43,12 +43,14 @@ export function SlotManagement() {
     return settings[status];
   };
   
-  // Get crane operators from test data - FIXED: Multi-Role System
+  // Get crane operators from database - Admin, Vorstand und Kranführer
   const craneOperators = users.filter(u => 
     u.roles?.includes("kranfuehrer") || 
     u.roles?.includes("admin") || 
+    u.roles?.includes("vorstand") ||
     u.role === "kranfuehrer" || 
-    u.role === "admin"  // Fallback für bestehende Nutzer ohne roles Array
+    u.role === "admin" ||
+    u.role === "vorstand"
   );
 
   // CRITICAL FIX: Add current user to crane operators if eligible (same as in SlotForm)
@@ -56,8 +58,10 @@ export function SlotManagement() {
   const currentUserAsCraneOperator = currentUser && (
     currentUser.roles?.includes("kranfuehrer") || 
     currentUser.roles?.includes("admin") ||
+    currentUser.roles?.includes("vorstand") ||
     currentUser.role === "kranfuehrer" || 
-    currentUser.role === "admin"  
+    currentUser.role === "admin" ||
+    currentUser.role === "vorstand"
   ) ? currentUser : null;
 
   // Ensure current user is included in crane operators list

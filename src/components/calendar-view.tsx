@@ -43,17 +43,21 @@ export function CalendarView() {
     setViewMode("week");
   };
 
-  // FIXED: Multi-Role System Implementation
+  // FIXED: Multi-Role System - Admin, Vorstand und Kranführer können Slots verwalten
   const canManageSlots = currentUser?.roles?.includes("kranfuehrer") || 
                          currentUser?.roles?.includes("admin") ||
+                         currentUser?.roles?.includes("vorstand") ||
                          currentRole === "kranfuehrer" || 
-                         currentRole === "admin";
+                         currentRole === "admin" ||
+                         currentRole === "vorstand";
   const canBookSlots = currentUser?.roles?.includes("mitglied") || 
                        currentUser?.roles?.includes("kranfuehrer") || 
                        currentUser?.roles?.includes("admin") ||
+                       currentUser?.roles?.includes("vorstand") ||
                        currentRole === "mitglied" || 
                        currentRole === "kranfuehrer" || 
-                       currentRole === "admin";
+                       currentRole === "admin" ||
+                       currentRole === "vorstand";
 
   console.log('🔐 CALENDAR VIEW PERMISSIONS:', {
     currentUser: currentUser?.name,

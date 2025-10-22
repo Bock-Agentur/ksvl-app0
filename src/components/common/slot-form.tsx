@@ -54,21 +54,24 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
   const { currentRole, currentUser } = useRole();
   const { users } = useTestData();
   
-  // Get crane operators from test data - Alle mit Kranführer oder Admin Rollen
+  // Get crane operators from database - Alle mit Kranführer, Admin oder Vorstand Rollen
   const craneOperators = users.filter(u => 
     u.roles?.includes("kranfuehrer") || 
     u.roles?.includes("admin") || 
+    u.roles?.includes("vorstand") ||
     u.role === "kranfuehrer" || 
-    u.role === "admin"  // Fallback für bestehende Nutzer ohne roles Array
+    u.role === "admin" ||
+    u.role === "vorstand"
   );
   
   // CRITICAL FIX: Ensure current user is included in crane operators if eligible
-  // Even if not in testData users list, the current user should be available for selection
   const currentUserAsCraneOperator = currentUser && (
     currentUser.roles?.includes("kranfuehrer") || 
     currentUser.roles?.includes("admin") ||
+    currentUser.roles?.includes("vorstand") ||
     currentUser.role === "kranfuehrer" || 
-    currentUser.role === "admin"  // Fallback für bestehende Nutzer
+    currentUser.role === "admin" ||
+    currentUser.role === "vorstand"
   ) ? currentUser : null;
 
   // Add current user to crane operators if not already included
@@ -142,8 +145,10 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
   const isEditing = !!slot;
   const canManageSlots = currentUser?.roles?.includes("kranfuehrer") || 
                         currentUser?.roles?.includes("admin") ||
+                        currentUser?.roles?.includes("vorstand") ||
                         currentRole === "kranfuehrer" || 
-                        currentRole === "admin";
+                        currentRole === "admin" ||
+                        currentRole === "vorstand";
 
   return (
     <div className={className}>
