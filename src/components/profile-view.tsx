@@ -410,35 +410,44 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         }
       } else {
         // Regular profile update without role changes
+        const updateData: any = {
+          name: editedUser.name,
+          first_name: editedUser.firstName || null,
+          last_name: editedUser.lastName || null,
+          phone: editedUser.phone || null,
+          member_number: editedUser.memberNumber || null,
+          boat_name: editedUser.boatName || null,
+          street_address: editedUser.streetAddress || null,
+          postal_code: editedUser.postalCode || null,
+          city: editedUser.city || null,
+          oesv_number: (editedUser as any).oesvNumber || null,
+          address: (editedUser as any).address || null,
+          berth_number: (editedUser as any).berthNumber || null,
+          berth_type: (editedUser as any).berthType || null,
+          birth_date: (editedUser as any).birthDate || null,
+          entry_date: (editedUser as any).entryDate || null,
+          dinghy_berth_number: (editedUser as any).dinghyBerthNumber || null,
+          boat_type: (editedUser as any).boatType || null,
+          boat_length: (editedUser as any).boatLength || null,
+          boat_width: (editedUser as any).boatWidth || null,
+          parking_permit_number: (editedUser as any).parkingPermitNumber || null,
+          parking_permit_issue_date: (editedUser as any).parkingPermitIssueDate || null,
+          beverage_chip_number: (editedUser as any).beverageChipNumber || null,
+          beverage_chip_issue_date: (editedUser as any).beverageChipIssueDate || null,
+          emergency_contact: (editedUser as any).emergencyContact || null,
+          notes: (editedUser as any).notes || null
+        };
+
+        // Clean up: ensure empty strings are converted to null to avoid constraint violations
+        Object.keys(updateData).forEach(key => {
+          if (updateData[key] === '') {
+            updateData[key] = null;
+          }
+        });
+
         const { error } = await supabase
           .from('profiles')
-          .update({
-            name: editedUser.name,
-            first_name: editedUser.firstName || null,
-            last_name: editedUser.lastName || null,
-            phone: editedUser.phone || null,
-            member_number: editedUser.memberNumber || null,
-            boat_name: editedUser.boatName || null,
-            street_address: editedUser.streetAddress || null,
-            postal_code: editedUser.postalCode || null,
-            city: editedUser.city || null,
-            oesv_number: (editedUser as any).oesvNumber || null,
-            address: (editedUser as any).address || null,
-            berth_number: (editedUser as any).berthNumber || null,
-            berth_type: (editedUser as any).berthType || null,
-            birth_date: (editedUser as any).birthDate || null,
-            entry_date: (editedUser as any).entryDate || null,
-            dinghy_berth_number: (editedUser as any).dinghyBerthNumber || null,
-            boat_type: (editedUser as any).boatType || null,
-            boat_length: (editedUser as any).boatLength || null,
-            boat_width: (editedUser as any).boatWidth || null,
-            parking_permit_number: (editedUser as any).parkingPermitNumber || null,
-            parking_permit_issue_date: (editedUser as any).parkingPermitIssueDate || null,
-            beverage_chip_number: (editedUser as any).beverageChipNumber || null,
-            beverage_chip_issue_date: (editedUser as any).beverageChipIssueDate || null,
-            emergency_contact: (editedUser as any).emergencyContact || null,
-            notes: (editedUser as any).notes || null
-          })
+          .update(updateData)
           .eq('id', targetUserId);
 
         if (error) throw error;
