@@ -99,17 +99,24 @@ export function useSlots() {
   // Create a single slot
   const addSlot = async (slotData: CreateSlotData) => {
     try {
+      const insertData: any = {
+        date: slotData.date,
+        time: slotData.time,
+        duration: slotData.duration,
+        crane_operator_id: slotData.craneOperator.id,
+        notes: slotData.notes,
+        is_booked: slotData.isBooked || false,
+        block_id: slotData.blockId
+      };
+
+      // Add member_id if slot is booked
+      if (slotData.isBooked && slotData.bookedBy) {
+        insertData.member_id = slotData.bookedBy;
+      }
+
       const { data, error } = await supabase
         .from('slots')
-        .insert({
-          date: slotData.date,
-          time: slotData.time,
-          duration: slotData.duration,
-          crane_operator_id: slotData.craneOperator.id,
-          notes: slotData.notes,
-          is_booked: slotData.isBooked || false,
-          block_id: slotData.blockId
-        })
+        .insert(insertData)
         .select()
         .single();
 

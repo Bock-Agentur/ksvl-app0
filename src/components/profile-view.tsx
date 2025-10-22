@@ -170,7 +170,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   useEffect(() => {
     loadCurrentUser();
     checkAdminStatus();
-  }, [userId]);
+  }, [userId, roleCurrentUser]);
   
   const checkAdminStatus = async () => {
     const { data: { user: currentUser } } = await supabase.auth.getUser();
@@ -190,11 +190,14 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       setLoading(true);
       
       // If userId is provided, load that user's profile (admin view)
-      // Otherwise, load the current authenticated user's profile
+      // Otherwise, use the current user from RoleContext (respects role switching)
       let targetUserId: string;
       
       if (userId) {
         targetUserId = userId;
+      } else if (roleCurrentUser) {
+        // Use the current user from RoleContext (role switching aware)
+        targetUserId = roleCurrentUser.id;
       } else {
         const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
         if (authError || !authUser) {

@@ -95,8 +95,11 @@ export function SlotManagement() {
 
     if (editingSlot) {
       // Update existing slot with new booking status and member data
+      // Use the member ID from formData if provided (from role-switched user), otherwise from editingSlot
+      const memberId = formData.isBooked ? (formData.memberId || editingSlot.member?.id || currentUser?.id) : undefined;
+      
       const memberData = formData.isBooked && formData.memberName ? {
-        id: editingSlot.member?.id || `member-${Date.now()}`,
+        id: memberId || `member-${Date.now()}`,
         name: formData.memberName,
         email: formData.memberEmail || "",
         memberNumber: formData.memberNumber || ""
@@ -110,7 +113,7 @@ export function SlotManagement() {
         notes: formData.notes,
         isBooked: formData.isBooked || false,
         memberName: memberData?.name,
-        memberId: memberData?.id
+        memberId: memberId
       });
       toast({
         title: "Slot aktualisiert",

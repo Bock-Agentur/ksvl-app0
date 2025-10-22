@@ -40,6 +40,7 @@ export interface SlotFormData {
   memberName?: string;
   memberEmail?: string;
   memberNumber?: string;
+  memberId?: string; // ID of the member booking the slot (for role-switched users)
 }
 
 interface SlotFormProps {
@@ -111,7 +112,8 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
     isBooked: false,
     memberName: "",
     memberEmail: "",
-    memberNumber: ""
+    memberNumber: "",
+    memberId: "" // ID of the member booking
   });
 
   // Automatische Vorauswahl des aktuellen Nutzers als Kranführer
@@ -127,7 +129,8 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
         isBooked: slot.isBooked || false,
         memberName: slot.member?.name || "",
         memberEmail: slot.member?.email || "",
-        memberNumber: slot.member?.memberNumber || ""
+        memberNumber: slot.member?.memberNumber || "",
+        memberId: slot.member?.id || ""
       });
     } else {
       // Initialize with prefilledDateTime if available, otherwise defaults
@@ -144,7 +147,8 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
         isBooked: false,
         memberName: "",
         memberEmail: "",
-        memberNumber: ""
+        memberNumber: "",
+        memberId: ""
       }));
     }
   }, [slot, currentUserAsCraneOperator, prefilledDateTime]);
@@ -444,7 +448,8 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
                             ...prev,
                             memberName: value,
                             memberEmail: selectedMember?.email || '',
-                            memberNumber: selectedMember?.memberNumber || ''
+                            memberNumber: selectedMember?.memberNumber || '',
+                            memberId: selectedMember?.id || '' // Store member ID for role-switched users
                           }));
                         }}
                       >
