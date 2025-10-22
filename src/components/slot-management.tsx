@@ -13,7 +13,7 @@ import { Calendar as UICalendar } from "@/components/ui/calendar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { useTestData } from "@/hooks/use-test-data";
+import { useUsers } from "@/hooks/use-users";
 import { useSlots } from "@/hooks/use-slots";
 import { useRole } from "@/hooks/use-role";
 import { Slot } from "@/types";
@@ -24,7 +24,7 @@ import { SlotForm, SlotFormData as SharedSlotFormData } from "@/components/commo
 
 export function SlotManagement() {
   const { toast } = useToast();
-  const { users } = useTestData();
+  const { users } = useUsers();
   const { slots, addSlot, addSlotBlock, updateSlot, deleteSlot } = useSlots();
   const { getSlotStatus } = useConsecutiveSlots();
   const { settings } = useSlotDesign();
