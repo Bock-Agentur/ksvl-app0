@@ -37,7 +37,7 @@ function Countdown({ endDate, text }: { endDate: string; text: string }) {
 
   return (
     <div className="w-full flex flex-col items-center justify-center mb-8">
-      <div className="flex justify-center items-center text-4xl md:text-6xl lg:text-8xl font-thin text-white tracking-tighter">
+      <div className="flex justify-center items-center text-4xl md:text-6xl lg:text-8xl font-thin text-white tracking-tighter tabular-nums">
         <span>{String(timeLeft.days).padStart(2, '0')}</span>
         <span className="mx-0">:</span>
         <span>{String(timeLeft.hours).padStart(2, '0')}</span>
