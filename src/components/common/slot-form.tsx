@@ -13,7 +13,7 @@ import { Calendar as CalendarIcon, Clock, Check, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Slot } from "@/types";
 import { useRole } from "@/hooks/use-role";
-import { useTestData } from "@/hooks/use-test-data";
+import { useUsers } from "@/hooks/use-users";
 
 // Generate 15-minute interval time slots for mini-slot support
 const generateMiniTimeSlots = () => {
@@ -52,9 +52,9 @@ interface SlotFormProps {
 
 export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, className }: SlotFormProps) {
   const { currentRole, currentUser } = useRole();
-  const { users } = useTestData();
+  const { users } = useUsers();
   
-  console.log('👥 SLOT FORM - All users:', users.map(u => ({ 
+  console.log('👥 SLOT FORM - All users from database:', users.map(u => ({ 
     name: u.name, 
     roles: u.roles, 
     role: u.role 
