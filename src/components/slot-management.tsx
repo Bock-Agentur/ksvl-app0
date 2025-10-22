@@ -34,6 +34,7 @@ export function SlotManagement() {
   const [selectedSlotForDetails, setSelectedSlotForDetails] = useState<Slot | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [selectedCraneOperator, setSelectedCraneOperator] = useState<string>("");
+  const [showMySlots, setShowMySlots] = useState(false);
   const [expandedSlotId, setExpandedSlotId] = useState<string | null>(null);
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const [isStatsOpen, setIsStatsOpen] = useState(false);
@@ -266,7 +267,13 @@ export function SlotManagement() {
         passesOperatorFilter = slot.craneOperator.id === selectedCraneOperator;
       }
 
-      return passesStatusFilter && passesDateFilter && passesOperatorFilter;
+      // Filter by "Meine Slots" if enabled
+      let passesMySlotFilter = true;
+      if (showMySlots && currentUser) {
+        passesMySlotFilter = slot.craneOperator.id === currentUser.id;
+      }
+
+      return passesStatusFilter && passesDateFilter && passesOperatorFilter && passesMySlotFilter;
     })
     .sort((a, b) => {
       // Primary sort: by date
@@ -461,7 +468,7 @@ export function SlotManagement() {
                 {/* Crane Operator Filter */}
                 <Select value={selectedCraneOperator} onValueChange={setSelectedCraneOperator}>
                   <SelectTrigger className="flex-1 sm:flex-initial min-w-[200px]">
-                    <SelectValue placeholder="Kranführer wählen" />
+                    <SelectValue placeholder="Alle Kranführer" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Alle Kranführer</SelectItem>
@@ -473,14 +480,31 @@ export function SlotManagement() {
                   </SelectContent>
                 </Select>
 
+                {/* My Slots Button */}
+                <Button
+                  variant={showMySlots ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => {
+                    setShowMySlots(!showMySlots);
+                    if (!showMySlots) {
+                      setSelectedCraneOperator("");
+                    }
+                  }}
+                  className="flex items-center gap-1"
+                >
+                  <User className="w-3 h-3" />
+                  Meine Slots
+                </Button>
+
                 {/* Clear Filters */}
-                {(selectedDate || selectedCraneOperator) && (
+                {(selectedDate || selectedCraneOperator || showMySlots) && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
                       setSelectedDate(undefined);
                       setSelectedCraneOperator("");
+                      setShowMySlots(false);
                     }}
                     className="flex items-center gap-1"
                   >
