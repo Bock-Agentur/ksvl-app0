@@ -30,11 +30,7 @@ serve(async (req) => {
 
     const { data: slots, error: slotsError } = await supabase
       .from('slots')
-      .select(`
-        *,
-        crane_operator:crane_operator_id(id, name, email, member_number),
-        member:member_id(id, name, email, member_number, boat_name)
-      `)
+      .select('*')
       .gte('date', today)
       .lte('date', nextWeek)
       .order('date', { ascending: true })
@@ -43,6 +39,18 @@ serve(async (req) => {
     if (slotsError) {
       console.error('Fehler beim Laden der Slots:', slotsError);
     }
+
+    // Hole Profil-Daten separat für Kranführer und Mitglieder
+    const craneOperatorIds = slots?.map(s => s.crane_operator_id).filter(Boolean) || [];
+    const memberIds = slots?.filter(s => s.member_id).map(s => s.member_id).filter(Boolean) || [];
+    const allUserIds = [...new Set([...craneOperatorIds, ...memberIds])];
+
+    const { data: users } = await supabase
+      .from('profiles')
+      .select('id, name, email, member_number, boat_name')
+      .in('id', allUserIds);
+
+    const usersMap = new Map(users?.map(u => [u.id, u]) || []);
 
     // Hole öffentliche Mitgliederdaten (nur wenn data_public_in_ksvl = true)
     const { data: publicMembers, error: membersError } = await supabase
@@ -63,10 +71,16 @@ serve(async (req) => {
 AKTUELLE KRANTERMIN-DATEN (${today} bis ${nextWeek}):
 
 VERFÜGBARE TERMINE (${availableSlots.length}):
-${availableSlots.map(s => `- ${s.date} um ${s.time} Uhr (${s.duration} Min) - Kranführer: ${s.crane_operator?.name || 'Unbekannt'}${s.crane_operator?.member_number ? ` (Nr: ${s.crane_operator.member_number})` : ''}`).join('\n') || 'Keine verfügbaren Termine'}
+${availableSlots.map(s => {
+  const craneOp = usersMap.get(s.crane_operator_id);
+  return `- ${s.date} um ${s.time} Uhr (${s.duration} Min) - Kranführer: ${craneOp?.name || 'Unbekannt'}${craneOp?.member_number ? ` (Nr: ${craneOp.member_number})` : ''}`;
+}).join('\n') || 'Keine verfügbaren Termine'}
 
 GEBUCHTE TERMINE (${bookedSlots.length}):
-${bookedSlots.map(s => `- ${s.date} um ${s.time} Uhr - gebucht von ${s.member?.name || 'Unbekannt'}${s.member?.boat_name ? ` (Boot: ${s.member.boat_name})` : ''}`).join('\n') || 'Keine Buchungen'}
+${bookedSlots.map(s => {
+  const member = usersMap.get(s.member_id);
+  return `- ${s.date} um ${s.time} Uhr - gebucht von ${member?.name || 'Unbekannt'}${member?.boat_name ? ` (Boot: ${member.boat_name})` : ''}`;
+}).join('\n') || 'Keine Buchungen'}
 
 STATISTIK:
 - Gesamt Termine: ${slots?.length || 0}
