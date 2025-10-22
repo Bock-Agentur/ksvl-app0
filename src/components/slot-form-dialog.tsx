@@ -83,6 +83,21 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
     const startTotalMinutes = startHour * 60 + startMinute;
     const endTotalMinutes = startTotalMinutes + formData.slotBlockDurations[0];
     
+    console.log('🔍 CHECKING FOR OVERLAPPING SLOTS:', {
+      dateString,
+      startTime,
+      startTotalMinutes,
+      endTotalMinutes,
+      duration: formData.slotBlockDurations[0],
+      allSlotsForDate: allSlots.filter(s => s.date === dateString).map(s => ({
+        id: s.id,
+        time: s.time,
+        duration: s.duration,
+        startMin: parseInt(s.time.split(':')[0]) * 60 + parseInt(s.time.split(':')[1]),
+        endMin: (parseInt(s.time.split(':')[0]) * 60 + parseInt(s.time.split(':')[1])) + s.duration
+      }))
+    });
+    
     const overlappingSlot = allSlots.find(s => {
       if (s.date !== dateString || s.id === slot?.id) return false;
       
@@ -90,14 +105,25 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
       const slotStartMinutes = slotHour * 60 + slotMinute;
       const slotEndMinutes = slotStartMinutes + s.duration;
       
+      console.log('🔍 Checking slot overlap:', {
+        slotId: s.id,
+        slotTime: s.time,
+        slotStartMinutes,
+        slotEndMinutes,
+        newStartMinutes: startTotalMinutes,
+        newEndMinutes: endTotalMinutes,
+        overlaps: startTotalMinutes < slotEndMinutes && endTotalMinutes > slotStartMinutes
+      });
+      
       // Check for overlap
       return (startTotalMinutes < slotEndMinutes && endTotalMinutes > slotStartMinutes);
     });
     
     if (overlappingSlot) {
+      console.log('❌ OVERLAP DETECTED:', overlappingSlot);
       toast({
         title: "Fehler", 
-        description: "Es existiert bereits ein Slot in diesem Zeitraum.",
+        description: `Es existiert bereits ein Slot in diesem Zeitraum (${overlappingSlot.time}, ${overlappingSlot.duration}min).`,
         variant: "destructive"
       });
       return;
