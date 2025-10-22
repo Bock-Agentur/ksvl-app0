@@ -645,30 +645,30 @@ export function LoginBackgroundSettings() {
                             />
                           )}
                           <div 
-                            className="flex items-center gap-3 px-4 text-white"
+                            className="flex items-center gap-3 px-4"
                             style={{
                               backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
                               borderRadius: `${localSettings.cardBorderRadius}px`,
                               height: '48px'
                             }}
                           >
-                            <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 flex-shrink-0" style={{ color: 'rgba(0, 0, 0, 0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
-                            <span className="text-white/60">E-Mail oder Benutzername</span>
+                            <span style={{ color: 'rgba(0, 0, 0, 0.5)' }}>E-Mail oder Benutzername</span>
                           </div>
                           <div 
-                            className="flex items-center gap-3 px-4 text-white"
+                            className="flex items-center gap-3 px-4"
                             style={{
                               backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
                               borderRadius: `${localSettings.cardBorderRadius}px`,
                               height: '48px'
                             }}
                           >
-                            <svg className="w-5 h-5 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="w-5 h-5 flex-shrink-0" style={{ color: 'rgba(0, 0, 0, 0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                             </svg>
-                            <span className="text-white/60">Passwort</span>
+                            <span style={{ color: 'rgba(0, 0, 0, 0.5)' }}>Passwort</span>
                           </div>
                           <div 
                             className="w-full bg-primary text-primary-foreground font-medium text-center shadow-lg flex items-center justify-center"
@@ -720,30 +720,32 @@ export function LoginBackgroundSettings() {
                       />
                     )}
                     <div 
-                      className="flex items-center gap-2 px-3 text-white text-xs"
+                      className="flex items-center gap-2 px-3 text-xs"
                       style={{
                         backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
                         borderRadius: `${localSettings.cardBorderRadius}px`,
-                        height: '36px'
+                        height: '36px',
+                        color: 'rgba(0, 0, 0, 0.5)'
                       }}
                     >
-                      <svg className="w-4 h-4 text-white/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(0, 0, 0, 0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
-                      <span className="text-white/60 truncate">E-Mail</span>
+                      <span className="truncate">E-Mail</span>
                     </div>
                     <div 
-                      className="flex items-center gap-2 px-3 text-white text-xs"
+                      className="flex items-center gap-2 px-3 text-xs"
                       style={{
                         backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
                         borderRadius: `${localSettings.cardBorderRadius}px`,
-                        height: '36px'
+                        height: '36px',
+                        color: 'rgba(0, 0, 0, 0.5)'
                       }}
                     >
-                      <svg className="w-4 h-4 text-white/60 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-4 h-4 flex-shrink-0" style={{ color: 'rgba(0, 0, 0, 0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                       </svg>
-                      <span className="text-white/60 truncate">Passwort</span>
+                      <span className="truncate">Passwort</span>
                     </div>
                     <div 
                       className="w-full bg-primary text-primary-foreground text-xs font-medium text-center shadow-lg flex items-center justify-center"
