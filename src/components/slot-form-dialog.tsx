@@ -439,14 +439,15 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
                     </Button>
                   )}
                   
-                  {slot.isBooked && (slot.bookedBy === currentRole || canManageSlots) && (
+                  {/* Cancel button for members (own booked slots) or admins/kranfuehrer */}
+                  {slot.isBooked && ((slot.memberId === currentUser?.id && canBookSlots) || canManageSlots) && (
                     <Button onClick={handleCancelSlot} variant="outline" size="lg" className="w-full">
                       Buchung stornieren
                     </Button>
                   )}
                 </div>
                 
-                {/* Secondary Actions */}
+                {/* Secondary Actions - only for admins/kranfuehrer */}
                 {canManageSlots && (
                   <div className="grid grid-cols-2 gap-2">
                     <Button onClick={() => setIsEditing(true)} variant="outline">
