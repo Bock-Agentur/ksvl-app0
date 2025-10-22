@@ -212,7 +212,9 @@ export function LoginBackgroundSettings() {
         countdownEnabled: localSettings.countdownEnabled,
         countdownEndDate: localSettings.countdownEndDate,
         countdownText: localSettings.countdownText,
-        countdownVerticalPosition: localSettings.countdownVerticalPosition
+        countdownVerticalPositionDesktop: localSettings.countdownVerticalPositionDesktop,
+        countdownVerticalPositionTablet: localSettings.countdownVerticalPositionTablet,
+        countdownVerticalPositionMobile: localSettings.countdownVerticalPositionMobile
       };
       setLocalSettings(newSettings);
       
@@ -308,8 +310,16 @@ export function LoginBackgroundSettings() {
     setLocalSettings({ ...localSettings, countdownText: text });
   };
 
-  const handleCountdownVerticalPositionChange = (value: number[]) => {
-    setLocalSettings({ ...localSettings, countdownVerticalPosition: value[0] });
+  const handleCountdownVerticalPositionDesktopChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, countdownVerticalPositionDesktop: value[0] });
+  };
+
+  const handleCountdownVerticalPositionTabletChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, countdownVerticalPositionTablet: value[0] });
+  };
+
+  const handleCountdownVerticalPositionMobileChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, countdownVerticalPositionMobile: value[0] });
   };
 
   const getJustifyClass = () => {
@@ -618,12 +628,50 @@ export function LoginBackgroundSettings() {
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <Label>Countdown Position (vertikal)</Label>
-                    <span className="text-sm text-muted-foreground">{localSettings.countdownVerticalPosition}%</span>
+                    <Label>Countdown Position Desktop (vertikal)</Label>
+                    <span className="text-sm text-muted-foreground">{localSettings.countdownVerticalPositionDesktop}%</span>
                   </div>
                   <Slider
-                    value={[localSettings.countdownVerticalPosition]}
-                    onValueChange={handleCountdownVerticalPositionChange}
+                    value={[localSettings.countdownVerticalPositionDesktop]}
+                    onValueChange={handleCountdownVerticalPositionDesktopChange}
+                    min={0}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Oben</span>
+                    <span>Unten</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>Countdown Position Tablet (vertikal)</Label>
+                    <span className="text-sm text-muted-foreground">{localSettings.countdownVerticalPositionTablet}%</span>
+                  </div>
+                  <Slider
+                    value={[localSettings.countdownVerticalPositionTablet]}
+                    onValueChange={handleCountdownVerticalPositionTabletChange}
+                    min={0}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Oben</span>
+                    <span>Unten</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>Countdown Position Mobile (vertikal)</Label>
+                    <span className="text-sm text-muted-foreground">{localSettings.countdownVerticalPositionMobile}%</span>
+                  </div>
+                  <Slider
+                    value={[localSettings.countdownVerticalPositionMobile]}
+                    onValueChange={handleCountdownVerticalPositionMobileChange}
                     min={0}
                     max={100}
                     step={1}
@@ -752,7 +800,7 @@ export function LoginBackgroundSettings() {
                 />
                 {/* Countdown Layer */}
                 {localSettings.countdownEnabled && localSettings.countdownEndDate && (
-                  <div className="absolute inset-0 flex flex-col items-center pointer-events-none" style={{ paddingTop: `${localSettings.countdownVerticalPosition}%` }}>
+                  <div className="absolute inset-0 flex flex-col items-center pointer-events-none" style={{ paddingTop: `${localSettings.countdownVerticalPositionMobile}%` }}>
                     <CountdownPreview 
                       endDate={localSettings.countdownEndDate}
                       text={localSettings.countdownText}

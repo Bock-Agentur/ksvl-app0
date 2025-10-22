@@ -17,7 +17,9 @@ export interface LoginBackground {
   countdownEnabled: boolean;
   countdownEndDate: string | null;
   countdownText: string;
-  countdownVerticalPosition: number; // 0-100 Prozent von oben
+  countdownVerticalPositionDesktop: number;
+  countdownVerticalPositionTablet: number;
+  countdownVerticalPositionMobile: number;
 }
 
 const DEFAULT_BACKGROUND: LoginBackground = {
@@ -37,7 +39,9 @@ const DEFAULT_BACKGROUND: LoginBackground = {
   countdownEnabled: false,
   countdownEndDate: null,
   countdownText: 'bis zur neuen Segelsaison',
-  countdownVerticalPosition: 35 // 35% von oben
+  countdownVerticalPositionDesktop: 35,
+  countdownVerticalPositionTablet: 35,
+  countdownVerticalPositionMobile: 35
 };
 
 export function useLoginBackground() {

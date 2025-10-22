@@ -79,6 +79,20 @@ export function Auth() {
   const { background } = useLoginBackground();
   const isMobile = useIsMobile();
 
+  // Determine countdown position based on screen size
+  const getCountdownPosition = () => {
+    if (typeof window === 'undefined') return background.countdownVerticalPositionDesktop;
+    
+    const width = window.innerWidth;
+    if (width < 768) {
+      return background.countdownVerticalPositionMobile;
+    } else if (width < 1024) {
+      return background.countdownVerticalPositionTablet;
+    } else {
+      return background.countdownVerticalPositionDesktop;
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -197,7 +211,7 @@ export function Auth() {
       {background.countdownEnabled && background.countdownEndDate && (
         <div 
           className="absolute inset-0 flex items-start justify-center pointer-events-none z-0" 
-          style={{ paddingTop: `${background.countdownVerticalPosition}%` }}
+          style={{ paddingTop: `${getCountdownPosition()}%` }}
         >
           <Countdown 
             endDate={background.countdownEndDate} 
