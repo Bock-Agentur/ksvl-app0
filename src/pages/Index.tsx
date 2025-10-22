@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import type { User, Session } from "@supabase/supabase-js";
@@ -20,6 +20,7 @@ import { CalendarView } from "@/components/calendar-view";
 function AppContent() {
   const { currentRole, currentUser, setRole } = useRole();
   const testData = useTestData();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   // Use database for active tab storage
   const { value: activeTab, setValue: setActiveTabRaw } = useAppSettings<string>(
@@ -27,6 +28,23 @@ function AppContent() {
     "dashboard",
     false
   );
+  
+  // State für das ausgewählte Datum im Kalender
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
+  
+  // Verarbeite URL-Parameter für Datumsnavigation
+  useEffect(() => {
+    const dateParam = searchParams.get('date');
+    if (dateParam) {
+      const date = new Date(dateParam + 'T12:00:00');
+      if (!isNaN(date.getTime())) {
+        setSelectedCalendarDate(date);
+        setActiveTabRaw('calendar', true);
+        // Entferne den Parameter aus der URL
+        setSearchParams({});
+      }
+    }
+  }, [searchParams, setSearchParams, setActiveTabRaw]);
   
   // Wrapper to save without toast notification
   const setActiveTab = (tab: string) => {
@@ -49,8 +67,8 @@ function AppContent() {
       case "dashboard":
         return <Dashboard onNavigate={setActiveTab} />;
       case "calendar":
-        console.log("Rendering CalendarView");
-        return <CalendarView />;
+        console.log("Rendering CalendarView with selectedDate:", selectedCalendarDate);
+        return <CalendarView initialDate={selectedCalendarDate} />;
       case "profile":
         return <ProfileView currentRole={currentRole} />;
       case "users":

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { WeekCalendar } from "./week-calendar";
 import { MonthCalendar } from "./month-calendar";
 import { Button } from "@/components/ui/button";
@@ -7,13 +7,26 @@ import { useRole } from "@/hooks/use-role";
 import { SlotFormDialog } from "./slot-form-dialog";
 import { Slot } from "@/types";
 
-export function CalendarView() {
+interface CalendarViewProps {
+  initialDate?: Date | null;
+}
+
+export function CalendarView({ initialDate }: CalendarViewProps) {
   const { currentRole, currentUser } = useRole();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [prefilledDateTime, setPrefilledDateTime] = useState<{ date: string; time: string } | null>(null);
   const [viewMode, setViewMode] = useState<"day" | "week" | "month">("day");
   const [selectedDate, setSelectedDate] = useState(new Date());
+
+  // Wenn ein initialDate übergeben wird, setze es als selectedDate und wechsle zur Tagesansicht
+  useEffect(() => {
+    if (initialDate) {
+      console.log("📅 CalendarView: Navigating to date from chatbot:", initialDate);
+      setSelectedDate(initialDate);
+      setViewMode("day");
+    }
+  }, [initialDate]);
 
   const handleSlotEdit = (slot?: Slot, dateTime?: { date: string; time: string }) => {
     console.log('🎯 HANDLE_SLOT_EDIT called:', { slot: slot?.id, dateTime });
