@@ -310,10 +310,29 @@ export function useSlots() {
   // Book a slot
   const bookSlot = async (slotId: string, memberId: string) => {
     try {
-      // Optimistic update - update UI immediately
+      // Get member profile first for optimistic update
+      const { data: memberProfile } = await supabase
+        .from('profiles')
+        .select('id, name, email, member_number')
+        .eq('id', memberId)
+        .single();
+
+      // Optimistic update - update UI immediately with full member data
       setSlots(prev => prev.map(slot => 
         slot.id === slotId 
-          ? { ...slot, isBooked: true, memberId, member: slot.member }
+          ? { 
+              ...slot, 
+              isBooked: true, 
+              memberId,
+              memberName: memberProfile?.name,
+              bookedBy: memberProfile?.name,
+              member: memberProfile ? {
+                id: memberProfile.id,
+                name: memberProfile.name || '',
+                email: memberProfile.email || '',
+                memberNumber: memberProfile.member_number || ''
+              } : undefined
+            }
           : slot
       ));
 
@@ -329,8 +348,8 @@ export function useSlots() {
 
       if (error) throw error;
 
-      // Fetch full data with profiles in background
-      fetchSlots();
+      // Fetch full data with profiles in background to ensure consistency
+      await fetchSlots();
 
       return data;
     } catch (error) {

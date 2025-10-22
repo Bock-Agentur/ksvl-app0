@@ -304,8 +304,8 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
         title: "Slot gebucht",
         description: "Der Slot wurde erfolgreich gebucht."
       });
-      // Close dialog after short delay to allow UI update
-      setTimeout(() => onClose(), 100);
+      // Close dialog immediately - the optimistic update will show the change
+      onClose();
     } catch (error) {
       console.error('Error booking slot:', error);
     }
@@ -331,8 +331,8 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
       setExistingBookedSlot(null);
       setPendingBookingSlotId(null);
       
-      // Close dialog after short delay
-      setTimeout(() => onClose(), 100);
+      // Close dialog immediately
+      onClose();
     } catch (error) {
       console.error('Error rebooking slot:', error);
       toast({
@@ -358,8 +358,8 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
         title: "Buchung storniert",
         description: "Die Buchung wurde erfolgreich storniert."
       });
-      // Close dialog after short delay to allow UI update
-      setTimeout(() => onClose(), 100);
+      // Close dialog immediately - the optimistic update will show the change
+      onClose();
     } catch (error) {
       console.error('Error canceling slot:', error);
     }
