@@ -25,6 +25,8 @@ export function useSlots() {
     try {
       setIsLoading(true);
       
+      console.log('🔄 FETCHING SLOTS FROM DATABASE...');
+      
       // Fetch slots
       const { data: slotsData, error: slotsError } = await supabase
         .from('slots')
@@ -34,12 +36,16 @@ export function useSlots() {
 
       if (slotsError) throw slotsError;
 
+      console.log('📦 RAW SLOTS DATA:', slotsData);
+
       // Fetch all profiles for operators and members
       const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('id, name, email, member_number');
 
       if (profilesError) throw profilesError;
+
+      console.log('👥 PROFILES DATA:', profilesData);
 
       // Create a map for quick profile lookup
       const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
@@ -54,6 +60,8 @@ export function useSlots() {
         if (normalizedTime && normalizedTime.length === 8) { // Format: HH:MM:SS
           normalizedTime = normalizedTime.substring(0, 5); // Get HH:MM only
         }
+
+        console.log(`🔧 Transforming slot ${dbSlot.id}: ${dbSlot.date} ${dbSlot.time} -> ${normalizedTime}`);
 
         return {
           id: dbSlot.id,
@@ -83,9 +91,12 @@ export function useSlots() {
         };
       });
 
+      console.log('✅ TRANSFORMED SLOTS:', transformedSlots);
+      console.log(`📊 Total slots loaded: ${transformedSlots.length}`);
+
       setSlots(transformedSlots);
     } catch (error) {
-      console.error('Error fetching slots:', error);
+      console.error('❌ Error fetching slots:', error);
       toast({
         title: 'Fehler',
         description: 'Slots konnten nicht geladen werden.',
