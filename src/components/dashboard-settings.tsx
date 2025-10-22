@@ -146,8 +146,7 @@ export function DashboardSettings() {
           {/* Admin Role Selector */}
           {isAdmin && <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">Rolle auswählen
-            </h3>
+              <Label className="text-lg font-medium">Rolle auswählen</Label>
             </div>
             <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
               {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map(role => {
