@@ -85,11 +85,11 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
     return slots;
   }, []);
 
-  // Filter slots for current week
+  // Filter slots for current week - CRITICAL: Must re-compute when slots change
   const weekSlots = useMemo(() => {
     console.log('📅 FILTERING SLOTS for week:', format(weekStart, 'yyyy-MM-dd'), 'to', format(addDays(weekStart, 6), 'yyyy-MM-dd'));
     console.log('📊 ALL AVAILABLE SLOTS:', slots.length, slots.map(s => `${s.date} ${s.time} (${s.id})`));
-    console.log('🔍 SLOTS DEPENDENCY CHANGED - Re-filtering...');
+    console.log('🔍 SLOTS DEPENDENCY CHANGED - Re-filtering... Slots array reference:', slots);
     
     const filtered = slots.filter(slot => {
       const slotDate = parseISO(slot.date);
@@ -102,7 +102,9 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
     
     console.log('🎯 FILTERED SLOTS FOR WEEK:', filtered.length, filtered.map(s => `${s.date} ${s.time}`));
     console.log('📋 WEEK SLOTS DETAILS:', filtered.map(s => ({ id: s.id, date: s.date, time: s.time, isBooked: s.isBooked, operator: s.craneOperator.name })));
-    return filtered;
+    
+    // Force a new array reference to ensure React detects the change
+    return [...filtered];
   }, [slots, weekDays, weekStart]);
 
   // Helper function to detect if a slot is part of a consecutive block

@@ -322,7 +322,9 @@ export function useSlots() {
       console.log('👤 Member profile fetched:', memberProfile?.name);
 
       // Optimistic update - update UI immediately with full member data
+      // CRITICAL: Create a completely new array to force React to detect the change
       setSlots(prev => {
+        console.log('🔄 BEFORE UPDATE - Array ref:', prev.length, 'items');
         const updated = prev.map(slot => 
           slot.id === slotId 
             ? { 
@@ -341,7 +343,10 @@ export function useSlots() {
             : slot
         );
         console.log('✅ OPTIMISTIC UPDATE COMPLETE - Slot booked:', slotId);
-        return updated;
+        console.log('🔄 AFTER UPDATE - Array ref:', updated.length, 'items');
+        console.log('📊 Updated slot details:', updated.find(s => s.id === slotId));
+        // Return a new array reference
+        return [...updated];
       });
 
 
