@@ -172,8 +172,8 @@ export function SlotManagement() {
         }
       }
       
-      // Generate a unique blockId for the entire superblock
-      const blockIdToUse = `superblock-${Date.now()}-${formData.craneOperatorId}`;
+      // Generate a unique UUID blockId for the entire superblock
+      const blockIdToUse = crypto.randomUUID();
       
       // Create new slots
       const newSlotIds = [];
@@ -181,7 +181,7 @@ export function SlotManagement() {
       
       for (let i = 0; i < durations.length; i++) {
         const duration = durations[i];
-        const slotId = Date.now().toString() + '-' + (i + 1);
+        const slotId = crypto.randomUUID();
         newSlotIds.push(slotId);
         
         const newSlot: Slot = {
