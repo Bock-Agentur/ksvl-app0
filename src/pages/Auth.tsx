@@ -10,53 +10,47 @@ import { useLoginBackground } from "@/hooks/use-login-background";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 function Countdown({ endDate, text }: { endDate: string; text: string }) {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, tenths: 0, hundredths: 0 });
 
   useEffect(() => {
     const calculateTimeLeft = () => {
       const difference = new Date(endDate).getTime() - new Date().getTime();
       
       if (difference > 0) {
+        const ms = difference % 1000;
         setTimeLeft({
           days: Math.floor(difference / (1000 * 60 * 60 * 24)),
           hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
           minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60)
+          seconds: Math.floor((difference / 1000) % 60),
+          tenths: Math.floor(ms / 100),
+          hundredths: Math.floor((ms % 100) / 10)
         });
       }
     };
 
     calculateTimeLeft();
-    const timer = setInterval(calculateTimeLeft, 1000);
+    const timer = setInterval(calculateTimeLeft, 10);
 
     return () => clearInterval(timer);
   }, [endDate]);
 
   return (
-    <div className="text-center space-y-3 mb-6">
-      <div className="flex justify-center gap-3 text-2xl md:text-3xl font-bold text-white">
-        <div className="flex flex-col items-center">
-          <span className="text-3xl md:text-4xl">{timeLeft.days.toString().padStart(2, '0')}</span>
-          <span className="text-white/70 text-sm">Tage</span>
-        </div>
-        <span className="self-start mt-1">:</span>
-        <div className="flex flex-col items-center">
-          <span className="text-3xl md:text-4xl">{timeLeft.hours.toString().padStart(2, '0')}</span>
-          <span className="text-white/70 text-sm">Stunden</span>
-        </div>
-        <span className="self-start mt-1">:</span>
-        <div className="flex flex-col items-center">
-          <span className="text-3xl md:text-4xl">{timeLeft.minutes.toString().padStart(2, '0')}</span>
-          <span className="text-white/70 text-sm">Minuten</span>
-        </div>
-        <span className="self-start mt-1">:</span>
-        <div className="flex flex-col items-center">
-          <span className="text-3xl md:text-4xl">{timeLeft.seconds.toString().padStart(2, '0')}</span>
-          <span className="text-white/70 text-sm">Sekunden</span>
-        </div>
+    <div className="w-full flex flex-col items-center justify-center mb-8">
+      <div className="flex justify-center items-center text-4xl md:text-6xl lg:text-8xl font-thin text-white tracking-tighter">
+        <span>{String(timeLeft.days).padStart(2, '0')}</span>
+        <span className="mx-0">:</span>
+        <span>{String(timeLeft.hours).padStart(2, '0')}</span>
+        <span className="mx-0">:</span>
+        <span>{String(timeLeft.minutes).padStart(2, '0')}</span>
+        <span className="mx-0">:</span>
+        <span>{String(timeLeft.seconds).padStart(2, '0')}</span>
+        <span className="mx-0">:</span>
+        <span>{String(timeLeft.tenths)}</span>
+        <span>{String(timeLeft.hundredths)}</span>
       </div>
       {text && (
-        <p className="text-white/90 text-base md:text-lg">{text}</p>
+        <p className="text-white/90 text-sm md:text-base mt-3">{text}</p>
       )}
     </div>
   );
