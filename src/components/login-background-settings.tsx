@@ -19,7 +19,7 @@ const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
 
 function CountdownPreview({ endDate, text, small }: { endDate: string | null; text: string; small?: boolean }) {
-  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, tenths: 0, hundredths: 0 });
 
   useEffect(() => {
     if (!endDate) return;
@@ -28,17 +28,20 @@ function CountdownPreview({ endDate, text, small }: { endDate: string | null; te
       const difference = new Date(endDate).getTime() - new Date().getTime();
       
       if (difference > 0) {
+        const ms = difference % 1000;
         setTimeLeft({
           days: Math.floor(difference / (1000 * 60 * 60 * 24)),
           hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
           minutes: Math.floor((difference / 1000 / 60) % 60),
-          seconds: Math.floor((difference / 1000) % 60)
+          seconds: Math.floor((difference / 1000) % 60),
+          tenths: Math.floor(ms / 100),
+          hundredths: Math.floor((ms % 100) / 10)
         });
       }
     };
 
     calculateTimeLeft();
-    const timer = setInterval(calculateTimeLeft, 1000);
+    const timer = setInterval(calculateTimeLeft, 10);
 
     return () => clearInterval(timer);
   }, [endDate]);
@@ -46,30 +49,35 @@ function CountdownPreview({ endDate, text, small }: { endDate: string | null; te
   if (!endDate) return null;
 
   return (
-    <div className="text-center space-y-2 mb-4">
-      <div className={`flex justify-center gap-${small ? '1' : '2'} ${small ? 'text-xs' : 'text-lg'} font-bold text-white`}>
+    <div className="w-full flex flex-col items-center justify-center">
+      <div className="flex justify-center items-start gap-0.5">
         <div className="flex flex-col items-center">
-          <span className={small ? 'text-sm' : 'text-2xl'}>{timeLeft.days.toString().padStart(2, '0')}</span>
-          <span className="text-white/60 text-xs">Tage</span>
+          <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white tabular-nums`}>{String(timeLeft.days).padStart(2, '0')}</span>
+          <span className="text-[8px] text-white/70 mt-0.5">Tage</span>
         </div>
-        <span className="self-start">:</span>
+        <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white`}>:</span>
         <div className="flex flex-col items-center">
-          <span className={small ? 'text-sm' : 'text-2xl'}>{timeLeft.hours.toString().padStart(2, '0')}</span>
-          <span className="text-white/60 text-xs">Std</span>
+          <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white tabular-nums`}>{String(timeLeft.hours).padStart(2, '0')}</span>
+          <span className="text-[8px] text-white/70 mt-0.5">Stunden</span>
         </div>
-        <span className="self-start">:</span>
+        <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white`}>:</span>
         <div className="flex flex-col items-center">
-          <span className={small ? 'text-sm' : 'text-2xl'}>{timeLeft.minutes.toString().padStart(2, '0')}</span>
-          <span className="text-white/60 text-xs">Min</span>
+          <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white tabular-nums`}>{String(timeLeft.minutes).padStart(2, '0')}</span>
+          <span className="text-[8px] text-white/70 mt-0.5">Minuten</span>
         </div>
-        <span className="self-start">:</span>
+        <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white`}>:</span>
         <div className="flex flex-col items-center">
-          <span className={small ? 'text-sm' : 'text-2xl'}>{timeLeft.seconds.toString().padStart(2, '0')}</span>
-          <span className="text-white/60 text-xs">Sek</span>
+          <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white tabular-nums`}>{String(timeLeft.seconds).padStart(2, '0')}</span>
+          <span className="text-[8px] text-white/70 mt-0.5">Sekunden</span>
+        </div>
+        <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white`}>:</span>
+        <div className="flex flex-col items-center">
+          <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white tabular-nums`}>{String(timeLeft.tenths)}{String(timeLeft.hundredths)}</span>
+          <span className="text-[8px] text-white/70 mt-0.5">1/100</span>
         </div>
       </div>
       {text && (
-        <p className={`text-white/80 ${small ? 'text-xs' : 'text-sm'}`}>{text}</p>
+        <p className={`text-white/90 ${small ? 'text-[10px]' : 'text-sm'} mt-2`}>{text}</p>
       )}
     </div>
   );
@@ -316,7 +324,7 @@ export function LoginBackgroundSettings() {
     switch (localSettings.countdownVerticalPosition) {
       case 'top': return 'justify-start pt-8';
       case 'bottom': return 'justify-end pb-8';
-      default: return 'justify-start pt-[30%]'; // Etwas über der Mitte
+      default: return 'justify-start pt-[35%]'; // Etwas über der Mitte
     }
   };
 
