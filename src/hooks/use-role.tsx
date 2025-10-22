@@ -77,8 +77,53 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     }
   }, [settings.defaultRole, currentUser]);
   
-  const setRole = (role: UserRole) => {
+  const setRole = async (role: UserRole) => {
     setCurrentRole(role);
+    
+    // Check if we should load a role user
+    const roleUserEmail = `${role}-rolle@ksvl.test`;
+    
+    // Don't switch for admin role - keep current user
+    if (role === 'admin') {
+      return;
+    }
+    
+    // Try to fetch the role user
+    const { data: roleProfile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', roleUserEmail)
+      .eq('is_role_user', true)
+      .single();
+    
+    if (roleProfile) {
+      // Fetch roles separately
+      const { data: userRoles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', roleProfile.id);
+      
+      const roles = userRoles?.map(r => r.role as UserRole) || [role];
+      const roleUser: User = {
+        id: roleProfile.id,
+        name: roleProfile.name || '',
+        firstName: roleProfile.first_name || undefined,
+        lastName: roleProfile.last_name || undefined,
+        email: roleProfile.email,
+        phone: roleProfile.phone || undefined,
+        boatName: roleProfile.boat_name || undefined,
+        memberNumber: roleProfile.member_number || '',
+        streetAddress: roleProfile.street_address || undefined,
+        postalCode: roleProfile.postal_code || undefined,
+        city: roleProfile.city || undefined,
+        roles,
+        role: role,
+        status: roleProfile.status === 'active' ? 'active' : 'inactive',
+        joinDate: roleProfile.entry_date || '',
+        isActive: roleProfile.status === 'active'
+      };
+      setCurrentUser(roleUser);
+    }
   };
   
   const handleSetCurrentUser = (user: User | null) => {

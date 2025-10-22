@@ -13,6 +13,7 @@ export interface DatabaseUser {
   boatName?: string | null; // Alias for compatibility
   status: string | null;
   is_test_data: boolean | null;
+  is_role_user: boolean | null;
   created_at?: string; // Add created_at field
   roles: string[];
   role?: string; // Primary role for compatibility
@@ -69,6 +70,7 @@ export function useUsers() {
           boatName: profile.boat_name, // Alias
           status: profile.status,
           is_test_data: profile.is_test_data,
+          is_role_user: profile.is_role_user,
           created_at: profile.created_at,
           roles,
           role: primaryRole,

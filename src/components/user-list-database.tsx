@@ -99,6 +99,9 @@ export function UserListDatabase() {
           {user.is_test_data && (
             <Badge variant="outline" className="text-xs">Test</Badge>
           )}
+          {user.is_role_user && (
+            <Badge variant="destructive" className="text-xs">Rolle</Badge>
+          )}
         </div>
         <p className="text-sm text-muted-foreground">{user.email}</p>
         {user.phone && (
@@ -109,6 +112,8 @@ export function UserListDatabase() {
             <Badge key={role} variant="secondary" className="text-xs">
               {role === 'kranfuehrer' ? 'Kranführer' : 
                role === 'admin' ? 'Admin' : 
+               role === 'vorstand' ? 'Vorstand' :
+               role === 'gastmitglied' ? 'Gastmitglied' :
                'Mitglied'}
             </Badge>
           ))}

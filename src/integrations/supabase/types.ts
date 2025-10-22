@@ -136,6 +136,7 @@ export type Database = {
           entry_date: string | null
           first_name: string | null
           id: string
+          is_role_user: boolean | null
           is_test_data: boolean | null
           last_name: string | null
           member_number: string | null
@@ -170,6 +171,7 @@ export type Database = {
           entry_date?: string | null
           first_name?: string | null
           id: string
+          is_role_user?: boolean | null
           is_test_data?: boolean | null
           last_name?: string | null
           member_number?: string | null
@@ -204,6 +206,7 @@ export type Database = {
           entry_date?: string | null
           first_name?: string | null
           id?: string
+          is_role_user?: boolean | null
           is_test_data?: boolean | null
           last_name?: string | null
           member_number?: string | null

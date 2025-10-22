@@ -4,6 +4,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/common/error-boundary";
+import { RoleUsersInitializer } from "@/components/role-users-initializer";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Settings } from "./pages/Settings";
@@ -18,6 +19,7 @@ const App = () => {
         <TooltipProvider>
           <Toaster />
           <Sonner />
+          <RoleUsersInitializer />
           
           <BrowserRouter>
             <Routes>
