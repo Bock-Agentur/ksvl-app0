@@ -35,7 +35,7 @@ const DEFAULT_MESSAGES: Record<UserRole, string> = {
 export function RoleWelcomeSettings() {
   const { toast } = useToast();
   const { messages, updateMessage } = useWelcomeMessages();
-  const [activeRole, setActiveRole] = useState<UserRole>("mitglied");
+  const [activeRole, setActiveRole] = useState<UserRole>("admin");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const handleSave = () => {
@@ -101,7 +101,7 @@ export function RoleWelcomeSettings() {
           <div className="space-y-3">
             <Label className="text-base font-medium">Rolle auswählen</Label>
             <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
-              {(["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] as UserRole[]).map((role) => {
+              {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
                 const Icon = getRoleIcon(role);
                 return (
                   <Card 
@@ -216,7 +216,7 @@ export function RoleWelcomeSettings() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-5 gap-2">
-            {(["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] as UserRole[]).map((role) => {
+            {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
               const Icon = getRoleIcon(role);
               return (
                 <div key={role} className="text-center p-3 bg-muted/30 rounded-lg">
