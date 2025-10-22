@@ -20,6 +20,14 @@ export function LoginBackgroundSettings() {
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  
+  // Local state for preview
+  const [localSettings, setLocalSettings] = useState(background);
+
+  // Update local state when background changes from server
+  useState(() => {
+    setLocalSettings(background);
+  });
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -54,10 +62,10 @@ export function LoginBackgroundSettings() {
 
     try {
       // Delete old file if exists
-      if (background.filename) {
+      if (localSettings.filename) {
         await supabase.storage
           .from('login-media')
-          .remove([background.filename]);
+          .remove([localSettings.filename]);
       }
 
       // Upload new file
@@ -78,9 +86,9 @@ export function LoginBackgroundSettings() {
         .from('login-media')
         .getPublicUrl(fileName);
 
-      // Save to settings
-      await setBackground({
-        ...background,
+      // Update local settings
+      setLocalSettings({
+        ...localSettings,
         type: isVideo ? 'video' : 'image',
         url: publicUrl,
         filename: fileName
@@ -105,14 +113,14 @@ export function LoginBackgroundSettings() {
   const handleDelete = async () => {
     try {
       // Delete file from storage
-      if (background.filename) {
+      if (localSettings.filename) {
         await supabase.storage
           .from('login-media')
-          .remove([background.filename]);
+          .remove([localSettings.filename]);
       }
 
-      // Reset to gradient
-      await setBackground({
+      // Reset to gradient in local settings
+      setLocalSettings({
         type: 'gradient',
         url: null,
         filename: null,
@@ -127,7 +135,7 @@ export function LoginBackgroundSettings() {
 
       toast({
         title: "Hintergrund gelöscht",
-        description: "Gradient ist jetzt aktiv"
+        description: "Änderungen noch nicht gespeichert"
       });
     } catch (error: any) {
       toast({
@@ -138,44 +146,56 @@ export function LoginBackgroundSettings() {
     }
   };
 
-  const handleTypeChange = async (type: 'gradient' | 'image' | 'video') => {
-    if (type === 'gradient') {
-      await handleDelete();
-    } else {
-      await setBackground({ ...background, type });
+  const handleSave = async () => {
+    try {
+      await setBackground(localSettings);
+      toast({
+        title: "Einstellungen gespeichert",
+        description: "Login-Hintergrund wurde aktualisiert"
+      });
+    } catch (error: any) {
+      toast({
+        title: "Fehler beim Speichern",
+        description: error.message,
+        variant: "destructive"
+      });
     }
   };
 
-  const handleVideoOnMobileChange = async (checked: boolean) => {
-    await setBackground({ ...background, videoOnMobile: checked });
-    toast({
-      title: "Einstellung gespeichert",
-      description: `Video wird ${checked ? 'auch' : 'nicht'} auf Mobile abgespielt`
-    });
+  const handleTypeChange = (type: 'gradient' | 'image' | 'video') => {
+    if (type === 'gradient') {
+      handleDelete();
+    } else {
+      setLocalSettings({ ...localSettings, type });
+    }
   };
 
-  const handleOpacityChange = async (value: number[]) => {
-    await setBackground({ ...background, cardOpacity: value[0] });
+  const handleVideoOnMobileChange = (checked: boolean) => {
+    setLocalSettings({ ...localSettings, videoOnMobile: checked });
   };
 
-  const handleBorderBlurChange = async (value: number[]) => {
-    await setBackground({ ...background, cardBorderBlur: value[0] });
+  const handleOpacityChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, cardOpacity: value[0] });
   };
 
-  const handleBorderRadiusChange = async (value: number[]) => {
-    await setBackground({ ...background, cardBorderRadius: value[0] });
+  const handleBorderBlurChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, cardBorderBlur: value[0] });
   };
 
-  const handleOverlayColorChange = async (color: string) => {
-    await setBackground({ ...background, overlayColor: color });
+  const handleBorderRadiusChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, cardBorderRadius: value[0] });
   };
 
-  const handleOverlayOpacityChange = async (value: number[]) => {
-    await setBackground({ ...background, overlayOpacity: value[0] });
+  const handleOverlayColorChange = (color: string) => {
+    setLocalSettings({ ...localSettings, overlayColor: color });
   };
 
-  const handleMediaBlurChange = async (value: number[]) => {
-    await setBackground({ ...background, mediaBlur: value[0] });
+  const handleOverlayOpacityChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, overlayOpacity: value[0] });
+  };
+
+  const handleMediaBlurChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, mediaBlur: value[0] });
   };
 
   return (
@@ -193,21 +213,21 @@ export function LoginBackgroundSettings() {
             <Label>Hintergrund-Typ</Label>
             <div className="flex gap-4">
               <Button
-                variant={background.type === 'gradient' ? 'default' : 'outline'}
+                variant={localSettings.type === 'gradient' ? 'default' : 'outline'}
                 onClick={() => handleTypeChange('gradient')}
                 className="flex-1"
               >
                 Gradient
               </Button>
               <Button
-                variant={background.type === 'image' ? 'default' : 'outline'}
+                variant={localSettings.type === 'image' ? 'default' : 'outline'}
                 onClick={() => handleTypeChange('image')}
                 className="flex-1"
               >
                 Bild
               </Button>
               <Button
-                variant={background.type === 'video' ? 'default' : 'outline'}
+                variant={localSettings.type === 'video' ? 'default' : 'outline'}
                 onClick={() => handleTypeChange('video')}
                 className="flex-1"
               >
@@ -217,21 +237,21 @@ export function LoginBackgroundSettings() {
           </div>
 
           {/* File Upload */}
-          {background.type !== 'gradient' && (
+          {localSettings.type !== 'gradient' && (
             <div className="space-y-3">
               <Label htmlFor="file-upload">
-                {background.type === 'video' ? 'Video hochladen' : 'Bild hochladen'}
+                {localSettings.type === 'video' ? 'Video hochladen' : 'Bild hochladen'}
               </Label>
               <div className="flex gap-2">
                 <Input
                   id="file-upload"
                   type="file"
-                  accept={background.type === 'video' ? 'video/mp4,video/webm' : 'image/jpeg,image/png,image/webp'}
+                  accept={localSettings.type === 'video' ? 'video/mp4,video/webm' : 'image/jpeg,image/png,image/webp'}
                   onChange={handleFileUpload}
                   disabled={uploading}
                   className="flex-1"
                 />
-                {background.url && (
+                {localSettings.url && (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="destructive" size="icon">
@@ -256,7 +276,7 @@ export function LoginBackgroundSettings() {
                 )}
               </div>
               <p className="text-sm text-muted-foreground">
-                {background.type === 'video' 
+                {localSettings.type === 'video'
                   ? 'Empfohlen: MP4 oder WEBM, max 50MB, 1920x1080, 30fps'
                   : 'Empfohlen: JPG, PNG oder WEBP, max 20MB, 1920x1080'
                 }
@@ -270,12 +290,12 @@ export function LoginBackgroundSettings() {
           )}
 
           {/* Video on Mobile Option */}
-          {background.type === 'video' && background.url && (
+          {localSettings.type === 'video' && localSettings.url && (
             <div className="space-y-3 p-4 border rounded-lg bg-muted/50">
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="video-mobile"
-                  checked={background.videoOnMobile}
+                  checked={localSettings.videoOnMobile}
                   onCheckedChange={handleVideoOnMobileChange}
                 />
                 <Label htmlFor="video-mobile" className="cursor-pointer">
@@ -289,14 +309,14 @@ export function LoginBackgroundSettings() {
           )}
 
           {/* Media Blur Slider */}
-          {background.url && (
+          {localSettings.url && (
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <Label>Hintergrund-Weichzeichnung</Label>
-                <span className="text-sm text-muted-foreground">{background.mediaBlur}px</span>
+                <span className="text-sm text-muted-foreground">{localSettings.mediaBlur}px</span>
               </div>
               <Slider
-                value={[background.mediaBlur]}
+                value={[localSettings.mediaBlur]}
                 onValueChange={handleMediaBlurChange}
                 min={0}
                 max={20}
@@ -311,12 +331,12 @@ export function LoginBackgroundSettings() {
           )}
 
           {/* Overlay Color Picker */}
-          {background.url && (
+          {localSettings.url && (
             <div className="space-y-3">
               <Label>Overlay-Farbe</Label>
               <div className="flex gap-4 items-start">
                 <HexColorPicker 
-                  color={background.overlayColor} 
+                  color={localSettings.overlayColor} 
                   onChange={handleOverlayColorChange}
                   style={{ width: '200px', height: '150px' }}
                 />
@@ -324,11 +344,11 @@ export function LoginBackgroundSettings() {
                   <div className="flex items-center gap-2">
                     <div 
                       className="w-12 h-12 rounded border-2 border-border"
-                      style={{ backgroundColor: background.overlayColor }}
+                      style={{ backgroundColor: localSettings.overlayColor }}
                     />
                     <Input
                       type="text"
-                      value={background.overlayColor}
+                      value={localSettings.overlayColor}
                       onChange={(e) => handleOverlayColorChange(e.target.value)}
                       className="flex-1 font-mono"
                       placeholder="#000000"
@@ -343,14 +363,14 @@ export function LoginBackgroundSettings() {
           )}
 
           {/* Overlay Opacity Slider */}
-          {background.url && (
+          {localSettings.url && (
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <Label>Overlay-Transparenz</Label>
-                <span className="text-sm text-muted-foreground">{background.overlayOpacity}%</span>
+                <span className="text-sm text-muted-foreground">{localSettings.overlayOpacity}%</span>
               </div>
               <Slider
-                value={[background.overlayOpacity]}
+                value={[localSettings.overlayOpacity]}
                 onValueChange={handleOverlayOpacityChange}
                 min={0}
                 max={100}
@@ -365,53 +385,105 @@ export function LoginBackgroundSettings() {
           )}
 
           {/* Preview */}
-          {background.url && (
+          {localSettings.url && (
             <div className="space-y-2">
               <Label>Vorschau</Label>
               <div className="relative aspect-video rounded-lg overflow-hidden border">
-                {background.type === 'video' ? (
+                {localSettings.type === 'video' ? (
                   <video
-                    src={background.url}
+                    src={localSettings.url}
                     className="w-full h-full object-cover"
                     autoPlay
                     muted
                     loop
                     playsInline
-                    style={{ filter: `blur(${background.mediaBlur}px)` }}
+                    style={{ filter: `blur(${localSettings.mediaBlur}px)` }}
                   />
                 ) : (
                   <img
-                    src={background.url}
+                    src={localSettings.url}
                     alt="Background preview"
                     className="w-full h-full object-cover"
-                    style={{ filter: `blur(${background.mediaBlur}px)` }}
+                    style={{ filter: `blur(${localSettings.mediaBlur}px)` }}
                   />
                 )}
                 <div 
-                  className="absolute inset-0 flex items-center justify-center"
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-4"
                   style={{ 
-                    backgroundColor: `${background.overlayColor}${Math.round((background.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
+                    backgroundColor: `${localSettings.overlayColor}${Math.round((localSettings.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
                   }}
                 >
-                  <div 
-                    className="relative overflow-hidden shadow-lg"
-                    style={{ 
-                      borderRadius: `${background.cardBorderRadius}px`
-                    }}
-                  >
+                  {/* Login Fields Preview */}
+                  <div className="w-full max-w-xs space-y-3">
+                    {/* Email Input */}
                     <div 
-                      className="absolute inset-0 -z-10"
-                      style={{
-                        backgroundColor: `hsl(var(--background) / ${background.cardOpacity / 100})`,
-                        filter: `blur(${background.cardBorderBlur}px)`,
+                      className="relative overflow-hidden transition-all duration-300"
+                      style={{ 
+                        borderRadius: `${localSettings.cardBorderRadius}px`
                       }}
-                    />
-                    <p className="relative text-sm font-medium p-6">Login-Card Vorschau</p>
+                    >
+                      <div 
+                        className="absolute inset-0 -z-10"
+                        style={{
+                          backgroundColor: `hsl(var(--background) / ${localSettings.cardOpacity / 100})`,
+                          backdropFilter: `blur(${localSettings.cardBorderBlur}px)`,
+                          WebkitBackdropFilter: `blur(${localSettings.cardBorderBlur}px)`,
+                        }}
+                      />
+                      <div className="relative flex items-center gap-2 px-3 py-2">
+                        <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-xs text-muted-foreground">E-Mail oder Benutzername</span>
+                      </div>
+                    </div>
+
+                    {/* Password Input */}
+                    <div 
+                      className="relative overflow-hidden transition-all duration-300"
+                      style={{ 
+                        borderRadius: `${localSettings.cardBorderRadius}px`
+                      }}
+                    >
+                      <div 
+                        className="absolute inset-0 -z-10"
+                        style={{
+                          backgroundColor: `hsl(var(--background) / ${localSettings.cardOpacity / 100})`,
+                          backdropFilter: `blur(${localSettings.cardBorderBlur}px)`,
+                          WebkitBackdropFilter: `blur(${localSettings.cardBorderBlur}px)`,
+                        }}
+                      />
+                      <div className="relative flex items-center gap-2 px-3 py-2">
+                        <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <span className="text-xs text-muted-foreground">Passwort</span>
+                      </div>
+                    </div>
+
+                    {/* Login Button */}
+                    <div 
+                      className="w-full bg-primary text-primary-foreground text-xs font-medium py-2 px-4 text-center shadow-lg"
+                      style={{ borderRadius: `${localSettings.cardBorderRadius}px` }}
+                    >
+                      Anmelden
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           )}
+
+          {/* Save Button */}
+          <div className="pt-4 border-t">
+            <Button 
+              onClick={handleSave} 
+              className="w-full"
+              size="lg"
+            >
+              Einstellungen speichern
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
