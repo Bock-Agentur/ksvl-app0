@@ -303,7 +303,7 @@ export function SlotManagement() {
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
-      <Card className="bg-card/90 backdrop-blur-xl border-border/50 shadow-xl">
+      <Card className="bg-card/75 backdrop-blur-xl border-border/50 shadow-xl">
         <CardHeader>
           <CardTitle>Slot-Verwaltung</CardTitle>
           <CardDescription>
