@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { User as UserType, UserRole, CustomField, ProfileViewProps, generateRolesFromPrimary } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
+import { useRole } from "@/hooks/use-role";
 
 // Mock current users based on role
 const mockCurrentUsers: Record<UserRole, UserType> = {
@@ -155,6 +156,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
   const { toast } = useToast();
+  const { currentUser: roleCurrentUser, currentRole: roleCurrentRole } = useRole();
 
   // New custom field form
   const [newField, setNewField] = useState<Partial<CustomField>>({
@@ -458,7 +460,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       setIsEditing(false);
       toast({
         title: "Profil gespeichert",
-        description: "Ihre Profildaten wurden erfolgreich aktualisiert."
+        description: "Ihre Profildaten wurden erfolgreich aktualisiert.",
+        userName: roleCurrentUser?.name || editedUser.name,
+        userRole: roleCurrentRole
       });
       
       loadCurrentUser(); // Reload to ensure fresh data

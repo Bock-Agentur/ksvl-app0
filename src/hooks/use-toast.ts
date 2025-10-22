@@ -1,5 +1,4 @@
 import * as React from "react"
-import { userStorage } from "@/lib/storage"
 
 import type {
   ToastActionElement,
@@ -175,17 +174,6 @@ function toast({ ...props }: Toast) {
 
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
-  
-  // Try to get current user context, but don't throw if it's not available
-  let currentUser = null;
-  let currentRole = 'mitglied';
-  
-  try {
-    const roleContext = React.useContext(React.createContext(undefined));
-    // This is a fallback approach - the context might not be available in all components
-  } catch {
-    // Context not available, use defaults
-  }
 
   React.useEffect(() => {
     listeners.push(setState)
@@ -197,49 +185,9 @@ function useToast() {
     }
   }, [state])
 
-  // Enhanced toast function that includes user context
-  const enhancedToast = React.useCallback(({ ...props }: Toast) => {
-    const id = genId()
-    
-    // Get user info using safe storage with proper typing
-    const userData = userStorage.getCurrentUser() as { name?: string } | null;
-    const roleData = userStorage.getCurrentRole() as string | null;
-    
-    const userName = userData?.name || 'Unbekannter Benutzer';
-    const userRole = roleData || 'mitglied';
-
-    const update = (props: ToasterToast) =>
-      dispatch({
-        type: "UPDATE_TOAST",
-        toast: { ...props, id },
-      })
-    const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
-
-    dispatch({
-      type: "ADD_TOAST",
-      toast: {
-        ...props,
-        id,
-        timestamp: new Date(),
-        userName,
-        userRole,
-        open: true,
-        onOpenChange: (open) => {
-          if (!open) dismiss()
-        },
-      },
-    })
-
-    return {
-      id: id,
-      dismiss,
-      update,
-    }
-  }, [])
-
   return {
     ...state,
-    toast: enhancedToast,
+    toast,
     dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
   }
 }
