@@ -302,58 +302,54 @@ export function SlotManagement() {
   };
 
   return (
-    <div className="p-4 space-y-6 max-w-6xl mx-auto">
-      {/* Header */}
-      <div className="space-y-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Slot-Verwaltung</h1>
-          <p className="text-sm text-muted-foreground">
+    <div className="p-4 max-w-7xl mx-auto">
+      <Card>
+        <CardHeader>
+          <CardTitle>Slot-Verwaltung</CardTitle>
+          <CardDescription>
             Verwalten Sie alle Kranführer-Slots
-          </p>
-        </div>
+          </CardDescription>
+        </CardHeader>
+        
+        <CardContent className="space-y-6">
+          {!isEditing && (
+            <Button 
+              onClick={() => handleOpenForm()}
+              size="sm"
+              className="w-full sm:w-auto"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              <span className="hidden sm:inline">Neuer Slot</span>
+              <span className="sm:hidden">Slot</span>
+            </Button>
+          )}
 
-        {!isEditing && (
-          <Button 
-            onClick={() => handleOpenForm()}
-            size="sm"
-            className="w-full sm:w-auto"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            <span className="hidden sm:inline">Neuer Slot</span>
-            <span className="sm:hidden">Slot</span>
-          </Button>
-        )}
-      </div>
+          {/* Slot Form - Same layout as Profile */}
+          {isEditing && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold">
+                  {editingSlot ? "Slot bearbeiten" : "Neuen Slot erstellen"}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {editingSlot ? "Bearbeiten Sie die Slot-Informationen" : "Erstellen Sie einen neuen Kranführer-Slot"}
+                </p>
+              </div>
+              
+              <SlotForm 
+                slot={editingSlot || undefined}
+                onSubmit={handleFormSubmit}
+                onCancel={() => {
+                  setIsEditing(false);
+                  setEditingSlot(null);
+                }}
+              />
+            </div>
+          )}
 
-      {/* Slot Form Card - Same layout as Profile */}
-      {isEditing && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">
-              {editingSlot ? "Slot bearbeiten" : "Neuen Slot erstellen"}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {editingSlot ? "Bearbeiten Sie die Slot-Informationen" : "Erstellen Sie einen neuen Kranführer-Slot"}
-            </p>
-          </CardHeader>
-          
-          <CardContent className="space-y-6">
-            <SlotForm 
-              slot={editingSlot || undefined}
-              onSubmit={handleFormSubmit}
-              onCancel={() => {
-                setIsEditing(false);
-                setEditingSlot(null);
-              }}
-            />
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Show slots list only when not editing */}
-      {!isEditing && (
-        <Card>
-          <CardContent className="pt-6 space-y-6">
+          {/* Show slots list only when not editing */}
+          {!isEditing && (
+            <div className="space-y-6">
             {/* Stats Cards - Collapsible */}
             <Collapsible open={isStatsOpen} onOpenChange={setIsStatsOpen}>
               <CollapsibleTrigger asChild>
@@ -518,7 +514,7 @@ export function SlotManagement() {
           </Collapsible>
 
           {/* Slots List */}
-          <div className="space-y-4">
+          <div className="space-y-6">
             <h3 className="text-sm font-medium text-foreground border-b pb-2">
               {getFilterTitle()} 
               {filteredSlots.length > 0 && (
@@ -739,9 +735,9 @@ export function SlotManagement() {
               </div>
             )}
           </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
 
       {/* Slot Details Dialog */}
       <Dialog open={!!selectedSlotForDetails} onOpenChange={() => setSelectedSlotForDetails(null)}>
