@@ -95,6 +95,22 @@ export function TestDataManager() {
         return;
       }
 
+      // Get test members for bookings
+      const { data: memberRoles, error: memberRolesError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'mitglied');
+
+      if (memberRolesError) throw memberRolesError;
+
+      const { data: testMembers, error: membersError } = await supabase
+        .from('profiles')
+        .select('id, name, email')
+        .in('id', memberRoles?.map(r => r.user_id) || [])
+        .eq('is_test_data', true);
+
+      if (membersError) throw membersError;
+
       // Generate slots for next 7 days
       const today = new Date();
       const testSlots = [];
@@ -108,14 +124,20 @@ export function TestDataManager() {
         const time = `${hour.toString().padStart(2, '0')}:00`;
 
         const randomOperator = craneOperators[Math.floor(Math.random() * craneOperators.length)];
+        
+        // 30% chance to be booked if we have test members
+        const shouldBook = testMembers && testMembers.length > 0 && Math.random() > 0.7;
+        const randomMember = shouldBook ? testMembers[Math.floor(Math.random() * testMembers.length)] : null;
 
         testSlots.push({
           date: slotDate.toISOString().split('T')[0],
           time,
           duration: 60,
           crane_operator_id: randomOperator.id,
-          is_booked: Math.random() > 0.7, // 30% booked
-          is_test_data: true
+          is_booked: shouldBook,
+          member_id: randomMember?.id || null,
+          is_test_data: true,
+          notes: shouldBook ? `Test-Buchung für ${randomMember?.name}` : null
         });
       }
 
@@ -127,7 +149,7 @@ export function TestDataManager() {
 
       toast({
         title: "Test-Slots erstellt",
-        description: `${slotCount} Test-Termine wurden angelegt.`
+        description: `${slotCount} Test-Termine wurden angelegt (ca. ${Math.floor(slotCount * 0.3)} gebucht).`
       });
 
     } catch (error) {
@@ -162,7 +184,7 @@ export function TestDataManager() {
 
       toast({
         title: "Testdaten gelöscht",
-        description: `${data.deleted} Test-Benutzer und alle zugehörigen Daten wurden entfernt.`
+        description: `${data.deleted} Test-Benutzer und alle zugehörigen Slots wurden entfernt.`
       });
 
     } catch (error) {
@@ -183,7 +205,7 @@ export function TestDataManager() {
         <AlertTriangle className="h-4 w-4" />
         <AlertDescription>
           Dies ist ein Testsystem. Mit dieser Funktion können Sie Test-Benutzer und Test-Termine in der echten Datenbank anlegen.
-          Alle Testdaten werden mit einem speziellen Marker versehen und können jederzeit gelöscht werden.
+          Alle Testdaten werden mit dem Flag `is_test_data: true` versehen und können jederzeit vollständig gelöscht werden.
         </AlertDescription>
       </Alert>
 
@@ -276,7 +298,7 @@ export function TestDataManager() {
             {isGenerating ? "Generiere..." : "Test-Slots erstellen"}
           </Button>
           <p className="text-sm text-muted-foreground">
-            Slots werden über die nächsten 7 Tage verteilt, ca. 30% sind bereits gebucht.
+            Slots werden über die nächsten 7 Tage verteilt, ca. 30% sind bereits von Test-Mitgliedern gebucht.
           </p>
         </CardContent>
       </Card>
@@ -320,7 +342,7 @@ export function TestDataManager() {
             {isDeleting ? "Lösche..." : "Alle Testdaten löschen"}
           </Button>
           <p className="text-sm text-muted-foreground">
-            ⚠️ Nur Testdaten werden gelöscht. Alle anderen Daten bleiben erhalten.
+            ⚠️ Löscht alle Test-Benutzer und Test-Slots (mit is_test_data: true). Echte Daten bleiben erhalten.
           </p>
         </CardContent>
       </Card>
