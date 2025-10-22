@@ -194,7 +194,7 @@ export function Auth() {
           {/* Sign In Button */}
           <Button 
             type="submit" 
-            className="w-full bg-gradient-to-r from-cyan-400 to-cyan-500 hover:from-cyan-500 hover:to-cyan-600 text-white font-medium py-6 text-lg shadow-lg transition-all duration-300"
+            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium py-6 text-lg shadow-lg transition-all duration-300"
             disabled={loading}
             style={{ borderRadius: `${cardBorderRadius}px` }}
           >
