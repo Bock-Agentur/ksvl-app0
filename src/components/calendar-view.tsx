@@ -33,7 +33,7 @@ export function CalendarView() {
     if (navigateToDate) {
       console.log('📅 Navigating to new date:', navigateToDate);
       setSelectedDate(navigateToDate);
-      setViewMode("week"); // Wechsle zur Wochenansicht um den neuen Slot zu sehen
+      setViewMode("day"); // Wechsle zur Tagesansicht um den neuen Slot zu sehen
     }
   };
 
