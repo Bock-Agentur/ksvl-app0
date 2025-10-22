@@ -353,9 +353,19 @@ export function ThemeManager() {
           
           {/* Badge List View */}
           <div className="space-y-3">
-            {['default', 'secondary', 'destructive', 'outline', 'success', 'warning', 'available', 'booked', 'blocked'].map((variant) => {
-              const bgSetting = badgeColors.find(s => s.name.toLowerCase().includes(variant) && s.name.toLowerCase().includes('hintergrund'));
-              const fgSetting = badgeColors.find(s => s.name.toLowerCase().includes(variant) && s.name.toLowerCase().includes('schrift'));
+            {[
+              { variant: 'default', bgName: 'Badge Standard', fgName: 'Badge Standard Vordergrund' },
+              { variant: 'secondary', bgName: 'Badge Sekundär', fgName: 'Badge Sekundär Vordergrund' },
+              { variant: 'destructive', bgName: 'Badge Destruktiv', fgName: 'Badge Destruktiv Vordergrund' },
+              { variant: 'outline', bgName: 'Badge Outline', fgName: 'Badge Outline Vordergrund' },
+              { variant: 'success', bgName: 'Badge Erfolg', fgName: 'Badge Erfolg Vordergrund' },
+              { variant: 'warning', bgName: 'Badge Warnung', fgName: 'Badge Warnung Vordergrund' },
+              { variant: 'available', bgName: 'Badge Verfügbar', fgName: 'Badge Verfügbar Vordergrund' },
+              { variant: 'booked', bgName: 'Badge Gebucht', fgName: 'Badge Gebucht Vordergrund' },
+              { variant: 'blocked', bgName: 'Badge Blockiert', fgName: 'Badge Blockiert Vordergrund' },
+            ].map(({ variant, bgName, fgName }) => {
+              const bgSetting = badgeColors.find(s => s.name === bgName);
+              const fgSetting = badgeColors.find(s => s.name === fgName);
               
               if (!bgSetting || !fgSetting) return null;
               
