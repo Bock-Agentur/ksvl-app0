@@ -49,10 +49,16 @@ export function useSlots() {
         const craneOperator = profilesMap.get(dbSlot.crane_operator_id);
         const member = dbSlot.member_id ? profilesMap.get(dbSlot.member_id) : null;
 
+        // Normalize time format - remove seconds if present
+        let normalizedTime = dbSlot.time;
+        if (normalizedTime && normalizedTime.length === 8) { // Format: HH:MM:SS
+          normalizedTime = normalizedTime.substring(0, 5); // Get HH:MM only
+        }
+
         return {
           id: dbSlot.id,
           date: dbSlot.date,
-          time: dbSlot.time,
+          time: normalizedTime,
           duration: dbSlot.duration as 15 | 30 | 45 | 60,
           craneOperator: {
             id: dbSlot.crane_operator_id,
