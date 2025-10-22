@@ -201,6 +201,17 @@ export function Auth() {
             {loading ? "Wird geladen..." : "Anmelden"}
           </Button>
         </form>
+
+        {/* Bottom Links */}
+        <div className="mt-6 w-full flex items-center justify-center gap-4 text-sm">
+          <button className="text-primary hover:text-primary/80 transition-colors font-medium">
+            Konto erstellen
+          </button>
+          <div className="h-4 w-px bg-border/50" />
+          <button className="text-muted-foreground hover:text-foreground transition-colors">
+            Passwort vergessen?
+          </button>
+        </div>
       </div>
     </div>
   );
