@@ -368,13 +368,20 @@ export function useSlots() {
   // Cancel a booking
   const cancelBooking = async (slotId: string) => {
     try {
+      console.log('🔄 CANCEL BOOKING - START:', slotId);
+      
       // Optimistic update - update UI immediately
-      setSlots(prev => prev.map(slot => 
-        slot.id === slotId 
-          ? { ...slot, isBooked: false, memberId: undefined, memberName: undefined, member: undefined, bookedBy: undefined }
-          : slot
-      ));
+      setSlots(prev => {
+        const updated = prev.map(slot => 
+          slot.id === slotId 
+            ? { ...slot, isBooked: false, memberId: undefined, memberName: undefined, member: undefined, bookedBy: undefined }
+            : slot
+        );
+        console.log('✅ OPTIMISTIC UPDATE COMPLETE - Slot cancelled:', slotId);
+        return updated;
+      });
 
+      console.log('📡 UPDATING DATABASE...');
       const { data, error } = await supabase
         .from('slots')
         .update({
@@ -385,15 +392,23 @@ export function useSlots() {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ DATABASE UPDATE FAILED:', error);
+        throw error;
+      }
 
-      // Fetch full data in background to ensure consistency
+      console.log('✅ DATABASE UPDATED SUCCESSFULLY');
+      console.log('🔄 FETCHING LATEST DATA...');
+      
+      // Fetch full data to ensure consistency
       await fetchSlots();
-
+      
+      console.log('✅ CANCEL BOOKING - COMPLETE');
       return data;
     } catch (error) {
-      console.error('Error canceling booking:', error);
+      console.error('❌ ERROR CANCELING BOOKING:', error);
       // Revert optimistic update on error
+      console.log('🔄 REVERTING OPTIMISTIC UPDATE...');
       await fetchSlots();
       toast({
         title: 'Fehler',
