@@ -727,6 +727,23 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
               
               <div className="space-y-2">
+                <Label>ÖSV Nummer:</Label>
+                {isEditing ? (
+                  <Input
+                    name="oesv-number"
+                    autoComplete="off"
+                    value={(editedUser as any).oesvNumber || ''}
+                    onChange={(e) => setEditedUser(prev => ({ ...prev, oesvNumber: e.target.value } as any))}
+                    placeholder="ÖSV Mitgliedsnummer"
+                  />
+                ) : (
+                  <span className="text-sm">
+                    {(user as any).oesvNumber || '-'}
+                  </span>
+                )}
+              </div>
+              
+              <div className="space-y-2">
                 <Label>Vorname:</Label>
                 {isEditing ? (
                   <Input
