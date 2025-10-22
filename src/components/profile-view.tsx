@@ -412,40 +412,39 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         }
       } else {
         // Regular profile update without role changes
-        const updateData: any = {
-          name: editedUser.name,
-          first_name: editedUser.firstName || null,
-          last_name: editedUser.lastName || null,
-          phone: editedUser.phone || null,
-          member_number: editedUser.memberNumber || null,
-          boat_name: editedUser.boatName || null,
-          street_address: editedUser.streetAddress || null,
-          postal_code: editedUser.postalCode || null,
-          city: editedUser.city || null,
-          oesv_number: (editedUser as any).oesvNumber || null,
-          address: (editedUser as any).address || null,
-          berth_number: (editedUser as any).berthNumber || null,
-          berth_type: (editedUser as any).berthType || null,
-          birth_date: (editedUser as any).birthDate || null,
-          entry_date: (editedUser as any).entryDate || null,
-          dinghy_berth_number: (editedUser as any).dinghyBerthNumber || null,
-          boat_type: (editedUser as any).boatType || null,
-          boat_length: (editedUser as any).boatLength || null,
-          boat_width: (editedUser as any).boatWidth || null,
-          parking_permit_number: (editedUser as any).parkingPermitNumber || null,
-          parking_permit_issue_date: (editedUser as any).parkingPermitIssueDate || null,
-          beverage_chip_number: (editedUser as any).beverageChipNumber || null,
-          beverage_chip_issue_date: (editedUser as any).beverageChipIssueDate || null,
-          emergency_contact: (editedUser as any).emergencyContact || null,
-          notes: (editedUser as any).notes || null
+        // Helper function to convert empty strings and undefined to null
+        const toNullIfEmpty = (value: any) => {
+          if (value === '' || value === undefined) return null;
+          return value;
         };
 
-        // Clean up: ensure empty strings are converted to null to avoid constraint violations
-        Object.keys(updateData).forEach(key => {
-          if (updateData[key] === '') {
-            updateData[key] = null;
-          }
-        });
+        const updateData: any = {
+          name: editedUser.name,
+          first_name: toNullIfEmpty(editedUser.firstName),
+          last_name: toNullIfEmpty(editedUser.lastName),
+          phone: toNullIfEmpty(editedUser.phone),
+          member_number: toNullIfEmpty(editedUser.memberNumber),
+          boat_name: toNullIfEmpty(editedUser.boatName),
+          street_address: toNullIfEmpty(editedUser.streetAddress),
+          postal_code: toNullIfEmpty(editedUser.postalCode),
+          city: toNullIfEmpty(editedUser.city),
+          oesv_number: toNullIfEmpty((editedUser as any).oesvNumber),
+          address: toNullIfEmpty((editedUser as any).address),
+          berth_number: toNullIfEmpty((editedUser as any).berthNumber),
+          berth_type: toNullIfEmpty((editedUser as any).berthType),
+          birth_date: toNullIfEmpty((editedUser as any).birthDate),
+          entry_date: toNullIfEmpty((editedUser as any).entryDate),
+          dinghy_berth_number: toNullIfEmpty((editedUser as any).dinghyBerthNumber),
+          boat_type: toNullIfEmpty((editedUser as any).boatType),
+          boat_length: toNullIfEmpty((editedUser as any).boatLength),
+          boat_width: toNullIfEmpty((editedUser as any).boatWidth),
+          parking_permit_number: toNullIfEmpty((editedUser as any).parkingPermitNumber),
+          parking_permit_issue_date: toNullIfEmpty((editedUser as any).parkingPermitIssueDate),
+          beverage_chip_number: toNullIfEmpty((editedUser as any).beverageChipNumber),
+          beverage_chip_issue_date: toNullIfEmpty((editedUser as any).beverageChipIssueDate),
+          emergency_contact: toNullIfEmpty((editedUser as any).emergencyContact),
+          notes: toNullIfEmpty((editedUser as any).notes)
+        };
 
         const { error } = await supabase
           .from('profiles')
