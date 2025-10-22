@@ -10,6 +10,7 @@ import { useTestData } from "@/hooks/use-test-data";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { useWelcomeMessages } from "@/hooks/use-welcome-messages";
 import { useDashboardAnimations } from "@/hooks/use-dashboard-animations";
+import { useLoginBackground } from "@/hooks/use-login-background";
 import { getEnabledWidgetsForRole, sortWidgetsByPosition } from "@/lib/dashboard-config";
 import { cn } from "@/lib/utils";
 
@@ -64,6 +65,7 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
   const { settings, isLoading } = useDashboardSettings(currentRole, false); // Regular users don't use admin mode
   const { getWelcomeMessage } = useWelcomeMessages();
   const { getAnimationClass, getCardAnimationClass, isAnimationEnabled, isInitialized } = useDashboardAnimations();
+  const { background } = useLoginBackground();
 
   const getQuickActions = (role: string) => {
     const actions = [];
@@ -248,8 +250,58 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
     return () => observer.disconnect();
   }, [isAnimationEnabled, settings.animationType, isInitialized]);
 
+  const renderBackground = () => {
+    if (background.type === 'gradient') {
+      return null;
+    }
+
+    if (background.type === 'video' && background.url) {
+      return (
+        <video
+          className="fixed inset-0 w-full h-full object-cover -z-20"
+          autoPlay
+          muted
+          loop
+          playsInline
+          style={{ filter: `blur(${background.mediaBlur}px)` }}
+        >
+          <source src={background.url} type="video/mp4" />
+        </video>
+      );
+    }
+
+    if (background.type === 'image' && background.url) {
+      return (
+        <div
+          className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat -z-20"
+          style={{
+            backgroundImage: `url(${background.url})`,
+            filter: `blur(${background.mediaBlur}px)`
+          }}
+        />
+      );
+    }
+
+    return null;
+  };
+
   return (
-    <div className="p-4 space-y-6">
+    <>
+      {/* Background Layer */}
+      {renderBackground()}
+      
+      {/* Overlay Layer */}
+      {background.type !== 'gradient' && background.url && (
+        <div
+          className="fixed inset-0 -z-10"
+          style={{
+            backgroundColor: `${background.overlayColor}${Math.round((background.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
+          }}
+        />
+      )}
+
+      {/* Content */}
+      <div className="p-4 space-y-6">
       {/* Welcome Section */}
       {settings.showWelcomeSection && (
         <div className={cn(
@@ -483,6 +535,7 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
           </CardContent>
         </Card>
       )}
-    </div>
+      </div>
+    </>
   );
 }
