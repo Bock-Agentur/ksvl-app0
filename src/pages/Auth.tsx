@@ -122,18 +122,23 @@ export function Auth() {
     }`}>
       {renderBackground()}
       <Card 
-        className="w-full max-w-md relative z-10 transition-all duration-300"
+        className="w-full max-w-md relative z-10 overflow-hidden transition-all duration-300"
         style={{ 
-          backgroundColor: `hsl(var(--background) / ${cardOpacity / 100})`,
-          filter: `blur(${cardBorderBlur}px)`,
-          WebkitFilter: `blur(${cardBorderBlur}px)`,
           borderRadius: `${cardBorderRadius}px`
         }}
       >
-        <CardHeader>
+        <div 
+          className="absolute inset-0 -z-10"
+          style={{
+            backgroundColor: `hsl(var(--background) / ${cardOpacity / 100})`,
+            filter: `blur(${cardBorderBlur}px)`,
+            WebkitFilter: `blur(${cardBorderBlur}px)`,
+          }}
+        />
+        <CardHeader className="relative">
           <CardTitle className="text-2xl text-center">Anmelden</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="relative">
           <form onSubmit={handleLogin} className="space-y-4" autoComplete="on">
             <div className="space-y-2">
               <Label htmlFor="email">

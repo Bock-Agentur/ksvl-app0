@@ -360,14 +360,19 @@ export function LoginBackgroundSettings() {
                 )}
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                   <div 
-                    className="bg-background p-6 shadow-lg"
+                    className="relative overflow-hidden shadow-lg"
                     style={{ 
-                      opacity: background.cardOpacity / 100,
-                      filter: `blur(${background.cardBorderBlur}px)`,
                       borderRadius: `${background.cardBorderRadius}px`
                     }}
                   >
-                    <p className="text-sm font-medium">Login-Card Vorschau</p>
+                    <div 
+                      className="absolute inset-0 -z-10"
+                      style={{
+                        backgroundColor: `hsl(var(--background) / ${background.cardOpacity / 100})`,
+                        filter: `blur(${background.cardBorderBlur}px)`,
+                      }}
+                    />
+                    <p className="relative text-sm font-medium p-6">Login-Card Vorschau</p>
                   </div>
                 </div>
               </div>
