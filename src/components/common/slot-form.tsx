@@ -400,8 +400,8 @@ export function SlotForm({ slot, prefilledDateTime, onSubmit, onCancel, classNam
           </div>
         </div>
 
-        {/* Buchungsstatus */}
-        {isEditing && canManageSlots && (
+        {/* Buchungsstatus - auch beim Erstellen verfügbar */}
+        {canManageSlots && (
           <div className="space-y-3 sm:space-y-4">
             <h3 className="text-xs sm:text-sm font-medium text-foreground border-b pb-2">Buchungsstatus</h3>
             
