@@ -9,9 +9,13 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   const { settings } = useMenuSettings();
   const [currentRole, setCurrentRole] = useState<UserRole>("mitglied");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [originalUser, setOriginalUser] = useState<User | null>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Load current user from Supabase
+  // Load current user from Supabase only on initial load
   useEffect(() => {
+    if (!isInitialLoad) return;
+
     const loadUser = async () => {
       const { data: { user: authUser } } = await supabase.auth.getUser();
       if (!authUser) return;
@@ -59,23 +63,19 @@ export function RoleProvider({ children }: { children: ReactNode }) {
         isActive: profile.status === 'active'
       };
 
+      setOriginalUser(user);
       setCurrentUser(user);
+      
       // Only use defaultRole if it's one of the user's roles
       const roleToUse = (settings.defaultRole && roles.includes(settings.defaultRole)) 
         ? settings.defaultRole 
         : primaryRole;
       setCurrentRole(roleToUse);
+      setIsInitialLoad(false);
     };
 
     loadUser();
-  }, [settings.defaultRole]);
-
-  // Set default role on mount
-  useEffect(() => {
-    if (currentUser && settings.defaultRole) {
-      setCurrentRole(settings.defaultRole);
-    }
-  }, [settings.defaultRole, currentUser]);
+  }, [isInitialLoad, settings.defaultRole]);
   
   const setRole = async (role: UserRole) => {
     // Check if role switching is enabled
@@ -91,8 +91,14 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     
     setCurrentRole(role);
     
-    // If role switching is disabled or switching to admin, keep current user
-    if (!isRoleSwitchingEnabled || role === 'admin') {
+    // If role switching is disabled, just change the role but keep the current user
+    if (!isRoleSwitchingEnabled) {
+      return;
+    }
+    
+    // If switching to admin, restore the original user
+    if (role === 'admin' && originalUser) {
+      setCurrentUser(originalUser);
       return;
     }
     
@@ -132,6 +138,9 @@ export function RoleProvider({ children }: { children: ReactNode }) {
         isActive: roleProfile.status === 'active'
       };
       setCurrentUser(roleUser);
+    } else {
+      // If no role user exists, keep current user but change role
+      console.warn(`No role user found for ${role}`);
     }
   };
   
