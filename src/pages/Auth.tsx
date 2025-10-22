@@ -121,16 +121,20 @@ export function Auth() {
   const cardBorderRadius = background.cardBorderRadius || 8;
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center p-4 relative ${
+    <div className={`min-h-screen flex flex-col items-center p-4 relative ${
       background.type === 'gradient' || !background.url 
         ? 'bg-gradient-to-br from-background to-muted' 
         : ''
+    } ${
+      background.verticalPosition === 'top' ? 'justify-start pt-12' :
+      background.verticalPosition === 'bottom' ? 'justify-end pb-12' :
+      'justify-center'
     }`}>
       {renderBackground()}
       
-      <div className="w-full max-w-md sm:max-w-[85%] relative z-10 flex flex-col items-center flex-1 justify-center">
+      <div className="w-full max-w-md sm:max-w-[85%] relative z-10 flex flex-col">
         {/* Login Form */}
-        <form onSubmit={handleLogin} className="w-full space-y-4" autoComplete="on">
+        <form onSubmit={handleLogin} className="w-full space-y-4 mb-8" autoComplete="on">
           {/* Email Input with Glass Effect */}
           <div 
             className="relative overflow-hidden transition-all duration-300"
@@ -193,17 +197,16 @@ export function Auth() {
             {loading ? "Wird geladen..." : "Anmelden"}
           </Button>
         </form>
-      </div>
-
-      {/* Bottom Links - Fixed at bottom */}
-      <div className="w-full max-w-md relative z-10 pb-8 flex items-center justify-center gap-4 text-sm">
-        <button className="text-white hover:text-white/80 transition-colors font-medium">
-          Registrieren
-        </button>
-        <div className="h-4 w-px bg-white/30" />
-        <button className="text-white hover:text-white/80 transition-colors">
-          Passwort vergessen?
-        </button>
+        {/* Bottom Links */}
+        <div className="flex items-center justify-center gap-4 text-sm">
+          <button className="text-white hover:text-white/80 transition-colors font-medium">
+            Registrieren
+          </button>
+          <div className="h-4 w-px bg-white/30" />
+          <button className="text-white hover:text-white/80 transition-colors">
+            Passwort vergessen?
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -13,6 +13,7 @@ export interface LoginBackground {
   mediaBlur: number;
   inputBgColor: string;
   inputBgOpacity: number;
+  verticalPosition: 'top' | 'center' | 'bottom';
 }
 
 const DEFAULT_BACKGROUND: LoginBackground = {
@@ -27,7 +28,8 @@ const DEFAULT_BACKGROUND: LoginBackground = {
   overlayOpacity: 40,
   mediaBlur: 0,
   inputBgColor: '#FFFFFF',
-  inputBgOpacity: 10
+  inputBgOpacity: 10,
+  verticalPosition: 'center'
 };
 
 export function useLoginBackground() {

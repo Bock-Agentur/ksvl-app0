@@ -9,9 +9,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { supabase } from "@/integrations/supabase/client";
-import { Upload, Trash2, Eye } from "lucide-react";
+import { Upload, Trash2, Eye, Maximize2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
@@ -136,7 +137,8 @@ export function LoginBackgroundSettings() {
         overlayOpacity: 40,
         mediaBlur: 0,
         inputBgColor: '#FFFFFF',
-        inputBgOpacity: 10
+        inputBgOpacity: 10,
+        verticalPosition: 'center'
       });
 
       toast({
@@ -210,6 +212,18 @@ export function LoginBackgroundSettings() {
 
   const handleInputBgOpacityChange = (value: number[]) => {
     setLocalSettings({ ...localSettings, inputBgOpacity: value[0] });
+  };
+
+  const handleVerticalPositionChange = (position: 'top' | 'center' | 'bottom') => {
+    setLocalSettings({ ...localSettings, verticalPosition: position });
+  };
+
+  const getJustifyClass = () => {
+    switch (localSettings.verticalPosition) {
+      case 'top': return 'justify-start pt-12';
+      case 'bottom': return 'justify-end pb-12';
+      default: return 'justify-center';
+    }
   };
 
   return (
@@ -446,11 +460,106 @@ export function LoginBackgroundSettings() {
             </div>
           </div>
 
+          {/* Vertical Position */}
+          <div className="space-y-3">
+            <Label>Vertikale Position</Label>
+            <div className="flex gap-2">
+              <Button
+                variant={localSettings.verticalPosition === 'top' ? 'default' : 'outline'}
+                onClick={() => handleVerticalPositionChange('top')}
+                className="flex-1"
+              >
+                Oben
+              </Button>
+              <Button
+                variant={localSettings.verticalPosition === 'center' ? 'default' : 'outline'}
+                onClick={() => handleVerticalPositionChange('center')}
+                className="flex-1"
+              >
+                Mitte
+              </Button>
+              <Button
+                variant={localSettings.verticalPosition === 'bottom' ? 'default' : 'outline'}
+                onClick={() => handleVerticalPositionChange('bottom')}
+                className="flex-1"
+              >
+                Unten
+              </Button>
+            </div>
+          </div>
+
           {/* Preview */}
           {localSettings.url && (
             <div className="space-y-2">
-              <Label>Vorschau</Label>
-              <div className="relative aspect-video rounded-lg overflow-hidden border">
+              <div className="flex items-center justify-between">
+                <Label>Vorschau</Label>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Maximize2 className="h-4 w-4 mr-2" />
+                      Originalgröße
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md h-[80vh] p-0">
+                    <div className="relative w-full h-full rounded-lg overflow-hidden">
+                      {localSettings.type === 'video' ? (
+                        <video
+                          src={localSettings.url}
+                          className="w-full h-full object-cover"
+                          autoPlay
+                          muted
+                          loop
+                          playsInline
+                          style={{ filter: `blur(${localSettings.mediaBlur}px)` }}
+                        />
+                      ) : (
+                        <img
+                          src={localSettings.url}
+                          alt="Background preview"
+                          className="w-full h-full object-cover"
+                          style={{ filter: `blur(${localSettings.mediaBlur}px)` }}
+                        />
+                      )}
+                      <div 
+                        className="absolute inset-0"
+                        style={{ 
+                          backgroundColor: `${localSettings.overlayColor}${Math.round((localSettings.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
+                        }}
+                      />
+                      <div className={`absolute inset-0 flex flex-col items-center p-4 ${getJustifyClass()}`}>
+                        <div className="w-full max-w-xs space-y-3">
+                          <Input 
+                            placeholder="E-Mail oder Benutzername" 
+                            disabled
+                            style={{
+                              backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
+                              borderRadius: `${localSettings.cardBorderRadius}px`
+                            }}
+                            className="border-white/20 text-white placeholder:text-white/60"
+                          />
+                          <Input 
+                            type="password"
+                            placeholder="Passwort" 
+                            disabled
+                            style={{
+                              backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
+                              borderRadius: `${localSettings.cardBorderRadius}px`
+                            }}
+                            className="border-white/20 text-white placeholder:text-white/60"
+                          />
+                          <div 
+                            className="w-full bg-primary text-primary-foreground font-medium py-3 px-4 text-center shadow-lg"
+                            style={{ borderRadius: `${localSettings.cardBorderRadius}px` }}
+                          >
+                            Anmelden
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </div>
+              <div className="relative w-full rounded-lg overflow-hidden border" style={{ aspectRatio: '9/16' }}>
                 {localSettings.type === 'video' ? (
                   <video
                     src={localSettings.url}
@@ -470,37 +579,34 @@ export function LoginBackgroundSettings() {
                   />
                 )}
                 <div 
-                  className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-4"
+                  className="absolute inset-0"
                   style={{ 
                     backgroundColor: `${localSettings.overlayColor}${Math.round((localSettings.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
                   }}
-                >
-                  {/* Login Fields Preview */}
-                  <div className="w-full max-w-xs space-y-3">
-                    {/* Email Input */}
+                />
+                <div className={`absolute inset-0 flex flex-col items-center p-4 ${getJustifyClass()}`}>
+                  <div className="w-full max-w-[280px] space-y-2">
                     <Input 
                       placeholder="E-Mail oder Benutzername" 
                       disabled
                       style={{
                         backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
+                        borderRadius: `${localSettings.cardBorderRadius}px`
                       }}
-                      className="border-white/20 text-white placeholder:text-white/60"
+                      className="border-white/20 text-white placeholder:text-white/60 text-sm"
                     />
-
-                    {/* Password Input */}
                     <Input 
                       type="password"
                       placeholder="Passwort" 
                       disabled
                       style={{
                         backgroundColor: `${localSettings.inputBgColor}${Math.round(localSettings.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
+                        borderRadius: `${localSettings.cardBorderRadius}px`
                       }}
-                      className="border-white/20 text-white placeholder:text-white/60"
+                      className="border-white/20 text-white placeholder:text-white/60 text-sm"
                     />
-
-                    {/* Login Button */}
                     <div 
-                      className="w-full bg-primary text-primary-foreground text-xs font-medium py-2 px-4 text-center shadow-lg"
+                      className="w-full bg-primary text-primary-foreground text-sm font-medium py-2.5 px-4 text-center shadow-lg"
                       style={{ borderRadius: `${localSettings.cardBorderRadius}px` }}
                     >
                       Anmelden
