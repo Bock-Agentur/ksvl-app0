@@ -28,6 +28,17 @@ serve(async (req) => {
     const today = new Date().toISOString().split('T')[0];
     const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
+    // Hilfsfunktion für Datumsformatierung
+    const formatDate = (dateStr: string) => {
+      const date = new Date(dateStr + 'T12:00:00'); // Mittag um Zeitzonenfehler zu vermeiden
+      const days = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+      const day = days[date.getDay()];
+      const d = String(date.getDate()).padStart(2, '0');
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const y = date.getFullYear();
+      return `${day}. ${d}.${m}.${y}`;
+    };
+
     const { data: slots, error: slotsError } = await supabase
       .from('slots')
       .select('*')
@@ -73,13 +84,13 @@ AKTUELLE KRANTERMIN-DATEN (${today} bis ${nextWeek}):
 VERFÜGBARE TERMINE (${availableSlots.length}):
 ${availableSlots.map(s => {
   const craneOp = usersMap.get(s.crane_operator_id);
-  return `- ${s.date} um ${s.time} Uhr (${s.duration} Min) - Kranführer: ${craneOp?.name || 'Unbekannt'}${craneOp?.member_number ? ` (Nr: ${craneOp.member_number})` : ''}`;
+  return `- ${formatDate(s.date)} um ${s.time} Uhr (${s.duration} Min) - Kranführer: ${craneOp?.name || 'Unbekannt'}${craneOp?.member_number ? ` (Nr: ${craneOp.member_number})` : ''} - [Details anzeigen](/?date=${s.date})`;
 }).join('\n') || 'Keine verfügbaren Termine'}
 
 GEBUCHTE TERMINE (${bookedSlots.length}):
 ${bookedSlots.map(s => {
   const member = usersMap.get(s.member_id);
-  return `- ${s.date} um ${s.time} Uhr - gebucht von ${member?.name || 'Unbekannt'}${member?.boat_name ? ` (Boot: ${member.boat_name})` : ''}`;
+  return `- ${formatDate(s.date)} um ${s.time} Uhr - gebucht von ${member?.name || 'Unbekannt'}${member?.boat_name ? ` (Boot: ${member.boat_name})` : ''} - [Details anzeigen](/?date=${s.date})`;
 }).join('\n') || 'Keine Buchungen'}
 
 STATISTIK:
@@ -112,6 +123,8 @@ DEINE AUFGABEN:
 WICHTIGE REGELN:
 - Zeige maximal 5-7 Termine pro Antwort (außer explizit nach mehr gefragt)
 - Formatiere Termine und Daten übersichtlich mit Aufzählungen
+- Nutze die Markdown-Links in den Termindaten, um auf Details zu verweisen
+- Datumsformat ist bereits korrekt formatiert (z.B. "Mi. 22.10.2025")
 - Bei Fragen zu Mitgliedern: Zeige NUR Daten von Mitgliedern, die "Daten öffentlich im KSVL" aktiviert haben
 - NIEMALS Daten von nicht-öffentlichen Mitgliedern zeigen oder erwähnen
 - Erkläre, wie Mitglieder ihre Daten öffentlich machen können (Profil-Einstellungen)
