@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { WeekCalendar } from "./week-calendar";
 import { MonthCalendar } from "./month-calendar";
 import { Button } from "@/components/ui/button";
@@ -7,8 +7,10 @@ import { Calendar, CalendarDays, Home, ChevronLeft, ChevronRight, Plus } from "l
 import { useRole } from "@/hooks/use-role";
 import { SlotFormDialog } from "./slot-form-dialog";
 import { Slot } from "@/types";
-import { format } from "date-fns";
+import { format, startOfWeek, addDays, isSameDay, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
+import { useSlots } from "@/hooks/use-slots";
+import { cn } from "@/lib/utils";
 
 interface CalendarViewProps {
   initialDate?: Date | null;
@@ -16,18 +18,33 @@ interface CalendarViewProps {
 
 export function CalendarView({ initialDate }: CalendarViewProps) {
   const { currentRole, currentUser } = useRole();
+  const { slots } = useSlots();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [prefilledDateTime, setPrefilledDateTime] = useState<{ date: string; time: string } | null>(null);
   const [viewMode, setViewMode] = useState<"day" | "week" | "month">("day");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentWeek, setCurrentWeek] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState(new Date());
+
+  // Calculate week boundaries
+  const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Monday
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+
+  // Filter slots for current week
+  const weekSlots = useMemo(() => {
+    return slots.filter(slot => {
+      const slotDate = parseISO(slot.date);
+      return weekDays.some(day => isSameDay(day, slotDate));
+    });
+  }, [slots, weekDays]);
 
   // Wenn ein initialDate übergeben wird, setze es als selectedDate und wechsle zur Tagesansicht
   useEffect(() => {
     if (initialDate) {
       console.log("📅 CalendarView: Navigating to date from chatbot:", initialDate);
       setSelectedDate(initialDate);
+      setSelectedDay(initialDate);
       setViewMode("day");
     }
   }, [initialDate]);
@@ -234,6 +251,57 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
               </div>
             </div>
           )}
+
+          {/* Mobile Day Selector - Only for week/day views */}
+          {(viewMode === "day" || viewMode === "week") && (
+            <div className="md:hidden">
+              <div className="grid grid-cols-7 gap-1 w-full">
+                {weekDays.map((day, index) => {
+                  // Check if this day has slots
+                  const daySlots = weekSlots.filter(slot => {
+                    const slotDate = parseISO(slot.date);
+                    return isSameDay(day, slotDate);
+                  });
+                  const hasSlots = daySlots.length > 0;
+                  
+                  return (
+                    <div key={index} className="relative">
+                      <Button
+                        variant={isSameDay(day, selectedDay) ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          setSelectedDay(day);
+                          setSelectedDate(day);
+                        }}
+                        className="text-xs px-1 py-2 h-auto flex-col w-full"
+                      >
+                        <div className="text-center">
+                          <div className="text-xs">
+                            {format(day, "EEE", { locale: de })}
+                          </div>
+                          <div className="font-semibold">
+                            {format(day, "dd")}
+                          </div>
+                        </div>
+                      </Button>
+                      
+                      {/* Day indicator below button */}
+                      <div className="flex justify-center mt-1">
+                        <div 
+                          className={cn(
+                            "w-2 h-2 rounded-full border transition-colors",
+                            hasSlots 
+                              ? "bg-pink-500 border-pink-500" 
+                              : "bg-white border-gray-300"
+                          )}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -246,6 +314,7 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
               key={selectedDate.toISOString()} // Force re-render when date changes
               onSlotEdit={handleSlotEdit} 
               selectedDate={selectedDate}
+              selectedDay={selectedDay}
               viewMode={viewMode === "day" ? "day" : "week"}
             />
           ) : (

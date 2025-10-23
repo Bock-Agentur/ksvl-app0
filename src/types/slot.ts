@@ -105,6 +105,7 @@ export interface MonthCalendarProps {
 export interface WeekCalendarProps {
   onSlotEdit: (slot?: Slot, dateTime?: { date: string; time: string }) => void;
   selectedDate?: Date;
+  selectedDay?: Date;
   viewMode?: "day" | "week";
 }
 

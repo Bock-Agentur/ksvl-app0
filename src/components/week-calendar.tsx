@@ -20,22 +20,22 @@ import { CalendarErrorBoundary } from "@/components/common/error-boundary";
 
 // WeekCalendarProps is now imported from @/types
 
-export function WeekCalendar({ onSlotEdit, selectedDate, viewMode = "week" }: WeekCalendarProps) {
+export function WeekCalendar({ onSlotEdit, selectedDate, selectedDay: propSelectedDay, viewMode = "week" }: WeekCalendarProps) {
   return (
     <CalendarErrorBoundary>
-      <WeekCalendarContent onSlotEdit={onSlotEdit} selectedDate={selectedDate} viewMode={viewMode} />
+      <WeekCalendarContent onSlotEdit={onSlotEdit} selectedDate={selectedDate} selectedDay={propSelectedDay} viewMode={viewMode} />
     </CalendarErrorBoundary>
   );
 }
 
-function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: WeekCalendarProps) {
+function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelectedDay, viewMode = "week" }: WeekCalendarProps) {
   const { toast } = useToast();
   const { currentRole, currentUser } = useRole();
   const { slots, deleteSlot, updateSlot } = useSlots();
   const { consecutiveSlotsEnabled, getSlotBlocks, getSlotStatus, isSlotBookable } = useConsecutiveSlots();
   const { settings } = useSlotDesign();
   const [currentWeek, setCurrentWeek] = useState(selectedDate || new Date());
-  const [selectedDay, setSelectedDay] = useState(selectedDate || new Date());
+  const [selectedDay, setSelectedDay] = useState(propSelectedDay || selectedDate || new Date());
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedSlotForAction, setSelectedSlotForAction] = useState<Slot | null>(null);
@@ -795,52 +795,6 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, viewMode = "week" }: We
 
       {/* Tablet/Mobile Calendar View - Day Calendar with 15-minute slots */}
       <div className="md:hidden">
-        {/* Sticky Day Selector */}
-        <div className="sticky top-0 z-10 bg-background pb-2 backdrop-blur-sm border-b mb-4">
-            <div className="grid grid-cols-7 gap-1 px-2 sm:px-4 w-full">
-              {weekDays.map((day, index) => {
-                // Prüfe ob es Slots für diesen Tag gibt
-                const daySlots = weekSlots.filter(slot => {
-                  const slotDate = parseISO(slot.date);
-                  return isSameDay(day, slotDate);
-                });
-                const hasSlots = daySlots.length > 0;
-                
-                return (
-                  <div key={index} className="relative">
-                    <Button
-                      variant={isSameDay(day, selectedDay) ? "default" : "outline"}
-                      size="sm"
-                      onClick={() => setSelectedDay(day)}
-                      className="text-xs px-1 py-2 h-auto flex-col w-full"
-                    >
-                      <div className="text-center">
-                        <div className="text-xs">
-                          {format(day, "EEE", { locale: de })}
-                        </div>
-                        <div className="font-semibold">
-                          {format(day, "dd")}
-                        </div>
-                      </div>
-                    </Button>
-                    
-                    {/* Tag-Indikator unter dem Button */}
-                    <div className="flex justify-center mt-1">
-                      <div 
-                        className={cn(
-                          "w-2 h-2 rounded-full border transition-colors",
-                          hasSlots 
-                            ? "bg-pink-500 border-pink-500" 
-                            : "bg-white border-gray-300"
-                        )}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
-        </div>
-
         <Card>
           <CardHeader className="pb-2">
             <p className="text-center text-lg font-bold text-muted-foreground mb-6">
