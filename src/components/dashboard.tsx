@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect } from "react";
-import { Calendar, Clock, Users, Anchor, TrendingUp, AlertCircle } from "lucide-react";
+import { Calendar, Clock, Users, Anchor, TrendingUp, AlertCircle, Home, Shield, UserCircle, Wrench } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
 import { useRole } from "@/hooks/use-role";
 import { useSlots } from "@/hooks/use-slots";
 import { useUsers } from "@/hooks/use-users";
@@ -11,6 +12,7 @@ import { useDashboardAnimations } from "@/hooks/use-dashboard-animations";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getAllDashboardItems, sortAllItemsByPosition, getColumnClassName } from "@/lib/dashboard-config";
 import { cn } from "@/lib/utils";
+import { UserRole } from "@/types/user";
 
 interface DashboardStats {
   todayBookings: number;
@@ -46,13 +48,42 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onNavigate }: DashboardProps = {}) {
-  const { currentRole, currentUser } = useRole();
+  const { currentRole, currentUser, setRole } = useRole();
   const { slots } = useSlots();
   const { users } = useUsers();
   const isMobileOrTablet = useIsMobile();
   const dashboardSettingsHook = useDashboardSettings(currentRole, false);
   const settings = dashboardSettingsHook.settings;
   const { getAnimationClass, isInitialized, isAnimationEnabled } = useDashboardAnimations();
+
+  // Helper functions for role display
+  const getRoleIcon = (role: UserRole) => {
+    switch (role) {
+      case "gastmitglied":
+      case "mitglied":
+        return UserCircle;
+      case "kranfuehrer":
+        return Wrench;
+      case "admin":
+      case "vorstand":
+        return Shield;
+      default:
+        return UserCircle;
+    }
+  };
+
+  const getRoleDisplayName = (role: UserRole): string => {
+    const roleNames: Record<UserRole, string> = {
+      gastmitglied: "Gast",
+      mitglied: "Mitglied",
+      kranfuehrer: "Kranführer",
+      admin: "Admin",
+      vorstand: "Vorstand",
+    };
+    return roleNames[role] || role;
+  };
+
+  const availableRoles: UserRole[] = ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"];
 
   // Calculate quick actions based on role
   const getQuickActions = () => {
@@ -202,7 +233,47 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
   }, [isAnimationEnabled, settings.animationType, isInitialized]);
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
+    <div className="p-4 space-y-6 max-w-7xl mx-auto">
+      {/* Header Card with Role Selection */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-2xl font-bold">
+            <Home className="w-6 h-6" />
+            Dashboard
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            <Label className="text-base font-medium">Rolle auswählen</Label>
+            <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
+              {availableRoles.map((role) => {
+                const Icon = getRoleIcon(role);
+                const roleLabel = getRoleDisplayName(role);
+                
+                return (
+                  <Card 
+                    key={role}
+                    className={cn(
+                      "cursor-pointer transition-colors hover:bg-muted/50 w-20 sm:w-24",
+                      currentRole === role 
+                        ? "ring-2 ring-primary bg-primary/5" 
+                        : "hover:shadow-sm"
+                    )}
+                    onClick={() => setRole(role)}
+                  >
+                    <CardContent className="p-3 text-center">
+                      <Icon className="h-6 w-6 mx-auto mb-1" />
+                      <p className="font-medium text-xs">{roleLabel}</p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Dashboard Content Grid */}
       <div className={gridClassName}>
         {sortedColumns.map((columnItems, columnIndex) => (
           <div key={columnIndex} className="space-y-4">
