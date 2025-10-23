@@ -126,9 +126,9 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="flex flex-col h-screen overflow-hidden">
       {/* Sticky Navigation Card */}
-      <Card className="sticky top-0 z-20 bg-card/95 backdrop-blur-xl border-border/50 shadow-xl mx-4 mt-4">
+      <Card className="flex-shrink-0 bg-card/95 backdrop-blur-xl border-border/50 shadow-xl mx-4 mt-4 mb-4">
         <CardHeader>
           <CardTitle>Kalender</CardTitle>
         </CardHeader>
@@ -306,8 +306,9 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
       </Card>
 
       {/* Scrollable Calendar Card */}
-      <Card className="bg-card/75 backdrop-blur-xl border-border/50 shadow-xl mx-4 mb-4">
-        <CardContent className="p-4">
+      <div className="flex-1 overflow-y-auto px-4 pb-4">
+        <Card className="bg-card/75 backdrop-blur-xl border-border/50 shadow-xl">
+          <CardContent className="p-4">
           {/* Calendar Content */}
           {viewMode === "day" || viewMode === "week" ? (
             <WeekCalendar 
@@ -323,8 +324,9 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
               onSlotCreate={handleSlotEdit}
             />
           )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Slot Form Dialog */}
       <SlotFormDialog 
