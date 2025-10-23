@@ -6,11 +6,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useRole } from "@/hooks/use-role";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { getWidgetsForRole, getSectionsForRole, type DashboardItem } from "@/lib/dashboard-config";
 import { UserRole } from "@/types/user";
-import { RotateCcw, GripVertical, Eye, EyeOff, LayoutGrid, Columns2, Square } from "lucide-react";
+import { RotateCcw, GripVertical, Eye, EyeOff, LayoutGrid, Columns2, Square, Smartphone } from "lucide-react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverEvent, DragOverlay, pointerWithin, useDroppable, rectIntersection } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -144,6 +145,7 @@ export function DashboardSettings() {
   const [targetRole, setTargetRole] = useState<UserRole>(currentRole);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<"desktop" | "mobile">("desktop");
   
   const { 
     settings, 
@@ -203,6 +205,37 @@ export function DashboardSettings() {
     
     return columns;
   }, [allDashboardItems, settings.allItemsPositions, settings.columnLayout]);
+
+  const mobileItems = useMemo(() => {
+    const items = [...allDashboardItems.all];
+    
+    if (settings.mobileItemsOrder && settings.mobileItemsOrder.length > 0) {
+      // Sort by custom mobile order
+      items.sort((a, b) => {
+        const indexA = settings.mobileItemsOrder!.indexOf(a.id);
+        const indexB = settings.mobileItemsOrder!.indexOf(b.id);
+        
+        if (indexA === -1 && indexB === -1) return 0;
+        if (indexA === -1) return 1;
+        if (indexB === -1) return -1;
+        
+        return indexA - indexB;
+      });
+    } else {
+      // Default: sort by position
+      items.sort((a, b) => {
+        const posA = settings.allItemsPositions?.[a.id] || a.position;
+        const posB = settings.allItemsPositions?.[b.id] || b.position;
+        
+        if (posA.column !== posB.column) {
+          return posA.column - posB.column;
+        }
+        return posA.order - posB.order;
+      });
+    }
+    
+    return items;
+  }, [allDashboardItems, settings.mobileItemsOrder, settings.allItemsPositions]);
 
   const handleDragStart = (event: DragEndEvent) => {
     setActiveId(event.active.id as string);
@@ -307,6 +340,25 @@ export function DashboardSettings() {
     saveSettings({ allItemsPositions: newPositions });
   };
 
+  const handleMobileDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    setActiveId(null);
+    setOverId(null);
+    
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = mobileItems.findIndex(item => item.id === active.id);
+    const newIndex = mobileItems.findIndex(item => item.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const reorderedItems = arrayMove(mobileItems, oldIndex, newIndex);
+    const newOrder = reorderedItems.map(item => item.id);
+
+    saveSettings({ mobileItemsOrder: newOrder });
+  };
+
   const activeItem = activeId ? allDashboardItems.all.find(item => item.id === activeId) : null;
   
   const getOverColumn = (): number | null => {
@@ -398,63 +450,123 @@ export function DashboardSettings() {
         <CardHeader>
           <CardTitle>Dashboard-Elemente</CardTitle>
           <CardDescription>
-            Ziehen Sie Bereiche und Widgets per Drag & Drop zwischen Spalten, um sie neu anzuordnen
+            Konfigurieren Sie die Anordnung für Desktop und Mobile/Tablet getrennt
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DndContext
-            sensors={sensors}
-            collisionDetection={rectIntersection}
-            onDragStart={handleDragStart}
-            onDragOver={handleDragOver}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={allDashboardItems.all.map(i => i.id)}
-              strategy={verticalListSortingStrategy}
-            >
-              <div 
-                className={cn(
-                  "grid gap-6",
-                  settings.columnLayout === 1 && "grid-cols-1",
-                  settings.columnLayout === 2 && "grid-cols-1 lg:grid-cols-2",
-                  settings.columnLayout === 3 && "grid-cols-1 lg:grid-cols-3"
-                )}
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "desktop" | "mobile")}>
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="desktop" className="gap-2">
+                <LayoutGrid className="h-4 w-4" />
+                Desktop
+              </TabsTrigger>
+              <TabsTrigger value="mobile" className="gap-2">
+                <Smartphone className="h-4 w-4" />
+                Mobile & Tablet
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="desktop">
+              <p className="text-sm text-muted-foreground mb-4">
+                Ziehen Sie Bereiche und Widgets per Drag & Drop zwischen Spalten, um sie neu anzuordnen
+              </p>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={rectIntersection}
+                onDragStart={handleDragStart}
+                onDragOver={handleDragOver}
+                onDragEnd={handleDragEnd}
               >
-                {Array.from({ length: settings.columnLayout }).map((_, colIndex) => {
-                  const column = colIndex + 1;
-                  const items = itemsByColumn[column] || [];
-                  const overColumn = getOverColumn();
-                  const isOver = overColumn === column;
-                  
-                  return (
-                    <DroppableColumn
-                      key={column}
-                      column={column}
-                      items={items}
-                      isEnabled={isItemEnabled}
-                      onToggle={toggleItem}
-                      columnLayout={settings.columnLayout}
-                      isOver={isOver}
-                    />
-                  );
-                })}
-              </div>
-            </SortableContext>
-            
-            <DragOverlay>
-              {activeItem ? (
-                <div className="p-4 bg-card border-2 border-primary rounded-lg shadow-lg opacity-80">
-                  <div className="flex items-center gap-3">
-                    <Badge variant={activeItem.itemType === 'section' ? 'default' : 'secondary'} className="text-xs">
-                      {activeItem.itemType === 'section' ? 'Bereich' : 'Widget'}
-                    </Badge>
-                    <p className="font-medium text-sm">{activeItem.name}</p>
+                <SortableContext
+                  items={allDashboardItems.all.map(i => i.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div 
+                    className={cn(
+                      "grid gap-6",
+                      settings.columnLayout === 1 && "grid-cols-1",
+                      settings.columnLayout === 2 && "grid-cols-1 lg:grid-cols-2",
+                      settings.columnLayout === 3 && "grid-cols-1 lg:grid-cols-3"
+                    )}
+                  >
+                    {Array.from({ length: settings.columnLayout }).map((_, colIndex) => {
+                      const column = colIndex + 1;
+                      const items = itemsByColumn[column] || [];
+                      const overColumn = getOverColumn();
+                      const isOver = overColumn === column;
+                      
+                      return (
+                        <DroppableColumn
+                          key={column}
+                          column={column}
+                          items={items}
+                          isEnabled={isItemEnabled}
+                          onToggle={toggleItem}
+                          columnLayout={settings.columnLayout}
+                          isOver={isOver}
+                        />
+                      );
+                    })}
                   </div>
-                </div>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
+                </SortableContext>
+                
+                <DragOverlay>
+                  {activeItem ? (
+                    <div className="p-4 bg-card border-2 border-primary rounded-lg shadow-lg opacity-80">
+                      <div className="flex items-center gap-3">
+                        <Badge variant={activeItem.itemType === 'section' ? 'default' : 'secondary'} className="text-xs">
+                          {activeItem.itemType === 'section' ? 'Bereich' : 'Widget'}
+                        </Badge>
+                        <p className="font-medium text-sm">{activeItem.name}</p>
+                      </div>
+                    </div>
+                  ) : null}
+                </DragOverlay>
+              </DndContext>
+            </TabsContent>
+
+            <TabsContent value="mobile">
+              <p className="text-sm text-muted-foreground mb-4">
+                Auf Mobile und Tablet wird immer nur eine Spalte angezeigt. Ziehen Sie die Elemente in die gewünschte Reihenfolge.
+              </p>
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragStart={handleDragStart}
+                onDragEnd={handleMobileDragEnd}
+              >
+                <SortableContext
+                  items={mobileItems.map(i => i.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2 p-4 border-2 border-dashed border-muted rounded-lg bg-muted/5">
+                    {mobileItems.map(item => (
+                      <SortableDashboardItem
+                        key={item.id}
+                        item={item}
+                        isEnabled={isItemEnabled(item.id)}
+                        onToggle={() => toggleItem(item.id)}
+                        column={1}
+                      />
+                    ))}
+                  </div>
+                </SortableContext>
+                
+                <DragOverlay>
+                  {activeItem ? (
+                    <div className="p-4 bg-card border-2 border-primary rounded-lg shadow-lg opacity-80">
+                      <div className="flex items-center gap-3">
+                        <Badge variant={activeItem.itemType === 'section' ? 'default' : 'secondary'} className="text-xs">
+                          {activeItem.itemType === 'section' ? 'Bereich' : 'Widget'}
+                        </Badge>
+                        <p className="font-medium text-sm">{activeItem.name}</p>
+                      </div>
+                    </div>
+                  ) : null}
+                </DragOverlay>
+              </DndContext>
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 

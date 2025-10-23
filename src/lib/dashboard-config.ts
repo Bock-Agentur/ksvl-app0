@@ -70,6 +70,8 @@ export interface DashboardSettings {
   widgetOrder?: string[];
   widgetPositions?: Record<string, { column: 1 | 2 | 3; order: number }>;
   allItemsPositions?: Record<string, { column: number; order: number }>;
+  // Mobile/Tablet specific order (single column)
+  mobileItemsOrder?: string[];
 }
 
 export const DASHBOARD_WIDGETS: Record<string, DashboardWidget> = {

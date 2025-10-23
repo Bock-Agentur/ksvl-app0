@@ -8,6 +8,7 @@ import { useSlots } from "@/hooks/use-slots";
 import { useUsers } from "@/hooks/use-users";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { useDashboardAnimations } from "@/hooks/use-dashboard-animations";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { getAllDashboardItems, sortAllItemsByPosition, getColumnClassName } from "@/lib/dashboard-config";
 import { cn } from "@/lib/utils";
 
@@ -48,6 +49,7 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
   const { currentRole, currentUser } = useRole();
   const { slots } = useSlots();
   const { users } = useUsers();
+  const isMobileOrTablet = useIsMobile();
   const dashboardSettingsHook = useDashboardSettings(currentRole, false);
   const settings = dashboardSettingsHook.settings;
   const { getAnimationClass, isInitialized, isAnimationEnabled } = useDashboardAnimations();
@@ -132,12 +134,49 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
   }, [currentRole, settings]);
 
   const sortedColumns = useMemo(() => {
+    // On mobile/tablet, always use single column with custom order
+    if (isMobileOrTablet) {
+      const items = [...allItems];
+      
+      if (settings.mobileItemsOrder && settings.mobileItemsOrder.length > 0) {
+        // Sort by custom mobile order
+        items.sort((a, b) => {
+          const indexA = settings.mobileItemsOrder!.indexOf(a.id);
+          const indexB = settings.mobileItemsOrder!.indexOf(b.id);
+          
+          if (indexA === -1 && indexB === -1) return 0;
+          if (indexA === -1) return 1;
+          if (indexB === -1) return -1;
+          
+          return indexA - indexB;
+        });
+      } else {
+        // Default: sort by position (column first, then order)
+        items.sort((a, b) => {
+          const posA = settings.allItemsPositions?.[a.id] || a.position;
+          const posB = settings.allItemsPositions?.[b.id] || b.position;
+          
+          if (posA.column !== posB.column) {
+            return posA.column - posB.column;
+          }
+          return posA.order - posB.order;
+        });
+      }
+      
+      return [items]; // Single column
+    }
+    
+    // Desktop: use column layout
     return sortAllItemsByPosition(allItems, settings.allItemsPositions, settings.columnLayout);
-  }, [allItems, settings.allItemsPositions, settings.columnLayout]);
+  }, [allItems, settings.allItemsPositions, settings.columnLayout, settings.mobileItemsOrder, isMobileOrTablet]);
 
   const gridClassName = useMemo(() => {
+    // On mobile/tablet, always use single column
+    if (isMobileOrTablet) {
+      return "grid grid-cols-1 gap-4";
+    }
     return getColumnClassName(settings.columnLayout);
-  }, [settings.columnLayout]);
+  }, [settings.columnLayout, isMobileOrTablet]);
 
   // Setup scroll animations
   useEffect(() => {
