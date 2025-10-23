@@ -11,7 +11,7 @@ import { useRole } from "@/hooks/use-role";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { getWidgetsForRole, getSectionsForRole, type DashboardItem } from "@/lib/dashboard-config";
 import { UserRole } from "@/types/user";
-import { RotateCcw, GripVertical, Eye, EyeOff, LayoutGrid, Columns2, Square, Smartphone } from "lucide-react";
+import { RotateCcw, GripVertical, Eye, EyeOff, LayoutGrid, Columns2, Square, Smartphone, Settings as SettingsIcon, Shield, UserCircle, Wrench } from "lucide-react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverEvent, DragOverlay, pointerWithin, useDroppable, rectIntersection } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -140,7 +140,7 @@ function DroppableColumn({ column, items, isEnabled, onToggle, columnLayout, isO
 }
 
 export function DashboardSettings() {
-  const { currentRole, currentUser } = useRole();
+  const { currentRole, currentUser, setRole } = useRole();
   const isAdmin = currentUser?.roles?.includes("admin") || currentRole === "admin";
   const [targetRole, setTargetRole] = useState<UserRole>(currentRole);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -154,6 +154,35 @@ export function DashboardSettings() {
     isItemEnabled,
     toggleItem
   } = useDashboardSettings(targetRole, isAdmin);
+
+  // Helper functions for role display
+  const getRoleIcon = (role: UserRole) => {
+    switch (role) {
+      case "gastmitglied":
+      case "mitglied":
+        return UserCircle;
+      case "kranfuehrer":
+        return Wrench;
+      case "admin":
+      case "vorstand":
+        return Shield;
+      default:
+        return UserCircle;
+    }
+  };
+
+  const getRoleDisplayName = (role: UserRole): string => {
+    const roleNames: Record<UserRole, string> = {
+      gastmitglied: "Gast",
+      mitglied: "Mitglied",
+      kranfuehrer: "Kranführer",
+      admin: "Admin",
+      vorstand: "Vorstand",
+    };
+    return roleNames[role] || role;
+  };
+
+  const availableRoles: UserRole[] = ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"];
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -377,12 +406,17 @@ export function DashboardSettings() {
 
   return (
     <div className="space-y-6 p-6">
-      <div>
-        <h2 className="text-2xl font-bold mb-2">Dashboard-Einstellungen</h2>
-        <p className="text-muted-foreground">
-          Passen Sie Ihr Dashboard nach Ihren Wünschen an.
-        </p>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-2xl font-bold">
+            <SettingsIcon className="w-6 h-6" />
+            Dashboard-Einstellungen
+          </CardTitle>
+          <CardDescription>
+            Passen Sie Ihr Dashboard nach Ihren Wünschen an.
+          </CardDescription>
+        </CardHeader>
+      </Card>
 
       {isAdmin && (
         <Card>
@@ -392,19 +426,34 @@ export function DashboardSettings() {
               Konfigurieren Sie das Dashboard für verschiedene Benutzerrollen
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <Select value={targetRole} onValueChange={(value) => setTargetRole(value as UserRole)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="mitglied">Mitglied</SelectItem>
-                <SelectItem value="gastmitglied">Gastmitglied</SelectItem>
-                <SelectItem value="kranfuehrer">Kranführer</SelectItem>
-                <SelectItem value="admin">Administrator</SelectItem>
-                <SelectItem value="vorstand">Vorstand</SelectItem>
-              </SelectContent>
-            </Select>
+          <CardContent className="space-y-4">
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Rolle auswählen</Label>
+              <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
+                {availableRoles.map((role) => {
+                  const Icon = getRoleIcon(role);
+                  const roleLabel = getRoleDisplayName(role);
+                  
+                  return (
+                    <Card 
+                      key={role}
+                      className={cn(
+                        "cursor-pointer transition-colors hover:bg-muted/50 w-20 sm:w-24",
+                        targetRole === role 
+                          ? "ring-2 ring-primary bg-primary/5" 
+                          : "hover:shadow-sm"
+                      )}
+                      onClick={() => setTargetRole(role)}
+                    >
+                      <CardContent className="p-3 text-center">
+                        <Icon className="h-6 w-6 mx-auto mb-1" />
+                        <p className="font-medium text-xs">{roleLabel}</p>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
