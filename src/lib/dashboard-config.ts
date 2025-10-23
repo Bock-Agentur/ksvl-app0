@@ -275,8 +275,9 @@ export function getEnabledSectionsForRole(
   settings: DashboardSettings
 ): DashboardSection[] {
   const allSections = getSectionsForRole(role);
+  const enabledSections = settings.enabledSections || [];
   return allSections.filter((section) => 
-    settings.enabledSections.includes(section.id)
+    enabledSections.includes(section.id)
   );
 }
 
