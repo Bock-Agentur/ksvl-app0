@@ -11,7 +11,7 @@ import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { getWidgetsForRole, getSectionsForRole, type DashboardItem } from "@/lib/dashboard-config";
 import { UserRole } from "@/types/user";
 import { RotateCcw, GripVertical, Eye, EyeOff, LayoutGrid, Columns2, Square } from "lucide-react";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverEvent, DragOverlay, pointerWithin } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverEvent, DragOverlay, pointerWithin, useDroppable, rectIntersection } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { cn } from "@/lib/utils";
@@ -31,7 +31,7 @@ function SortableDashboardItem({ item, isEnabled, onToggle, column }: SortableDa
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: item.id });
+  } = useSortable({ id: item.id, data: { column } });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -77,6 +77,62 @@ function SortableDashboardItem({ item, isEnabled, onToggle, column }: SortableDa
            item.size === "medium" ? "Mittel" : "Groß"}
         </Badge>
         <Switch checked={isEnabled} onCheckedChange={onToggle} />
+      </div>
+    </div>
+  );
+}
+
+interface DroppableColumnProps {
+  column: number;
+  items: DashboardItem[];
+  isEnabled: (id: string) => boolean;
+  onToggle: (id: string) => void;
+  columnLayout: number;
+  isOver: boolean;
+}
+
+function DroppableColumn({ column, items, isEnabled, onToggle, columnLayout, isOver }: DroppableColumnProps) {
+  const { setNodeRef } = useDroppable({
+    id: `column-${column}`,
+    data: { column }
+  });
+
+  return (
+    <div ref={setNodeRef} className="space-y-3">
+      <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg sticky top-0 z-10">
+        <h4 className="font-semibold text-sm">
+          {columnLayout === 1 
+            ? "Dashboard-Layout" 
+            : `Spalte ${column}`}
+        </h4>
+        <Badge variant="secondary" className="text-xs">
+          {items.length}
+        </Badge>
+      </div>
+      
+      <div 
+        className={cn(
+          "space-y-2 min-h-[300px] p-4 border-2 border-dashed rounded-lg transition-all",
+          isOver 
+            ? "border-primary bg-primary/10 ring-2 ring-primary" 
+            : "border-muted bg-muted/5"
+        )}
+      >
+        {items.length > 0 ? (
+          items.map(item => (
+            <SortableDashboardItem
+              key={item.id}
+              item={item}
+              isEnabled={isEnabled(item.id)}
+              onToggle={() => onToggle(item.id)}
+              column={column}
+            />
+          ))
+        ) : (
+          <div className="flex items-center justify-center h-32 text-muted-foreground text-sm">
+            Ziehen Sie Elemente hierher
+          </div>
+        )}
       </div>
     </div>
   );
@@ -153,7 +209,8 @@ export function DashboardSettings() {
   };
 
   const handleDragOver = (event: DragOverEvent) => {
-    setOverId(event.over?.id as string || null);
+    const overId = event.over?.id as string;
+    setOverId(overId || null);
   };
 
   const handleDragEnd = (event: DragEndEvent) => {
@@ -162,35 +219,46 @@ export function DashboardSettings() {
     setActiveId(null);
     setOverId(null);
     
-    if (!over || active.id === over.id) return;
+    if (!over) return;
 
-    // Find which columns the items are in
+    // Determine source column
     let sourceColumn = 0;
-    let targetColumn = 0;
     let sourceItem: DashboardItem | null = null;
-    let targetItem: DashboardItem | null = null;
-
+    
     Object.entries(itemsByColumn).forEach(([col, items]) => {
-      const colNum = parseInt(col);
-      const foundSource = items.find(item => item.id === active.id);
-      const foundTarget = items.find(item => item.id === over.id);
-      
-      if (foundSource) {
-        sourceColumn = colNum;
-        sourceItem = foundSource;
-      }
-      if (foundTarget) {
-        targetColumn = colNum;
-        targetItem = foundTarget;
+      const found = items.find(item => item.id === active.id);
+      if (found) {
+        sourceColumn = parseInt(col);
+        sourceItem = found;
       }
     });
 
-    if (!sourceItem || !targetItem) return;
+    if (!sourceItem) return;
+
+    // Determine target column
+    let targetColumn = sourceColumn;
+    let targetItem: DashboardItem | null = null;
+    
+    // Check if dropped on a column container
+    if (typeof over.id === 'string' && over.id.startsWith('column-')) {
+      targetColumn = parseInt(over.id.replace('column-', ''));
+    } else {
+      // Dropped on an item
+      Object.entries(itemsByColumn).forEach(([col, items]) => {
+        const found = items.find(item => item.id === over.id);
+        if (found) {
+          targetColumn = parseInt(col);
+          targetItem = found;
+        }
+      });
+    }
 
     const newPositions = { ...settings.allItemsPositions };
 
-    // Same column - reorder
     if (sourceColumn === targetColumn) {
+      // Same column - reorder
+      if (!targetItem || active.id === over.id) return;
+      
       const columnItems = itemsByColumn[sourceColumn] || [];
       const oldIndex = columnItems.findIndex(item => item.id === active.id);
       const newIndex = columnItems.findIndex(item => item.id === over.id);
@@ -209,10 +277,15 @@ export function DashboardSettings() {
       // Different columns - move item
       const sourceItems = [...(itemsByColumn[sourceColumn] || [])].filter(item => item.id !== active.id);
       const targetItems = [...(itemsByColumn[targetColumn] || [])];
-      const targetIndex = targetItems.findIndex(item => item.id === over.id);
       
-      // Insert the moved item at the target position
-      targetItems.splice(targetIndex, 0, sourceItem);
+      if (targetItem) {
+        // Insert at specific position
+        const targetIndex = targetItems.findIndex(item => item.id === over.id);
+        targetItems.splice(targetIndex, 0, sourceItem);
+      } else {
+        // Add to end of column
+        targetItems.push(sourceItem);
+      }
       
       // Update positions for source column
       sourceItems.forEach((item, index) => {
@@ -235,6 +308,20 @@ export function DashboardSettings() {
   };
 
   const activeItem = activeId ? allDashboardItems.all.find(item => item.id === activeId) : null;
+  
+  const getOverColumn = (): number | null => {
+    if (!overId) return null;
+    if (typeof overId === 'string' && overId.startsWith('column-')) {
+      return parseInt(overId.replace('column-', ''));
+    }
+    // Find column of the item being hovered
+    for (const [col, items] of Object.entries(itemsByColumn)) {
+      if (items.some(item => item.id === overId)) {
+        return parseInt(col);
+      }
+    }
+    return null;
+  };
 
   return (
     <div className="space-y-6 p-6">
@@ -317,70 +404,43 @@ export function DashboardSettings() {
         <CardContent>
           <DndContext
             sensors={sensors}
-            collisionDetection={pointerWithin}
+            collisionDetection={rectIntersection}
             onDragStart={handleDragStart}
             onDragOver={handleDragOver}
             onDragEnd={handleDragEnd}
           >
-            <div 
-              className={cn(
-                "grid gap-6",
-                settings.columnLayout === 1 && "grid-cols-1",
-                settings.columnLayout === 2 && "grid-cols-1 lg:grid-cols-2",
-                settings.columnLayout === 3 && "grid-cols-1 lg:grid-cols-3"
-              )}
+            <SortableContext
+              items={allDashboardItems.all.map(i => i.id)}
+              strategy={verticalListSortingStrategy}
             >
-              {Array.from({ length: settings.columnLayout }).map((_, colIndex) => {
-                const column = colIndex + 1;
-                const items = itemsByColumn[column] || [];
-                const isOverColumn = items.some(item => item.id === overId);
-                
-                return (
-                  <div key={column} className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg sticky top-0 z-10">
-                      <h4 className="font-semibold text-sm">
-                        {settings.columnLayout === 1 
-                          ? "Dashboard-Layout" 
-                          : `Spalte ${column}`}
-                      </h4>
-                      <Badge variant="secondary" className="text-xs">
-                        {items.length}
-                      </Badge>
-                    </div>
-                    
-                    <SortableContext
-                      items={items.map(i => i.id)}
-                      strategy={verticalListSortingStrategy}
-                    >
-                      <div 
-                        className={cn(
-                          "space-y-2 min-h-[300px] p-4 border-2 border-dashed rounded-lg transition-all",
-                          isOverColumn 
-                            ? "border-primary bg-primary/10 ring-2 ring-primary" 
-                            : "border-muted bg-muted/5"
-                        )}
-                      >
-                        {items.length > 0 ? (
-                          items.map(item => (
-                            <SortableDashboardItem
-                              key={item.id}
-                              item={item}
-                              isEnabled={isItemEnabled(item.id)}
-                              onToggle={() => toggleItem(item.id)}
-                              column={column}
-                            />
-                          ))
-                        ) : (
-                          <div className="flex items-center justify-center h-32 text-muted-foreground text-sm">
-                            Ziehen Sie Elemente hierher
-                          </div>
-                        )}
-                      </div>
-                    </SortableContext>
-                  </div>
-                );
-              })}
-            </div>
+              <div 
+                className={cn(
+                  "grid gap-6",
+                  settings.columnLayout === 1 && "grid-cols-1",
+                  settings.columnLayout === 2 && "grid-cols-1 lg:grid-cols-2",
+                  settings.columnLayout === 3 && "grid-cols-1 lg:grid-cols-3"
+                )}
+              >
+                {Array.from({ length: settings.columnLayout }).map((_, colIndex) => {
+                  const column = colIndex + 1;
+                  const items = itemsByColumn[column] || [];
+                  const overColumn = getOverColumn();
+                  const isOver = overColumn === column;
+                  
+                  return (
+                    <DroppableColumn
+                      key={column}
+                      column={column}
+                      items={items}
+                      isEnabled={isItemEnabled}
+                      onToggle={toggleItem}
+                      columnLayout={settings.columnLayout}
+                      isOver={isOver}
+                    />
+                  );
+                })}
+              </div>
+            </SortableContext>
             
             <DragOverlay>
               {activeItem ? (
