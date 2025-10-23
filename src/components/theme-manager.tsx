@@ -504,8 +504,14 @@ export function ThemeManager() {
               const settings = roleBadgeSettings?.[role];
               if (!settings) return null;
               
+              // Get current values with proper formatting
               const currentBg = editedRoleBadges[role]?.bg || settings.bgColor;
               const currentText = editedRoleBadges[role]?.text || settings.textColor;
+              
+              // Normalize to consistent format for display (remove hsl() wrapper and commas)
+              const normalizedBg = currentBg.replace(/hsl\(([\d.]+),?\s*([\d.]+)%,?\s*([\d.]+)%\)/, '$1 $2% $3%');
+              const normalizedText = currentText.replace(/hsl\(([\d.]+),?\s*([\d.]+)%,?\s*([\d.]+)%\)/, '$1 $2% $3%');
+              
               const hasChanges = editedRoleBadges[role] !== undefined;
               
               return (
@@ -516,8 +522,8 @@ export function ThemeManager() {
                       <Badge 
                         className="text-xs"
                         style={{ 
-                          backgroundColor: currentBg.includes('hsl(') ? currentBg : `hsl(${currentBg})`,
-                          color: currentText.includes('hsl(') ? currentText : `hsl(${currentText})`
+                          backgroundColor: `hsl(${normalizedBg.replace(/\s+/g, ', ')})`,
+                          color: `hsl(${normalizedText.replace(/\s+/g, ', ')})`
                         }}
                       >
                         Beispiel
@@ -527,12 +533,12 @@ export function ThemeManager() {
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <ColorPicker
-                        color={currentBg.replace(/hsl\(([\d.]+),\s*([\d.]+)%,\s*([\d.]+)%\)/, '$1 $2% $3%')}
+                        color={normalizedBg}
                         onChange={(newValue) => {
                           setEditedRoleBadges(prev => ({
                             ...prev,
                             [role]: {
-                              bg: `hsl(${newValue})`,
+                              bg: `hsl(${newValue.replace(/\s+/g, ', ')})`,
                               text: prev[role]?.text || settings.textColor
                             }
                           }));
@@ -540,13 +546,13 @@ export function ThemeManager() {
                         label="Hintergrundfarbe"
                       />
                       <ColorPicker
-                        color={currentText.replace(/hsl\(([\d.]+),\s*([\d.]+)%,\s*([\d.]+)%\)/, '$1 $2% $3%')}
+                        color={normalizedText}
                         onChange={(newValue) => {
                           setEditedRoleBadges(prev => ({
                             ...prev,
                             [role]: {
                               bg: prev[role]?.bg || settings.bgColor,
-                              text: `hsl(${newValue})`
+                              text: `hsl(${newValue.replace(/\s+/g, ', ')})`
                             }
                           }));
                         }}
