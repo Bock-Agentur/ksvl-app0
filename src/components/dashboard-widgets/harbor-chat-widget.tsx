@@ -27,7 +27,7 @@ export function HarborChatWidget() {
 
   // Auto-scroll to bottom whenever messages change
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   };
 
   useEffect(() => {
@@ -87,10 +87,6 @@ export function HarborChatWidget() {
     }
   };
 
-  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Prevent the page from scrolling to the input
-    e.preventDefault();
-  };
 
   return (
     <Card className="w-full" id="harbor-chat-widget">
@@ -142,7 +138,6 @@ export function HarborChatWidget() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              onFocus={handleInputFocus}
               placeholder="Frage zu Terminen oder Mitgliedern..."
               disabled={isLoading}
               className="flex-1"
