@@ -126,10 +126,10 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className="flex flex-col h-screen overflow-hidden bg-background">
       {/* Sticky Navigation Card with soft fade */}
-      <div className="flex-shrink-0 px-4 pt-4 pb-4 relative z-10">
-        <Card className="bg-card/95 backdrop-blur-xl border-border/50 shadow-2xl">
+      <div className="flex-shrink-0 px-4 pt-4 pb-6 relative z-10">
+        <Card className="bg-card/95 backdrop-blur-xl border-border/50 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
         <CardHeader>
           <CardTitle>Kalender</CardTitle>
         </CardHeader>
@@ -310,7 +310,7 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
     </div>
 
       {/* Scrollable Calendar Card */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 relative z-0">
+      <div className="flex-1 overflow-y-auto px-4 pb-4 -mt-2 relative z-0">
         <Card className="bg-card/75 backdrop-blur-xl border-border/50 shadow-none">
           <CardContent className="p-4">
           {/* Calendar Content */}
