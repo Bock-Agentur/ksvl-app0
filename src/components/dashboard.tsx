@@ -249,7 +249,7 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
   }, [isAnimationEnabled, settings.animationType, isInitialized]);
 
   return (
-    <div className="p-4 space-y-6">
+    <div className="p-4 max-w-7xl mx-auto space-y-6">
       {/* Welcome Section */}
       {settings.showWelcomeSection && (
         <div className={cn(

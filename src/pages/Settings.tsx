@@ -39,7 +39,7 @@ export function Settings() {
   const ActiveComponent = sections.find(section => section.id === activeSection)?.component || DashboardSettings;
 
   return (
-    <div className="p-4 space-y-6 max-w-6xl mx-auto">
+    <div className="p-4 space-y-6 max-w-7xl mx-auto">
       <Card className="bg-primary text-primary-foreground">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">Einstellungen</CardTitle>

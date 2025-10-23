@@ -1477,7 +1477,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
+    <div className="container mx-auto p-4 max-w-7xl">
       {onBack && (
         <Button variant="ghost" size="sm" onClick={onBack} className="mb-4">
           ← Zurück zur Übersicht
