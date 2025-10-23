@@ -127,9 +127,9 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
 
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background">
-      {/* Sticky Navigation Card with soft fade */}
-      <div className="flex-shrink-0 px-4 pt-4 pb-6 relative z-10">
-        <Card className="bg-card/95 backdrop-blur-xl border-border/50 shadow-[0_8px_30px_rgba(0,0,0,0.12)]">
+      {/* Sticky Navigation Card with soft transparent shadow */}
+      <div className="flex-shrink-0 px-4 pt-4 pb-0 relative z-10">
+        <Card className="bg-card/95 backdrop-blur-xl border-border/50 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)]">
         <CardHeader>
           <CardTitle>Kalender</CardTitle>
         </CardHeader>
@@ -304,14 +304,14 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
             </div>
           )}
         </CardContent>
-      </Card>
-      {/* Soft fade overlay at bottom of navigation card */}
-      <div className="absolute bottom-0 left-4 right-4 h-8 bg-gradient-to-b from-transparent to-background/80 pointer-events-none rounded-b-lg" />
-    </div>
+        </Card>
+        {/* Soft transparent fade gradient */}
+        <div className="absolute bottom-0 left-4 right-4 h-12 bg-gradient-to-b from-card/95 via-card/60 to-transparent pointer-events-none" />
+      </div>
 
       {/* Scrollable Calendar Card */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 -mt-2 relative z-0">
-        <Card className="bg-card/75 backdrop-blur-xl border-border/50 shadow-none">
+      <div className="flex-1 overflow-y-auto px-4 pb-4 pt-0 relative z-0">
+        <Card className="bg-card/75 backdrop-blur-xl border-border/50 shadow-none mt-2">
           <CardContent className="p-4">
           {/* Calendar Content */}
           {viewMode === "day" || viewMode === "week" ? (
