@@ -129,7 +129,7 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
     <div className="flex flex-col h-screen overflow-hidden bg-background">
       {/* Sticky Navigation Card with soft transparent shadow */}
       <div className="flex-shrink-0 px-4 pt-4 pb-0 relative z-10">
-        <Card className="bg-card/95 backdrop-blur-xl border-border/50 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)]">
+        <Card className="relative bg-card/95 backdrop-blur-xl border-border/50 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)]">
         <CardHeader>
           <CardTitle>Kalender</CardTitle>
         </CardHeader>
@@ -354,10 +354,11 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
               </div>
             </div>
           )}
+          
+          {/* Soft transparent fade gradient */}
+          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-b from-card/95 via-card/60 to-transparent pointer-events-none" />
         </CardContent>
         </Card>
-        {/* Soft transparent fade gradient */}
-        <div className="absolute bottom-0 left-4 right-4 h-12 bg-gradient-to-b from-card/95 via-card/60 to-transparent pointer-events-none" />
       </div>
 
       {/* Scrollable Calendar Content */}
