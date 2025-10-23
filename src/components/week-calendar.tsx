@@ -371,7 +371,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
 
           {/* Calendar Grid - Card-based Slots */}
           <div className="overflow-x-auto max-h-[calc(100vh-350px)] overflow-y-auto">
-            <div className="grid grid-cols-7 gap-2 p-4 min-w-[700px]">
+            <div className="grid grid-cols-7 gap-1.5 p-4 min-w-[700px]">
               {/* Day Columns */}
               {weekDays.map((day, dayIndex) => (
                 <div key={`day-${dayIndex}`} className="space-y-2">

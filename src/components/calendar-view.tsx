@@ -360,20 +360,24 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
 
       {/* Scrollable Calendar Content */}
       <div className="flex-1 overflow-y-auto px-4 pb-4 pt-2">
-        {viewMode === "day" || viewMode === "week" ? (
-          <WeekCalendar 
-            key={selectedDate.toISOString()}
-            onSlotEdit={handleSlotEdit} 
-            selectedDate={selectedDate}
-            selectedDay={selectedDay}
-            viewMode={viewMode === "day" ? "day" : "week"}
-          />
-        ) : (
-          <MonthCalendar 
-            onDayClick={handleDayClick}
-            onSlotCreate={handleSlotEdit}
-          />
-        )}
+        <Card className="bg-card/95 backdrop-blur-xl border-border/50">
+          <CardContent className="p-4">
+            {viewMode === "day" || viewMode === "week" ? (
+              <WeekCalendar 
+                key={selectedDate.toISOString()}
+                onSlotEdit={handleSlotEdit} 
+                selectedDate={selectedDate}
+                selectedDay={selectedDay}
+                viewMode={viewMode === "day" ? "day" : "week"}
+              />
+            ) : (
+              <MonthCalendar 
+                onDayClick={handleDayClick}
+                onSlotCreate={handleSlotEdit}
+              />
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Slot Form Dialog */}
