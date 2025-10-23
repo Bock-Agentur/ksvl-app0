@@ -82,12 +82,13 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
   });
 
   return (
-    <div className="p-4 max-w-7xl mx-auto">
-      <Card className="bg-card/75 backdrop-blur-xl border-border/50 shadow-xl">
+    <div className="max-w-7xl mx-auto p-4 space-y-4">
+      {/* Sticky Navigation Card */}
+      <Card className="sticky top-4 z-20 bg-card/75 backdrop-blur-xl border-border/50 shadow-xl">
         <CardHeader>
           <CardTitle>Kalender</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           {/* View Toggle - Responsive */}
           <div className="flex items-center justify-center gap-2">
             {/* Mobile: Only Day and Month */}
@@ -153,7 +154,12 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
               </Button>
             </div>
           </div>
+        </CardContent>
+      </Card>
 
+      {/* Scrollable Calendar Card */}
+      <Card className="bg-card/75 backdrop-blur-xl border-border/50 shadow-xl">
+        <CardContent className="p-0">
           {/* Calendar Content */}
           {viewMode === "day" || viewMode === "week" ? (
             <WeekCalendar 
