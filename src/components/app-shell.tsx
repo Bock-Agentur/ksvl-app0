@@ -168,8 +168,7 @@ export function AppShell({
 
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-2 shadow-elevated-maritime z-50">
-        <div className="flex justify-between items-center max-w-md mx-auto">
-          <div className="flex gap-1">
+        <div className="flex justify-evenly items-center max-w-md mx-auto">
             {footerItems.map((item, index) => {
               // Dynamic icon loading from lucide-react
               const IconComponent = LucideIcons[item.icon as keyof typeof LucideIcons] as React.ComponentType<{
@@ -186,7 +185,6 @@ export function AppShell({
                     </Badge>}
                 </Button>;
             })}
-          </div>
 
           {/* Burger Menu (only for admin/vorstand) */}
           {(currentRole === "admin" || currentRole === "vorstand") && (
