@@ -93,7 +93,7 @@ All colors MUST be HSL for proper theme support.
     --status-slot-block-foreground: 0 75% 95%;
 
     /* Borders & Inputs */
-    --border: 210 25% 75%;
+    --border: 210 25% 85%;
     --input: 210 25% 90%;
     --ring: 210 60% 25%;
 
@@ -239,7 +239,7 @@ All colors MUST be HSL for proper theme support.
     --status-slot-block: 0 75% 65%;
     --status-slot-block-foreground: 0 75% 95%;
 
-    --border: 210 40% 25%;
+    --border: 210 40% 18%;
     --input: 210 40% 18%;
     --ring: 195 70% 60%;
 
