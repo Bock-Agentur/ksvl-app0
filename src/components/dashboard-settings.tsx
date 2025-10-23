@@ -21,7 +21,17 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 // Sortable Widget Item Component
-function SortableWidgetItem({ widget, isEnabled, onToggle }: { widget: DashboardWidget; isEnabled: boolean; onToggle: () => void }) {
+function SortableWidgetItem({ 
+  widget, 
+  isEnabled, 
+  onToggle,
+  column 
+}: { 
+  widget: DashboardWidget; 
+  isEnabled: boolean; 
+  onToggle: () => void;
+  column: 1 | 2 | 3;
+}) {
   const {
     attributes,
     listeners,
@@ -61,8 +71,8 @@ function SortableWidgetItem({ widget, isEnabled, onToggle }: { widget: Dashboard
         <Badge variant="outline" className="text-xs">
           {widget.size === "small" ? "Klein" : widget.size === "medium" ? "Mittel" : "Groß"}
         </Badge>
-        <Badge variant="outline" className="text-xs">
-          Spalte {widget.position.column}
+        <Badge variant="secondary" className="text-xs">
+          Spalte {column}
         </Badge>
         <Switch checked={isEnabled} onCheckedChange={onToggle} />
       </div>
@@ -93,23 +103,38 @@ export function DashboardSettings() {
   } = useDashboardSettings(targetRole, isAdmin);
   const availableWidgets = getWidgetsForRole(targetRole);
   
-  // Sortiere Widgets nach gespeicherter Reihenfolge
-  const sortedWidgets = React.useMemo(() => {
-    const orderMap = settings.widgetOrder || settings.enabledWidgets;
-    return [...availableWidgets].sort((a, b) => {
-      const indexA = orderMap.indexOf(a.id);
-      const indexB = orderMap.indexOf(b.id);
-      if (indexA === -1) return 1;
-      if (indexB === -1) return -1;
-      return indexA - indexB;
-    });
-  }, [availableWidgets, settings.widgetOrder, settings.enabledWidgets]);
+  // Get widget positions (custom or default)
+  const getWidgetColumn = (widgetId: string): 1 | 2 | 3 => {
+    const customPos = settings.widgetPositions?.[widgetId];
+    if (customPos) return customPos.column;
+    const widget = availableWidgets.find(w => w.id === widgetId);
+    return widget?.position.column || 1;
+  };
 
-  const widgetsByCategory = sortedWidgets.reduce((acc, widget) => {
-    if (!acc[widget.category]) acc[widget.category] = [];
-    acc[widget.category].push(widget);
-    return acc;
-  }, {} as Record<string, typeof availableWidgets>);
+  const getWidgetOrder = (widgetId: string): number => {
+    const customPos = settings.widgetPositions?.[widgetId];
+    if (customPos) return customPos.order;
+    const widget = availableWidgets.find(w => w.id === widgetId);
+    return widget?.position.order || 0;
+  };
+
+  // Group widgets by column
+  const widgetsByColumn = React.useMemo(() => {
+    const grouped: Record<1 | 2 | 3, DashboardWidget[]> = { 1: [], 2: [], 3: [] };
+    
+    availableWidgets.forEach(widget => {
+      const column = getWidgetColumn(widget.id);
+      grouped[column].push(widget);
+    });
+
+    // Sort each column by order
+    Object.keys(grouped).forEach(col => {
+      const column = parseInt(col) as 1 | 2 | 3;
+      grouped[column].sort((a, b) => getWidgetOrder(a.id) - getWidgetOrder(b.id));
+    });
+
+    return grouped;
+  }, [availableWidgets, settings.widgetPositions]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -118,29 +143,58 @@ export function DashboardSettings() {
     })
   );
 
-  const handleDragEnd = (event: DragEndEvent, category: string) => {
+  const handleDragEnd = (event: DragEndEvent, targetColumn: 1 | 2 | 3) => {
     const { active, over } = event;
 
-    if (over && active.id !== over.id) {
-      const widgets = widgetsByCategory[category];
-      const oldIndex = widgets.findIndex(w => w.id === active.id);
-      const newIndex = widgets.findIndex(w => w.id === over.id);
+    if (!over || active.id === over.id) return;
 
-      const reorderedCategoryWidgets = arrayMove(widgets, oldIndex, newIndex);
-      
-      // Kombiniere mit anderen Kategorien
-      const allOtherWidgets = sortedWidgets.filter(w => w.category !== category);
-      const newOrder = [...allOtherWidgets, ...reorderedCategoryWidgets]
-        .sort((a, b) => {
-          if (a.category === category && b.category === category) {
-            return reorderedCategoryWidgets.indexOf(a) - reorderedCategoryWidgets.indexOf(b);
-          }
-          return 0;
-        })
-        .map(w => w.id);
+    const activeId = active.id as string;
+    const overId = over.id as string;
 
-      saveSettings({ widgetOrder: newOrder });
+    // Find which column the over item is in (might be different from targetColumn if dragging between columns)
+    let overColumn = targetColumn;
+    for (const [col, widgets] of Object.entries(widgetsByColumn)) {
+      if (widgets.some(w => w.id === overId)) {
+        overColumn = parseInt(col) as 1 | 2 | 3;
+        break;
+      }
     }
+
+    // Get current positions
+    const newPositions = { ...settings.widgetPositions };
+
+    // Get all widgets in the target column
+    const columnWidgets = widgetsByColumn[overColumn];
+    const oldIndex = columnWidgets.findIndex(w => w.id === activeId);
+    const newIndex = columnWidgets.findIndex(w => w.id === overId);
+
+    // If dragging within same column, reorder
+    if (oldIndex !== -1 && newIndex !== -1) {
+      const reordered = arrayMove(columnWidgets, oldIndex, newIndex);
+      reordered.forEach((widget, index) => {
+        newPositions[widget.id] = { column: overColumn, order: index };
+      });
+    } else {
+      // Dragging from different column - insert at new position
+      const sourceColumn = getWidgetColumn(activeId);
+      const sourceWidgets = widgetsByColumn[sourceColumn].filter(w => w.id !== activeId);
+      const targetWidgets = [...columnWidgets];
+      
+      // Insert at the position of the over item
+      const insertIndex = targetWidgets.findIndex(w => w.id === overId);
+      targetWidgets.splice(insertIndex, 0, availableWidgets.find(w => w.id === activeId)!);
+
+      // Update positions for both columns
+      sourceWidgets.forEach((widget, index) => {
+        newPositions[widget.id] = { column: sourceColumn, order: index };
+      });
+      
+      targetWidgets.forEach((widget, index) => {
+        newPositions[widget.id] = { column: overColumn, order: index };
+      });
+    }
+
+    saveSettings({ widgetPositions: newPositions });
   };
   const roleLabels: Record<UserRole, string> = {
     admin: "Administrator",
@@ -156,11 +210,10 @@ export function DashboardSettings() {
     mitglied: Users,
     gastmitglied: Users
   };
-  const categoryNames = {
-    stats: "Statistiken",
-    info: "Informationen",
-    management: "Verwaltung",
-    communication: "Kommunikation"
+  const columnNames = {
+    1: "Linke Spalte",
+    2: "Mittlere Spalte",
+    3: "Rechte Spalte"
   };
   const layoutOptions = [{
     value: "default",
@@ -461,47 +514,55 @@ export function DashboardSettings() {
 
           <Separator />
 
-          {/* Widget Categories */}
+          {/* Widget Layout by Columns */}
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">Widget-Einstellungen</h3>
+              <div>
+                <h3 className="text-lg font-medium">Widget-Layout</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Ziehen Sie Widgets zwischen Spalten und ordnen Sie die Reihenfolge an
+                </p>
+              </div>
               {isAdmin && <Badge variant="outline" className="text-xs">
                   Für {roleLabels[selectedConfigRole]}
                 </Badge>}
             </div>
             
-            {Object.entries(widgetsByCategory).map(([category, widgets]) => <div key={category} className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-medium text-base">
-                    {categoryNames[category as keyof typeof categoryNames]}
-                  </h4>
-                  <Badge variant="secondary" className="text-xs">
-                    {widgets.filter(w => isWidgetEnabled(w.id)).length}/{widgets.length}
-                  </Badge>
-                </div>
-                
-                <DndContext
-                  sensors={sensors}
-                  collisionDetection={closestCenter}
-                  onDragEnd={(event) => handleDragEnd(event, category)}
-                >
-                  <SortableContext
-                    items={widgets.map(w => w.id)}
-                    strategy={verticalListSortingStrategy}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {([1, 2, 3] as const).map(column => (
+                <div key={column} className="space-y-3">
+                  <div className="flex items-center justify-between p-2 bg-muted/30 rounded-lg">
+                    <h4 className="font-medium text-sm">{columnNames[column]}</h4>
+                    <Badge variant="secondary" className="text-xs">
+                      {widgetsByColumn[column].length}
+                    </Badge>
+                  </div>
+                  
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={(event) => handleDragEnd(event, column)}
                   >
-                    <div className="grid gap-3">
-                      {widgets.map(widget => (
-                        <SortableWidgetItem
-                          key={widget.id}
-                          widget={widget}
-                          isEnabled={isWidgetEnabled(widget.id)}
-                          onToggle={() => toggleWidget(widget.id)}
-                        />
-                      ))}
-                    </div>
-                  </SortableContext>
-                </DndContext>
-              </div>)}
+                    <SortableContext
+                      items={widgetsByColumn[column].map(w => w.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="space-y-2 min-h-[200px] p-2 border-2 border-dashed border-muted rounded-lg">
+                        {widgetsByColumn[column].map(widget => (
+                          <SortableWidgetItem
+                            key={widget.id}
+                            widget={widget}
+                            isEnabled={isWidgetEnabled(widget.id)}
+                            onToggle={() => toggleWidget(widget.id)}
+                            column={column}
+                          />
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                </div>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>

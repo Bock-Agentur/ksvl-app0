@@ -45,8 +45,9 @@ export interface DashboardSettings {
   // Animation Settings
   animationEnabled: boolean;
   animationType: "fadeIn" | "dropDown" | "scrollReveal" | "slideFromSides" | "staggered" | "bounce" | "none";
-  // Widget Order
+  // Widget Order and Positions
   widgetOrder?: string[];
+  widgetPositions?: Record<string, { column: 1 | 2 | 3; order: number }>;
 }
 
 export const DASHBOARD_WIDGETS: Record<string, DashboardWidget> = {
@@ -192,12 +193,21 @@ export function getEnabledWidgetsForRole(
   );
 }
 
-export function sortWidgetsByPosition(widgets: DashboardWidget[]): {
+export function sortWidgetsByPosition(
+  widgets: DashboardWidget[], 
+  customPositions?: Record<string, { column: 1 | 2 | 3; order: number }>
+): {
   column1: DashboardWidget[];
   column2: DashboardWidget[];
   column3: DashboardWidget[];
 } {
-  const sorted = widgets.sort((a, b) => a.position.order - b.position.order);
+  // Use custom positions if available, otherwise use default positions
+  const widgetsWithPositions = widgets.map(widget => ({
+    ...widget,
+    position: customPositions?.[widget.id] || widget.position
+  }));
+
+  const sorted = widgetsWithPositions.sort((a, b) => a.position.order - b.position.order);
   
   return {
     column1: sorted.filter(w => w.position.column === 1),

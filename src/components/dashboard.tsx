@@ -352,7 +352,7 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
         )}>
           {(() => {
             const enabledWidgets = getEnabledWidgetsForRole(currentRole, settings);
-            const { column1, column2, column3 } = sortWidgetsByPosition(enabledWidgets);
+            const { column1, column2, column3 } = sortWidgetsByPosition(enabledWidgets, settings.widgetPositions);
             
             return (
               <>
