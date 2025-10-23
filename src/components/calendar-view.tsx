@@ -303,25 +303,28 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
               </div>
             </div>
           )}
-          {/* Calendar Content */}
-          {viewMode === "day" || viewMode === "week" ? (
-            <WeekCalendar 
-              key={selectedDate.toISOString()} // Force re-render when date changes
-              onSlotEdit={handleSlotEdit} 
-              selectedDate={selectedDate}
-              selectedDay={selectedDay}
-              viewMode={viewMode === "day" ? "day" : "week"}
-            />
-          ) : (
-            <MonthCalendar 
-              onDayClick={handleDayClick}
-              onSlotCreate={handleSlotEdit}
-            />
-          )}
         </CardContent>
         </Card>
         {/* Soft transparent fade gradient */}
         <div className="absolute bottom-0 left-4 right-4 h-12 bg-gradient-to-b from-card/95 via-card/60 to-transparent pointer-events-none" />
+      </div>
+
+      {/* Scrollable Calendar Content */}
+      <div className="flex-1 overflow-y-auto px-4 pb-4 pt-2">
+        {viewMode === "day" || viewMode === "week" ? (
+          <WeekCalendar 
+            key={selectedDate.toISOString()}
+            onSlotEdit={handleSlotEdit} 
+            selectedDate={selectedDate}
+            selectedDay={selectedDay}
+            viewMode={viewMode === "day" ? "day" : "week"}
+          />
+        ) : (
+          <MonthCalendar 
+            onDayClick={handleDayClick}
+            onSlotCreate={handleSlotEdit}
+          />
+        )}
       </div>
 
       {/* Slot Form Dialog */}
