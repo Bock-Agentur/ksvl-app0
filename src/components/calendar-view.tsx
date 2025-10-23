@@ -126,9 +126,9 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
   };
 
   return (
-    <div className="max-w-7xl mx-auto p-4 space-y-4">
+    <div className="min-h-screen">
       {/* Sticky Navigation Card */}
-      <Card className="sticky top-4 z-20 bg-card/75 backdrop-blur-xl border-border/50 shadow-xl">
+      <Card className="sticky top-0 z-20 bg-card/95 backdrop-blur-xl border-border/50 shadow-xl mx-4 mt-4">
         <CardHeader>
           <CardTitle>Kalender</CardTitle>
         </CardHeader>
@@ -306,7 +306,7 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
       </Card>
 
       {/* Scrollable Calendar Card */}
-      <Card className="bg-card/75 backdrop-blur-xl border-border/50 shadow-xl">
+      <Card className="bg-card/75 backdrop-blur-xl border-border/50 shadow-xl mx-4 mb-4">
         <CardContent className="p-4">
           {/* Calendar Content */}
           {viewMode === "day" || viewMode === "week" ? (
