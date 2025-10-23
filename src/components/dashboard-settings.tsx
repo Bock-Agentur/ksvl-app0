@@ -11,7 +11,7 @@ import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { getWidgetsForRole, getSectionsForRole, type DashboardItem } from "@/lib/dashboard-config";
 import { UserRole } from "@/types/user";
 import { RotateCcw, GripVertical, Eye, EyeOff, LayoutGrid, Columns2, Square } from "lucide-react";
-import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from '@dnd-kit/core';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverEvent, DragOverlay, pointerWithin } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { cn } from "@/lib/utils";
@@ -86,6 +86,8 @@ export function DashboardSettings() {
   const { currentRole, currentUser } = useRole();
   const isAdmin = currentUser?.roles?.includes("admin") || currentRole === "admin";
   const [targetRole, setTargetRole] = useState<UserRole>(currentRole);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
   
   const { 
     settings, 
@@ -146,30 +148,93 @@ export function DashboardSettings() {
     return columns;
   }, [allDashboardItems, settings.allItemsPositions, settings.columnLayout]);
 
-  const handleDragEnd = (event: DragEndEvent, targetColumn: number) => {
+  const handleDragStart = (event: DragEndEvent) => {
+    setActiveId(event.active.id as string);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    setOverId(event.over?.id as string || null);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
+    
+    setActiveId(null);
+    setOverId(null);
     
     if (!over || active.id === over.id) return;
 
-    const columnItems = itemsByColumn[targetColumn] || [];
-    const oldIndex = columnItems.findIndex(item => item.id === active.id);
-    const newIndex = columnItems.findIndex(item => item.id === over.id);
+    // Find which columns the items are in
+    let sourceColumn = 0;
+    let targetColumn = 0;
+    let sourceItem: DashboardItem | null = null;
+    let targetItem: DashboardItem | null = null;
 
-    if (oldIndex === -1) return;
-
-    const reorderedItems = arrayMove(columnItems, oldIndex, newIndex);
-    
-    const newPositions = { ...settings.allItemsPositions };
-    
-    reorderedItems.forEach((item, index) => {
-      newPositions[item.id] = {
-        column: targetColumn,
-        order: index
-      };
+    Object.entries(itemsByColumn).forEach(([col, items]) => {
+      const colNum = parseInt(col);
+      const foundSource = items.find(item => item.id === active.id);
+      const foundTarget = items.find(item => item.id === over.id);
+      
+      if (foundSource) {
+        sourceColumn = colNum;
+        sourceItem = foundSource;
+      }
+      if (foundTarget) {
+        targetColumn = colNum;
+        targetItem = foundTarget;
+      }
     });
+
+    if (!sourceItem || !targetItem) return;
+
+    const newPositions = { ...settings.allItemsPositions };
+
+    // Same column - reorder
+    if (sourceColumn === targetColumn) {
+      const columnItems = itemsByColumn[sourceColumn] || [];
+      const oldIndex = columnItems.findIndex(item => item.id === active.id);
+      const newIndex = columnItems.findIndex(item => item.id === over.id);
+
+      if (oldIndex === -1 || newIndex === -1) return;
+
+      const reorderedItems = arrayMove(columnItems, oldIndex, newIndex);
+      
+      reorderedItems.forEach((item, index) => {
+        newPositions[item.id] = {
+          column: sourceColumn,
+          order: index
+        };
+      });
+    } else {
+      // Different columns - move item
+      const sourceItems = [...(itemsByColumn[sourceColumn] || [])].filter(item => item.id !== active.id);
+      const targetItems = [...(itemsByColumn[targetColumn] || [])];
+      const targetIndex = targetItems.findIndex(item => item.id === over.id);
+      
+      // Insert the moved item at the target position
+      targetItems.splice(targetIndex, 0, sourceItem);
+      
+      // Update positions for source column
+      sourceItems.forEach((item, index) => {
+        newPositions[item.id] = {
+          column: sourceColumn,
+          order: index
+        };
+      });
+      
+      // Update positions for target column
+      targetItems.forEach((item, index) => {
+        newPositions[item.id] = {
+          column: targetColumn,
+          order: index
+        };
+      });
+    }
 
     saveSettings({ allItemsPositions: newPositions });
   };
+
+  const activeItem = activeId ? allDashboardItems.all.find(item => item.id === activeId) : null;
 
   return (
     <div className="space-y-6 p-6">
@@ -246,45 +311,55 @@ export function DashboardSettings() {
         <CardHeader>
           <CardTitle>Dashboard-Elemente</CardTitle>
           <CardDescription>
-            Ziehen Sie Bereiche und Widgets per Drag & Drop, um sie neu anzuordnen
+            Ziehen Sie Bereiche und Widgets per Drag & Drop zwischen Spalten, um sie neu anzuordnen
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div 
-            className={cn(
-              "grid gap-6",
-              settings.columnLayout === 1 && "grid-cols-1",
-              settings.columnLayout === 2 && "grid-cols-1 lg:grid-cols-2",
-              settings.columnLayout === 3 && "grid-cols-1 lg:grid-cols-3"
-            )}
+          <DndContext
+            sensors={sensors}
+            collisionDetection={pointerWithin}
+            onDragStart={handleDragStart}
+            onDragOver={handleDragOver}
+            onDragEnd={handleDragEnd}
           >
-            {Array.from({ length: settings.columnLayout }).map((_, colIndex) => {
-              const column = colIndex + 1;
-              const items = itemsByColumn[column] || [];
-              
-              return (
-                <div key={column} className="space-y-3">
-                  <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg sticky top-0 z-10">
-                    <h4 className="font-semibold text-sm">
-                      {settings.columnLayout === 1 
-                        ? "Dashboard-Layout" 
-                        : `Spalte ${column}`}
-                    </h4>
-                    <Badge variant="secondary" className="text-xs">
-                      {items.length}
-                    </Badge>
-                  </div>
-                  
-                  <DndContext
-                    sensors={sensors}
-                    collisionDetection={closestCenter}
-                    onDragEnd={(event) => handleDragEnd(event, column)}
-                  >
+            <div 
+              className={cn(
+                "grid gap-6",
+                settings.columnLayout === 1 && "grid-cols-1",
+                settings.columnLayout === 2 && "grid-cols-1 lg:grid-cols-2",
+                settings.columnLayout === 3 && "grid-cols-1 lg:grid-cols-3"
+              )}
+            >
+              {Array.from({ length: settings.columnLayout }).map((_, colIndex) => {
+                const column = colIndex + 1;
+                const items = itemsByColumn[column] || [];
+                const isOverColumn = items.some(item => item.id === overId);
+                
+                return (
+                  <div key={column} className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-muted/30 rounded-lg sticky top-0 z-10">
+                      <h4 className="font-semibold text-sm">
+                        {settings.columnLayout === 1 
+                          ? "Dashboard-Layout" 
+                          : `Spalte ${column}`}
+                      </h4>
+                      <Badge variant="secondary" className="text-xs">
+                        {items.length}
+                      </Badge>
+                    </div>
+                    
                     <SortableContext
                       items={items.map(i => i.id)}
                       strategy={verticalListSortingStrategy}
                     >
-                      <div className="space-y-2 min-h-[300px] p-4 border-2 border-dashed border-muted rounded-lg bg-muted/5">
+                      <div 
+                        className={cn(
+                          "space-y-2 min-h-[300px] p-4 border-2 border-dashed rounded-lg transition-all",
+                          isOverColumn 
+                            ? "border-primary bg-primary/10 ring-2 ring-primary" 
+                            : "border-muted bg-muted/5"
+                        )}
+                      >
                         {items.length > 0 ? (
                           items.map(item => (
                             <SortableDashboardItem
@@ -302,11 +377,24 @@ export function DashboardSettings() {
                         )}
                       </div>
                     </SortableContext>
-                  </DndContext>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <DragOverlay>
+              {activeItem ? (
+                <div className="p-4 bg-card border-2 border-primary rounded-lg shadow-lg opacity-80">
+                  <div className="flex items-center gap-3">
+                    <Badge variant={activeItem.itemType === 'section' ? 'default' : 'secondary'} className="text-xs">
+                      {activeItem.itemType === 'section' ? 'Bereich' : 'Widget'}
+                    </Badge>
+                    <p className="font-medium text-sm">{activeItem.name}</p>
+                  </div>
                 </div>
-              );
-            })}
-          </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
         </CardContent>
       </Card>
 
