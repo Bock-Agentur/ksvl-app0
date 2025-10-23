@@ -302,9 +302,9 @@ export function SlotManagement() {
   };
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-background">
+    <div className="flex flex-col h-screen overflow-hidden bg-background max-w-7xl mx-auto">
       {/* Fixed Top Card */}
-      <div className="flex-shrink-0 pt-4 pb-0 relative z-10 my-0 p-4">
+      <div className="flex-shrink-0 pt-4 pb-0 relative z-10 my-0 px-4">
         <Card className="relative bg-card/95 backdrop-blur-xl border-border/50 shadow-[0_12px_50px_-8px_rgba(0,0,0,0.2)]">
           <CardHeader>
             <CardTitle>Slot-Verwaltung</CardTitle>
