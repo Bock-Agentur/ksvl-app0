@@ -795,13 +795,11 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
 
       {/* Tablet/Mobile Calendar View - Day Calendar with 15-minute slots */}
       <div className="md:hidden">
-        <Card>
-          <CardHeader className="pb-2">
-            <p className="text-center text-lg font-bold text-muted-foreground mb-6">
-              {format(selectedDay, "dd. MMMM yyyy", { locale: de })}
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-2">
+        <div className="space-y-4">
+          <p className="text-center text-lg font-bold text-muted-foreground">
+            {format(selectedDay, "dd. MMMM yyyy", { locale: de })}
+          </p>
+          <div className="space-y-2">
             {/* Show all 15-minute intervals from 6:00 to 20:45 */}
             {Array.from({ length: 15 * 4 }, (_, i) => {
               const totalMinutes = (6 * 60) + (i * 15);  // Start at 6:00, increment by 15min
@@ -1079,9 +1077,9 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
                    )}
                  </div>
                );
-            }).filter(Boolean)}
-          </CardContent>
-        </Card>
+             }).filter(Boolean)}
+          </div>
+        </div>
       </div>
 
       {/* Confirmation Dialogs */}
