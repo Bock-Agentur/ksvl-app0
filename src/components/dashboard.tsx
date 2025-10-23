@@ -10,7 +10,7 @@ import { useTestData } from "@/hooks/use-test-data";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { useWelcomeMessages } from "@/hooks/use-welcome-messages";
 import { useDashboardAnimations } from "@/hooks/use-dashboard-animations";
-import { getEnabledWidgetsForRole, sortWidgetsByPosition } from "@/lib/dashboard-config";
+import { getAllDashboardItems, sortAllItemsByPosition, getColumnClassName } from "@/lib/dashboard-config";
 import { cn } from "@/lib/utils";
 
 // Dashboard Widgets
@@ -249,40 +249,32 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
   }, [isAnimationEnabled, settings.animationType, isInitialized]);
 
   return (
-    <div className="p-4 max-w-7xl mx-auto space-y-6">
-      {/* Welcome Section */}
-      {settings.showWelcomeSection && (
-        <div className={cn(
-          "bg-gradient-deep rounded-lg p-6 text-primary-foreground shadow-elevated-maritime",
-          getAnimationClass("welcome")
-        )}>
-          <h2 className="text-2xl font-bold mb-2">
-            {getGreeting()}, {currentUser?.name}! 👋
-          </h2>
-          <p className="text-primary-foreground/90 mb-4">
-            {getRoleSpecificTitle()}
-          </p>
-          
-          {/* Role-specific welcome message */}
-          <div className="bg-primary-foreground/10 rounded-lg p-4 mb-4">
-            <div className="whitespace-pre-line text-sm leading-relaxed text-primary-foreground/95">
-              {getWelcomeMessage(currentRole)}
-            </div>
+    <div className="p-4 max-w-7xl mx-auto">
+      <div className={gridClassName}>
+        {sortedColumns.map((columnItems, columnIndex) => (
+          <div key={columnIndex} className="space-y-4">
+            {columnItems.map((item) => {
+              const Component = item.component;
+              const isSection = item.itemType === 'section';
+              
+              return (
+                <div key={item.id} className={getAnimationClass(item.id)}>
+                  {isSection ? (
+                    <Component 
+                      stats={stats}
+                      currentUser={currentUser}
+                      currentRole={currentRole}
+                      onNavigate={onNavigate}
+                    />
+                  ) : (
+                    <Component />
+                  )}
+                </div>
+              );
+            })}
           </div>
-          
-          {stats.nextBooking && (
-            <div className="bg-primary-foreground/10 rounded-lg p-4 flex items-center gap-3">
-              <Clock className="h-5 w-5" />
-              <div>
-                <p className="font-medium">Nächster Termin</p>
-                <p className="text-sm text-primary-foreground/80">
-                  {stats.nextBooking.time} - {stats.nextBooking.member} ({stats.nextBooking.duration})
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
+        ))}
+      </div>
 
       {/* Main Stats Grid */}
       {settings.showStatsGrid && (
@@ -344,15 +336,6 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
         </div>
       )}
 
-      {/* Widget Grid - Dynamic layout based on settings */}
-      {!isLoading && (
-        <div className={cn(
-          "grid gap-4 lg:grid-cols-3",
-          getAnimationClass("widgets")
-        )}>
-          {(() => {
-            const enabledWidgets = getEnabledWidgetsForRole(currentRole, settings);
-            const { column1, column2, column3 } = sortWidgetsByPosition(enabledWidgets, settings.widgetPositions);
             
             return (
               <>

@@ -54,6 +54,30 @@ export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = fals
     saveSettings({ [sectionKey]: !settings[sectionKey] });
   };
 
+  const toggleItem = (itemId: string) => {
+    // Check if it's a section or widget
+    const isSectionId = ['welcomeSection', 'statsGrid', 'quickActions', 'activityFeed'].includes(itemId);
+    
+    if (isSectionId) {
+      const enabledSections = settings.enabledSections?.includes(itemId)
+        ? settings.enabledSections.filter(id => id !== itemId)
+        : [...(settings.enabledSections || []), itemId];
+      saveSettings({ enabledSections });
+    } else {
+      const enabledWidgets = settings.enabledWidgets.includes(itemId)
+        ? settings.enabledWidgets.filter(id => id !== itemId)
+        : [...settings.enabledWidgets, itemId];
+      saveSettings({ enabledWidgets });
+    }
+  };
+
+  const isItemEnabled = (itemId: string): boolean => {
+    const isSectionId = ['welcomeSection', 'statsGrid', 'quickActions', 'activityFeed'].includes(itemId);
+    return isSectionId 
+      ? (settings.enabledSections?.includes(itemId) ?? false)
+      : settings.enabledWidgets.includes(itemId);
+  };
+
   const isWidgetEnabled = (widgetId: string): boolean => {
     return settings.enabledWidgets.includes(widgetId);
   };
@@ -64,8 +88,10 @@ export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = fals
     saveSettings,
     toggleWidget,
     toggleSection,
+    toggleItem,
     updateWidgetSettings,
     resetToDefaults,
-    isWidgetEnabled
+    isWidgetEnabled,
+    isItemEnabled
   };
 }

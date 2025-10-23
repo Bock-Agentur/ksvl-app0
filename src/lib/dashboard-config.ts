@@ -11,6 +11,10 @@ import { FinanceOverviewWidget } from "@/components/dashboard-widgets/finance-ov
 import { MaintenanceAlertsWidget } from "@/components/dashboard-widgets/maintenance-alerts-widget";
 import { EventsCalendarWidget } from "@/components/dashboard-widgets/events-calendar-widget";
 import { HarborChatWidget } from "@/components/dashboard-widgets/harbor-chat-widget";
+import { WelcomeSection } from "@/components/dashboard-sections/welcome-section";
+import { StatsGridSection } from "@/components/dashboard-sections/stats-grid-section";
+import { QuickActionsSection } from "@/components/dashboard-sections/quick-actions-section";
+import { ActivityFeedSection } from "@/components/dashboard-sections/activity-feed-section";
 
 export interface DashboardWidget {
   id: string;
@@ -32,11 +36,28 @@ export interface DashboardWidget {
   };
 }
 
+export interface DashboardSection {
+  id: string;
+  name: string;
+  description: string;
+  component: React.ComponentType<any>;
+  defaultEnabled: boolean;
+  roles: UserRole[];
+  category: "core" | "stats" | "actions" | "feed";
+  size: "small" | "medium" | "large";
+  position: {
+    column: 1 | 2 | 3;
+    order: number;
+  };
+}
+
 export interface DashboardSettings {
   enabledWidgets: string[];
+  enabledSections: string[];
   widgetSettings: Record<string, any>;
   layout: "default" | "compact" | "detailed";
   refreshInterval: number;
+  columnLayout: 1 | 2 | 3;
   // Core Dashboard Sections
   showWelcomeSection: boolean;
   showStatsGrid: boolean;
@@ -48,6 +69,7 @@ export interface DashboardSettings {
   // Widget Order and Positions
   widgetOrder?: string[];
   widgetPositions?: Record<string, { column: 1 | 2 | 3; order: number }>;
+  allItemsPositions?: Record<string, { column: number; order: number }>;
 }
 
 export const DASHBOARD_WIDGETS: Record<string, DashboardWidget> = {
@@ -158,8 +180,56 @@ export const DASHBOARD_WIDGETS: Record<string, DashboardWidget> = {
   }
 };
 
+export const DASHBOARD_SECTIONS: Record<string, DashboardSection> = {
+  welcomeSection: {
+    id: "welcomeSection",
+    name: "Willkommensnachricht",
+    description: "Begrüßung und nächster Termin",
+    component: WelcomeSection,
+    defaultEnabled: true,
+    roles: ["mitglied", "gastmitglied", "kranfuehrer", "admin", "vorstand"],
+    category: "core",
+    size: "large",
+    position: { column: 1, order: 0 }
+  },
+  statsGrid: {
+    id: "statsGrid",
+    name: "Statistik-Übersicht",
+    description: "Buchungen und Auslastung",
+    component: StatsGridSection,
+    defaultEnabled: true,
+    roles: ["mitglied", "gastmitglied", "kranfuehrer", "admin", "vorstand"],
+    category: "stats",
+    size: "large",
+    position: { column: 1, order: 1 }
+  },
+  quickActions: {
+    id: "quickActions",
+    name: "Schnellzugriff",
+    description: "Direkte Links zu häufig genutzten Funktionen",
+    component: QuickActionsSection,
+    defaultEnabled: true,
+    roles: ["mitglied", "gastmitglied", "kranfuehrer", "admin", "vorstand"],
+    category: "actions",
+    size: "large",
+    position: { column: 1, order: 100 }
+  },
+  activityFeed: {
+    id: "activityFeed",
+    name: "Live-Activity Feed",
+    description: "Echtzeitaktivitäten und Benachrichtigungen",
+    component: ActivityFeedSection,
+    defaultEnabled: true,
+    roles: ["mitglied", "gastmitglied", "kranfuehrer", "admin", "vorstand"],
+    category: "feed",
+    size: "large",
+    position: { column: 1, order: 101 }
+  }
+};
+
 export const DEFAULT_DASHBOARD_SETTINGS: DashboardSettings = {
   enabledWidgets: Object.keys(DASHBOARD_WIDGETS),
+  enabledSections: Object.keys(DASHBOARD_SECTIONS),
   widgetSettings: Object.fromEntries(
     Object.entries(DASHBOARD_WIDGETS).map(([id, widget]) => [
       id,
@@ -168,6 +238,7 @@ export const DEFAULT_DASHBOARD_SETTINGS: DashboardSettings = {
   ),
   layout: "default",
   refreshInterval: 300000, // 5 minutes
+  columnLayout: 3,
   // Core Dashboard Sections - enabled by default
   showWelcomeSection: true,
   showStatsGrid: true,
@@ -191,6 +262,84 @@ export function getEnabledWidgetsForRole(
   return getWidgetsForRole(role).filter(widget => 
     settings.enabledWidgets.includes(widget.id)
   );
+}
+
+export function getSectionsForRole(role: UserRole): DashboardSection[] {
+  return Object.values(DASHBOARD_SECTIONS).filter((section) =>
+    section.roles.includes(role)
+  );
+}
+
+export function getEnabledSectionsForRole(
+  role: UserRole,
+  settings: DashboardSettings
+): DashboardSection[] {
+  const allSections = getSectionsForRole(role);
+  return allSections.filter((section) => 
+    settings.enabledSections.includes(section.id)
+  );
+}
+
+export type DashboardItem = (DashboardWidget | DashboardSection) & { 
+  itemType: 'widget' | 'section' 
+};
+
+export function getAllDashboardItems(
+  role: UserRole,
+  settings: DashboardSettings
+): DashboardItem[] {
+  const widgets = getEnabledWidgetsForRole(role, settings).map(w => ({
+    ...w,
+    itemType: 'widget' as const
+  }));
+  
+  const sections = getEnabledSectionsForRole(role, settings).map(s => ({
+    ...s,
+    itemType: 'section' as const
+  }));
+  
+  return [...sections, ...widgets];
+}
+
+export function sortAllItemsByPosition(
+  items: DashboardItem[],
+  customPositions?: Record<string, { column: number; order: number }>,
+  columnLayout: 1 | 2 | 3 = 3
+): DashboardItem[][] {
+  const columns: DashboardItem[][] = Array.from({ length: columnLayout }, () => []);
+
+  items.forEach((item) => {
+    const position = customPositions?.[item.id] || item.position;
+    const columnIndex = Math.min(position.column - 1, columnLayout - 1);
+    
+    if (columnIndex >= 0 && columnIndex < columnLayout) {
+      columns[columnIndex].push(item);
+    }
+  });
+
+  // Sort items within each column by order
+  columns.forEach(column => {
+    column.sort((a, b) => {
+      const posA = customPositions?.[a.id] || a.position;
+      const posB = customPositions?.[b.id] || b.position;
+      return posA.order - posB.order;
+    });
+  });
+
+  return columns;
+}
+
+export function getColumnClassName(columnLayout: 1 | 2 | 3): string {
+  switch (columnLayout) {
+    case 1:
+      return "grid grid-cols-1 gap-6";
+    case 2:
+      return "grid grid-cols-1 lg:grid-cols-2 gap-6";
+    case 3:
+      return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6";
+    default:
+      return "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6";
+  }
 }
 
 export function sortWidgetsByPosition(
