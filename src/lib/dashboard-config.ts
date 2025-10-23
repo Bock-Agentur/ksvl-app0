@@ -10,6 +10,7 @@ import { MemberStatsWidget } from "@/components/dashboard-widgets/member-stats-w
 import { FinanceOverviewWidget } from "@/components/dashboard-widgets/finance-overview-widget";
 import { MaintenanceAlertsWidget } from "@/components/dashboard-widgets/maintenance-alerts-widget";
 import { EventsCalendarWidget } from "@/components/dashboard-widgets/events-calendar-widget";
+import { HarborChatWidget } from "@/components/dashboard-widgets/harbor-chat-widget";
 
 export interface DashboardWidget {
   id: string;
@@ -135,6 +136,21 @@ export const DASHBOARD_WIDGETS: Record<string, DashboardWidget> = {
     settings: {
       refreshInterval: 3600000, // 1 hour
       showDetails: false
+    }
+  },
+  harborChat: {
+    id: "harborChat",
+    name: "KSVL-Assistent",
+    description: "AI-Chatbot für Fragen zu Terminen und Mitgliedern",
+    component: HarborChatWidget,
+    defaultEnabled: false,
+    roles: ["mitglied", "kranfuehrer", "admin"],
+    category: "communication",
+    size: "large",
+    position: { column: 3, order: 2 },
+    settings: {
+      refreshInterval: 0,
+      showDetails: true
     }
   }
 };
