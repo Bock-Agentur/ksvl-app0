@@ -523,7 +523,8 @@ export function SlotManagement() {
       {/* Scrollable Slots Area */}
       {!isEditing && (
         <div className="flex-1 overflow-y-auto px-4 pb-4 pt-2">
-          <Card className="border rounded-lg overflow-hidden bg-background">
+          {/* Desktop/Tablet: Card wrapper */}
+          <Card className="hidden md:block border rounded-lg overflow-hidden bg-background">
             <CardContent className="p-4">
               <h3 className="text-sm font-medium text-foreground border-b pb-2 mb-3">
                 {getFilterTitle()} 
@@ -547,7 +548,7 @@ export function SlotManagement() {
                   const slotStatus = getSlotStatus(slot, slots);
                   const isExpanded = expandedSlotId === slot.id;
                   return (
-                    <Card 
+                    <Card
                       key={slot.id} 
                       className={cn(
                         "border transition-all hover:shadow-sm w-full border-2 rounded-lg shadow-sm"
@@ -744,6 +745,227 @@ export function SlotManagement() {
             )}
             </CardContent>
           </Card>
+
+          {/* Mobile: No card wrapper */}
+          <div className="md:hidden space-y-3">
+            <h3 className="text-sm font-medium text-foreground border-b pb-2">
+              {getFilterTitle()} 
+              {filteredSlots.length > 0 && (
+                <span className="text-muted-foreground ml-2">
+                  ({filteredSlots.length} {filteredSlots.length === 1 ? 'Slot' : 'Slots'})
+                </span>
+              )}
+            </h3>
+            
+            {filteredSlots.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-sm text-muted-foreground">
+                  {(selectedDate || selectedCraneOperator) ? "Keine Slots mit den gewählten Filtern gefunden" : 
+                   (activeFilter === "all" ? "Keine Slots vorhanden" : "Keine Slots in dieser Kategorie")}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+              {filteredSlots.map((slot) => {
+                const slotStatus = getSlotStatus(slot, slots);
+                const isExpanded = expandedSlotId === slot.id;
+                return (
+                  <Card 
+                    key={slot.id} 
+                    className={cn(
+                      "border transition-all hover:shadow-sm w-full border-2 rounded-lg shadow-sm"
+                    )}
+                    style={(() => {
+                      const colors = getSlotColors(slotStatus);
+                      return {
+                        backgroundColor: colors.background,
+                        borderColor: colors.border,
+                        color: colors.text
+                      };
+                    })()}
+                  >
+                    {/* Compact Header - Always Visible - Now with Two Lines */}
+                    <CardContent 
+                      className="p-4 cursor-pointer"
+                      onClick={() => setExpandedSlotId(isExpanded ? null : slot.id)}
+                    >
+                      <div className="space-y-3">
+                        {/* First Line: Time, Duration, and Expand Icon */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4" style={{ color: getSlotColors(slotStatus).text }} />
+                              <div className="flex flex-col">
+                                <span className="font-semibold text-lg" style={{ color: getSlotColors(slotStatus).text }}>{slot.time}</span>
+                                <span className="text-xs opacity-75" style={{ color: getSlotColors(slotStatus).text }}>
+                                  bis {format(addMinutes(parseISO(`${slot.date}T${slot.time}`), slot.duration), 'HH:mm')}
+                                </span>
+                              </div>
+                              <Badge 
+                                variant="secondary" 
+                                className="text-xs"
+                                style={{ 
+                                  backgroundColor: "hsl(var(--primary-foreground) / 0.2)",
+                                  color: getSlotColors(slotStatus).text
+                                }}
+                              >
+                                {slot.duration}min
+                              </Badge>
+                            </div>
+                             <div className="text-sm font-medium truncate" style={{ color: getSlotColors(slotStatus).text }}>
+                               Kranführer: {slot.craneOperator.name}
+                               {slot.isBooked && (slot.memberName || slot.member) && (
+                                 <div className="text-xs opacity-90">
+                                   Mitglied: {slot.memberName || slot.member?.name}
+                                 </div>
+                               )}
+                             </div>
+                          </div>
+                          
+                          <div className="flex items-center gap-2">
+                            {isExpanded ? (
+                              <ChevronUp className="w-4 h-4" style={{ color: getSlotColors(slotStatus).text }} />
+                            ) : (
+                              <ChevronDown className="w-4 h-4" style={{ color: getSlotColors(slotStatus).text }} />
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Second Line: Date and Booking Status */}
+                        <div className="flex items-center justify-between">
+                          <div className="text-sm" style={{ color: getSlotColors(slotStatus).text }}>
+                            {format(parseISO(slot.date), "EEEE, dd. MMMM yyyy", { locale: de })}
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+
+                    {/* Expanded Content - Shows on Click */}
+                    <div className={cn(
+                      "overflow-hidden transition-all duration-300 ease-in-out",
+                      isExpanded ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                    )}>
+                      <CardContent className="pt-0 pb-3 px-3">
+                        <Separator className="mb-3" />
+                        
+                        <div className="space-y-3">
+
+                           {/* Crane Operator Details */}
+                           <div className="flex items-center gap-2 text-sm" style={{ color: getSlotColors(slotStatus).text }}>
+                             <UserCheck className="w-4 h-4" style={{ color: getSlotColors(slotStatus).text }} />
+                             <div>
+                               <div>Kranführer: <strong>{slot.craneOperator.name}</strong></div>
+                               {slot.craneOperator.email && (
+                                 <div className="text-xs opacity-80">{slot.craneOperator.email}</div>
+                               )}
+                             </div>
+                           </div>
+                          
+                          {/* Member Info if booked */}
+                          {slot.isBooked && slot.member && (
+                            <div className="flex items-center gap-2 text-sm" style={{ color: getSlotColors(slotStatus).text }}>
+                              <User className="w-4 h-4" style={{ color: getSlotColors(slotStatus).text }} />
+                              <div>
+                                <div>Gebucht von: <strong>{slot.member.name}</strong></div>
+                                <div className="flex items-center gap-2 text-xs">
+                                  {slot.member.email && <span>{slot.member.email}</span>}
+                                  {slot.member.memberNumber && (
+                                    <Badge 
+                                      variant="secondary" 
+                                      className="text-xs"
+                                      style={{ 
+                                        backgroundColor: "hsl(var(--primary-foreground) / 0.2)",
+                                        color: getSlotColors(slotStatus).text
+                                      }}
+                                    >
+                                      {slot.member.memberNumber}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Notes */}
+                          {slot.notes && (
+                            <div 
+                              className="text-sm rounded-md p-2 opacity-90"
+                              style={{ 
+                                color: getSlotColors(slotStatus).text,
+                                backgroundColor: "hsl(var(--primary-foreground) / 0.1)"
+                              }}
+                            >
+                              {slot.notes}
+                            </div>
+                          )}
+
+                          {/* Action Buttons */}
+                          <div className="flex gap-2 pt-2">
+                            <Button
+                              variant="secondary"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleOpenForm(slot);
+                              }}
+                              className="flex-1"
+                              style={{
+                                backgroundColor: "hsl(var(--primary-foreground) / 0.2)",
+                                color: getSlotColors(slotStatus).text,
+                                borderColor: "hsl(var(--primary-foreground) / 0.3)"
+                              }}
+                            >
+                              <Edit className="w-4 h-4 mr-1" />
+                              Bearbeiten
+                            </Button>
+                            
+                            {slot.isBooked ? (
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleCancelSlot(slot.id);
+                                }}
+                                className="flex-1"
+                                style={{
+                                  backgroundColor: "hsl(var(--primary-foreground) / 0.2)",
+                                  color: getSlotColors(slotStatus).text,
+                                  borderColor: "hsl(var(--primary-foreground) / 0.3)"
+                                }}
+                              >
+                                <XCircle className="w-4 h-4 mr-1" />
+                                Stornieren
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteSlot(slot.id);
+                                }}
+                                className="flex-1"
+                                style={{
+                                  backgroundColor: "hsl(var(--primary-foreground) / 0.2)",
+                                  color: getSlotColors(slotStatus).text,
+                                  borderColor: "hsl(var(--primary-foreground) / 0.3)"
+                                }}
+                              >
+                                <Trash2 className="w-4 h-4 mr-1" />
+                                Löschen
+                              </Button>
+                            )}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+          </div>
         </div>
       )}
 
