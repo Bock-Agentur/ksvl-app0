@@ -523,27 +523,26 @@ export function SlotManagement() {
       {/* Scrollable Slots Area */}
       {!isEditing && (
         <div className="flex-1 overflow-y-auto px-4 pb-4 pt-2">
-          <div className="space-y-3 max-w-7xl mx-auto">
-            <h3 className="text-sm font-medium text-foreground border-b pb-2">
-              {getFilterTitle()} 
-              {filteredSlots.length > 0 && (
-                <span className="text-muted-foreground ml-2">
-                  ({filteredSlots.length} {filteredSlots.length === 1 ? 'Slot' : 'Slots'})
-                </span>
-              )}
-            </h3>
-            
-            {filteredSlots.length === 0 ? (
-              <Card className="border bg-card">
-                <CardContent className="text-center py-6">
+          <Card className="border rounded-lg overflow-hidden bg-background">
+            <CardContent className="p-4">
+              <h3 className="text-sm font-medium text-foreground border-b pb-2 mb-3">
+                {getFilterTitle()} 
+                {filteredSlots.length > 0 && (
+                  <span className="text-muted-foreground ml-2">
+                    ({filteredSlots.length} {filteredSlots.length === 1 ? 'Slot' : 'Slots'})
+                  </span>
+                )}
+              </h3>
+              
+              {filteredSlots.length === 0 ? (
+                <div className="text-center py-6">
                   <p className="text-sm text-muted-foreground">
                     {(selectedDate || selectedCraneOperator) ? "Keine Slots mit den gewählten Filtern gefunden" : 
                      (activeFilter === "all" ? "Keine Slots vorhanden" : "Keine Slots in dieser Kategorie")}
                   </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-2">
+                </div>
+              ) : (
+                <div className="space-y-2">
                 {filteredSlots.map((slot) => {
                   const slotStatus = getSlotStatus(slot, slots);
                   const isExpanded = expandedSlotId === slot.id;
@@ -743,7 +742,8 @@ export function SlotManagement() {
                 })}
               </div>
             )}
-          </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
