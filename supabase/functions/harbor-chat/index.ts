@@ -24,9 +24,12 @@ serve(async (req) => {
     // Supabase Client für Datenbankzugriff
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    // Hole aktuelle Slots-Daten
+    // Hole aktuelle und zukünftige Slots-Daten
     const today = new Date().toISOString().split('T')[0];
     const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    // Hole auch vergangene Slots (letzte 30 Tage)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
     // Hilfsfunktion für Datumsformatierung
     const formatDate = (dateStr: string) => {
@@ -39,7 +42,8 @@ serve(async (req) => {
       return `${day}. ${d}.${m}.${y}`;
     };
 
-    const { data: slots, error: slotsError } = await supabase
+    // Hole zukünftige Slots
+    const { data: futureSlots, error: futureSlotsError } = await supabase
       .from('slots')
       .select('*')
       .gte('date', today)
@@ -47,13 +51,29 @@ serve(async (req) => {
       .order('date', { ascending: true })
       .order('time', { ascending: true });
 
-    if (slotsError) {
-      console.error('Fehler beim Laden der Slots:', slotsError);
+    if (futureSlotsError) {
+      console.error('Fehler beim Laden der zukünftigen Slots:', futureSlotsError);
     }
 
-    // Hole Profil-Daten separat für Kranführer und Mitglieder
-    const craneOperatorIds = slots?.map(s => s.crane_operator_id).filter(Boolean) || [];
-    const memberIds = slots?.filter(s => s.member_id).map(s => s.member_id).filter(Boolean) || [];
+    // Hole vergangene Slots
+    const { data: pastSlots, error: pastSlotsError } = await supabase
+      .from('slots')
+      .select('*')
+      .gte('date', thirtyDaysAgo)
+      .lt('date', today)
+      .order('date', { ascending: false })
+      .order('time', { ascending: false });
+
+    if (pastSlotsError) {
+      console.error('Fehler beim Laden der vergangenen Slots:', pastSlotsError);
+    }
+
+    const slots = futureSlots || [];
+
+    // Hole Profil-Daten separat für Kranführer und Mitglieder (für beide Zeit-Bereiche)
+    const allSlots = [...(futureSlots || []), ...(pastSlots || [])];
+    const craneOperatorIds = allSlots.map(s => s.crane_operator_id).filter(Boolean);
+    const memberIds = allSlots.filter(s => s.member_id).map(s => s.member_id).filter(Boolean);
     const allUserIds = [...new Set([...craneOperatorIds, ...memberIds])];
 
     const { data: users } = await supabase
@@ -118,6 +138,33 @@ STATISTIK:
 - Auslastung: ${slots?.length ? Math.round((bookedSlots.length / slots.length) * 100) : 0}%
 `;
 
+    // Bereite vergangene Slots-Informationen auf
+    const pastAvailableSlots = pastSlots?.filter(s => !s.is_booked) || [];
+    const pastBookedSlots = pastSlots?.filter(s => s.is_booked) || [];
+
+    const pastSlotsInfo = pastSlots && pastSlots.length > 0 ? `
+
+VERGANGENE KRANTERMIN-DATEN (${thirtyDaysAgo} bis ${today}):
+
+VERGANGENE VERFÜGBARE TERMINE (${pastAvailableSlots.length}):
+${pastAvailableSlots.slice(0, 10).map(s => {
+  const craneOp = usersMap.get(s.crane_operator_id);
+  return `- ${formatDate(s.date)} um ${s.time} Uhr (${s.duration} Min) - Kranführer: ${craneOp?.name || 'Unbekannt'}${craneOp?.member_number ? ` (Nr: ${craneOp.member_number})` : ''}`;
+}).join('\n') || 'Keine vergangenen verfügbaren Termine'}
+
+VERGANGENE GEBUCHTE TERMINE (${pastBookedSlots.length}):
+${pastBookedSlots.slice(0, 10).map(s => {
+  const member = usersMap.get(s.member_id);
+  return `- ${formatDate(s.date)} um ${s.time} Uhr - gebucht von ${member?.name || 'Unbekannt'}${member?.boat_name ? ` (Boot: ${member.boat_name})` : ''}`;
+}).join('\n') || 'Keine vergangenen Buchungen'}
+
+VERGANGENE STATISTIK:
+- Gesamt Termine: ${pastSlots.length}
+- Verfügbar: ${pastAvailableSlots.length}
+- Gebucht: ${pastBookedSlots.length}
+- Auslastung: ${pastSlots.length ? Math.round((pastBookedSlots.length / pastSlots.length) * 100) : 0}%
+` : '';
+
     const membersInfo = publicMembers && publicMembers.length > 0 ? `
 
 ÖFFENTLICHE MITGLIEDERDATEN (${publicMembers.length} Mitglieder):
@@ -145,14 +192,15 @@ ${vorstandMembers.map(v => {
 ` : '';
 
     console.log('Slots-Info für AI:', slotsInfo);
+    console.log('Vergangene Slots-Info für AI:', pastSlotsInfo);
     console.log('Mitglieder-Info für AI:', membersInfo);
     console.log('Vorstand-Info für AI:', vorstandInfo);
 
     const systemPrompt = `Du bist ein hilfreicher Assistent für das KSVL Hafenverwaltungssystem.
 
 DEINE AUFGABEN:
-- Beantworte Fragen zu Kranterminen und Slot-Buchungen
-- Zeige verfügbare Termine an
+- Beantworte Fragen zu Kranterminen und Slot-Buchungen (aktuelle UND vergangene)
+- Zeige verfügbare und vergangene Termine an
 - Gib Informationen zu Mitgliedern (NUR wenn sie ihre Daten freigegeben haben!)
 - Zeige Vorstandsmitglieder und deren Kontaktdaten (falls öffentlich)
 - Erkläre Buchungsoptionen
@@ -160,6 +208,7 @@ DEINE AUFGABEN:
 
 WICHTIGE REGELN:
 - Zeige maximal 5-7 Termine pro Antwort (außer explizit nach mehr gefragt)
+- Bei Fragen zu vergangenen Terminen nutze die VERGANGENE KRANTERMIN-DATEN
 - Formatiere Termine und Daten übersichtlich mit Aufzählungen
 - Nutze die Markdown-Links in den Termindaten, um auf Details zu verweisen
 - Datumsformat ist bereits korrekt formatiert (z.B. "Mi. 22.10.2025")
@@ -172,6 +221,7 @@ WICHTIGE REGELN:
 
 VERFÜGBARE DATEN:
 ${slotsInfo}
+${pastSlotsInfo}
 ${membersInfo}
 ${vorstandInfo}
 
