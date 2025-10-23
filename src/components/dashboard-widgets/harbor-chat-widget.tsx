@@ -87,8 +87,13 @@ export function HarborChatWidget() {
     }
   };
 
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Prevent the page from scrolling to the input
+    e.preventDefault();
+  };
+
   return (
-    <Card className="w-full">
+    <Card className="w-full" id="harbor-chat-widget">
       <CardHeader className="pb-3 bg-gradient-to-r from-primary/10 to-primary/5">
         <CardTitle className="text-lg font-semibold flex items-center gap-2">
           <MessageSquare className="h-5 w-5 text-primary" />
@@ -137,9 +142,11 @@ export function HarborChatWidget() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
+              onFocus={handleInputFocus}
               placeholder="Frage zu Terminen oder Mitgliedern..."
               disabled={isLoading}
               className="flex-1"
+              autoComplete="off"
             />
             <Button
               onClick={sendMessage}
