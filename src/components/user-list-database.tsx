@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 
 export function UserListDatabase() {
   const { users, loading, deleteUser, refreshUsers } = useUsers();
@@ -108,13 +109,9 @@ export function UserListDatabase() {
           <p className="text-sm text-muted-foreground">{user.phone}</p>
         )}
         <div className="flex gap-1 mt-2">
-          {user.roles.map(role => (
+          {sortRoles(user.roles).map(role => (
             <Badge key={role} variant="secondary" className="text-xs">
-              {role === 'kranfuehrer' ? 'Kranführer' : 
-               role === 'admin' ? 'Admin' : 
-               role === 'vorstand' ? 'Vorstand' :
-               role === 'gastmitglied' ? 'Gastmitglied' :
-               'Mitglied'}
+              {ROLE_LABELS[role] || role}
             </Badge>
           ))}
         </div>

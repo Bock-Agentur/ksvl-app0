@@ -18,6 +18,7 @@ import {
   PopoverTrigger 
 } from "@/components/ui/popover";
 import { useQueryClient } from "@tanstack/react-query";
+import { ROLE_ORDER, ROLE_LABELS } from "@/lib/role-order";
 
 interface ColorPickerProps {
   color: string;
@@ -494,13 +495,8 @@ export function ThemeManager() {
           
           {/* Role Badge List View */}
           <div className="space-y-3">
-            {[
-              { role: 'admin', label: 'Admin' },
-              { role: 'vorstand', label: 'Vorstand' },
-              { role: 'kranfuehrer', label: 'Kranführer' },
-              { role: 'mitglied', label: 'Mitglied' },
-              { role: 'gastmitglied', label: 'Gastmitglied' },
-            ].map(({ role, label }) => {
+            {ROLE_ORDER.map((role) => {
+              const label = ROLE_LABELS[role];
               const settings = roleBadgeSettings?.[role];
               if (!settings) return null;
               

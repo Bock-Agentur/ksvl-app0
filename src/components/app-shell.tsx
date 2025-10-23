@@ -14,6 +14,7 @@ import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger, Drawer
 import { Separator } from "@/components/ui/separator";
 import { UserRole, NavItem, AppShellProps } from "@/types";
 import * as LucideIcons from "lucide-react";
+import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 
 // Mobile navigation items (bottom nav)
 const mobileNavItems: NavItem[] = [{
@@ -207,7 +208,7 @@ export function AppShell({
                     <div className="flex flex-col gap-2">
                       {currentUser?.roles && currentUser.roles.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
-                          {currentUser.roles.map(role => (
+                          {sortRoles(currentUser.roles).map(role => (
                             <Badge 
                               key={role} 
                               className={cn(
@@ -215,7 +216,7 @@ export function AppShell({
                                 role === currentRole ? roleColors[role] : "bg-muted text-muted-foreground"
                               )}
                             >
-                              {roleLabels[role]}
+                              {ROLE_LABELS[role] || roleLabels[role]}
                               {role === currentRole && " (aktiv)"}
                             </Badge>
                           ))}

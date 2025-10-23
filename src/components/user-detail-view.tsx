@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateMemberNumber } from "@/lib/business-logic";
 import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
 import { useCustomFields, useCustomFieldValues } from "@/hooks/use-custom-fields";
+import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 
 interface UserDetailViewProps {
   user: UserType;
@@ -197,9 +198,9 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                 <div className="flex-1">
                   <CardTitle className="text-lg">{editedUser.name}</CardTitle>
                   <div className="flex items-center gap-2 mt-1">
-                    {editedUser.roles?.map((role) => (
+                    {sortRoles(editedUser.roles || []).map((role) => (
                       <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
-                        {roleLabels[role]}
+                        {ROLE_LABELS[role] || roleLabels[role]}
                       </Badge>
                     ))}
                     <Badge variant={editedUser.status === "active" ? "default" : "secondary"} className="text-xs">
@@ -262,9 +263,9 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                     </div>
                   ) : (
                     <div className="flex flex-wrap gap-2">
-                      {editedUser.roles?.map((role) => (
+                      {sortRoles(editedUser.roles || []).map((role) => (
                         <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
-                          {roleLabels[role]}
+                          {ROLE_LABELS[role] || roleLabels[role]}
                         </Badge>
                       ))}
                     </div>

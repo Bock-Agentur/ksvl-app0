@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "@/hooks/use-role";
 import { useCustomFields, useCustomFieldValues } from "@/hooks/use-custom-fields";
 import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
+import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 
 // ProfileViewProps is now imported from @/types
 
@@ -590,9 +591,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <p className="text-sm text-muted-foreground mb-2">{(user as any).vorstandFunktion}</p>
               )}
               <div className="flex flex-wrap gap-2">
-                {user.roles?.map((role) => (
+                {sortRoles(user.roles || []).map((role) => (
                   <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
-                    {roleLabels[role]}
+                    {ROLE_LABELS[role] || roleLabels[role]}
                   </Badge>
                 ))}
               </div>
@@ -653,14 +654,11 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
-                  {/* Reihenfolge: Admin, Vorstand, Kranführer, Mitglied, Gastmitglied */}
-                  {(['admin', 'vorstand', 'kranfuehrer', 'mitglied', 'gastmitglied'] as UserRole[])
-                    .filter(role => user.roles?.includes(role))
-                    .map((role) => (
-                      <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
-                        {roleLabels[role]}
-                      </Badge>
-                    ))}
+                  {sortRoles(user.roles || []).map((role) => (
+                    <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
+                      {ROLE_LABELS[role] || roleLabels[role]}
+                    </Badge>
+                  ))}
                 </div>
               )}
             </div>

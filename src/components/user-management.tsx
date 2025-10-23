@@ -25,6 +25,7 @@ import {
 } from "@/lib/business-logic";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 
 /**
  * Benutzer-Verwaltung mit Supabase Datenbank
@@ -459,18 +460,10 @@ export function UserManagementRefactored() {
                       
                       <div className="flex items-center gap-2 flex-wrap">
                         {/* Role Badges */}
-                        {user.roles?.map((role) => {
-                          const roleLabels: Record<UserRole, string> = {
-                            gastmitglied: "Gast",
-                            mitglied: "Mitglied",
-                            kranfuehrer: "Kran",
-                            admin: "Admin",
-                            vorstand: "Vorstand"
-                          };
-                          
+                        {sortRoles(user.roles || []).map((role) => {
                           return (
                             <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
-                              {roleLabels[role]}
+                              {ROLE_LABELS[role] || role}
                             </Badge>
                           );
                         })}
