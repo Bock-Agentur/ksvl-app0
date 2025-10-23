@@ -303,16 +303,6 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
               </div>
             </div>
           )}
-        </CardContent>
-        </Card>
-        {/* Soft transparent fade gradient */}
-        <div className="absolute bottom-0 left-4 right-4 h-12 bg-gradient-to-b from-card/95 via-card/60 to-transparent pointer-events-none" />
-      </div>
-
-      {/* Scrollable Calendar Card */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 pt-0 relative z-0">
-        <Card className="bg-card/75 backdrop-blur-xl border-border/50 shadow-none mt-2">
-          <CardContent className="p-4">
           {/* Calendar Content */}
           {viewMode === "day" || viewMode === "week" ? (
             <WeekCalendar 
@@ -328,8 +318,10 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
               onSlotCreate={handleSlotEdit}
             />
           )}
-          </CardContent>
+        </CardContent>
         </Card>
+        {/* Soft transparent fade gradient */}
+        <div className="absolute bottom-0 left-4 right-4 h-12 bg-gradient-to-b from-card/95 via-card/60 to-transparent pointer-events-none" />
       </div>
 
       {/* Slot Form Dialog */}
