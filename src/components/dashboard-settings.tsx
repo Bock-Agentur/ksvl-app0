@@ -11,12 +11,65 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { RotateCcw, Eye, EyeOff, Settings as SettingsIcon, Users, Shield, UserCheck, Zap, ArrowDown, MousePointer2, MoveHorizontal, Star, Sparkles } from "lucide-react";
-import { DASHBOARD_WIDGETS, getWidgetsForRole } from "@/lib/dashboard-config";
+import { RotateCcw, Eye, EyeOff, Settings as SettingsIcon, Users, Shield, UserCheck, Zap, ArrowDown, MousePointer2, MoveHorizontal, Star, Sparkles, GripVertical } from "lucide-react";
+import { DASHBOARD_WIDGETS, getWidgetsForRole, DashboardWidget } from "@/lib/dashboard-config";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { useRole } from "@/hooks/use-role";
 import { UserRole } from "@/types/user";
 import { cn } from "@/lib/utils";
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+// Sortable Widget Item Component
+function SortableWidgetItem({ widget, isEnabled, onToggle }: { widget: DashboardWidget; isEnabled: boolean; onToggle: () => void }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id: widget.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        "flex items-center justify-between p-3 border rounded-lg transition-colors",
+        isEnabled ? "bg-card border-border" : "bg-muted/30 border-muted"
+      )}
+    >
+      <div className="flex items-center gap-3 flex-1">
+        <div {...attributes} {...listeners} className="cursor-grab active:cursor-grabbing">
+          <GripVertical className="h-4 w-4 text-muted-foreground" />
+        </div>
+        {isEnabled ? <Eye className="h-4 w-4 text-success" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
+        <div>
+          <p className="font-medium">{widget.name}</p>
+          <p className="text-sm text-muted-foreground">{widget.description}</p>
+        </div>
+      </div>
+      
+      <div className="flex items-center gap-3">
+        <Badge variant="outline" className="text-xs">
+          {widget.size === "small" ? "Klein" : widget.size === "medium" ? "Mittel" : "Groß"}
+        </Badge>
+        <Badge variant="outline" className="text-xs">
+          Spalte {widget.position.column}
+        </Badge>
+        <Switch checked={isEnabled} onCheckedChange={onToggle} />
+      </div>
+    </div>
+  );
+}
+
 export function DashboardSettings() {
   const {
     currentRole,
@@ -39,11 +92,56 @@ export function DashboardSettings() {
     isLoading
   } = useDashboardSettings(targetRole, isAdmin);
   const availableWidgets = getWidgetsForRole(targetRole);
-  const widgetsByCategory = availableWidgets.reduce((acc, widget) => {
+  
+  // Sortiere Widgets nach gespeicherter Reihenfolge
+  const sortedWidgets = React.useMemo(() => {
+    const orderMap = settings.widgetOrder || settings.enabledWidgets;
+    return [...availableWidgets].sort((a, b) => {
+      const indexA = orderMap.indexOf(a.id);
+      const indexB = orderMap.indexOf(b.id);
+      if (indexA === -1) return 1;
+      if (indexB === -1) return -1;
+      return indexA - indexB;
+    });
+  }, [availableWidgets, settings.widgetOrder, settings.enabledWidgets]);
+
+  const widgetsByCategory = sortedWidgets.reduce((acc, widget) => {
     if (!acc[widget.category]) acc[widget.category] = [];
     acc[widget.category].push(widget);
     return acc;
   }, {} as Record<string, typeof availableWidgets>);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent, category: string) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const widgets = widgetsByCategory[category];
+      const oldIndex = widgets.findIndex(w => w.id === active.id);
+      const newIndex = widgets.findIndex(w => w.id === over.id);
+
+      const reorderedCategoryWidgets = arrayMove(widgets, oldIndex, newIndex);
+      
+      // Kombiniere mit anderen Kategorien
+      const allOtherWidgets = sortedWidgets.filter(w => w.category !== category);
+      const newOrder = [...allOtherWidgets, ...reorderedCategoryWidgets]
+        .sort((a, b) => {
+          if (a.category === category && b.category === category) {
+            return reorderedCategoryWidgets.indexOf(a) - reorderedCategoryWidgets.indexOf(b);
+          }
+          return 0;
+        })
+        .map(w => w.id);
+
+      saveSettings({ widgetOrder: newOrder });
+    }
+  };
   const roleLabels: Record<UserRole, string> = {
     admin: "Administrator",
     vorstand: "Vorstand",
@@ -382,26 +480,27 @@ export function DashboardSettings() {
                   </Badge>
                 </div>
                 
-                <div className="grid gap-3">
-                  {widgets.map(widget => <div key={widget.id} className={cn("flex items-center justify-between p-3 border rounded-lg transition-colors", isWidgetEnabled(widget.id) ? "bg-card border-border" : "bg-muted/30 border-muted")}>
-                      <div className="flex items-center gap-3">
-                        {isWidgetEnabled(widget.id) ? <Eye className="h-4 w-4 text-success" /> : <EyeOff className="h-4 w-4 text-muted-foreground" />}
-                        <div>
-                          <p className="font-medium">{widget.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {widget.description}
-                          </p>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center gap-3">
-                        <Badge variant="outline" className="text-xs">
-                          {widget.size === "small" ? "Klein" : widget.size === "medium" ? "Mittel" : "Groß"}
-                        </Badge>
-                        <Switch checked={isWidgetEnabled(widget.id)} onCheckedChange={() => toggleWidget(widget.id)} />
-                      </div>
-                    </div>)}
-                </div>
+                <DndContext
+                  sensors={sensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={(event) => handleDragEnd(event, category)}
+                >
+                  <SortableContext
+                    items={widgets.map(w => w.id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="grid gap-3">
+                      {widgets.map(widget => (
+                        <SortableWidgetItem
+                          key={widget.id}
+                          widget={widget}
+                          isEnabled={isWidgetEnabled(widget.id)}
+                          onToggle={() => toggleWidget(widget.id)}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                </DndContext>
               </div>)}
           </div>
         </CardContent>

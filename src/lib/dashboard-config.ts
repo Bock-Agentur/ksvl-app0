@@ -45,6 +45,8 @@ export interface DashboardSettings {
   // Animation Settings
   animationEnabled: boolean;
   animationType: "fadeIn" | "dropDown" | "scrollReveal" | "slideFromSides" | "staggered" | "bounce" | "none";
+  // Widget Order
+  widgetOrder?: string[];
 }
 
 export const DASHBOARD_WIDGETS: Record<string, DashboardWidget> = {
