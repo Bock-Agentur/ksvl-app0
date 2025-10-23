@@ -277,11 +277,7 @@ export function CalendarView({
 
       {/* Scrollable Calendar Content */}
       <div className="flex-1 overflow-y-auto px-4 pb-4 pt-2">
-        <Card className="bg-card/95 backdrop-blur-xl border-border/50">
-          <CardContent className="p-4 bg-white/[0.31]">
-            {viewMode === "day" || viewMode === "week" ? <WeekCalendar key={selectedDate.toISOString()} onSlotEdit={handleSlotEdit} selectedDate={selectedDate} selectedDay={selectedDay} viewMode={viewMode === "day" ? "day" : "week"} /> : <MonthCalendar onDayClick={handleDayClick} onSlotCreate={handleSlotEdit} />}
-          </CardContent>
-        </Card>
+        {viewMode === "day" || viewMode === "week" ? <WeekCalendar key={selectedDate.toISOString()} onSlotEdit={handleSlotEdit} selectedDate={selectedDate} selectedDay={selectedDay} viewMode={viewMode === "day" ? "day" : "week"} /> : <MonthCalendar onDayClick={handleDayClick} onSlotCreate={handleSlotEdit} />}
       </div>
 
       {/* Slot Form Dialog */}
