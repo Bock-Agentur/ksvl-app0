@@ -3,10 +3,12 @@ import { WeekCalendar } from "./week-calendar";
 import { MonthCalendar } from "./month-calendar";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Calendar, CalendarDays } from "lucide-react";
+import { Calendar, CalendarDays, Home, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { useRole } from "@/hooks/use-role";
 import { SlotFormDialog } from "./slot-form-dialog";
 import { Slot } from "@/types";
+import { format } from "date-fns";
+import { de } from "date-fns/locale";
 
 interface CalendarViewProps {
   initialDate?: Date | null;
@@ -19,6 +21,7 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
   const [prefilledDateTime, setPrefilledDateTime] = useState<{ date: string; time: string } | null>(null);
   const [viewMode, setViewMode] = useState<"day" | "week" | "month">("day");
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currentWeek, setCurrentWeek] = useState(new Date());
 
   // Wenn ein initialDate übergeben wird, setze es als selectedDate und wechsle zur Tagesansicht
   useEffect(() => {
@@ -81,6 +84,30 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
     canBookSlots
   });
 
+  const handlePreviousWeek = () => {
+    setCurrentWeek(prevWeek => {
+      const newWeek = new Date(prevWeek);
+      newWeek.setDate(newWeek.getDate() - 7);
+      setSelectedDate(newWeek);
+      return newWeek;
+    });
+  };
+
+  const handleNextWeek = () => {
+    setCurrentWeek(prevWeek => {
+      const newWeek = new Date(prevWeek);
+      newWeek.setDate(newWeek.getDate() + 7);
+      setSelectedDate(newWeek);
+      return newWeek;
+    });
+  };
+
+  const handleToday = () => {
+    const today = new Date();
+    setCurrentWeek(today);
+    setSelectedDate(today);
+  };
+
   return (
     <div className="max-w-7xl mx-auto p-4 space-y-4">
       {/* Sticky Navigation Card */}
@@ -88,7 +115,7 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
         <CardHeader>
           <CardTitle>Kalender</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           {/* View Toggle - Responsive */}
           <div className="flex items-center justify-center gap-2">
             {/* Mobile: Only Day and Month */}
@@ -154,12 +181,65 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
               </Button>
             </div>
           </div>
+
+          {/* Week Navigation & Actions - Only for week/day views */}
+          {(viewMode === "day" || viewMode === "week") && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handlePreviousWeek}
+                  className="flex-shrink-0"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <div className="text-sm font-medium min-w-[140px] text-center">
+                  KW {format(currentWeek, "w", { locale: de })} · {format(currentWeek, "yyyy", { locale: de })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleNextWeek}
+                  className="flex-shrink-0"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button 
+                  onClick={handleToday}
+                  size="sm"
+                  variant="outline"
+                  className="w-full sm:w-auto"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Heute
+                </Button>
+                {canManageSlots && (
+                  <Button 
+                    onClick={() => handleSlotEdit(undefined, { 
+                      date: format(viewMode === "day" ? selectedDate : new Date(), 'yyyy-MM-dd'), 
+                      time: "08:00" 
+                    })}
+                    size="sm"
+                    className="w-full sm:w-auto"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    <span className="hidden sm:inline">Neuer Slot</span>
+                    <span className="sm:hidden">Slot</span>
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
       {/* Scrollable Calendar Card */}
       <Card className="bg-card/75 backdrop-blur-xl border-border/50 shadow-xl">
-        <CardContent className="p-0">
+        <CardContent className="p-4">
           {/* Calendar Content */}
           {viewMode === "day" || viewMode === "week" ? (
             <WeekCalendar 
