@@ -98,7 +98,7 @@ export function MenuSettings() {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            Menü-Einstellungen
+            Drawer-Menü Einstellungen
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={handleForceRefresh}>
                 Icons aktualisieren
@@ -111,12 +111,19 @@ export function MenuSettings() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
+          {/* Info Banner */}
+          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+            <p className="text-sm text-blue-900 dark:text-blue-100">
+              <strong>Hinweis:</strong> Diese Einstellungen betreffen das Drawer-Menü, das über das Burger-Symbol im Footer (nur für Admins) geöffnet wird.
+            </p>
+          </div>
+
           {/* Standard-Rolle Einstellung */}
           <div className="space-y-3">
             <div>
-              <h3 className="font-medium mb-2">Standard-Rolle beim Start</h3>
+              <h3 className="font-medium mb-2">Standard-Rolle beim Öffnen des Drawer-Menüs</h3>
               <p className="text-sm text-muted-foreground mb-3">
-                Wählen Sie, welche Rolle standardmäßig beim Laden der Anwendung aktiv sein soll.
+                Wählen Sie die Rolle, für die die Drawer-Menüpunkte standardmäßig angezeigt werden sollen.
               </p>
             </div>
             <Select value={settings.defaultRole} onValueChange={handleRoleChange}>
@@ -134,9 +141,9 @@ export function MenuSettings() {
           {/* Menüreihenfolge */}
           <div className="space-y-3">
             <div>
-              <h3 className="font-medium mb-2">Menüreihenfolge</h3>
+              <h3 className="font-medium mb-2">Drawer-Menü Reihenfolge</h3>
               <p className="text-sm text-muted-foreground mb-3">
-                Ziehen Sie die Menüpunkte per Drag & Drop, um ihre Reihenfolge zu ändern.
+                Ziehen Sie die Menüpunkte per Drag & Drop, um ihre Reihenfolge im Drawer zu ändern.
               </p>
             </div>
             
@@ -182,13 +189,14 @@ export function MenuSettings() {
           <div className="space-y-3">
             <h3 className="font-medium">Live-Vorschau der Menüreihenfolge</h3>
             <div className="p-4 bg-muted/30 rounded-lg">
-              <div className="flex flex-wrap gap-2">
+              <div className="space-y-2">
                 {orderedItems.map((item, index) => (
                   <div
                     key={item.id}
-                    className="flex items-center gap-2 px-3 py-1.5 bg-background border rounded-md text-sm"
+                    className="flex items-center gap-2 px-3 py-2 bg-background border rounded-md"
                   >
-                    <span>{item.label}</span>
+                    <span className="text-xs text-muted-foreground">{index + 1}.</span>
+                    <span className="text-sm">{item.label}</span>
                     {item.badge && (
                       <Badge variant="secondary" className="text-xs">
                         {item.badge}
@@ -198,7 +206,7 @@ export function MenuSettings() {
                 ))}
               </div>
               <p className="text-xs text-muted-foreground mt-3">
-                So wird das Menü in der Header-Navigation angezeigt.
+                So wird das Menü im Drawer angezeigt (von oben nach unten).
               </p>
             </div>
           </div>

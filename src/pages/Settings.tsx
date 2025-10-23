@@ -23,7 +23,7 @@ export function Settings() {
   const sections = [
     { id: "dashboard", label: "Dashboard", component: DashboardSettings },
     { id: "messages", label: "Startnachrichten", component: RoleWelcomeSettings },
-    { id: "menu", label: "Menü", component: MenuSettings },
+    { id: "menu", label: "Drawer-Menü", component: MenuSettings },
     { id: "footer", label: "Footer-Menü", component: FooterMenuSettings },
     { id: "design", label: "Design", component: DesignSettings },
     { id: "theme", label: "Theme", component: ThemeManager },
