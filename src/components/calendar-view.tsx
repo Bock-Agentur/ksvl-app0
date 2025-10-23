@@ -325,7 +325,10 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
         </CardContent>
         </Card>
         {/* Soft transparent fade gradient */}
-        <div className="absolute bottom-0 left-4 right-4 h-12 bg-gradient-to-b from-card/95 via-card/60 to-transparent pointer-events-none" />
+        <div className={cn(
+          "absolute bottom-0 left-4 right-4 h-12 bg-gradient-to-b from-card/95 via-card/60 to-transparent pointer-events-none transition-all duration-300",
+          isScrolled && "opacity-0"
+        )} />
       </div>
 
       {/* Scrollable Calendar Card */}
