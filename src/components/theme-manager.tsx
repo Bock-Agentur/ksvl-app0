@@ -17,6 +17,7 @@ import {
   PopoverContent, 
   PopoverTrigger 
 } from "@/components/ui/popover";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ColorPickerProps {
   color: string;
@@ -176,6 +177,7 @@ export function ThemeManager() {
   const { settings, isLoading, updateSetting, applyTheme } = useThemeSettings();
   const { settings: roleBadgeSettings, isLoading: roleSettingsLoading } = useRoleBadgeSettings();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [editedColors, setEditedColors] = useState<Record<string, string>>({});
   const [editedRoleBadges, setEditedRoleBadges] = useState<Record<string, { bg: string; text: string }>>({});
 
@@ -225,8 +227,13 @@ export function ThemeManager() {
         title: "Gespeichert",
         description: "Rollen-Badge-Einstellungen wurden aktualisiert",
       });
-      // Reload the settings to reflect changes
-      window.location.reload();
+      // Clear the edited state for this role
+      setEditedRoleBadges(prev => {
+        const { [role]: _, ...rest } = prev;
+        return rest;
+      });
+      // Force re-fetch of role badge settings
+      queryClient.invalidateQueries({ queryKey: ["role-badge-settings"] });
     }
   };
 
