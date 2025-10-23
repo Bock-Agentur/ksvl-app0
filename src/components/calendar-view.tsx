@@ -354,9 +354,6 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
               </div>
             </div>
           )}
-          
-          {/* Soft transparent fade gradient */}
-          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-b from-card/95 via-card/60 to-transparent pointer-events-none" />
         </CardContent>
         </Card>
       </div>
