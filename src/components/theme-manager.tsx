@@ -225,10 +225,8 @@ export function ThemeManager() {
         title: "Gespeichert",
         description: "Rollen-Badge-Einstellungen wurden aktualisiert",
       });
-      setEditedRoleBadges(prev => {
-        const { [role]: _, ...rest } = prev;
-        return rest;
-      });
+      // Reload the settings to reflect changes
+      window.location.reload();
     }
   };
 
@@ -475,86 +473,6 @@ export function ThemeManager() {
                 </Card>
               );
             })}
-            
-            {/* Role Badges Section */}
-            <div className="pt-4">
-              <h3 className="text-lg font-semibold mb-3">Rollen-Badges</h3>
-              <div className="space-y-3">
-                {[
-                  { role: 'admin', label: 'Admin' },
-                  { role: 'vorstand', label: 'Vorstand' },
-                  { role: 'kranfuehrer', label: 'Kranführer' },
-                  { role: 'mitglied', label: 'Mitglied' },
-                  { role: 'gastmitglied', label: 'Gastmitglied' },
-                ].map(({ role, label }) => {
-                  const settings = roleBadgeSettings?.[role];
-                  if (!settings) return null;
-                  
-                  const currentBg = editedRoleBadges[role]?.bg || settings.bgColor;
-                  const currentText = editedRoleBadges[role]?.text || settings.textColor;
-                  const hasChanges = editedRoleBadges[role] !== undefined;
-                  
-                  return (
-                    <Card key={role}>
-                      <CardHeader className="pb-3">
-                        <div className="flex items-center justify-between">
-                          <CardTitle className="text-base font-semibold">{label}</CardTitle>
-                          <Badge 
-                            className="text-xs"
-                            style={{ 
-                              backgroundColor: currentBg.includes('hsl(') ? currentBg : `hsl(${currentBg})`,
-                              color: currentText.includes('hsl(') ? currentText : `hsl(${currentText})`
-                            }}
-                          >
-                            Beispiel
-                          </Badge>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <ColorPicker
-                            color={currentBg.replace(/hsl\(([\d.]+),\s*([\d.]+)%,\s*([\d.]+)%\)/, '$1 $2% $3%')}
-                            onChange={(newValue) => {
-                              setEditedRoleBadges(prev => ({
-                                ...prev,
-                                [role]: {
-                                  bg: `hsl(${newValue})`,
-                                  text: prev[role]?.text || settings.textColor
-                                }
-                              }));
-                            }}
-                            label="Hintergrundfarbe"
-                          />
-                          <ColorPicker
-                            color={currentText.replace(/hsl\(([\d.]+),\s*([\d.]+)%,\s*([\d.]+)%\)/, '$1 $2% $3%')}
-                            onChange={(newValue) => {
-                              setEditedRoleBadges(prev => ({
-                                ...prev,
-                                [role]: {
-                                  bg: prev[role]?.bg || settings.bgColor,
-                                  text: `hsl(${newValue})`
-                                }
-                              }));
-                            }}
-                            label="Schriftfarbe"
-                          />
-                        </div>
-                        {hasChanges && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleRoleBadgeSave(role)}
-                            className="w-full mt-3"
-                          >
-                            <Save className="w-3 h-3 mr-2" />
-                            Speichern
-                          </Button>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            </div>
           </div>
         </TabsContent>
 
