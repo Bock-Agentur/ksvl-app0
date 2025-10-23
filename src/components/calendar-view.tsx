@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { WeekCalendar } from "./week-calendar";
 import { MonthCalendar } from "./month-calendar";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,8 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date());
+  const [isScrolled, setIsScrolled] = useState(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Calculate week boundaries
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Monday
@@ -48,6 +50,20 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
       setViewMode("day");
     }
   }, [initialDate]);
+
+  // Handle scroll to minimize header
+  useEffect(() => {
+    const scrollContainer = scrollContainerRef.current;
+    if (!scrollContainer) return;
+
+    const handleScroll = () => {
+      const scrollTop = scrollContainer.scrollTop;
+      setIsScrolled(scrollTop > 20);
+    };
+
+    scrollContainer.addEventListener('scroll', handleScroll);
+    return () => scrollContainer.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const handleSlotEdit = (slot?: Slot, dateTime?: { date: string; time: string }) => {
     console.log('🎯 HANDLE_SLOT_EDIT called:', { slot: slot?.id, dateTime });
@@ -128,7 +144,10 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background">
       {/* Sticky Navigation Card with soft transparent shadow */}
-      <div className="flex-shrink-0 px-4 pt-2 pb-0 relative z-10">
+      <div className={cn(
+        "flex-shrink-0 px-4 pt-2 pb-0 relative z-10 transition-all duration-300",
+        isScrolled && "-translate-y-full opacity-0 pointer-events-none"
+      )}>
         <Card className="bg-card/95 backdrop-blur-xl border-border/50 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)]">
         <CardHeader>
           <CardTitle>Kalender</CardTitle>
@@ -310,7 +329,7 @@ export function CalendarView({ initialDate }: CalendarViewProps) {
       </div>
 
       {/* Scrollable Calendar Card */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 pt-0 relative z-0">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-4 pb-4 pt-0 relative z-0">
         <Card className="bg-card/75 backdrop-blur-xl border-border/50 shadow-none mt-2">
           <CardContent className="p-4">
           {/* Calendar Content */}
