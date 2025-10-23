@@ -431,7 +431,7 @@ export function SlotManagement() {
       </div>
 
       {/* Scrollable Slots Area */}
-      {!isEditing && <div className="flex-1 overflow-y-auto pb-4 pt-2 px-[16px] py-[20px]">
+      {!isEditing && <div className="flex-1 overflow-y-auto pb-4 pt-6 px-[16px]">
           {/* Desktop/Tablet: Card wrapper */}
           <Card className="hidden md:block border rounded-lg overflow-hidden bg-background">
             <CardContent className="p-4">
