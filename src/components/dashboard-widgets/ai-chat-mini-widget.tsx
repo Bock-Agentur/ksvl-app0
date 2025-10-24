@@ -140,24 +140,10 @@ export function AIChatMiniWidget() {
       className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)]"
     >
       <CardHeader className="pt-8 pb-4 px-[15px]">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-bold flex items-center gap-2 text-white">
-            <Bot className="h-5 w-5" />
-            AI-Assistent
-          </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsOpen(!isOpen)}
-            className="h-9 w-9 p-0 text-white hover:text-white hover:bg-white/20 rounded-full border border-white/30"
-          >
-            {isOpen ? (
-              <ChevronUp className="h-5 w-5" />
-            ) : (
-              <ChevronDown className="h-5 w-5" />
-            )}
-          </Button>
-        </div>
+        <CardTitle className="text-lg font-bold flex items-center gap-2 text-white">
+          <Bot className="h-5 w-5" />
+          AI-Assistent
+        </CardTitle>
       </CardHeader>
       <CardContent className="px-[15px] pb-6">
         {/* Collapsible Messages Area */}
@@ -204,6 +190,20 @@ export function AIChatMiniWidget() {
         </Collapsible>
 
         {/* Input Field - Always Visible */}
+        <div className="flex items-center justify-center mb-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsOpen(!isOpen)}
+            className="flex-shrink-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-0 rounded-full"
+          >
+            {isOpen ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
         <div className="flex gap-2">
           <Input
             value={input}

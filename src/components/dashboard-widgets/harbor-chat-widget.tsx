@@ -150,24 +150,10 @@ export function HarborChatWidget() {
       id="harbor-chat-widget"
     >
       <CardHeader className="pt-12 pb-4 px-[15px]">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-2xl font-bold flex items-center gap-2 text-white">
-            <Bot className="h-6 w-6" />
-            KSVL-Assistent
-          </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsOpen(!isOpen)}
-            className="h-10 w-10 p-0 text-white hover:text-white hover:bg-white/20 rounded-full border border-white/30"
-          >
-            {isOpen ? (
-              <ChevronUp className="h-6 w-6" />
-            ) : (
-              <ChevronDown className="h-6 w-6" />
-            )}
-          </Button>
-        </div>
+        <CardTitle className="text-2xl font-bold flex items-center gap-2 text-white">
+          <Bot className="h-6 w-6" />
+          AI-Assistent
+        </CardTitle>
       </CardHeader>
       <Collapsible open={isOpen}>
         <CollapsibleContent>
@@ -208,6 +194,20 @@ export function HarborChatWidget() {
           </div>
         </ScrollArea>
         <div className="space-y-2">
+          <div className="flex items-center justify-center mb-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsOpen(!isOpen)}
+              className="flex-shrink-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-0 rounded-full"
+            >
+              {isOpen ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
           <div className="flex gap-2">
             <Input
               value={input}
