@@ -7,9 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { UserRole } from "@/types/user";
-import { MessageSquare, Smile, Save, RotateCcw, Users, UserCheck, Shield } from "lucide-react";
+import { MessageSquare, Smile, Save, RotateCcw, UserCircle, Shield, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWelcomeMessages } from "@/hooks/use-welcome-messages";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Emoji-Kategorien für den einfachen Emoji-Picker
 const EMOJI_CATEGORIES = {
@@ -37,6 +38,7 @@ export function RoleWelcomeSettings() {
   const { messages, updateMessage } = useWelcomeMessages();
   const [activeRole, setActiveRole] = useState<UserRole>("admin");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleSave = () => {
     toast({
@@ -64,23 +66,29 @@ export function RoleWelcomeSettings() {
     setShowEmojiPicker(false);
   };
 
-  const getRoleDisplayName = (role: UserRole) => {
-    switch (role) {
-      case "gastmitglied": return "Gastmitglied";
-      case "mitglied": return "Mitglied";
-      case "kranfuehrer": return "Kranführer";
-      case "admin": return "Admin";
-      case "vorstand": return "Vorstand";
-    }
+  const getRoleDisplayName = (role: UserRole): string => {
+    const roleNames: Record<UserRole, string> = {
+      gastmitglied: isMobile ? "Gast" : "Gastmitglied",
+      mitglied: "Mitglied",
+      kranfuehrer: "Kranführer",
+      admin: "Admin",
+      vorstand: "Vorstand",
+    };
+    return roleNames[role] || role;
   };
 
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
-      case "gastmitglied": return Users;
-      case "mitglied": return Users;
-      case "kranfuehrer": return UserCheck;
-      case "admin": return Shield;
-      case "vorstand": return Shield;
+      case "gastmitglied":
+      case "mitglied":
+        return UserCircle;
+      case "kranfuehrer":
+        return Wrench;
+      case "admin":
+      case "vorstand":
+        return Shield;
+      default:
+        return UserCircle;
     }
   };
 
@@ -99,32 +107,39 @@ export function RoleWelcomeSettings() {
         <CardContent className="space-y-6">
           {/* Role Selection */}
           <div className="space-y-3">
-            <Label className="text-base font-medium">Rolle auswählen</Label>
+            <Label className={cn(
+              "font-medium",
+              isMobile ? "text-sm" : "text-base"
+            )}>Rolle auswählen</Label>
             <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
               {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
                 const Icon = getRoleIcon(role);
+                const roleLabel = getRoleDisplayName(role);
+                
                 return (
                   <Card 
                     key={role}
                     className={cn(
-                      "cursor-pointer transition-colors hover:bg-muted/50 w-20 sm:w-24",
+                      "cursor-pointer transition-colors hover:bg-muted/50",
+                      isMobile ? "w-16 sm:w-20" : "w-20 sm:w-24",
                       activeRole === role 
                         ? "ring-2 ring-primary bg-primary/5" 
                         : "hover:shadow-sm"
                     )}
                     onClick={() => setActiveRole(role)}
                   >
-                    <CardContent className="p-3 text-center">
+                    <CardContent className={cn(
+                      "text-center",
+                      isMobile ? "p-2" : "p-3"
+                    )}>
                       <Icon className={cn(
-                        "h-6 w-6 mx-auto mb-1",
-                        activeRole === role ? "text-primary" : "text-muted-foreground"
+                        "mx-auto mb-1",
+                        isMobile ? "h-5 w-5" : "h-6 w-6"
                       )} />
                       <p className={cn(
-                        "font-medium text-xs",
-                        activeRole === role ? "text-primary" : "text-foreground"
-                      )}>
-                        {getRoleDisplayName(role)}
-                      </p>
+                        "font-medium",
+                        isMobile ? "text-[10px]" : "text-xs"
+                      )}>{roleLabel}</p>
                     </CardContent>
                   </Card>
                 );
@@ -214,35 +229,39 @@ export function RoleWelcomeSettings() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5" />
-            Rolle auswählen
+            Übersicht aller Rollen
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
             {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
               const Icon = getRoleIcon(role);
+              const roleLabel = getRoleDisplayName(role);
+              
               return (
                 <Card 
                   key={role}
                   className={cn(
-                    "cursor-pointer transition-colors hover:bg-muted/50 w-20 sm:w-24",
+                    "cursor-pointer transition-colors hover:bg-muted/50",
+                    isMobile ? "w-16 sm:w-20" : "w-20 sm:w-24",
                     activeRole === role 
                       ? "ring-2 ring-primary bg-primary/5" 
                       : "hover:shadow-sm"
                   )}
                   onClick={() => setActiveRole(role)}
                 >
-                  <CardContent className="p-3 text-center">
+                  <CardContent className={cn(
+                    "text-center",
+                    isMobile ? "p-2" : "p-3"
+                  )}>
                     <Icon className={cn(
-                      "h-6 w-6 mx-auto mb-1",
-                      activeRole === role ? "text-primary" : "text-muted-foreground"
+                      "mx-auto mb-1",
+                      isMobile ? "h-5 w-5" : "h-6 w-6"
                     )} />
                     <p className={cn(
-                      "font-medium text-xs",
-                      activeRole === role ? "text-primary" : "text-foreground"
-                    )}>
-                      {getRoleDisplayName(role)}
-                    </p>
+                      "font-medium",
+                      isMobile ? "text-[10px]" : "text-xs"
+                    )}>{roleLabel}</p>
                   </CardContent>
                 </Card>
               );
