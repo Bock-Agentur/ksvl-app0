@@ -129,6 +129,9 @@ const Index = () => {
         if (event === 'SIGNED_OUT') {
           navigate("/auth");
         } else if (event === 'SIGNED_IN') {
+          // Immediately navigate to homepage
+          navigate("/", { replace: true });
+          
           // Defer database update to avoid blocking
           setTimeout(() => {
             supabase
@@ -139,10 +142,6 @@ const Index = () => {
                 user_id: session?.user?.id 
               }, {
                 onConflict: 'user_id,setting_key'
-              })
-              .then(() => {
-                // Force navigation to ensure we're on the main page
-                navigate("/");
               });
           }, 0);
         }

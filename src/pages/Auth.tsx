@@ -259,7 +259,8 @@ export function Auth() {
         description: "Sie werden weitergeleitet...",
       });
 
-      navigate("/");
+      // Navigation wird durch onAuthStateChange in Index.tsx behandelt
+      // navigate("/") hier entfernt, um Doppelung zu vermeiden
     } catch (error: any) {
       if (error instanceof z.ZodError) {
         toast({
