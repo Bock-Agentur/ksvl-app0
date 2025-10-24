@@ -141,7 +141,24 @@ export function HarborChatWidget() {
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="px-[15px] pb-8">
+      <CardContent className="px-[15px] pb-8 space-y-2">
+        {/* Toggle Button - Immer sichtbar, außerhalb Collapsible */}
+        <div className="flex items-center justify-end">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsOpen(!isOpen)}
+            className="h-10 w-10 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-full p-0 transition-all"
+          >
+            {isOpen ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+
+        {/* Collapsible Chat Area */}
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleContent>
             <ScrollArea className="h-[400px] mb-4 bg-white rounded-2xl">
@@ -182,48 +199,34 @@ export function HarborChatWidget() {
           </CollapsibleContent>
         </Collapsible>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-end mb-2">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsOpen(!isOpen)}
-              className="h-10 w-10 flex-shrink-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-0 rounded-full p-0"
-            >
-              {isOpen ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-          <div className="flex gap-2">
-            <Input
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Frage zu Terminen oder Mitgliedern..."
-              disabled={isLoading}
-              className="flex-1 bg-white/95 backdrop-blur-sm text-foreground border-0 rounded-2xl placeholder:text-muted-foreground"
-              autoComplete="off"
-            />
-            <Button
-              onClick={sendMessage}
-              disabled={isLoading || !input.trim()}
-              size="icon"
-              className="flex-shrink-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-0 rounded-full"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-          <p className="text-xs text-white/80">
-            💡 {agentName} kann dir bei Terminen, Buchungen, Mitgliederdaten und Statistiken helfen
-          </p>
+        {/* Input Area */}
+        <div className="flex gap-2">
+          <Input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Frage zu Terminen oder Mitgliedern..."
+            disabled={isLoading}
+            className="flex-1 bg-white/95 backdrop-blur-sm text-foreground border-0 rounded-2xl placeholder:text-muted-foreground"
+            autoComplete="off"
+          />
+          <Button
+            onClick={sendMessage}
+            disabled={isLoading || !input.trim()}
+            size="icon"
+            className="flex-shrink-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-0 rounded-full"
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+          </Button>
         </div>
+        
+        <p className="text-xs text-white/80">
+          💡 {agentName} kann dir bei Terminen, Buchungen, Mitgliederdaten und Statistiken helfen
+        </p>
       </CardContent>
     </Card>
   );

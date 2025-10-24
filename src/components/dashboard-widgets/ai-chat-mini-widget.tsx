@@ -131,7 +131,24 @@ export function AIChatMiniWidget() {
         </CardTitle>
       </CardHeader>
       
-      <CardContent className="px-[15px] pb-6">
+      <CardContent className="px-[15px] pb-6 space-y-2">
+        {/* Toggle Button - Immer sichtbar, außerhalb Collapsible */}
+        <div className="flex items-center justify-end">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsOpen(!isOpen)}
+            className="h-10 w-10 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white rounded-full p-0 transition-all"
+          >
+            {isOpen ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+
+        {/* Collapsible Chat Area */}
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleContent>
             {messages.length > 0 && (
@@ -174,20 +191,7 @@ export function AIChatMiniWidget() {
           </CollapsibleContent>
         </Collapsible>
 
-        <div className="flex items-center justify-end mb-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsOpen(!isOpen)}
-            className="h-10 w-10 flex-shrink-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-0 rounded-full p-0"
-          >
-            {isOpen ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
+        {/* Input Area */}
         <div className="flex gap-2">
           <Input
             value={input}
