@@ -79,7 +79,7 @@ export function HarborChatWidget() {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
-    setIsOpen(true); // Beim Senden automatisch öffnen
+    setIsOpen(true); // Automatisch öffnen beim Senden
 
     try {
       // Hole Benutzerprofil für Vorname
@@ -194,7 +194,7 @@ export function HarborChatWidget() {
           </div>
         </ScrollArea>
         <div className="space-y-2">
-          <div className="flex items-center justify-center mb-2">
+          <div className="flex items-end justify-end mb-2">
             <Button
               variant="ghost"
               size="icon"
