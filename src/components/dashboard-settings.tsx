@@ -28,6 +28,7 @@ interface SortableDashboardItemProps {
 }
 
 function SortableDashboardItem({ item, isEnabled, onToggle, column }: SortableDashboardItemProps) {
+  const isMobile = useIsMobile();
   const {
     attributes,
     listeners,
@@ -65,21 +66,27 @@ function SortableDashboardItem({ item, isEnabled, onToggle, column }: SortableDa
           <EyeOff className="h-4 w-4 text-muted-foreground flex-shrink-0" />
         )}
         
-        <Badge variant={isSection ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
-          {isSection ? 'Bereich' : 'Widget'}
-        </Badge>
+        {!isMobile && (
+          <Badge variant={isSection ? 'default' : 'secondary'} className="text-xs flex-shrink-0">
+            {isSection ? 'Bereich' : 'Widget'}
+          </Badge>
+        )}
         
         <div className="flex-1 min-w-0">
           <p className="font-medium text-sm truncate">{item.name}</p>
-          <p className="text-xs text-muted-foreground truncate">{item.description}</p>
+          {!isMobile && (
+            <p className="text-xs text-muted-foreground truncate">{item.description}</p>
+          )}
         </div>
       </div>
       
       <div className="flex items-center gap-3 flex-shrink-0">
-        <Badge variant="outline" className="text-xs">
-          {item.size === "small" ? "Klein" : 
-           item.size === "medium" ? "Mittel" : "Groß"}
-        </Badge>
+        {!isMobile && (
+          <Badge variant="outline" className="text-xs">
+            {item.size === "small" ? "Klein" : 
+             item.size === "medium" ? "Mittel" : "Groß"}
+          </Badge>
+        )}
         <Switch checked={isEnabled} onCheckedChange={onToggle} />
       </div>
     </div>
