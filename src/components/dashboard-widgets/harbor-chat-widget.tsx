@@ -155,44 +155,50 @@ export function HarborChatWidget() {
           AI-Assistent
         </CardTitle>
       </CardHeader>
-      <Collapsible open={isOpen}>
-        <CollapsibleContent>
+      
       <CardContent className="px-[15px] pb-8">
-        <ScrollArea className="h-[400px] mb-4 bg-white rounded-2xl" ref={scrollRef}>
-          <div className="space-y-3 p-4">
-            {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-xl px-4 py-2.5 ${
-                    msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-foreground'
-                  }`}
-                >
-                  <div 
-                    className="text-sm whitespace-pre-wrap leading-relaxed prose prose-sm max-w-none dark:prose-invert prose-a:text-primary prose-a:no-underline hover:prose-a:underline"
-                    dangerouslySetInnerHTML={{ 
-                      __html: msg.content
-                        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="font-medium">$1</a>')
-                        .replace(/\n/g, '<br/>')
-                    }}
-                  />
-                </div>
+        {/* Collapsible Chat Area */}
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <CollapsibleContent>
+            <ScrollArea className="h-[400px] mb-4 bg-white rounded-2xl" ref={scrollRef}>
+              <div className="space-y-3 p-4">
+                {messages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[85%] rounded-xl px-4 py-2.5 ${
+                        msg.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-foreground'
+                      }`}
+                    >
+                      <div 
+                        className="text-sm whitespace-pre-wrap leading-relaxed prose prose-sm max-w-none dark:prose-invert prose-a:text-primary prose-a:no-underline hover:prose-a:underline"
+                        dangerouslySetInnerHTML={{ 
+                          __html: msg.content
+                            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="font-medium">$1</a>')
+                            .replace(/\n/g, '<br/>')
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-white/95 rounded-xl px-4 py-2.5">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
               </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-white/95 rounded-xl px-4 py-2.5">
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-        </ScrollArea>
+            </ScrollArea>
+          </CollapsibleContent>
+        </Collapsible>
+
+        {/* Input Area - Always Visible */}
         <div className="space-y-2">
           <div className="flex items-end justify-end mb-2">
             <Button
@@ -236,8 +242,6 @@ export function HarborChatWidget() {
           </p>
         </div>
       </CardContent>
-      </CollapsibleContent>
-      </Collapsible>
     </Card>
   );
 }
