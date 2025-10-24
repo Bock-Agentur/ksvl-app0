@@ -79,18 +79,22 @@ export function ConsecutiveSlotsSettings() {
     }
   };
 
-  const createRoleUsers = async () => {
+  const regenerateRoleUsers = async () => {
+    if (!confirm('Möchten Sie alle bestehenden Rollen-Nutzer löschen und neu anlegen? Diese Aktion kann nicht rückgängig gemacht werden.')) {
+      return;
+    }
+    
     try {
       setLoading(true);
-      const { data, error } = await supabase.functions.invoke('create-role-users');
+      const { data, error } = await supabase.functions.invoke('regenerate-role-users');
 
       if (error) throw error;
 
-      toast.success('Rollen-Benutzer wurden erstellt');
-      console.log('Role users created:', data);
+      toast.success(`${data.created} Rollen-Nutzer wurden neu generiert`);
+      console.log('Role users regenerated:', data);
     } catch (error) {
-      console.error('Error creating role users:', error);
-      toast.error('Fehler beim Erstellen der Rollen-Benutzer');
+      console.error('Error regenerating role users:', error);
+      toast.error('Fehler beim Generieren der Rollen-Nutzer');
     } finally {
       setLoading(false);
     }
@@ -145,13 +149,13 @@ export function ConsecutiveSlotsSettings() {
           </div>
           
           <Button 
-            onClick={createRoleUsers} 
+            onClick={regenerateRoleUsers} 
             disabled={loading}
             variant="outline"
             className="w-full"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Rollen-Benutzer erstellen
+            Rollen-Nutzer neu generieren
           </Button>
           
           {roleSwitchingEnabled && (
@@ -159,8 +163,8 @@ export function ConsecutiveSlotsSettings() {
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 <strong>Aktiviert:</strong> Beim Rollenwechsel werden automatisch Test-Benutzer geladen 
-                (z.B. mitglied-rolle@ksvl.test). Diese Benutzer haben Namen wie "Mitglied Rolle" und 
-                werden mit einem roten "Rolle" Label gekennzeichnet.
+                (z.B. mitglied-rolle@ksvl.test). Diese Benutzer haben vollständige Profile 
+                mit Beispieldaten und werden mit einem roten "Rolle" Label gekennzeichnet.
               </AlertDescription>
             </Alert>
           )}

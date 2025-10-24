@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.harbor-chat]
 verify_jwt = false
+
+[functions.regenerate-role-users]
+verify_jwt = true
