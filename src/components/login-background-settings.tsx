@@ -208,7 +208,9 @@ export function LoginBackgroundSettings() {
         mediaBlur: localSettings.mediaBlur,
         inputBgColor: localSettings.inputBgColor,
         inputBgOpacity: localSettings.inputBgOpacity,
-        verticalPosition: localSettings.verticalPosition,
+        loginBlockVerticalPositionDesktop: localSettings.loginBlockVerticalPositionDesktop,
+        loginBlockVerticalPositionTablet: localSettings.loginBlockVerticalPositionTablet,
+        loginBlockVerticalPositionMobile: localSettings.loginBlockVerticalPositionMobile,
         countdownEnabled: localSettings.countdownEnabled,
         countdownEndDate: localSettings.countdownEndDate,
         countdownText: localSettings.countdownText,
@@ -294,8 +296,16 @@ export function LoginBackgroundSettings() {
     setLocalSettings({ ...localSettings, inputBgOpacity: value[0] });
   };
 
-  const handleVerticalPositionChange = (position: 'top' | 'center' | 'bottom') => {
-    setLocalSettings({ ...localSettings, verticalPosition: position });
+  const handleLoginBlockVerticalPositionDesktopChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, loginBlockVerticalPositionDesktop: value[0] });
+  };
+
+  const handleLoginBlockVerticalPositionTabletChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, loginBlockVerticalPositionTablet: value[0] });
+  };
+
+  const handleLoginBlockVerticalPositionMobileChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, loginBlockVerticalPositionMobile: value[0] });
   };
 
   const handleCountdownEnabledChange = (checked: boolean) => {
@@ -322,13 +332,6 @@ export function LoginBackgroundSettings() {
     setLocalSettings({ ...localSettings, countdownVerticalPositionMobile: value[0] });
   };
 
-  const getJustifyClass = () => {
-    switch (localSettings.verticalPosition) {
-      case 'top': return 'justify-start pt-8';
-      case 'bottom': return 'justify-end pb-8';
-      default: return 'justify-center';
-    }
-  };
 
   return (
     <div className="space-y-6">
@@ -564,31 +567,77 @@ export function LoginBackgroundSettings() {
             </div>
           </div>
 
-          {/* Vertical Position */}
-          <div className="space-y-3">
-            <Label>Vertikale Position</Label>
-            <div className="flex gap-2">
-              <Button
-                variant={localSettings.verticalPosition === 'top' ? 'default' : 'outline'}
-                onClick={() => handleVerticalPositionChange('top')}
-                className="flex-1"
-              >
-                Oben
-              </Button>
-              <Button
-                variant={localSettings.verticalPosition === 'center' ? 'default' : 'outline'}
-                onClick={() => handleVerticalPositionChange('center')}
-                className="flex-1"
-              >
-                Mitte
-              </Button>
-              <Button
-                variant={localSettings.verticalPosition === 'bottom' ? 'default' : 'outline'}
-                onClick={() => handleVerticalPositionChange('bottom')}
-                className="flex-1"
-              >
-                Unten
-              </Button>
+          {/* Login Block Position */}
+          <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
+            <Label className="text-base font-semibold">Login-Block Position (vertikal)</Label>
+            <p className="text-sm text-muted-foreground">
+              Positioniere die Eingabefelder, Buttons und Links als zusammenhängenden Block
+            </p>
+            
+            {/* Desktop Slider */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label>Position Desktop</Label>
+                <span className="text-sm text-muted-foreground">
+                  {localSettings.loginBlockVerticalPositionDesktop || 50}%
+                </span>
+              </div>
+              <Slider
+                value={[localSettings.loginBlockVerticalPositionDesktop || 50]}
+                onValueChange={handleLoginBlockVerticalPositionDesktopChange}
+                min={0}
+                max={100}
+                step={1}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Oben</span>
+                <span>Unten</span>
+              </div>
+            </div>
+
+            {/* Tablet Slider */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label>Position Tablet</Label>
+                <span className="text-sm text-muted-foreground">
+                  {localSettings.loginBlockVerticalPositionTablet || 50}%
+                </span>
+              </div>
+              <Slider
+                value={[localSettings.loginBlockVerticalPositionTablet || 50]}
+                onValueChange={handleLoginBlockVerticalPositionTabletChange}
+                min={0}
+                max={100}
+                step={1}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Oben</span>
+                <span>Unten</span>
+              </div>
+            </div>
+
+            {/* Mobile Slider */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <Label>Position Mobile</Label>
+                <span className="text-sm text-muted-foreground">
+                  {localSettings.loginBlockVerticalPositionMobile || 50}%
+                </span>
+              </div>
+              <Slider
+                value={[localSettings.loginBlockVerticalPositionMobile || 50]}
+                onValueChange={handleLoginBlockVerticalPositionMobileChange}
+                min={0}
+                max={100}
+                step={1}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Oben</span>
+                <span>Unten</span>
+              </div>
             </div>
           </div>
 
@@ -743,8 +792,11 @@ export function LoginBackgroundSettings() {
                       )}
                       {/* Login Form Layer - z-index: 3 */}
                       <div 
-                        className={`absolute inset-0 flex flex-col items-center p-4 ${getJustifyClass()}`}
-                        style={{ zIndex: 3 }}
+                        className="absolute inset-0 flex flex-col items-center p-4"
+                        style={{ 
+                          zIndex: 3,
+                          paddingTop: `${localSettings.loginBlockVerticalPositionDesktop || 50}vh`
+                        }}
                       >
                         <div className="w-full max-w-xs space-y-3">
                           <div 
@@ -833,8 +885,11 @@ export function LoginBackgroundSettings() {
                 )}
                 {/* Login Form Layer - z-index: 3 */}
                 <div 
-                  className={`absolute inset-0 flex flex-col items-center ${getJustifyClass()} p-4`}
-                  style={{ zIndex: 3 }}
+                  className="absolute inset-0 flex flex-col items-center p-4"
+                  style={{ 
+                    zIndex: 3,
+                    paddingTop: `${localSettings.loginBlockVerticalPositionMobile || 50}vh`
+                  }}
                 >
                   <div className="w-full max-w-[240px] space-y-2">
                     <div 

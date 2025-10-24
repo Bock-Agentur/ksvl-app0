@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useAppSettings } from "./use-app-settings";
 
 export interface LoginBackground {
@@ -13,7 +14,9 @@ export interface LoginBackground {
   mediaBlur: number;
   inputBgColor: string;
   inputBgOpacity: number;
-  verticalPosition: 'top' | 'center' | 'bottom';
+  loginBlockVerticalPositionDesktop: number;
+  loginBlockVerticalPositionTablet: number;
+  loginBlockVerticalPositionMobile: number;
   countdownEnabled: boolean;
   countdownEndDate: string | null;
   countdownText: string;
@@ -35,7 +38,9 @@ const DEFAULT_BACKGROUND: LoginBackground = {
   mediaBlur: 0,
   inputBgColor: '#FFFFFF',
   inputBgOpacity: 10,
-  verticalPosition: 'center',
+  loginBlockVerticalPositionDesktop: 50,
+  loginBlockVerticalPositionTablet: 50,
+  loginBlockVerticalPositionMobile: 50,
   countdownEnabled: false,
   countdownEndDate: null,
   countdownText: 'bis zur neuen Segelsaison',
@@ -50,6 +55,30 @@ export function useLoginBackground() {
     DEFAULT_BACKGROUND,
     true // global setting
   );
+
+  // Migration: Convert old verticalPosition to new slider values
+  useEffect(() => {
+    if (value && 'verticalPosition' in value && !value.loginBlockVerticalPositionDesktop) {
+      const migrationMap: Record<string, number> = {
+        'top': 10,
+        'center': 50,
+        'bottom': 85
+      };
+      
+      const oldPosition = (value as any).verticalPosition;
+      const migratedValue = {
+        ...value,
+        loginBlockVerticalPositionDesktop: migrationMap[oldPosition] || 50,
+        loginBlockVerticalPositionTablet: migrationMap[oldPosition] || 50,
+        loginBlockVerticalPositionMobile: migrationMap[oldPosition] || 50
+      };
+      
+      // Remove old property
+      delete (migratedValue as any).verticalPosition;
+      
+      setValue(migratedValue);
+    }
+  }, [value, setValue]);
 
   return {
     background: value,

@@ -93,6 +93,20 @@ export function Auth() {
     }
   };
 
+  // Determine login block position based on screen size
+  const getLoginBlockPosition = () => {
+    if (typeof window === 'undefined') return background.loginBlockVerticalPositionDesktop || 50;
+    
+    const width = window.innerWidth;
+    if (width < 768) {
+      return background.loginBlockVerticalPositionMobile || 50;
+    } else if (width < 1024) {
+      return background.loginBlockVerticalPositionTablet || 50;
+    } else {
+      return background.loginBlockVerticalPositionDesktop || 50;
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -196,15 +210,16 @@ export function Auth() {
   const cardBorderRadius = background.cardBorderRadius || 8;
 
   return (
-    <div className={`min-h-screen flex flex-col items-center p-4 relative ${
-      background.type === 'gradient' || !background.url 
-        ? 'bg-gradient-to-br from-background to-muted' 
-        : ''
-    } ${
-      background.verticalPosition === 'top' ? 'justify-start pt-12' :
-      background.verticalPosition === 'bottom' ? 'justify-end pb-12' :
-      'justify-center'
-    }`}>
+    <div 
+      className={`min-h-screen flex flex-col items-center p-4 relative ${
+        background.type === 'gradient' || !background.url 
+          ? 'bg-gradient-to-br from-background to-muted' 
+          : ''
+      }`}
+      style={{
+        paddingTop: `${getLoginBlockPosition()}vh`
+      }}
+    >
       {renderBackground()}
       
       {/* Countdown Layer */}
