@@ -841,11 +841,39 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Checkbox
                   id="data-public"
                   checked={(editedUser as any).dataPublicInKsvl || false}
-                  onCheckedChange={(checked) => {
-                    setEditedUser(prev => ({ ...prev, dataPublicInKsvl: checked } as any));
-                    if (!isEditing) {
-                      // Wenn nicht im Edit-Modus, speichere sofort
-                      handleSaveProfile();
+                  onCheckedChange={async (checked) => {
+                    const newValue = checked === true;
+                    setEditedUser(prev => ({ ...prev, dataPublicInKsvl: newValue } as any));
+                    
+                    // Sofort in der Datenbank speichern
+                    try {
+                      let targetUserId: string;
+                      if (userId) {
+                        targetUserId = userId;
+                      } else {
+                        const { data: { user: authUser } } = await supabase.auth.getUser();
+                        if (!authUser) throw new Error('Nicht angemeldet');
+                        targetUserId = authUser.id;
+                      }
+
+                      const { error } = await supabase
+                        .from('profiles')
+                        .update({ data_public_in_ksvl: newValue })
+                        .eq('id', targetUserId);
+
+                      if (error) throw error;
+
+                      toast({
+                        title: "Einstellung gespeichert",
+                        description: newValue ? "Deine Daten sind jetzt öffentlich sichtbar." : "Deine Daten sind jetzt privat."
+                      });
+                    } catch (error: any) {
+                      console.error('Error saving setting:', error);
+                      toast({
+                        title: "Fehler",
+                        description: "Einstellung konnte nicht gespeichert werden.",
+                        variant: "destructive"
+                      });
                     }
                   }}
                 />
@@ -858,11 +886,39 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Checkbox
                   id="contact-public"
                   checked={(editedUser as any).contactPublicInKsvl || false}
-                  onCheckedChange={(checked) => {
-                    setEditedUser(prev => ({ ...prev, contactPublicInKsvl: checked } as any));
-                    if (!isEditing) {
-                      // Wenn nicht im Edit-Modus, speichere sofort
-                      handleSaveProfile();
+                  onCheckedChange={async (checked) => {
+                    const newValue = checked === true;
+                    setEditedUser(prev => ({ ...prev, contactPublicInKsvl: newValue } as any));
+                    
+                    // Sofort in der Datenbank speichern
+                    try {
+                      let targetUserId: string;
+                      if (userId) {
+                        targetUserId = userId;
+                      } else {
+                        const { data: { user: authUser } } = await supabase.auth.getUser();
+                        if (!authUser) throw new Error('Nicht angemeldet');
+                        targetUserId = authUser.id;
+                      }
+
+                      const { error } = await supabase
+                        .from('profiles')
+                        .update({ contact_public_in_ksvl: newValue })
+                        .eq('id', targetUserId);
+
+                      if (error) throw error;
+
+                      toast({
+                        title: "Einstellung gespeichert",
+                        description: newValue ? "Deine Kontaktdaten sind jetzt öffentlich sichtbar." : "Deine Kontaktdaten sind jetzt privat."
+                      });
+                    } catch (error: any) {
+                      console.error('Error saving setting:', error);
+                      toast({
+                        title: "Fehler",
+                        description: "Einstellung konnte nicht gespeichert werden.",
+                        variant: "destructive"
+                      });
                     }
                   }}
                 />
