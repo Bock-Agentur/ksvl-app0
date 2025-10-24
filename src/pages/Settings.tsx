@@ -15,7 +15,6 @@ import { LoginBackgroundSettings } from "@/components/login-background-settings"
 import { DesktopBackgroundSettings } from "@/components/desktop-background-settings";
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
-import { SuperAdminCreator } from "@/components/super-admin-creator";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/hooks/use-role";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -36,7 +35,6 @@ export function Settings() {
     { id: "system", label: "System", component: ConsecutiveSlotsSettings },
     { id: "testdata", label: "Testdaten", component: TestDataManager },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
-      { id: "superadmin", label: "Super Admin", component: SuperAdminCreator },
       { id: "aiassistant", label: "AI-Assistent", component: AIAssistantSettings },
       { id: "aiwelcome", label: "AI-Startnachricht", component: AIWelcomeMessageSettings },
       { id: "loginpage", label: "Login-Seite", component: LoginBackgroundSettings },
