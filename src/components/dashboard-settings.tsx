@@ -18,6 +18,7 @@ import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, us
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SortableDashboardItemProps {
   item: DashboardItem;
@@ -148,6 +149,7 @@ export function DashboardSettings() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"desktop" | "mobile">("desktop");
+  const isMobile = useIsMobile();
   
   const { 
     settings, 
@@ -175,16 +177,16 @@ export function DashboardSettings() {
 
   const getRoleDisplayName = (role: UserRole): string => {
     const roleNames: Record<UserRole, string> = {
-      gastmitglied: "Gast",
+      gastmitglied: isMobile ? "Gast" : "Gastmitglied",
       mitglied: "Mitglied",
       kranfuehrer: "Kranführer",
-      admin: "Admin",
+      admin: isMobile ? "Admin" : "Administrator",
       vorstand: "Vorstand",
     };
     return roleNames[role] || role;
   };
 
-  const availableRoles: UserRole[] = ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"];
+  const availableRoles: UserRole[] = ["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"];
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -407,30 +409,46 @@ export function DashboardSettings() {
   };
 
   return (
-    <div className="space-y-6 p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl font-bold">
-            <SettingsIcon className="w-6 h-6" />
+    <div className={cn(
+      "space-y-6",
+      isMobile ? "p-0" : "p-6"
+    )}>
+      <Card className={isMobile ? "rounded-none border-x-0" : ""}>
+        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
+          <CardTitle className={cn(
+            "flex items-center gap-2 font-bold",
+            isMobile ? "text-lg" : "text-2xl"
+          )}>
+            <SettingsIcon className={isMobile ? "w-5 h-5" : "w-6 h-6"} />
             Dashboard-Einstellungen
           </CardTitle>
-          <CardDescription>
-            Passen Sie Ihr Dashboard nach Ihren Wünschen an.
-          </CardDescription>
+          {!isMobile && (
+            <CardDescription>
+              Passen Sie Ihr Dashboard nach Ihren Wünschen an.
+            </CardDescription>
+          )}
         </CardHeader>
       </Card>
 
       {isAdmin && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Rollenauswahl</CardTitle>
-            <CardDescription>
-              Konfigurieren Sie das Dashboard für verschiedene Benutzerrollen
-            </CardDescription>
+        <Card className={isMobile ? "rounded-none border-x-0" : ""}>
+          <CardHeader className={isMobile ? "px-4 py-3" : ""}>
+            <CardTitle className={isMobile ? "text-base" : ""}>Rollenauswahl</CardTitle>
+            {!isMobile && (
+              <CardDescription>
+                Konfigurieren Sie das Dashboard für verschiedene Benutzerrollen
+              </CardDescription>
+            )}
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className={cn(
+            "space-y-4",
+            isMobile && "px-4 pb-4"
+          )}>
             <div className="space-y-3">
-              <Label className="text-base font-medium">Rolle auswählen</Label>
+              <Label className={cn(
+                "font-medium",
+                isMobile ? "text-sm" : "text-base"
+              )}>Rolle auswählen</Label>
               <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
                 {availableRoles.map((role) => {
                   const Icon = getRoleIcon(role);
@@ -440,16 +458,26 @@ export function DashboardSettings() {
                     <Card 
                       key={role}
                       className={cn(
-                        "cursor-pointer transition-colors hover:bg-muted/50 w-20 sm:w-24",
+                        "cursor-pointer transition-colors hover:bg-muted/50",
+                        isMobile ? "w-16 sm:w-20" : "w-20 sm:w-24",
                         targetRole === role 
                           ? "ring-2 ring-primary bg-primary/5" 
                           : "hover:shadow-sm"
                       )}
                       onClick={() => setTargetRole(role)}
                     >
-                      <CardContent className="p-3 text-center">
-                        <Icon className="h-6 w-6 mx-auto mb-1" />
-                        <p className="font-medium text-xs">{roleLabel}</p>
+                      <CardContent className={cn(
+                        "text-center",
+                        isMobile ? "p-2" : "p-3"
+                      )}>
+                        <Icon className={cn(
+                          "mx-auto mb-1",
+                          isMobile ? "h-5 w-5" : "h-6 w-6"
+                        )} />
+                        <p className={cn(
+                          "font-medium",
+                          isMobile ? "text-[10px]" : "text-xs"
+                        )}>{roleLabel}</p>
                       </CardContent>
                     </Card>
                   );

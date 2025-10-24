@@ -15,10 +15,12 @@ import { LoginBackgroundSettings } from "@/components/login-background-settings"
 import { DesktopBackgroundSettings } from "@/components/desktop-background-settings";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/hooks/use-role";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function Settings() {
   const [activeSection, setActiveSection] = useState("dashboard");
   const { currentRole } = useRole();
+  const isMobile = useIsMobile();
 
   const sections = [
     { id: "dashboard", label: "Dashboard", component: DashboardSettings },
@@ -39,27 +41,45 @@ export function Settings() {
   const ActiveComponent = sections.find(section => section.id === activeSection)?.component || DashboardSettings;
 
   return (
-    <div className="p-4 space-y-6 max-w-7xl mx-auto">
-      <Card className="bg-primary text-primary-foreground">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Einstellungen</CardTitle>
+    <div className={cn(
+      "space-y-4 max-w-7xl mx-auto",
+      isMobile ? "p-0" : "p-4 space-y-6"
+    )}>
+      {/* Header Card - Mobile optimiert */}
+      <Card className={cn(
+        "bg-primary text-primary-foreground",
+        isMobile && "rounded-none border-x-0"
+      )}>
+        <CardHeader className={isMobile ? "pb-3" : ""}>
+          <CardTitle className={cn(
+            "font-bold text-center",
+            isMobile ? "text-xl" : "text-2xl"
+          )}>
+            Einstellungen
+          </CardTitle>
         </CardHeader>
-        <CardContent className="text-center py-4">
-          <p className="text-primary-foreground/90 mb-3">
-            Hier können Sie die Systemeinstellungen verwalten.
-          </p>
-        </CardContent>
+        {!isMobile && (
+          <CardContent className="text-center py-4">
+            <p className="text-primary-foreground/90 mb-3">
+              Hier können Sie die Systemeinstellungen verwalten.
+            </p>
+          </CardContent>
+        )}
       </Card>
 
-      {/* Navigation Buttons */}
-      <div className="flex flex-wrap gap-4 justify-center">
+      {/* Navigation Buttons - Mobile optimiert */}
+      <div className={cn(
+        "flex flex-wrap gap-2 justify-center",
+        isMobile ? "px-2" : "gap-4"
+      )}>
         {sections.map((section) => (
           <Button
             key={section.id}
             variant={activeSection === section.id ? "default" : "outline"}
             onClick={() => setActiveSection(section.id)}
             className={cn(
-              "px-6 py-3 text-sm font-medium transition-all",
+              "font-medium transition-all",
+              isMobile ? "px-3 py-2 text-xs h-auto" : "px-6 py-3 text-sm",
               activeSection === section.id 
                 ? "shadow-md" 
                 : "hover:shadow-sm"
@@ -70,8 +90,8 @@ export function Settings() {
         ))}
       </div>
 
-      {/* Active Section Content */}
-      <div className="mt-8">
+      {/* Active Section Content - Mobile optimiert */}
+      <div className={isMobile ? "" : "mt-8"}>
         <ActiveComponent />
       </div>
     </div>
