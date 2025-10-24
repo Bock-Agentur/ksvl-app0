@@ -47,12 +47,25 @@ interface DashboardProps {
 
 export function Dashboard({ onNavigate }: DashboardProps = {}) {
   const { currentRole, currentUser } = useRole();
-  const { slots } = useSlots();
-  const { users } = useUsers();
+  const { slots, isLoading: slotsLoading } = useSlots();
+  const { users, loading: usersLoading } = useUsers();
   const isMobileOrTablet = useIsMobile();
   const dashboardSettingsHook = useDashboardSettings(currentRole, false);
   const settings = dashboardSettingsHook.settings;
   const { getAnimationClass, isInitialized, isAnimationEnabled } = useDashboardAnimations();
+  
+  const [isContentReady, setIsContentReady] = useState(false);
+  
+  // Wait for all data to be loaded before showing content
+  useEffect(() => {
+    if (!slotsLoading && !usersLoading && isInitialized) {
+      // Small delay to ensure everything is rendered
+      const timer = setTimeout(() => {
+        setIsContentReady(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [slotsLoading, usersLoading, isInitialized]);
 
   // Calculate quick actions based on role
   const getQuickActions = () => {
@@ -201,8 +214,23 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
     return () => observer.disconnect();
   }, [isAnimationEnabled, settings.animationType, isInitialized]);
 
+  // Show loading state until everything is ready
+  if (!isContentReady) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted-foreground">Dashboard wird geladen...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 max-w-7xl mx-auto">
+    <div className={cn(
+      "p-4 max-w-7xl mx-auto opacity-0 animate-fade-in",
+      isContentReady && "opacity-100"
+    )}>
       <div className={gridClassName}>
         {sortedColumns.map((columnItems, columnIndex) => (
           <div key={columnIndex} className="space-y-4">
