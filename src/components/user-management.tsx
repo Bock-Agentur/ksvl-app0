@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key, Eye } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key, Eye, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useUsers, DatabaseUser } from "@/hooks/use-users";
 import { useSearchFilter, useCommonFilters } from "@/hooks/use-search-filter";
 import { useFormHandler, useCommonFieldConfigs } from "@/hooks/use-form-handler";
@@ -38,6 +39,8 @@ export function UserManagementRefactored() {
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
   const { customFields } = useCustomFields();
   const [allCustomValues, setAllCustomValues] = useState<Record<string, Record<string, any>>>({});
+  const [isStatsOpen, setIsStatsOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   
   // Load all custom field values for all users at once
   useEffect(() => {
@@ -358,8 +361,52 @@ export function UserManagementRefactored() {
         </div>
       </div>
 
-      {/* Statistiken Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+      {/* Statistiken Cards - Collapsible auf Mobile */}
+      <Collapsible open={isStatsOpen} onOpenChange={setIsStatsOpen} className="sm:hidden">
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" className="w-full flex items-center justify-between">
+            <span>Statistiken anzeigen</span>
+            <ChevronDown className={`h-4 w-4 transition-transform ${isStatsOpen ? 'rotate-180' : ''}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-2">
+          <div className="grid grid-cols-2 gap-2">
+            <Card>
+              <CardContent className="pt-3 pb-2">
+                <div className="text-lg font-bold text-primary">{stats.total}</div>
+                <p className="text-[10px] text-muted-foreground">Gesamt</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-3 pb-2">
+                <div className="text-lg font-bold text-green-600">{stats.active}</div>
+                <p className="text-[10px] text-muted-foreground">Aktiv</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-3 pb-2">
+                <div className="text-lg font-bold text-blue-600">{stats.roleCount.mitglied}</div>
+                <p className="text-[10px] text-muted-foreground">Mitglieder</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="pt-3 pb-2">
+                <div className="text-lg font-bold text-purple-600">{stats.roleCount.kranfuehrer}</div>
+                <p className="text-[10px] text-muted-foreground">Kranführer</p>
+              </CardContent>
+            </Card>
+            <Card className="col-span-2">
+              <CardContent className="pt-3 pb-2">
+                <div className="text-lg font-bold text-red-600">{stats.roleCount.admin}</div>
+                <p className="text-[10px] text-muted-foreground">Admins</p>
+              </CardContent>
+            </Card>
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Statistiken Cards - Normal auf Desktop */}
+      <div className="hidden sm:grid grid-cols-2 sm:grid-cols-5 gap-2">
         <Card>
           <CardContent className="pt-3 pb-2">
             <div className="text-lg font-bold text-primary">{stats.total}</div>
@@ -392,8 +439,90 @@ export function UserManagementRefactored() {
         </Card>
       </div>
 
-      {/* Such- und Filter-Bereich */}
-      <Card>
+      {/* Such- und Filter-Bereich - Collapsible auf Mobile */}
+      <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen} className="sm:hidden">
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" className="w-full flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Filter className="h-4 w-4" />
+              <span>Suche & Filter</span>
+            </div>
+            <ChevronDown className={`h-4 w-4 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-2">
+          <Card>
+            <CardContent className="pt-4 space-y-4">
+              <div className="flex flex-col gap-4">
+                <div className="flex-1">
+                  <Label htmlFor="search-mobile">Suche</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="search-mobile"
+                      placeholder="Nach Name, E-Mail, Telefon..."
+                      value={searchFilter.searchTerm}
+                      onChange={(e) => searchFilter.setSearchTerm(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label>Rolle</Label>
+                  <Select 
+                    value={searchFilter.filters.role || "all"} 
+                    onValueChange={(value) => searchFilter.setFilter('role', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {userRoleFilter.options.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label>Status</Label>
+                  <Select 
+                    value={searchFilter.filters.status || "all"} 
+                    onValueChange={(value) => searchFilter.setFilter('status', value)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {statusFilter.options.map(option => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {(searchFilter.searchTerm || Object.values(searchFilter.filters).some(v => v && v !== 'all')) && (
+                  <Button variant="outline" onClick={searchFilter.clearAll} className="w-full">
+                    Filter zurücksetzen
+                  </Button>
+                )}
+              </div>
+              
+              <div className="text-sm text-muted-foreground">
+                {searchFilter.stats.filtered} von {searchFilter.stats.total} Benutzern angezeigt
+              </div>
+            </CardContent>
+          </Card>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Such- und Filter-Bereich - Normal auf Desktop */}
+      <Card className="hidden sm:block">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Filter className="h-5 w-5" />
