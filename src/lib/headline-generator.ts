@@ -3,11 +3,14 @@
  * Generates contextual headlines based on time of day, season, and special occasions
  */
 
+import { toZonedTime } from 'date-fns-tz';
+
 export function generateAutomaticHeadline(): string {
-  const now = new Date();
-  const hour = now.getHours();
-  const month = now.getMonth(); // 0-11
-  const day = now.getDate();
+  // Use Vienna timezone
+  const viennaTime = toZonedTime(new Date(), 'Europe/Vienna');
+  const hour = viennaTime.getHours();
+  const month = viennaTime.getMonth(); // 0-11
+  const day = viennaTime.getDate();
 
   // Check for special occasions first
   const specialOccasion = getSpecialOccasion(month, day);
