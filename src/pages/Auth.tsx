@@ -317,6 +317,11 @@ export function Auth() {
       );
     }
     
+    // For gradient type, only render overlay if opacity > 0
+    if (background.type === 'gradient' && background.overlayOpacity > 0) {
+      return <div className="fixed inset-0 -z-10" style={overlayStyle} />;
+    }
+    
     return null;
   };
 
