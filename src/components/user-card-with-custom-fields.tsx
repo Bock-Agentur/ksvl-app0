@@ -1,16 +1,15 @@
-import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Key, Trash2, Mail, Phone, Anchor, Users } from "lucide-react";
-import { User, UserRole } from "@/types";
+import { Eye, Key, Trash2 } from "lucide-react";
+import { User } from "@/types";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
-import { supabase } from "@/integrations/supabase/client";
 import { CustomField } from "@/types";
 
 interface UserCardProps {
   user: User;
   customFields: CustomField[];
+  customValues: Record<string, any>;
   getRoleBadgeInlineStyle: (role: string) => any;
   onViewUser: (user: User) => void;
   onPasswordChange: (userId: string) => void;
@@ -20,42 +19,12 @@ interface UserCardProps {
 export function UserCardWithCustomFields({
   user,
   customFields,
+  customValues,
   getRoleBadgeInlineStyle,
   onViewUser,
   onPasswordChange,
   onDeleteUser
 }: UserCardProps) {
-  const [customValues, setCustomValues] = useState<Record<string, any>>({});
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchCustomValues = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('custom_field_values')
-          .select('*, custom_fields(*)')
-          .eq('user_id', user.id);
-
-        if (error) throw error;
-
-        const values: Record<string, any> = {};
-        data?.forEach(item => {
-          if (item.custom_fields) {
-            values[(item.custom_fields as any).name] = item.value;
-          }
-        });
-
-        setCustomValues(values);
-      } catch (error) {
-        console.error('Error fetching custom values:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCustomValues();
-  }, [user.id]);
-
   // Get specific custom fields for display
   const memberNumberField = customFields.find(f => f.name === 'member_number' || f.name === 'mitgliedsnummer');
   const usernameField = customFields.find(f => f.name === 'username');

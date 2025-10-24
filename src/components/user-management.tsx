@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +37,38 @@ export function UserManagementRefactored() {
   const { toast } = useToast();
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
   const { customFields } = useCustomFields();
+  const [allCustomValues, setAllCustomValues] = useState<Record<string, Record<string, any>>>({});
+  
+  // Load all custom field values for all users at once
+  useEffect(() => {
+    const fetchAllCustomValues = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('custom_field_values')
+          .select('user_id, value, custom_fields(name)');
+
+        if (error) throw error;
+
+        const valuesByUser: Record<string, Record<string, any>> = {};
+        data?.forEach(item => {
+          if (!valuesByUser[item.user_id]) {
+            valuesByUser[item.user_id] = {};
+          }
+          if (item.custom_fields) {
+            valuesByUser[item.user_id][(item.custom_fields as any).name] = item.value;
+          }
+        });
+
+        setAllCustomValues(valuesByUser);
+      } catch (error) {
+        console.error('Error fetching all custom values:', error);
+      }
+    };
+
+    if (dbUsers.length > 0) {
+      fetchAllCustomValues();
+    }
+  }, [dbUsers.length]);
   
   // Convert DatabaseUser to User format for compatibility
   const users: User[] = dbUsers.map(u => ({
@@ -457,6 +489,7 @@ export function UserManagementRefactored() {
               key={user.id}
               user={user}
               customFields={customFields}
+              customValues={allCustomValues[user.id] || {}}
               getRoleBadgeInlineStyle={getRoleBadgeInlineStyle}
               onViewUser={handleViewUser}
               onPasswordChange={(userId) => {
