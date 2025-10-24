@@ -8,6 +8,10 @@ All colors MUST be HSL for proper theme support.
 
 @layer base {
   :root {
+    /* Navy Colors for Header */
+    --navy-deep: 215 70% 20%;
+    --navy-primary: 220 65% 30%;
+    
     /* Maritime Color Palette */
     --background: 210 25% 98%;
     --foreground: 210 15% 20%;

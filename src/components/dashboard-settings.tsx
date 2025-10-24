@@ -12,6 +12,7 @@ import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { getWidgetsForRole, getSectionsForRole, type DashboardItem } from "@/lib/dashboard-config";
 import { UserRole } from "@/types/user";
 import { RotateCcw, GripVertical, Eye, EyeOff, LayoutGrid, Columns2, Square, Smartphone, Settings as SettingsIcon, Shield, UserCircle, Wrench } from "lucide-react";
+import { DashboardHeader } from "@/components/dashboard-header";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverEvent, DragOverlay, pointerWithin, useDroppable, rectIntersection } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -406,17 +407,11 @@ export function DashboardSettings() {
 
   return (
     <div className="space-y-6 p-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-2xl font-bold">
-            <SettingsIcon className="w-6 h-6" />
-            Dashboard-Einstellungen
-          </CardTitle>
-          <CardDescription>
-            Passen Sie Ihr Dashboard nach Ihren Wünschen an.
-          </CardDescription>
-        </CardHeader>
-      </Card>
+      <DashboardHeader 
+        userName={(currentUser as any)?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || "User"}
+        userImage={(currentUser as any)?.user_metadata?.avatar_url}
+        showSearch={false}
+      />
 
       {isAdmin && (
         <Card>
