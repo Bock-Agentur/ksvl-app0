@@ -159,12 +159,12 @@ export function HarborChatWidget() {
             variant="ghost"
             size="sm"
             onClick={() => setIsOpen(!isOpen)}
-            className="h-8 w-8 p-0 text-white/80 hover:text-white hover:bg-white/10 rounded-full"
+            className="h-10 w-10 p-0 text-white hover:text-white hover:bg-white/20 rounded-full border border-white/30"
           >
             {isOpen ? (
-              <ChevronUp className="h-5 w-5" />
+              <ChevronUp className="h-6 w-6" />
             ) : (
-              <ChevronDown className="h-5 w-5" />
+              <ChevronDown className="h-6 w-6" />
             )}
           </Button>
         </div>
