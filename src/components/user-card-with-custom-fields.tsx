@@ -25,22 +25,15 @@ export function UserCardWithCustomFields({
   onPasswordChange,
   onDeleteUser
 }: UserCardProps) {
-  // Get specific custom fields for display
-  const firstNameField = customFields.find(f => f.name === 'first_name');
-  const lastNameField = customFields.find(f => f.name === 'last_name');
-  const usernameField = customFields.find(f => f.name === 'username');
-  const memberNumberField = customFields.find(f => f.name === 'member_number' || f.name === 'mitgliedsnummer');
-  const emailField = customFields.find(f => f.name === 'email');
-  const phoneField = customFields.find(f => f.name === 'phone' || f.name === 'telefon');
-
-  const firstName = firstNameField ? customValues[firstNameField.name] : '';
-  const lastName = lastNameField ? customValues[lastNameField.name] : '';
+  // Get specific custom field values for display
+  const firstName = customValues['first_name'] || '';
+  const lastName = customValues['last_name'] || '';
   const fullName = [firstName, lastName].filter(Boolean).join(' ') || user.name;
   
-  const username = usernameField ? customValues[usernameField.name] : null;
-  const memberNumber = memberNumberField ? customValues[memberNumberField.name] : null;
-  const email = emailField ? customValues[emailField.name] : user.email;
-  const phone = phoneField ? customValues[phoneField.name] : null;
+  const username = customValues['username'] || null;
+  const memberNumber = customValues['member_number'] || customValues['mitgliedsnummer'] || null;
+  const email = customValues['email'] || user.email;
+  const phone = customValues['phone'] || customValues['telefon'] || null;
 
   return (
     <Card className="transition-colors hover:bg-muted/50">
