@@ -232,7 +232,7 @@ export function Auth() {
         
         // Username → E-Mail über sichere Funktion holen
         const { data, error } = await supabase.rpc('get_email_for_login', {
-          username: validatedUsername
+          username_input: validatedUsername
         });
         
         if (error || !data) {
