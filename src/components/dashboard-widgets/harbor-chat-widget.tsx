@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, MessageSquare } from "lucide-react";
+import { Loader2, Send, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
@@ -148,7 +148,7 @@ export function HarborChatWidget() {
     >
       <CardHeader className="pt-12 pb-4 px-[15px]">
         <CardTitle className="text-2xl font-bold flex items-center gap-2 text-white">
-          <MessageSquare className="h-6 w-6" />
+          <Bot className="h-6 w-6" />
           KSVL-Assistent
         </CardTitle>
       </CardHeader>

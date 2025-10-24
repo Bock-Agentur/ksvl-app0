@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
-import { Loader2, Send, MessageSquare, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, Send, Bot, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
@@ -142,7 +142,7 @@ export function AIChatMiniWidget() {
       <CardHeader className="pt-8 pb-4 px-[15px]">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-bold flex items-center gap-2 text-white">
-            <MessageSquare className="h-5 w-5" />
+            <Bot className="h-5 w-5" />
             AI-Assistent
           </CardTitle>
           {messages.length > 0 && (
