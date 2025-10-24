@@ -149,6 +149,31 @@ serve(async (req) => {
       console.error('Fehler beim Laden der Mitglieder:', membersError);
     }
 
+    // Hole alle Custom Fields
+    const { data: customFields } = await supabase
+      .from('custom_fields')
+      .select('*')
+      .order('order', { ascending: true });
+
+    // Hole Custom Field Values für öffentliche Mitglieder
+    const publicMemberIds = publicMembers?.map(m => m.id) || [];
+    const { data: customFieldValues } = await supabase
+      .from('custom_field_values')
+      .select('*')
+      .in('user_id', publicMemberIds);
+
+    // Erstelle eine Map für Custom Field Values pro Benutzer
+    const customValuesMap = new Map<string, Record<string, string>>();
+    customFieldValues?.forEach(cfv => {
+      if (!customValuesMap.has(cfv.user_id)) {
+        customValuesMap.set(cfv.user_id, {});
+      }
+      const field = customFields?.find(f => f.id === cfv.field_id);
+      if (field) {
+        customValuesMap.get(cfv.user_id)![field.name] = cfv.value;
+      }
+    });
+
     // Filtere Vorstandsmitglieder separat
     const { data: vorstandMembers, error: vorstandError } = await supabase
       .from('profiles')
@@ -226,10 +251,34 @@ VERGANGENE STATISTIK:
 
 ÖFFENTLICHE MITGLIEDERDATEN (${publicMembers.length} Mitglieder):
 ${publicMembers.map(m => {
-  let info = `- ${getFullName(m)}${m.member_number ? ` (Nr: ${m.member_number})` : ''}${m.boat_name ? ` - Boot: ${m.boat_name}` : ''}${m.boat_type ? ` (${m.boat_type})` : ''}${m.berth_number ? ` - Liegeplatz: ${m.berth_number}` : ''}`;
+  const customValues = customValuesMap.get(m.id) || {};
+  let info = `- ${getFullName(m)}${m.member_number ? ` (Nr: ${m.member_number})` : ''}`;
+  
+  // Boot-Informationen
+  if (m.boat_name) info += ` - Boot: ${m.boat_name}`;
+  if (m.boat_type) info += ` (${m.boat_type})`;
+  if (m.berth_number) info += ` - Liegeplatz: ${m.berth_number}`;
+  
+  // Kontaktdaten (nur wenn öffentlich)
   if (m.contact_public_in_ksvl) {
-    info += `${m.email ? ` - Email: ${m.email}` : ''}${m.phone ? ` - Tel: ${m.phone}` : ''}`;
+    if (m.email) info += ` - Email: ${m.email}`;
+    if (m.phone) info += ` - Tel: ${m.phone}`;
   }
+  
+  // Custom Fields hinzufügen (nur wichtige anzeigen)
+  const relevantFields = ['address', 'city', 'postal_code', 'street_address', 'oesv_number'];
+  const customFieldInfo = relevantFields
+    .filter(fieldName => customValues[fieldName])
+    .map(fieldName => {
+      const field = customFields?.find(f => f.name === fieldName);
+      return `${field?.label || fieldName}: ${customValues[fieldName]}`;
+    })
+    .join(', ');
+  
+  if (customFieldInfo) {
+    info += ` - ${customFieldInfo}`;
+  }
+  
   return info;
 }).join('\n')}
 
