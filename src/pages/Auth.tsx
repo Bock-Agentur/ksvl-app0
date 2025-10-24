@@ -212,20 +212,18 @@ export function Auth() {
       
       // Prüfen ob es eine E-Mail ist (enthält @)
       if (!email.includes('@')) {
-        // Username → E-Mail aus profiles Tabelle holen (case-insensitive)
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('email, name')
-          .ilike('name', email)
-          .maybeSingle();
+        // Username → E-Mail über sichere Funktion holen
+        const { data, error } = await supabase.rpc('get_email_for_login', {
+          username: email
+        });
         
-        console.log('Username search result:', { data, error, searchTerm: email });
+        console.log('Username lookup result:', { data, error, searchTerm: email });
         
         if (error || !data) {
           throw new Error('Benutzer nicht gefunden');
         }
         
-        loginEmail = data.email;
+        loginEmail = data;
       }
 
       const { error } = await supabase.auth.signInWithPassword({
