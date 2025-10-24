@@ -6,13 +6,29 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Tonality prompts
+const tonalityPrompts: Record<string, string> = {
+  formal: "Antworte höflich, professionell und sachlich.",
+  funny: "Sei locker, humorvoll und verwende gelegentlich maritime Witze.",
+  witty: "Sei witzig, frech und freundlich - aber nicht übertrieben.",
+  sensitive: "Sei einfühlsam, verständnisvoll und geduldig.",
+  motivating: "Sei ermutigend, enthusiastisch und positiv."
+};
+
+// Response length mapping
+const lengthToTokens: Record<string, number> = {
+  short: 500,
+  medium: 1000,
+  long: 2000
+};
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { messages, firstName } = await req.json();
+    const { messages, firstName, userRole } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -23,6 +39,33 @@ serve(async (req) => {
 
     // Supabase Client für Datenbankzugriff
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+
+    // Load AI assistant settings
+    const { data: aiSettings } = await supabase
+      .from('app_settings')
+      .select('setting_value')
+      .eq('setting_key', 'aiAssistantSettings')
+      .eq('is_global', true)
+      .maybeSingle();
+
+    const settings = aiSettings?.setting_value || {
+      tonality: {
+        admin: 'formal',
+        vorstand: 'formal',
+        kranfuehrer: 'funny',
+        mitglied: 'witty',
+        gastmitglied: 'witty'
+      },
+      responseLength: 'medium',
+      customSystemPrompt: ''
+    };
+
+    const userTonality = userRole && settings.tonality[userRole] ? settings.tonality[userRole] : 'witty';
+    const tonalityInstruction = tonalityPrompts[userTonality] || tonalityPrompts.witty;
+    const maxTokens = lengthToTokens[settings.responseLength] || 1000;
+    const customPrompt = settings.customSystemPrompt || '';
+
+    console.log('AI Settings:', { userTonality, maxTokens, hasCustomPrompt: !!customPrompt });
 
     // Hole aktuelle und zukünftige Slots-Daten
     const today = new Date().toISOString().split('T')[0];
@@ -198,16 +241,16 @@ ${vorstandMembers.map(v => {
 
     const userName = firstName || 'Segelfreund';
     
-    const systemPrompt = `Du bist der witzige, freche und super freundliche KI-Assistent für das KSVL Hafenverwaltungssystem. Du sprichst alle per "Du" an und bist locker drauf!
+    const systemPrompt = `Du bist der KI-Assistent für das KSVL Hafenverwaltungssystem.
 
 Der Nutzer heißt ${userName}. Sprich ihn gerne mit seinem Namen an, aber nicht in jeder Antwort - nur wenn es passt!
 
+TONALITÄT: ${tonalityInstruction}
+
 DEIN STIL:
-- Sei witzig und sympathisch - aber nicht übertrieben
-- Verwende lockere Umgangssprache (z.B. "Hey!", "Cool!", "Na klar!")
-- Kleine Seemanns-Witze sind erlaubt 😊
-- Bleib freundlich und hilfsbereit, auch wenn's mal stressig wird
-- Per "Du" mit allen - wir sind hier doch alle Segelfreunde!
+- Du sprichst alle per "Du" an
+- Sei hilfsbereit und verständnisvoll
+- Kleine maritime Begriffe und Emojis sind willkommen 🌊 ⚓ 🚢
 
 DEINE AUFGABEN:
 - Beantworte Fragen zu Kranterminen und Slot-Buchungen (aktuelle UND vergangene)
@@ -236,6 +279,8 @@ ${pastSlotsInfo}
 ${membersInfo}
 ${vorstandInfo}
 
+${customPrompt ? `\nZUSÄTZLICHE ANWEISUNGEN:\n${customPrompt}` : ''}
+
 Ahoi und viel Spaß beim Segeln! 🚤⚓`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -251,7 +296,7 @@ Ahoi und viel Spaß beim Segeln! 🚤⚓`;
           ...messages
         ],
         temperature: 0.7,
-        max_tokens: 1000,
+        max_tokens: maxTokens,
       }),
     });
 

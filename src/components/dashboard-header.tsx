@@ -10,6 +10,7 @@ import { generateAutomaticHeadline } from "@/lib/headline-generator";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAIWelcomeMessage } from "@/hooks/use-ai-welcome-message";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -37,16 +38,13 @@ export function DashboardHeader({
   const { currentRole } = useRole();
   const { settings } = useDashboardSettings(currentRole, false);
   const { toast } = useToast();
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: '👋 Ahoi! Ich bin dein KSVL-Assistent. Ich kann dir bei Kranterminen, Buchungen und Mitgliederdaten helfen. Was willst du wissen?'
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { enabled: welcomeEnabled, message: welcomeMessage } = useAIWelcomeMessage();
+  const [welcomeShown, setWelcomeShown] = useState(false);
 
   const getInitials = (name: string) => {
     return name
@@ -101,6 +99,18 @@ export function DashboardHeader({
 
     loadFirstName();
   }, [currentUser, userName]);
+
+  // Show welcome message on mount
+  useEffect(() => {
+    if (welcomeEnabled && welcomeMessage && !welcomeShown && messages.length === 0) {
+      setMessages([{
+        role: 'assistant',
+        content: welcomeMessage
+      }]);
+      setWelcomeShown(true);
+    }
+  }, [welcomeEnabled, welcomeMessage, welcomeShown, messages.length]);
+
   const displayImage = userImage || (currentUser as any)?.user_metadata?.avatar_url;
 
   const sendMessage = async () => {
@@ -124,7 +134,8 @@ export function DashboardHeader({
       const { data, error } = await supabase.functions.invoke('harbor-chat', {
         body: { 
           messages: [...messages, userMessage],
-          firstName: firstName
+          firstName: firstName,
+          userRole: currentRole
         }
       });
 
@@ -202,8 +213,8 @@ export function DashboardHeader({
         {headline}
       </h1>
 
-      {/* Chat Messages - nur anzeigen wenn User etwas gefragt hat */}
-      {messages.length > 1 && (
+      {/* Chat Messages - nur anzeigen wenn Nachrichten vorhanden sind */}
+      {messages.length > 0 && (
         <div className="mb-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs text-white/80">Antworten</span>

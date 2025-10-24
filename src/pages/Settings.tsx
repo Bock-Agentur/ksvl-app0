@@ -13,6 +13,8 @@ import { UserListDatabase } from "@/components/user-list-database";
 import { CustomFieldsManager } from "@/components/custom-fields-manager";
 import { LoginBackgroundSettings } from "@/components/login-background-settings";
 import { DesktopBackgroundSettings } from "@/components/desktop-background-settings";
+import { AIAssistantSettings } from "@/components/ai-assistant-settings";
+import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/hooks/use-role";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -32,7 +34,9 @@ export function Settings() {
     { id: "customfields", label: "Custom Fields", component: CustomFieldsManager },
     { id: "system", label: "System", component: ConsecutiveSlotsSettings },
     { id: "testdata", label: "Testdaten", component: TestDataManager },
-    ...(currentRole === 'admin' ? [
+    ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
+      { id: "aiassistant", label: "AI-Assistent", component: AIAssistantSettings },
+      { id: "aiwelcome", label: "AI-Startnachricht", component: AIWelcomeMessageSettings },
       { id: "loginpage", label: "Login-Seite", component: LoginBackgroundSettings },
       { id: "desktopbg", label: "Desktop-Hintergrund", component: DesktopBackgroundSettings }
     ] : []),
