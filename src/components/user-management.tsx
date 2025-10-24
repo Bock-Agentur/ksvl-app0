@@ -453,54 +453,69 @@ export function UserManagementRefactored() {
               <CardContent className="p-3 sm:p-4">
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
                   {/* User Info Section */}
-                  <div className="flex-1 min-w-0 space-y-2 sm:space-y-1">
-                    {/* Name and Badges Row */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                      <h3 className="font-medium text-base sm:text-sm">{user.name}</h3>
-                      
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {/* Role Badges */}
-                        {sortRoles(user.roles || []).map((role) => {
-                          return (
-                            <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
-                              {ROLE_LABELS[role] || role}
-                            </Badge>
-                          );
-                        })}
-                        
-                        {/* Status Badge */}
-                        <Badge 
-                          variant={user.status === "active" ? "default" : "secondary"}
-                          className="text-xs px-2 py-0.5 h-5"
-                        >
-                          {user.status === "active" ? "Aktiv" : "Inaktiv"}
-                        </Badge>
-                      </div>
-                    </div>
+                  <div className="flex-1 min-w-0 space-y-2">
+                    {/* Name - Large at top */}
+                    <h3 className="font-semibold text-lg">{user.name}</h3>
                     
-                    {/* Contact Info */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Mail className="w-4 h-4 flex-shrink-0" />
-                        <span className="truncate text-xs sm:text-sm">{user.email}</span>
-                      </div>
+                    {/* Badges */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {/* Role Badges */}
+                      {sortRoles(user.roles || []).map((role) => {
+                        const label = role === 'admin' ? 'Admin' :
+                                     role === 'vorstand' ? 'Vorstand' :
+                                     role === 'mitglied' ? 'Mitglied' :
+                                     role === 'gastmitglied' ? 'Gast' :
+                                     role === 'kranfuehrer' ? 'Kran' :
+                                     ROLE_LABELS[role] || role;
+                        
+                        return (
+                          <Badge 
+                            key={role} 
+                            className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5" 
+                            style={getRoleBadgeInlineStyle(role)}
+                          >
+                            {label}
+                          </Badge>
+                        );
+                      })}
                       
-                      {user.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="w-4 h-4 flex-shrink-0" />
-                          <span className="text-xs sm:text-sm">{user.phone}</span>
-                        </div>
+                      {/* Status Badge */}
+                      {user.status === "active" && (
+                        <Badge 
+                          variant="default"
+                          className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5"
+                        >
+                          Aktiv
+                        </Badge>
                       )}
                     </div>
                     
-                    {/* Member Info */}
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1.5">
-                        <Anchor className="w-4 h-4 flex-shrink-0" />
-                        <span className="text-xs sm:text-sm font-medium">{user.memberNumber}</span>
+                    {/* Contact and Member Info */}
+                    <div className="space-y-1 text-sm text-muted-foreground">
+                      {user.memberNumber && (
+                        <div className="flex items-center gap-1.5">
+                          <Anchor className="w-4 h-4 flex-shrink-0" />
+                          <span>{user.memberNumber}</span>
+                        </div>
+                      )}
+                      
+                      {(user as any).username && (
+                        <div className="flex items-center gap-1.5">
+                          <Users className="w-4 h-4 flex-shrink-0" />
+                          <span>{(user as any).username}</span>
+                        </div>
+                      )}
+                      
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Mail className="w-4 h-4 flex-shrink-0" />
+                        <span className="truncate">{user.email}</span>
                       </div>
-                      {user.boatName && (
-                        <span className="text-xs sm:text-sm">Boot: {user.boatName}</span>
+                      
+                      {user.phone && (
+                        <div className="flex items-center gap-1.5">
+                          <Phone className="w-4 h-4 flex-shrink-0" />
+                          <span>{user.phone}</span>
+                        </div>
                       )}
                     </div>
                   </div>
