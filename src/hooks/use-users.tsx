@@ -6,6 +6,7 @@ export interface DatabaseUser {
   id: string;
   email: string;
   name: string | null; // Maps to 'user' field for display
+  username: string | null; // Username for login
   phone: string | null;
   member_number: string | null;
   memberNumber?: string | null; // Alias for compatibility
@@ -63,6 +64,7 @@ export function useUsers() {
           id: profile.id,
           email: profile.email,
           name: profile.name,
+          username: profile.username,
           phone: profile.phone,
           member_number: profile.member_number,
           memberNumber: profile.member_number, // Alias

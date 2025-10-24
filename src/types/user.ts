@@ -9,6 +9,7 @@ export type UserRole = "mitglied" | "kranfuehrer" | "admin" | "gastmitglied" | "
 export interface User {
   id: string;
   name: string;
+  username?: string;
   firstName?: string;
   lastName?: string;
   email: string;

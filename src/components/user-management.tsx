@@ -39,6 +39,7 @@ export function UserManagementRefactored() {
   const users: User[] = dbUsers.map(u => ({
     id: u.id,
     name: u.name || '',
+    username: u.username || '',
     email: u.email,
     phone: u.phone || '',
     boatName: u.boat_name || u.boatName || '',
@@ -494,6 +495,10 @@ export function UserManagementRefactored() {
                     <div className="space-y-1 text-sm text-muted-foreground">
                       {user.memberNumber && (
                         <div>Mitgliedsnummer: {user.memberNumber}</div>
+                      )}
+                      
+                      {(user as any).username && (
+                        <div>Username: {(user as any).username}</div>
                       )}
                       
                       <div>Email: {user.email}</div>
