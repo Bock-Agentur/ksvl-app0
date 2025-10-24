@@ -670,23 +670,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label>User-Name:</Label>
-                {isEditing && isAdmin ? (
-                  <Input
-                    name="username"
-                    autoComplete="username"
-                    value={editedUser.name}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev!, name: e.target.value }))}
-                  />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{user.name}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-2">
                 <Label>Passwort:</Label>
                 <div className="flex items-center gap-2">
                   <span className="text-sm text-muted-foreground">********</span>
