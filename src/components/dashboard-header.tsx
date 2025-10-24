@@ -73,18 +73,34 @@ export function DashboardHeader({
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }, [messages]);
 
-  // Get first name from user metadata or profile
-  const getFirstName = () => {
-    // Try user_metadata first
-    const metadata = (currentUser as any)?.user_metadata;
-    if (metadata?.first_name) return metadata.first_name;
-    
-    // Fallback to name splitting
-    const fullName = userName || metadata?.full_name || currentUser?.email?.split('@')[0] || "User";
-    return fullName.split(' ')[0];
-  };
+  const [displayName, setDisplayName] = useState<string>("");
 
-  const displayName = getFirstName();
+  // Load first name from profile
+  useEffect(() => {
+    const loadFirstName = async () => {
+      if (!currentUser?.id) {
+        setDisplayName("User");
+        return;
+      }
+      
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('first_name, name')
+        .eq('id', currentUser.id)
+        .single();
+      
+      setDisplayName(
+        profileData?.first_name || 
+        profileData?.name?.split(' ')[0] || 
+        userName?.split(' ')[0] ||
+        (currentUser as any)?.user_metadata?.full_name?.split(' ')[0] || 
+        currentUser?.email?.split('@')[0] || 
+        "User"
+      );
+    };
+
+    loadFirstName();
+  }, [currentUser, userName]);
   const displayImage = userImage || (currentUser as any)?.user_metadata?.avatar_url;
 
   const sendMessage = async () => {

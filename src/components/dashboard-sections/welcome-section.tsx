@@ -5,6 +5,8 @@ import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { useWelcomeMessages } from "@/hooks/use-welcome-messages";
 import { UserRole } from "@/types/user";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface WelcomeSectionProps {
   stats?: {
@@ -20,13 +22,36 @@ interface WelcomeSectionProps {
 export function WelcomeSection({ stats, currentUser, currentRole }: WelcomeSectionProps) {
   const { getWelcomeMessage } = useWelcomeMessages();
   const welcomeMessage = currentRole ? getWelcomeMessage(currentRole) : "";
+  const [firstName, setFirstName] = useState<string>("");
+
+  useEffect(() => {
+    const loadFirstName = async () => {
+      if (!currentUser?.id) return;
+      
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('first_name, name')
+        .eq('id', currentUser.id)
+        .single();
+      
+      setFirstName(
+        profileData?.first_name || 
+        profileData?.name?.split(' ')[0] || 
+        currentUser?.user_metadata?.full_name?.split(' ')[0] || 
+        currentUser?.email?.split('@')[0] || 
+        "User"
+      );
+    };
+
+    loadFirstName();
+  }, [currentUser]);
 
   return (
     <Card className="p-6 bg-gradient-to-br from-primary/5 via-primary/3 to-background border-primary/20 md:rounded-[2rem]">
       <div className="space-y-4">
         <div>
           <h2 className="text-2xl font-bold mb-2">
-            Hallo {currentUser?.user_metadata?.full_name || currentUser?.email}! 👋
+            Hallo {firstName}! 👋
           </h2>
           <div className="text-muted-foreground whitespace-pre-line">
             {welcomeMessage}
