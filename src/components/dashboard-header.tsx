@@ -43,11 +43,8 @@ export function DashboardHeader({
 
   return (
     <div className="bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white pt-12 pb-8 px-[15px] rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)]">
-      {/* White Headline */}
-      <h2 className="text-white text-2xl font-bold mb-6">Dashboard</h2>
-      
-      {/* Header mit Profilbild und Glocke */}
-      <div className="flex items-center justify-between mb-8">
+      {/* Header mit Profilbild, Name und Glocke */}
+      <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           {/* Profilbild */}
           <Avatar className="w-12 h-12 ring-2 ring-white/20">
@@ -57,10 +54,9 @@ export function DashboardHeader({
             </AvatarFallback>
           </Avatar>
           
-          {/* Begrüßung */}
+          {/* Name mit Begrüßung */}
           <div>
-            <p className="text-sm text-white/80">{getGreeting()}</p>
-            <h1 className="text-xl font-bold">{displayName}</h1>
+            <p className="text-base text-white font-normal">Hai, {displayName}!</p>
           </div>
         </div>
         
@@ -74,16 +70,21 @@ export function DashboardHeader({
         </Button>
       </div>
 
-      {/* Suchleiste */}
+      {/* Weiße fette Headline */}
+      <h1 className="text-white text-3xl font-bold mb-6">
+        Where do<br />you want to sail?
+      </h1>
+
+      {/* Suchleiste mit Lupe */}
       {showSearch && (
         <div className="relative">
-          <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
           <Input
             type="text"
-            placeholder="Suche..."
-            className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-white/95 backdrop-blur-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/50 shadow-lg border-0"
+            placeholder="Search your sailing destination!"
+            className="w-full pl-4 pr-12 py-3.5 rounded-2xl bg-white/95 backdrop-blur-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-white/50 shadow-lg border-0"
             onChange={(e) => onSearch?.(e.target.value)}
           />
+          <Search className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
         </div>
       )}
     </div>
