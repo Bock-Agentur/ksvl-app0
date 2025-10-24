@@ -11,6 +11,7 @@ import { FinanceOverviewWidget } from "@/components/dashboard-widgets/finance-ov
 import { MaintenanceAlertsWidget } from "@/components/dashboard-widgets/maintenance-alerts-widget";
 import { EventsCalendarWidget } from "@/components/dashboard-widgets/events-calendar-widget";
 import { HarborChatWidget } from "@/components/dashboard-widgets/harbor-chat-widget";
+import { DashboardHeader } from "@/components/dashboard-header";
 import { WelcomeSection } from "@/components/dashboard-sections/welcome-section";
 import { StatsGridSection } from "@/components/dashboard-sections/stats-grid-section";
 import { QuickActionsSection } from "@/components/dashboard-sections/quick-actions-section";
@@ -183,6 +184,17 @@ export const DASHBOARD_WIDGETS: Record<string, DashboardWidget> = {
 };
 
 export const DASHBOARD_SECTIONS: Record<string, DashboardSection> = {
+  headerCard: {
+    id: "headerCard",
+    name: "Header-Card",
+    description: "Profilbereich mit Suche und Benachrichtigungen",
+    component: DashboardHeader,
+    defaultEnabled: true,
+    roles: ["mitglied", "gastmitglied", "kranfuehrer", "admin", "vorstand"],
+    category: "core",
+    size: "large",
+    position: { column: 1, order: -1 }
+  },
   welcomeSection: {
     id: "welcomeSection",
     name: "Willkommensnachricht",

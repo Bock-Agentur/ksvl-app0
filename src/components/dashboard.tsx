@@ -11,7 +11,6 @@ import { useDashboardAnimations } from "@/hooks/use-dashboard-animations";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getAllDashboardItems, sortAllItemsByPosition, getColumnClassName } from "@/lib/dashboard-config";
 import { cn } from "@/lib/utils";
-import { DashboardHeader } from "@/components/dashboard-header";
 
 interface DashboardStats {
   todayBookings: number;
@@ -203,15 +202,7 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
   }, [isAnimationEnabled, settings.animationType, isInitialized]);
 
   return (
-    <div className="p-4 max-w-7xl mx-auto space-y-6">
-      <DashboardHeader 
-        userName={(currentUser as any)?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || "User"}
-        userImage={(currentUser as any)?.user_metadata?.avatar_url}
-        onSearch={(query) => {
-          console.log("Suche:", query);
-        }}
-      />
-      
+    <div className="p-4 max-w-7xl mx-auto">
       <div className={gridClassName}>
         {sortedColumns.map((columnItems, columnIndex) => (
           <div key={columnIndex} className="space-y-4">

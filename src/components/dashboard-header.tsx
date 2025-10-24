@@ -2,6 +2,7 @@ import { Bell, Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import defaultAvatar from "@/assets/default-avatar.png";
 
 interface DashboardHeaderProps {
   userName?: string;
@@ -34,12 +35,15 @@ export function DashboardHeader({
 
   return (
     <div className="bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white pt-12 pb-8 px-[15px] rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)]">
+      {/* White Headline */}
+      <h2 className="text-white text-2xl font-bold mb-6">Dashboard</h2>
+      
       {/* Header mit Profilbild und Glocke */}
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           {/* Profilbild */}
           <Avatar className="w-12 h-12 ring-2 ring-white/20">
-            <AvatarImage src={userImage} alt={userName} />
+            <AvatarImage src={userImage || defaultAvatar} alt={userName} />
             <AvatarFallback className="bg-white/20 backdrop-blur-sm text-white font-semibold">
               {getInitials(userName)}
             </AvatarFallback>
