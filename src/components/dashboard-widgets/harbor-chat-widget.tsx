@@ -182,8 +182,8 @@ export function HarborChatWidget() {
                 <div
                   className={`max-w-[85%] rounded-xl px-4 py-2.5 ${
                     msg.role === 'user'
-                      ? 'bg-white/20 backdrop-blur-sm text-white'
-                      : 'bg-white/95 text-foreground'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-muted text-foreground'
                   }`}
                 >
                   <div 
