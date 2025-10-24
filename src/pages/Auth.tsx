@@ -19,9 +19,14 @@ function Countdown({ endDate, text, showDays, fontSize, fontWeight }: { endDate:
       
       if (difference > 0) {
         const ms = difference % 1000;
+        const totalHours = Math.floor(difference / (1000 * 60 * 60));
+        const hours = showDays !== false 
+          ? Math.floor((difference / (1000 * 60 * 60)) % 24)
+          : totalHours;
+        
         setTimeLeft({
           days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          hours,
           minutes: Math.floor((difference / 1000 / 60) % 60),
           seconds: Math.floor((difference / 1000) % 60),
           tenths: Math.floor(ms / 100),
@@ -34,7 +39,7 @@ function Countdown({ endDate, text, showDays, fontSize, fontWeight }: { endDate:
     const timer = setInterval(calculateTimeLeft, 10);
 
     return () => clearInterval(timer);
-  }, [endDate]);
+  }, [endDate, showDays]);
 
   const actualShowDays = showDays !== false;
   const baseFontSize = fontSize || 80;

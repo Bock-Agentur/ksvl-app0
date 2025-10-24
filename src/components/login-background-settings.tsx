@@ -30,9 +30,14 @@ function CountdownPreview({ endDate, text, small, showDays, fontSize, fontWeight
       
       if (difference > 0) {
         const ms = difference % 1000;
+        const totalHours = Math.floor(difference / (1000 * 60 * 60));
+        const hours = showDays !== false 
+          ? Math.floor((difference / (1000 * 60 * 60)) % 24)
+          : totalHours;
+        
         setTimeLeft({
           days: Math.floor(difference / (1000 * 60 * 60 * 24)),
-          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          hours,
           minutes: Math.floor((difference / 1000 / 60) % 60),
           seconds: Math.floor((difference / 1000) % 60),
           tenths: Math.floor(ms / 100),
@@ -45,7 +50,7 @@ function CountdownPreview({ endDate, text, small, showDays, fontSize, fontWeight
     const timer = setInterval(calculateTimeLeft, 10);
 
     return () => clearInterval(timer);
-  }, [endDate]);
+  }, [endDate, showDays]);
 
   if (!endDate) return null;
 
@@ -940,7 +945,7 @@ export function LoginBackgroundSettings() {
                       {/* Countdown Layer - z-index: 2 */}
                       {localSettings.countdownEnabled && localSettings.countdownEndDate && (
                         <div 
-                          className="absolute inset-0 flex flex-col items-center pointer-events-none" 
+                          className="absolute inset-0 flex flex-col items-center"
                           style={{ 
                             paddingTop: `${localSettings.countdownVerticalPositionDesktop}%`,
                             zIndex: 2
@@ -1040,7 +1045,7 @@ export function LoginBackgroundSettings() {
                 {/* Countdown Layer - z-index: 2 */}
                 {localSettings.countdownEnabled && localSettings.countdownEndDate && (
                   <div 
-                    className="absolute inset-0 flex flex-col items-center pointer-events-none" 
+                    className="absolute inset-0 flex flex-col items-center"
                     style={{ 
                       paddingTop: `${localSettings.countdownVerticalPositionMobile}%`,
                       zIndex: 2
