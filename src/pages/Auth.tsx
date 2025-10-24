@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { useIsMobile } from "@/hooks/use-mobile";
 
-function Countdown({ endDate, text }: { endDate: string; text: string }) {
+function Countdown({ endDate, text, showDays, fontSize, fontWeight }: { endDate: string; text: string; showDays?: boolean; fontSize?: number; fontWeight?: number }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, tenths: 0, hundredths: 0 });
 
   useEffect(() => {
@@ -35,31 +35,113 @@ function Countdown({ endDate, text }: { endDate: string; text: string }) {
     return () => clearInterval(timer);
   }, [endDate]);
 
+  const actualShowDays = showDays !== false;
+  const baseFontSize = fontSize || 80;
+  const mobileFontSize = Math.max(baseFontSize * 0.625, 24);
+  const tabletFontSize = Math.max(baseFontSize * 0.75, 32);
+  const weight = fontWeight || 100;
+
   return (
     <div className="w-full flex flex-col items-center justify-center mb-8">
       <div className="flex justify-center items-start gap-0.5 md:gap-1">
+        {actualShowDays && (
+          <>
+            <div className="flex flex-col items-center">
+              <span 
+                className="text-white tabular-nums" 
+                style={{ 
+                  fontSize: `${mobileFontSize}px`,
+                  fontWeight: weight
+                }}
+              >
+                {String(timeLeft.days).padStart(2, '0')}
+              </span>
+              <span className="text-xs md:text-sm text-white/70 mt-1">Tage</span>
+            </div>
+            <span 
+              className="text-white" 
+              style={{ 
+                fontSize: `${mobileFontSize}px`,
+                fontWeight: weight
+              }}
+            >
+              :
+            </span>
+          </>
+        )}
         <div className="flex flex-col items-center">
-          <span className="text-5xl md:text-6xl lg:text-8xl font-thin text-white tabular-nums">{String(timeLeft.days).padStart(2, '0')}</span>
-          <span className="text-xs md:text-sm text-white/70 mt-1">Tage</span>
-        </div>
-        <span className="text-5xl md:text-6xl lg:text-8xl font-thin text-white">:</span>
-        <div className="flex flex-col items-center">
-          <span className="text-5xl md:text-6xl lg:text-8xl font-thin text-white tabular-nums">{String(timeLeft.hours).padStart(2, '0')}</span>
+          <span 
+            className="text-white tabular-nums" 
+            style={{ 
+              fontSize: `${mobileFontSize}px`,
+              fontWeight: weight
+            }}
+          >
+            {String(timeLeft.hours).padStart(2, '0')}
+          </span>
           <span className="text-xs md:text-sm text-white/70 mt-1">Stunden</span>
         </div>
-        <span className="text-5xl md:text-6xl lg:text-8xl font-thin text-white">:</span>
+        <span 
+          className="text-white" 
+          style={{ 
+            fontSize: `${mobileFontSize}px`,
+            fontWeight: weight
+          }}
+        >
+          :
+        </span>
         <div className="flex flex-col items-center">
-          <span className="text-5xl md:text-6xl lg:text-8xl font-thin text-white tabular-nums">{String(timeLeft.minutes).padStart(2, '0')}</span>
+          <span 
+            className="text-white tabular-nums" 
+            style={{ 
+              fontSize: `${mobileFontSize}px`,
+              fontWeight: weight
+            }}
+          >
+            {String(timeLeft.minutes).padStart(2, '0')}
+          </span>
           <span className="text-xs md:text-sm text-white/70 mt-1">Minuten</span>
         </div>
-        <span className="text-5xl md:text-6xl lg:text-8xl font-thin text-white">:</span>
+        <span 
+          className="text-white" 
+          style={{ 
+            fontSize: `${mobileFontSize}px`,
+            fontWeight: weight
+          }}
+        >
+          :
+        </span>
         <div className="flex flex-col items-center">
-          <span className="text-5xl md:text-6xl lg:text-8xl font-thin text-white tabular-nums">{String(timeLeft.seconds).padStart(2, '0')}</span>
+          <span 
+            className="text-white tabular-nums" 
+            style={{ 
+              fontSize: `${mobileFontSize}px`,
+              fontWeight: weight
+            }}
+          >
+            {String(timeLeft.seconds).padStart(2, '0')}
+          </span>
           <span className="text-xs md:text-sm text-white/70 mt-1">Sekunden</span>
         </div>
-        <span className="text-5xl md:text-6xl lg:text-8xl font-thin text-white">:</span>
+        <span 
+          className="text-white" 
+          style={{ 
+            fontSize: `${mobileFontSize}px`,
+            fontWeight: weight
+          }}
+        >
+          :
+        </span>
         <div className="flex flex-col items-center">
-          <span className="text-5xl md:text-6xl lg:text-8xl font-thin text-white tabular-nums">{String(timeLeft.tenths)}{String(timeLeft.hundredths)}</span>
+          <span 
+            className="text-white tabular-nums" 
+            style={{ 
+              fontSize: `${mobileFontSize}px`,
+              fontWeight: weight
+            }}
+          >
+            {String(timeLeft.tenths)}{String(timeLeft.hundredths)}
+          </span>
           <span className="text-xs md:text-sm text-white/70 mt-1">1/100 Sek</span>
         </div>
       </div>
@@ -245,6 +327,9 @@ export function Auth() {
           <Countdown 
             endDate={background.countdownEndDate} 
             text={background.countdownText}
+            showDays={background.countdownShowDays}
+            fontSize={background.countdownFontSize}
+            fontWeight={background.countdownFontWeight}
           />
         </div>
       )}

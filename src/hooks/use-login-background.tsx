@@ -23,6 +23,9 @@ export interface LoginBackground {
   countdownEnabled: boolean;
   countdownEndDate: string | null;
   countdownText: string;
+  countdownShowDays: boolean;
+  countdownFontSize: number;
+  countdownFontWeight: number;
   countdownVerticalPositionDesktop: number;
   countdownVerticalPositionTablet: number;
   countdownVerticalPositionMobile: number;
@@ -50,6 +53,9 @@ const DEFAULT_BACKGROUND: LoginBackground = {
   countdownEnabled: false,
   countdownEndDate: null,
   countdownText: 'bis zur neuen Segelsaison',
+  countdownShowDays: true,
+  countdownFontSize: 48,
+  countdownFontWeight: 100,
   countdownVerticalPositionDesktop: 35,
   countdownVerticalPositionTablet: 35,
   countdownVerticalPositionMobile: 35

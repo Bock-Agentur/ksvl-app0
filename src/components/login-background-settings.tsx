@@ -19,7 +19,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
 
-function CountdownPreview({ endDate, text, small }: { endDate: string | null; text: string; small?: boolean }) {
+function CountdownPreview({ endDate, text, small, showDays, fontSize, fontWeight }: { endDate: string | null; text: string; small?: boolean; showDays?: boolean; fontSize?: number; fontWeight?: number }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, tenths: 0, hundredths: 0 });
 
   useEffect(() => {
@@ -49,32 +49,42 @@ function CountdownPreview({ endDate, text, small }: { endDate: string | null; te
 
   if (!endDate) return null;
 
+  const baseFontSize = fontSize || (small ? 24 : 48);
+  const textSize = `${baseFontSize}px`;
+  const labelSize = small ? 'text-[8px]' : 'text-[10px]';
+  const weight = fontWeight || 100;
+  const actualShowDays = showDays !== false;
+
   return (
     <div className="w-full flex flex-col items-center justify-center">
       <div className="flex justify-center items-start gap-0.5">
+        {actualShowDays && (
+          <>
+            <div className="flex flex-col items-center">
+              <span className="text-white tabular-nums" style={{ fontSize: textSize, fontWeight: weight }}>{String(timeLeft.days).padStart(2, '0')}</span>
+              <span className={`${labelSize} text-white/70 mt-0.5`}>Tage</span>
+            </div>
+            <span className="text-white" style={{ fontSize: textSize, fontWeight: weight }}>:</span>
+          </>
+        )}
         <div className="flex flex-col items-center">
-          <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white tabular-nums`}>{String(timeLeft.days).padStart(2, '0')}</span>
-          <span className="text-[8px] text-white/70 mt-0.5">Tage</span>
+          <span className="text-white tabular-nums" style={{ fontSize: textSize, fontWeight: weight }}>{String(timeLeft.hours).padStart(2, '0')}</span>
+          <span className={`${labelSize} text-white/70 mt-0.5`}>Stunden</span>
         </div>
-        <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white`}>:</span>
+        <span className="text-white" style={{ fontSize: textSize, fontWeight: weight }}>:</span>
         <div className="flex flex-col items-center">
-          <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white tabular-nums`}>{String(timeLeft.hours).padStart(2, '0')}</span>
-          <span className="text-[8px] text-white/70 mt-0.5">Stunden</span>
+          <span className="text-white tabular-nums" style={{ fontSize: textSize, fontWeight: weight }}>{String(timeLeft.minutes).padStart(2, '0')}</span>
+          <span className={`${labelSize} text-white/70 mt-0.5`}>Minuten</span>
         </div>
-        <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white`}>:</span>
+        <span className="text-white" style={{ fontSize: textSize, fontWeight: weight }}>:</span>
         <div className="flex flex-col items-center">
-          <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white tabular-nums`}>{String(timeLeft.minutes).padStart(2, '0')}</span>
-          <span className="text-[8px] text-white/70 mt-0.5">Minuten</span>
+          <span className="text-white tabular-nums" style={{ fontSize: textSize, fontWeight: weight }}>{String(timeLeft.seconds).padStart(2, '0')}</span>
+          <span className={`${labelSize} text-white/70 mt-0.5`}>Sekunden</span>
         </div>
-        <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white`}>:</span>
+        <span className="text-white" style={{ fontSize: textSize, fontWeight: weight }}>:</span>
         <div className="flex flex-col items-center">
-          <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white tabular-nums`}>{String(timeLeft.seconds).padStart(2, '0')}</span>
-          <span className="text-[8px] text-white/70 mt-0.5">Sekunden</span>
-        </div>
-        <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white`}>:</span>
-        <div className="flex flex-col items-center">
-          <span className={`${small ? 'text-2xl' : 'text-4xl'} font-thin text-white tabular-nums`}>{String(timeLeft.tenths)}{String(timeLeft.hundredths)}</span>
-          <span className="text-[8px] text-white/70 mt-0.5">1/100</span>
+          <span className="text-white tabular-nums" style={{ fontSize: textSize, fontWeight: weight }}>{String(timeLeft.tenths)}{String(timeLeft.hundredths)}</span>
+          <span className={`${labelSize} text-white/70 mt-0.5`}>1/100</span>
         </div>
       </div>
       {text && (
@@ -218,6 +228,9 @@ export function LoginBackgroundSettings() {
         countdownEnabled: localSettings.countdownEnabled,
         countdownEndDate: localSettings.countdownEndDate,
         countdownText: localSettings.countdownText,
+        countdownShowDays: localSettings.countdownShowDays,
+        countdownFontSize: localSettings.countdownFontSize,
+        countdownFontWeight: localSettings.countdownFontWeight,
         countdownVerticalPositionDesktop: localSettings.countdownVerticalPositionDesktop,
         countdownVerticalPositionTablet: localSettings.countdownVerticalPositionTablet,
         countdownVerticalPositionMobile: localSettings.countdownVerticalPositionMobile
@@ -346,6 +359,18 @@ export function LoginBackgroundSettings() {
 
   const handleLoginBlockWidthMobileChange = (value: number[]) => {
     setLocalSettings({ ...localSettings, loginBlockWidthMobile: value[0] });
+  };
+
+  const handleCountdownShowDaysChange = (checked: boolean) => {
+    setLocalSettings({ ...localSettings, countdownShowDays: checked });
+  };
+
+  const handleCountdownFontSizeChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, countdownFontSize: value[0] });
+  };
+
+  const handleCountdownFontWeightChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, countdownFontWeight: value[0] });
   };
 
 
@@ -765,6 +790,53 @@ export function LoginBackgroundSettings() {
                   />
                 </div>
 
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="countdown-show-days">Tage anzeigen</Label>
+                  <Switch
+                    id="countdown-show-days"
+                    checked={localSettings.countdownShowDays !== false}
+                    onCheckedChange={handleCountdownShowDaysChange}
+                  />
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>Schriftgröße</Label>
+                    <span className="text-sm text-muted-foreground">{localSettings.countdownFontSize || 48}px</span>
+                  </div>
+                  <Slider
+                    value={[localSettings.countdownFontSize || 48]}
+                    onValueChange={handleCountdownFontSizeChange}
+                    min={24}
+                    max={120}
+                    step={4}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Klein</span>
+                    <span>Groß</span>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>Schriftdicke</Label>
+                    <span className="text-sm text-muted-foreground">{localSettings.countdownFontWeight || 100}</span>
+                  </div>
+                  <Slider
+                    value={[localSettings.countdownFontWeight || 100]}
+                    onValueChange={handleCountdownFontWeightChange}
+                    min={100}
+                    max={900}
+                    step={100}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Dünn (100)</span>
+                    <span>Fett (900)</span>
+                  </div>
+                </div>
+
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
                     <Label>Countdown Position Desktop (vertikal)</Label>
@@ -877,6 +949,9 @@ export function LoginBackgroundSettings() {
                           <CountdownPreview 
                             endDate={localSettings.countdownEndDate}
                             text={localSettings.countdownText}
+                            showDays={localSettings.countdownShowDays}
+                            fontSize={localSettings.countdownFontSize}
+                            fontWeight={localSettings.countdownFontWeight}
                           />
                         </div>
                       )}
@@ -975,6 +1050,9 @@ export function LoginBackgroundSettings() {
                       endDate={localSettings.countdownEndDate}
                       text={localSettings.countdownText}
                       small
+                      showDays={localSettings.countdownShowDays}
+                      fontSize={localSettings.countdownFontSize}
+                      fontWeight={localSettings.countdownFontWeight}
                     />
                   </div>
                 )}
