@@ -3,6 +3,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import defaultAvatar from "@/assets/default-avatar.png";
+import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
+import { useRole } from "@/hooks/use-role";
+import { generateAutomaticHeadline } from "@/lib/headline-generator";
+import { useMemo } from "react";
 
 interface DashboardHeaderProps {
   userName?: string;
@@ -22,12 +26,8 @@ export function DashboardHeader({
   showSearch = true,
   currentUser
 }: DashboardHeaderProps) {
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Guten Morgen";
-    if (hour < 18) return "Guten Tag";
-    return "Guten Abend";
-  };
+  const { currentRole } = useRole();
+  const { settings } = useDashboardSettings(currentRole, false);
 
   const getInitials = (name: string) => {
     return name
@@ -37,6 +37,13 @@ export function DashboardHeader({
       .toUpperCase()
       .slice(0, 2);
   };
+
+  const headline = useMemo(() => {
+    if (settings.headlineMode === "manual" && settings.customHeadline) {
+      return settings.customHeadline;
+    }
+    return generateAutomaticHeadline();
+  }, [settings.headlineMode, settings.customHeadline]);
 
   const displayName = userName || (currentUser as any)?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || "User";
   const displayImage = userImage || (currentUser as any)?.user_metadata?.avatar_url;
@@ -71,8 +78,8 @@ export function DashboardHeader({
       </div>
 
       {/* Weiße fette Headline */}
-      <h1 className="text-white text-3xl font-bold mb-6">
-        Where do<br />you want to sail?
+      <h1 className="text-white text-3xl font-bold mb-6 whitespace-pre-line">
+        {headline}
       </h1>
 
       {/* Suchleiste mit Lupe */}

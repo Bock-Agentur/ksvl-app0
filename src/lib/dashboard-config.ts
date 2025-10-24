@@ -73,6 +73,9 @@ export interface DashboardSettings {
   allItemsPositions?: Record<string, { column: number; order: number }>;
   // Mobile/Tablet specific order (single column)
   mobileItemsOrder?: string[];
+  // Header-Card Headline Settings
+  headlineMode: "manual" | "automatic";
+  customHeadline?: string;
 }
 
 export const DASHBOARD_WIDGETS: Record<string, DashboardWidget> = {
@@ -260,7 +263,10 @@ export const DEFAULT_DASHBOARD_SETTINGS: DashboardSettings = {
   showActivityFeed: true,
   // Animation Settings - disabled by default for better performance
   animationEnabled: false,
-  animationType: "none"
+  animationType: "none",
+  // Header-Card Headline Settings
+  headlineMode: "automatic",
+  customHeadline: "Where do you want to sail?"
 };
 
 export function getWidgetsForRole(role: UserRole): DashboardWidget[] {
