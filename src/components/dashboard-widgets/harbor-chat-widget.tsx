@@ -153,7 +153,7 @@ export function HarborChatWidget() {
         </CardTitle>
       </CardHeader>
       <CardContent className="px-[15px] pb-8">
-        <ScrollArea className="h-[400px] mb-4 bg-white/10 backdrop-blur-sm rounded-2xl" ref={scrollRef}>
+        <ScrollArea className="h-[400px] mb-4 bg-white rounded-2xl" ref={scrollRef}>
           <div className="space-y-3 p-4">
             {messages.map((msg, idx) => (
               <div

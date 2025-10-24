@@ -166,7 +166,7 @@ export function AIChatMiniWidget() {
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleContent>
             {messages.length > 0 && (
-              <ScrollArea className="h-[250px] mb-4 bg-white/10 backdrop-blur-sm rounded-2xl">
+              <ScrollArea className="h-[250px] mb-4 bg-white rounded-2xl">
                 <div className="space-y-3 p-4">
                   {messages.map((msg, idx) => (
                     <div
