@@ -1,4 +1,4 @@
-import { Bell, Send, Loader2 } from "lucide-react";
+import { Bell, Send, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,6 +45,7 @@ export function DashboardHeader({
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const getInitials = (name: string) => {
@@ -175,41 +176,60 @@ export function DashboardHeader({
 
       {/* Chat Messages - nur anzeigen wenn User etwas gefragt hat */}
       {messages.length > 1 && (
-        <ScrollArea className="h-[300px] mb-4 bg-white rounded-2xl">
-          <div className="space-y-3 p-4">
-            {messages.map((msg, idx) => (
-              <div
-                key={idx}
-                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-xl px-4 py-2.5 ${
-                    msg.role === 'user'
-                      ? 'bg-[hsl(var(--navy-primary))] text-white'
-                      : 'bg-muted text-foreground'
-                  }`}
-                >
-                  <div 
-                    className="text-sm whitespace-pre-wrap leading-relaxed prose prose-sm max-w-none dark:prose-invert prose-a:text-primary prose-a:no-underline hover:prose-a:underline"
-                    dangerouslySetInnerHTML={{ 
-                      __html: msg.content
-                        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="font-medium">$1</a>')
-                        .replace(/\n/g, '<br/>')
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex justify-start">
-                <div className="bg-muted rounded-xl px-4 py-2.5">
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                </div>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
+        <div className="mb-4">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-white/80">Antworten</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsCollapsed(!isCollapsed)}
+              className="h-6 px-2 text-white/80 hover:text-white hover:bg-white/10"
+            >
+              {isCollapsed ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronUp className="h-4 w-4" />
+              )}
+            </Button>
           </div>
-        </ScrollArea>
+          {!isCollapsed && (
+            <ScrollArea className="h-[300px] bg-white rounded-2xl">
+              <div className="space-y-3 p-4">
+                {messages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[85%] rounded-xl px-4 py-2.5 ${
+                        msg.role === 'user'
+                          ? 'bg-[hsl(var(--navy-primary))] text-white'
+                          : 'bg-muted text-foreground'
+                      }`}
+                    >
+                      <div 
+                        className="text-sm whitespace-pre-wrap leading-relaxed prose prose-sm max-w-none dark:prose-invert prose-a:text-primary prose-a:no-underline hover:prose-a:underline"
+                        dangerouslySetInnerHTML={{ 
+                          __html: msg.content
+                            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="font-medium">$1</a>')
+                            .replace(/\n/g, '<br/>')
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                {isLoading && (
+                  <div className="flex justify-start">
+                    <div className="bg-muted rounded-xl px-4 py-2.5">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+            </ScrollArea>
+          )}
+        </div>
       )}
 
       {/* Chat Input */}
