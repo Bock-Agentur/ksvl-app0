@@ -8,3 +8,6 @@ verify_jwt = false
 
 [functions.regenerate-role-users]
 verify_jwt = true
+
+[functions.create-super-admin]
+verify_jwt = false
