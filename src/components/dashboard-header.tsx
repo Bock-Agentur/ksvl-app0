@@ -173,71 +173,68 @@ export function DashboardHeader({
         {headline}
       </h1>
 
-      {/* Chat Messages */}
-      <ScrollArea className="h-[300px] mb-4 bg-white/10 backdrop-blur-sm rounded-2xl">
-        <div className="space-y-3 p-4">
-          {messages.map((msg, idx) => (
-            <div
-              key={idx}
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
+      {/* Chat Messages - nur anzeigen wenn User etwas gefragt hat */}
+      {messages.length > 1 && (
+        <ScrollArea className="h-[300px] mb-4 bg-white rounded-2xl">
+          <div className="space-y-3 p-4">
+            {messages.map((msg, idx) => (
               <div
-                className={`max-w-[85%] rounded-xl px-4 py-2.5 ${
-                  msg.role === 'user'
-                    ? 'bg-white/20 backdrop-blur-sm text-white'
-                    : 'bg-white/95 text-foreground'
-                }`}
+                key={idx}
+                className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
-                <div 
-                  className="text-sm whitespace-pre-wrap leading-relaxed prose prose-sm max-w-none dark:prose-invert prose-a:text-primary prose-a:no-underline hover:prose-a:underline"
-                  dangerouslySetInnerHTML={{ 
-                    __html: msg.content
-                      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="font-medium">$1</a>')
-                      .replace(/\n/g, '<br/>')
-                  }}
-                />
+                <div
+                  className={`max-w-[85%] rounded-xl px-4 py-2.5 ${
+                    msg.role === 'user'
+                      ? 'bg-[hsl(var(--navy-primary))] text-white'
+                      : 'bg-muted text-foreground'
+                  }`}
+                >
+                  <div 
+                    className="text-sm whitespace-pre-wrap leading-relaxed prose prose-sm max-w-none dark:prose-invert prose-a:text-primary prose-a:no-underline hover:prose-a:underline"
+                    dangerouslySetInnerHTML={{ 
+                      __html: msg.content
+                        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="font-medium">$1</a>')
+                        .replace(/\n/g, '<br/>')
+                    }}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
-          {isLoading && (
-            <div className="flex justify-start">
-              <div className="bg-white/95 rounded-xl px-4 py-2.5">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            ))}
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="bg-muted rounded-xl px-4 py-2.5">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                </div>
               </div>
-            </div>
-          )}
-          <div ref={messagesEndRef} />
-        </div>
-      </ScrollArea>
+            )}
+            <div ref={messagesEndRef} />
+          </div>
+        </ScrollArea>
+      )}
 
       {/* Chat Input */}
-      <div className="space-y-2">
-        <div className="flex gap-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Frage zu Terminen oder Mitgliedern..."
-            disabled={isLoading}
-            className="flex-1 bg-white/95 backdrop-blur-sm text-foreground border-0 rounded-2xl placeholder:text-muted-foreground"
-            autoComplete="off"
-          />
-          <Button
-            onClick={sendMessage}
-            disabled={isLoading || !input.trim()}
-            size="icon"
-            className="flex-shrink-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-0 rounded-full"
-          >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Send className="h-4 w-4" />
-            )}
-          </Button>
-        </div>
-        <p className="text-xs text-white/80">
-          💡 Frag mich nach Terminen, Buchungen, Mitgliederdaten oder Statistiken
-        </p>
+      <div className="flex gap-2">
+        <Input
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="Frage zu Terminen oder Mitgliedern..."
+          disabled={isLoading}
+          className="flex-1 bg-white/95 backdrop-blur-sm text-foreground border-0 rounded-2xl placeholder:text-muted-foreground"
+          autoComplete="off"
+        />
+        <Button
+          onClick={sendMessage}
+          disabled={isLoading || !input.trim()}
+          size="icon"
+          className="flex-shrink-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-0 rounded-full"
+        >
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Send className="h-4 w-4" />
+          )}
+        </Button>
       </div>
     </div>
   );
