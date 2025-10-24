@@ -187,9 +187,8 @@ export function AppShell({
                 </Button>;
             })}
 
-          {/* Burger Menu (only for admin/vorstand) */}
-          {(currentRole === "admin" || currentRole === "vorstand") && (
-            <Drawer open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+          {/* Burger Menu */}
+          <Drawer open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <DrawerTrigger asChild>
                 <Button variant="ghost" size="sm" className="p-2 h-auto">
                   <Menu className="w-5 h-5" />
@@ -305,7 +304,6 @@ export function AppShell({
                 </div>
               </DrawerContent>
             </Drawer>
-          )}
         </div>
       </nav>
       </div>
