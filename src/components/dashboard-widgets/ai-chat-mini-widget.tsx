@@ -190,7 +190,7 @@ export function AIChatMiniWidget() {
         </Collapsible>
 
         {/* Input Field - Always Visible */}
-        <div className="flex items-center justify-center mb-2">
+        <div className="flex items-end justify-end mb-2">
           <Button
             variant="ghost"
             size="icon"
