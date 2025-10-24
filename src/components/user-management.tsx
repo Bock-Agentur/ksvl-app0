@@ -496,10 +496,6 @@ export function UserManagementRefactored() {
                         <div>Mitgliedsnummer: {user.memberNumber}</div>
                       )}
                       
-                      {(user as any).username && (
-                        <div>Username: {(user as any).username}</div>
-                      )}
-                      
                       <div>Email: {user.email}</div>
                       
                       {user.phone && (
