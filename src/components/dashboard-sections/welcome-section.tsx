@@ -58,21 +58,29 @@ export function WelcomeSection({ stats, currentUser, currentRole }: WelcomeSecti
           </div>
         </div>
 
-        {stats?.nextBooking && (
-          <div className="flex items-center gap-4 p-4 bg-background/50 rounded-lg border">
-            <div className="flex items-center gap-2 text-sm">
-              <Calendar className="h-4 w-4 text-primary" />
-              <span className="font-medium">Nächster Termin:</span>
-              <Badge variant="secondary">
-                {format(stats.nextBooking.date, "EEEE, dd.MM.yyyy", { locale: de })}
-              </Badge>
+        {stats?.nextBooking && (() => {
+          const bookingDate = stats.nextBooking.date instanceof Date 
+            ? stats.nextBooking.date 
+            : new Date(stats.nextBooking.date);
+          
+          const isValidDate = !isNaN(bookingDate.getTime());
+          
+          return isValidDate ? (
+            <div className="flex items-center gap-4 p-4 bg-background/50 rounded-lg border">
+              <div className="flex items-center gap-2 text-sm">
+                <Calendar className="h-4 w-4 text-primary" />
+                <span className="font-medium">Nächster Termin:</span>
+                <Badge variant="secondary">
+                  {format(bookingDate, "EEEE, dd.MM.yyyy", { locale: de })}
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="h-4 w-4 text-primary" />
+                <span>{stats.nextBooking.slot}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-2 text-sm">
-              <Clock className="h-4 w-4 text-primary" />
-              <span>{stats.nextBooking.slot}</span>
-            </div>
-          </div>
-        )}
+          ) : null;
+        })()}
       </div>
     </Card>
   );
