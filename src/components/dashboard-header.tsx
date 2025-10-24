@@ -6,7 +6,7 @@ import defaultAvatar from "@/assets/default-avatar.png";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { useRole } from "@/hooks/use-role";
 import { generateAutomaticHeadline } from "@/lib/headline-generator";
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 
 interface DashboardHeaderProps {
   userName?: string;
@@ -38,11 +38,15 @@ export function DashboardHeader({
       .slice(0, 2);
   };
 
-  const headline = useMemo(() => {
+  const [headline, setHeadline] = useState<string>("");
+
+  // Generate headline on mount and when settings change
+  useEffect(() => {
     if (settings.headlineMode === "manual" && settings.customHeadline) {
-      return settings.customHeadline;
+      setHeadline(settings.customHeadline);
+    } else {
+      setHeadline(generateAutomaticHeadline());
     }
-    return generateAutomaticHeadline();
   }, [settings.headlineMode, settings.customHeadline]);
 
   const displayName = userName || (currentUser as any)?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || "User";
