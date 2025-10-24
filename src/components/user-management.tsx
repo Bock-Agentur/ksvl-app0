@@ -454,10 +454,10 @@ export function UserManagementRefactored() {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
                   {/* User Info Section */}
                   <div className="flex-1 min-w-0 space-y-2">
-                    {/* Name - Large at top */}
+                    {/* 1. Vorname Nachname - groß oben */}
                     <h3 className="font-semibold text-lg">{user.name}</h3>
                     
-                    {/* Badges */}
+                    {/* 2. Badges */}
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {/* Role Badges */}
                       {sortRoles(user.roles || []).map((role) => {
@@ -490,32 +490,20 @@ export function UserManagementRefactored() {
                       )}
                     </div>
                     
-                    {/* Contact and Member Info */}
+                    {/* 3. Mitgliedsnummer, Username, Email, Telefon */}
                     <div className="space-y-1 text-sm text-muted-foreground">
                       {user.memberNumber && (
-                        <div className="flex items-center gap-1.5">
-                          <Anchor className="w-4 h-4 flex-shrink-0" />
-                          <span>{user.memberNumber}</span>
-                        </div>
+                        <div>Mitgliedsnummer: {user.memberNumber}</div>
                       )}
                       
                       {(user as any).username && (
-                        <div className="flex items-center gap-1.5">
-                          <Users className="w-4 h-4 flex-shrink-0" />
-                          <span>{(user as any).username}</span>
-                        </div>
+                        <div>Username: {(user as any).username}</div>
                       )}
                       
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <Mail className="w-4 h-4 flex-shrink-0" />
-                        <span className="truncate">{user.email}</span>
-                      </div>
+                      <div>Email: {user.email}</div>
                       
                       {user.phone && (
-                        <div className="flex items-center gap-1.5">
-                          <Phone className="w-4 h-4 flex-shrink-0" />
-                          <span>{user.phone}</span>
-                        </div>
+                        <div>Telefon: {user.phone}</div>
                       )}
                     </div>
                   </div>
