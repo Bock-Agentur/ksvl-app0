@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { z } from "zod";
 
 function Countdown({ endDate, text, showDays, fontSize, fontWeight }: { endDate: string; text: string; showDays?: boolean; fontSize?: number; fontWeight?: number }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, tenths: 0, hundredths: 0 });
@@ -208,30 +209,45 @@ export function Auth() {
     setLoading(true);
 
     try {
-      let loginEmail = email;
+      // Validation schemas
+      const emailSchema = z.string().trim().email().max(255);
+      const usernameSchema = z.string().trim().min(2).max(50)
+        .regex(/^[a-zA-Z0-9_\-äöüÄÖÜß]+$/, 'Nur Buchstaben, Zahlen, Bindestrich und Unterstrich erlaubt');
+      const passwordSchema = z.string().min(6).max(128);
+
+      // Validate password
+      const validatedPassword = passwordSchema.parse(password);
+      
+      let loginEmail = email.trim();
       
       // Prüfen ob es eine E-Mail ist (enthält @)
       if (!email.includes('@')) {
+        // Validate as username
+        const validatedUsername = usernameSchema.parse(email);
+        
         // Username → E-Mail über sichere Funktion holen
         const { data, error } = await supabase.rpc('get_email_for_login', {
-          username: email
+          username: validatedUsername
         });
         
-        console.log('Username lookup result:', { data, error, searchTerm: email });
-        
         if (error || !data) {
-          throw new Error('Benutzer nicht gefunden');
+          throw new Error('Benutzername oder Passwort falsch');
         }
         
         loginEmail = data;
+      } else {
+        // Validate as email
+        loginEmail = emailSchema.parse(email);
       }
 
       const { error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
-        password,
+        password: validatedPassword,
       });
 
-      if (error) throw error;
+      if (error) {
+        throw new Error('Benutzername oder Passwort falsch');
+      }
 
       toast({
         title: "Erfolgreich angemeldet",
@@ -240,11 +256,19 @@ export function Auth() {
 
       navigate("/");
     } catch (error: any) {
-      toast({
-        title: "Anmeldefehler",
-        description: error.message,
-        variant: "destructive",
-      });
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Eingabefehler",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Anmeldefehler",
+          description: error.message || "Benutzername oder Passwort falsch",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
