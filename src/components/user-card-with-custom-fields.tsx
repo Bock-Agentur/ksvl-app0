@@ -26,15 +26,21 @@ export function UserCardWithCustomFields({
   onDeleteUser
 }: UserCardProps) {
   // Get specific custom fields for display
-  const memberNumberField = customFields.find(f => f.name === 'member_number' || f.name === 'mitgliedsnummer');
+  const firstNameField = customFields.find(f => f.name === 'first_name');
+  const lastNameField = customFields.find(f => f.name === 'last_name');
   const usernameField = customFields.find(f => f.name === 'username');
+  const memberNumberField = customFields.find(f => f.name === 'member_number' || f.name === 'mitgliedsnummer');
   const emailField = customFields.find(f => f.name === 'email');
   const phoneField = customFields.find(f => f.name === 'phone' || f.name === 'telefon');
 
-  const memberNumber = memberNumberField ? customValues[memberNumberField.name] : user.memberNumber;
+  const firstName = firstNameField ? customValues[firstNameField.name] : '';
+  const lastName = lastNameField ? customValues[lastNameField.name] : '';
+  const fullName = [firstName, lastName].filter(Boolean).join(' ') || user.name;
+  
   const username = usernameField ? customValues[usernameField.name] : null;
+  const memberNumber = memberNumberField ? customValues[memberNumberField.name] : null;
   const email = emailField ? customValues[emailField.name] : user.email;
-  const phone = phoneField ? customValues[phoneField.name] : user.phone;
+  const phone = phoneField ? customValues[phoneField.name] : null;
 
   return (
     <Card className="transition-colors hover:bg-muted/50">
@@ -43,7 +49,7 @@ export function UserCardWithCustomFields({
           {/* User Info Section */}
           <div className="flex-1 min-w-0 space-y-2">
             {/* 1. Vorname Nachname - groß oben */}
-            <h3 className="font-semibold text-lg">{user.name}</h3>
+            <h3 className="font-semibold text-lg">{fullName}</h3>
             
             {/* 2. Badges */}
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -78,17 +84,17 @@ export function UserCardWithCustomFields({
               )}
             </div>
             
-            {/* 3. Mitgliedsnummer, Username, Email, Telefon (from Custom Fields) */}
+            {/* 3. Username, Mitgliedsnummer, E-Mail, Telefon (from Custom Fields) */}
             <div className="space-y-1 text-sm text-muted-foreground">
-              {memberNumber && (
-                <div>Mitgliedsnummer: {memberNumber}</div>
-              )}
-              
               {username && (
                 <div>Username: {username}</div>
               )}
               
-              <div>Email: {email}</div>
+              {memberNumber && (
+                <div>Mitgliedsnummer: {memberNumber}</div>
+              )}
+              
+              <div>E-Mail: {email}</div>
               
               {phone && (
                 <div>Telefon: {phone}</div>
