@@ -96,8 +96,8 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       return;
     }
     
-    // If switching to admin, restore the original user
-    if (role === 'admin' && originalUser) {
+    // If switching back to a role the original user has, restore the original user
+    if (originalUser && originalUser.roles.includes(role)) {
       setCurrentUser(originalUser);
       return;
     }
