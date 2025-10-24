@@ -17,11 +17,19 @@ export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = fals
   };
 
   const storageKey = getStorageKey(userRole);
-  const { value: settings, setValue, isLoading } = useAppSettings<DashboardSettings>(
+  const { value: rawSettings, setValue, isLoading } = useAppSettings<DashboardSettings>(
     storageKey,
     DEFAULT_DASHBOARD_SETTINGS,
     false
   );
+
+  // Migration: Ensure headerCard is in enabledSections
+  const settings = {
+    ...rawSettings,
+    enabledSections: rawSettings.enabledSections?.includes('headerCard') 
+      ? rawSettings.enabledSections 
+      : ['headerCard', ...(rawSettings.enabledSections || [])]
+  };
 
   // Save settings to database
   const saveSettings = (newSettings: Partial<DashboardSettings>) => {
