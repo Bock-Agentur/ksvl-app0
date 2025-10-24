@@ -11,6 +11,7 @@ import { FinanceOverviewWidget } from "@/components/dashboard-widgets/finance-ov
 import { MaintenanceAlertsWidget } from "@/components/dashboard-widgets/maintenance-alerts-widget";
 import { EventsCalendarWidget } from "@/components/dashboard-widgets/events-calendar-widget";
 import { HarborChatWidget } from "@/components/dashboard-widgets/harbor-chat-widget";
+import { AIChatMiniWidget } from "@/components/dashboard-widgets/ai-chat-mini-widget";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { WelcomeSection } from "@/components/dashboard-sections/welcome-section";
 import { StatsGridSection } from "@/components/dashboard-sections/stats-grid-section";
@@ -179,6 +180,21 @@ export const DASHBOARD_WIDGETS: Record<string, DashboardWidget> = {
     category: "communication",
     size: "large",
     position: { column: 3, order: 2 },
+    settings: {
+      refreshInterval: 0,
+      showDetails: true
+    }
+  },
+  aiChatMini: {
+    id: "aiChatMini",
+    name: "AI-Assistent (Mini)",
+    description: "Kompakter AI-Chat mit Ausklapp-Funktion",
+    component: AIChatMiniWidget,
+    defaultEnabled: true,
+    roles: ["mitglied", "gastmitglied", "kranfuehrer", "admin", "vorstand"],
+    category: "communication",
+    size: "small",
+    position: { column: 3, order: 1 },
     settings: {
       refreshInterval: 0,
       showDetails: true
