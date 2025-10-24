@@ -161,14 +161,14 @@ export function AppShell({
       backgroundColor: `${background.overlayColor}${Math.round(background.overlayOpacity / 100 * 255).toString(16).padStart(2, '0')}`
     }} />}
 
-      <div className={`min-h-screen flex flex-col relative z-0 ${!desktopBackgroundSettings.enabled ? 'bg-background' : ''}`}>
+      <div className={`min-h-screen flex flex-col relative z-0 pt-safe ${!desktopBackgroundSettings.enabled ? 'bg-background' : ''}`}>
       {/* Main Content */}
-      <main className="flex-1 overflow-auto pb-20 pt-0 mx-0 px-0 py-0">
+      <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
         {children}
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-2 shadow-elevated-maritime z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-2 pb-safe-bottom shadow-elevated-maritime z-50">
         <div className="flex justify-evenly items-center max-w-md mx-auto">
             {footerItems.map((item, index) => {
               // Dynamic icon loading from lucide-react

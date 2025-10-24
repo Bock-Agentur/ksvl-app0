@@ -228,7 +228,7 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
 
   return (
     <div className={cn(
-      "p-4 pt-safe pb-safe max-w-7xl mx-auto opacity-0 animate-fade-in",
+      "p-4 max-w-7xl mx-auto opacity-0 animate-fade-in",
       isContentReady && "opacity-100"
     )}>
       <div className={gridClassName}>
