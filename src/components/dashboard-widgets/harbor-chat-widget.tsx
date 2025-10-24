@@ -16,7 +16,7 @@ interface Message {
 
 export function HarborChatWidget() {
   const [agentName, setAgentName] = useState('Capitano');
-  const [isOpen, setIsOpen] = useState(false); // Am Anfang eingeklappt
+  const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -25,12 +25,10 @@ export function HarborChatWidget() {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { currentRole } = useRole();
 
-  // Load agent name from settings
   useEffect(() => {
     const loadAgentName = async () => {
       try {
@@ -57,18 +55,9 @@ export function HarborChatWidget() {
     loadAgentName();
   }, []);
 
-  // Auto-scroll nur wenn neue Nachrichten gesendet werden
-  const scrollToBottom = () => {
-    // Nur scrollen wenn mehr als die Welcome-Message vorhanden ist
+  useEffect(() => {
     if (messages.length > 1) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  };
-
-  useEffect(() => {
-    // Nur bei neuen Nachrichten scrollen, nicht beim initialen Laden
-    if (messages.length > 1) {
-      scrollToBottom();
     }
   }, [messages]);
 
@@ -79,10 +68,9 @@ export function HarborChatWidget() {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
-    setIsOpen(true); // Automatisch öffnen beim Senden
+    setIsOpen(true);
 
     try {
-      // Hole Benutzerprofil für Vorname
       const { data: { user } } = await supabase.auth.getUser();
       const { data: profileData } = await supabase
         .from('profiles')
@@ -103,9 +91,7 @@ export function HarborChatWidget() {
         }
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       const assistantMessage = data.choices[0].message.content;
       setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
@@ -143,7 +129,6 @@ export function HarborChatWidget() {
     }
   };
 
-
   return (
     <Card 
       className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)]" 
@@ -157,10 +142,9 @@ export function HarborChatWidget() {
       </CardHeader>
       
       <CardContent className="px-[15px] pb-8">
-        {/* Collapsible Chat Area */}
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleContent>
-            <ScrollArea className="h-[400px] mb-4 bg-white rounded-2xl" ref={scrollRef}>
+            <ScrollArea className="h-[400px] mb-4 bg-white rounded-2xl">
               <div className="space-y-3 p-4">
                 {messages.map((msg, idx) => (
                   <div
@@ -198,7 +182,6 @@ export function HarborChatWidget() {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Input Area - Always Visible */}
         <div className="space-y-2">
           <div className="flex items-center justify-end mb-2">
             <Button

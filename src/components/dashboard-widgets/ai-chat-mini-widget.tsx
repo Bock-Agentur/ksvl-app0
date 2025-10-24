@@ -19,12 +19,11 @@ export function AIChatMiniWidget() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false); // Am Anfang eingeklappt
+  const [isOpen, setIsOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { currentRole } = useRole();
 
-  // Load agent name from settings
   useEffect(() => {
     const loadAgentName = async () => {
       try {
@@ -47,18 +46,9 @@ export function AIChatMiniWidget() {
     loadAgentName();
   }, []);
 
-  // Auto-scroll nur wenn Nachrichten vorhanden sind und gesendet werden
-  const scrollToBottom = () => {
-    // Nur scrollen wenn Nachrichten vorhanden sind
+  useEffect(() => {
     if (messages.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  };
-
-  useEffect(() => {
-    // Nur bei neuen Nachrichten scrollen, nicht beim initialen Laden
-    if (messages.length > 0) {
-      scrollToBottom();
     }
   }, [messages]);
 
@@ -69,12 +59,9 @@ export function AIChatMiniWidget() {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
-    
-    // Automatisch ausklappen bei neuer Nachricht
     setIsOpen(true);
 
     try {
-      // Get user data for first name
       const { data: { user } } = await supabase.auth.getUser();
       const { data: profileData } = await supabase
         .from('profiles')
@@ -95,9 +82,7 @@ export function AIChatMiniWidget() {
         }
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       const assistantMessage = data.choices[0].message.content;
       setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
@@ -145,8 +130,8 @@ export function AIChatMiniWidget() {
           AI-Assistent
         </CardTitle>
       </CardHeader>
+      
       <CardContent className="px-[15px] pb-6">
-        {/* Collapsible Messages Area */}
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleContent>
             {messages.length > 0 && (
@@ -189,7 +174,6 @@ export function AIChatMiniWidget() {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Input Field - Always Visible */}
         <div className="flex items-center justify-end mb-2">
           <Button
             variant="ghost"
