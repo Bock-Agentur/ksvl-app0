@@ -310,7 +310,7 @@ export function useCommonFieldConfigs() {
     options: [
       { value: 'mitglied', label: 'Mitglied' },
       { value: 'kranfuehrer', label: 'Kranführer' },
-      { value: 'admin', label: 'Administrator' }
+      { value: 'admin', label: 'Admin' }
     ]
   };
 

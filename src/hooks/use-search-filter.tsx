@@ -137,7 +137,7 @@ export function useCommonFilters() {
     type: 'select' as const,
     options: [
       { value: 'all', label: 'Alle Rollen' },
-      { value: 'admin', label: 'Administrator' },
+      { value: 'admin', label: 'Admin' },
       { value: 'kranfuehrer', label: 'Kranführer' },
       { value: 'mitglied', label: 'Mitglied' }
     ]

@@ -14,7 +14,7 @@ const roleLabels: Record<UserRole, string> = {
   "gastmitglied": "Gastmitglied",
   "mitglied": "Mitglied",
   "kranfuehrer": "Kranführer", 
-  "admin": "Administrator",
+  "admin": "Admin",
   "vorstand": "Vorstand"
 };
 
@@ -97,7 +97,7 @@ export function UserRoleSelector({
       <div className="text-xs text-muted-foreground">
         <p>• Gastmitglieder haben die gleichen Rechte wie Mitglieder</p>
         <p>• Kranführer sind automatisch auch Mitglieder</p>
-        <p>• Administratoren haben automatisch alle Rollen außer Vorstand</p>
+        <p>• Admins haben automatisch alle Rollen außer Vorstand</p>
         <p>• Vorstand hat automatisch alle Rollen</p>
       </div>
     </div>

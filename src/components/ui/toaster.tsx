@@ -24,7 +24,7 @@ function formatUserRole(role?: string): string {
   const roleMap: Record<string, string> = {
     'mitglied': 'Mitglied',
     'kranfuehrer': 'Kranführer',
-    'admin': 'Administrator'
+    'admin': 'Admin'
   }
   return roleMap[role || 'mitglied'] || 'Mitglied'
 }

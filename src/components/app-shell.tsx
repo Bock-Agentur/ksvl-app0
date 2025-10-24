@@ -119,7 +119,7 @@ export function AppShell({
     gastmitglied: "Gastmitglied",
     mitglied: "Mitglied",
     kranfuehrer: "Kranführer",
-    admin: "Administrator",
+    admin: "Admin",
     vorstand: "Vorstand"
   };
   const roleColors: Record<UserRole, string> = {
@@ -245,7 +245,7 @@ export function AppShell({
                         <SelectItem value="gastmitglied">👋 Gastmitglied</SelectItem>
                         <SelectItem value="mitglied">👤 Mitglied</SelectItem>
                         <SelectItem value="kranfuehrer">⚓ Kranführer</SelectItem>
-                        <SelectItem value="admin">🔧 Administrator</SelectItem>
+                        <SelectItem value="admin">🔧 Admin</SelectItem>
                         <SelectItem value="vorstand">🏛️ Vorstand</SelectItem>
                       </SelectContent>
                     </Select>

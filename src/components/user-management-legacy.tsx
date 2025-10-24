@@ -33,7 +33,7 @@ const roleLabels: Record<UserRole, string> = {
   gastmitglied: "Gastmitglied",
   mitglied: "Mitglied",
   kranfuehrer: "Kranführer",
-  admin: "Administrator",
+  admin: "Admin",
   vorstand: "Vorstand"
 };
 
@@ -246,7 +246,7 @@ export function UserManagement() {
                     <SelectContent>
                       <SelectItem value="mitglied">👤 Mitglied</SelectItem>
                       <SelectItem value="kranfuehrer">⚓ Kranführer</SelectItem>
-                      <SelectItem value="admin">🔧 Administrator</SelectItem>
+                      <SelectItem value="admin">🔧 Admin</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -364,7 +364,7 @@ export function UserManagement() {
             <SelectItem value="all">Alle Rollen</SelectItem>
             <SelectItem value="mitglied">👤 Mitglied</SelectItem>
             <SelectItem value="kranfuehrer">⚓ Kranführer</SelectItem>
-            <SelectItem value="admin">🔧 Administrator</SelectItem>
+            <SelectItem value="admin">🔧 Admin</SelectItem>
           </SelectContent>
         </Select>
       </div>

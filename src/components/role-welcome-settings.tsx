@@ -69,7 +69,7 @@ export function RoleWelcomeSettings() {
       case "gastmitglied": return "Gastmitglied";
       case "mitglied": return "Mitglied";
       case "kranfuehrer": return "Kranführer";
-      case "admin": return "Administrator";
+      case "admin": return "Admin";
       case "vorstand": return "Vorstand";
     }
   };

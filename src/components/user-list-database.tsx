@@ -192,7 +192,7 @@ export function UserListDatabase() {
                       <SelectContent>
                         <SelectItem value="mitglied">Mitglied</SelectItem>
                         <SelectItem value="kranfuehrer">Kranführer</SelectItem>
-                        <SelectItem value="admin">Administrator</SelectItem>
+                        <SelectItem value="admin">Admin</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -213,7 +213,7 @@ export function UserListDatabase() {
             <div>
               <h3 className="font-semibold mb-3 flex items-center gap-2">
                 <UserCheck className="h-4 w-4" />
-                Administratoren ({admins.length})
+                Admins ({admins.length})
               </h3>
               <div className="space-y-2">
                 {admins.map(user => <UserCard key={user.id} user={user} />)}

@@ -180,7 +180,7 @@ export function DashboardSettings() {
       gastmitglied: isMobile ? "Gast" : "Gastmitglied",
       mitglied: "Mitglied",
       kranfuehrer: "Kranführer",
-      admin: isMobile ? "Admin" : "Administrator",
+      admin: "Admin",
       vorstand: "Vorstand",
     };
     return roleNames[role] || role;

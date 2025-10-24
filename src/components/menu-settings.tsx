@@ -66,7 +66,7 @@ export function MenuSettings() {
     updateDefaultRole(role);
     toast({
       title: "Standard-Rolle aktualisiert",
-      description: `${role === "admin" ? "Administrator" : role === "kranfuehrer" ? "Kranführer" : "Mitglied"} ist jetzt die Standard-Rolle.`,
+      description: `${role === "admin" ? "Admin" : role === "kranfuehrer" ? "Kranführer" : "Mitglied"} ist jetzt die Standard-Rolle.`,
     });
   };
 
@@ -88,7 +88,7 @@ export function MenuSettings() {
 
   const getRoleDisplayName = (role: UserRole) => {
     switch (role) {
-      case "admin": return "Administrator";
+      case "admin": return "Admin";
       case "kranfuehrer": return "Kranführer";
       case "mitglied": return "Mitglied";
       default: return role;
@@ -146,7 +146,7 @@ export function MenuSettings() {
                 <SelectValue placeholder="Standard-Rolle wählen" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="admin">Administrator</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
                 <SelectItem value="kranfuehrer">Kranführer</SelectItem>
                 <SelectItem value="mitglied">Mitglied</SelectItem>
               </SelectContent>

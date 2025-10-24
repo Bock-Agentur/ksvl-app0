@@ -25,7 +25,7 @@ const roleLabels: Record<UserRole, string> = {
   gastmitglied: "Gastmitglied",
   mitglied: "Mitglied",
   kranfuehrer: "Kranführer",
-  admin: "Administrator",
+  admin: "Admin",
   vorstand: "Vorstand"
 };
 
