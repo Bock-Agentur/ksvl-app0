@@ -836,14 +836,18 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             {/* Öffentliche Daten im KSVL */}
             <div className="space-y-3 pt-4 mt-4 border-t">
               <h4 className="text-sm font-medium text-foreground">Öffentliche Anzeige</h4>
+              <p className="text-xs text-muted-foreground">Diese Einstellungen ermöglichen es dem AI-Assistenten und anderen Mitgliedern, deine Daten zu sehen.</p>
               <div className="flex items-center space-x-2">
                 <Checkbox
                   id="data-public"
                   checked={(editedUser as any).dataPublicInKsvl || false}
-                  onCheckedChange={(checked) => 
-                    setEditedUser(prev => ({ ...prev, dataPublicInKsvl: checked } as any))
-                  }
-                  disabled={!isEditing}
+                  onCheckedChange={(checked) => {
+                    setEditedUser(prev => ({ ...prev, dataPublicInKsvl: checked } as any));
+                    if (!isEditing) {
+                      // Wenn nicht im Edit-Modus, speichere sofort
+                      handleSaveProfile();
+                    }
+                  }}
                 />
                 <Label htmlFor="data-public" className="text-sm font-normal cursor-pointer">
                   Meine Daten öffentlich im KSVL anzeigen (Name, Mitgliedsnummer, Boot, Liegeplatz)
@@ -854,10 +858,13 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Checkbox
                   id="contact-public"
                   checked={(editedUser as any).contactPublicInKsvl || false}
-                  onCheckedChange={(checked) => 
-                    setEditedUser(prev => ({ ...prev, contactPublicInKsvl: checked } as any))
-                  }
-                  disabled={!isEditing}
+                  onCheckedChange={(checked) => {
+                    setEditedUser(prev => ({ ...prev, contactPublicInKsvl: checked } as any));
+                    if (!isEditing) {
+                      // Wenn nicht im Edit-Modus, speichere sofort
+                      handleSaveProfile();
+                    }
+                  }}
                 />
                 <Label htmlFor="contact-public" className="text-sm font-normal cursor-pointer">
                   Email und Telefonnummer öffentlich im KSVL anzeigen
