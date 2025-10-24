@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { supabase } from "@/integrations/supabase/client";
@@ -211,6 +212,9 @@ export function LoginBackgroundSettings() {
         loginBlockVerticalPositionDesktop: localSettings.loginBlockVerticalPositionDesktop,
         loginBlockVerticalPositionTablet: localSettings.loginBlockVerticalPositionTablet,
         loginBlockVerticalPositionMobile: localSettings.loginBlockVerticalPositionMobile,
+        loginBlockWidthDesktop: localSettings.loginBlockWidthDesktop,
+        loginBlockWidthTablet: localSettings.loginBlockWidthTablet,
+        loginBlockWidthMobile: localSettings.loginBlockWidthMobile,
         countdownEnabled: localSettings.countdownEnabled,
         countdownEndDate: localSettings.countdownEndDate,
         countdownText: localSettings.countdownText,
@@ -330,6 +334,18 @@ export function LoginBackgroundSettings() {
 
   const handleCountdownVerticalPositionMobileChange = (value: number[]) => {
     setLocalSettings({ ...localSettings, countdownVerticalPositionMobile: value[0] });
+  };
+
+  const handleLoginBlockWidthDesktopChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, loginBlockWidthDesktop: value[0] });
+  };
+
+  const handleLoginBlockWidthTabletChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, loginBlockWidthTablet: value[0] });
+  };
+
+  const handleLoginBlockWidthMobileChange = (value: number[]) => {
+    setLocalSettings({ ...localSettings, loginBlockWidthMobile: value[0] });
   };
 
 
@@ -567,78 +583,152 @@ export function LoginBackgroundSettings() {
             </div>
           </div>
 
-          {/* Login Block Position */}
+          {/* Login Block Settings with Tabs */}
           <div className="space-y-4 p-4 border rounded-lg bg-muted/50">
-            <Label className="text-base font-semibold">Login-Block Position (vertikal)</Label>
+            <Label className="text-base font-semibold">Login-Block Einstellungen</Label>
             <p className="text-sm text-muted-foreground">
-              Positioniere die Eingabefelder, Buttons und Links als zusammenhängenden Block
+              Positioniere und dimensioniere die Eingabefelder, Buttons und Links als zusammenhängenden Block
             </p>
             
-            {/* Desktop Slider */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <Label>Position Desktop</Label>
-                <span className="text-sm text-muted-foreground">
-                  {localSettings.loginBlockVerticalPositionDesktop || 50}%
-                </span>
-              </div>
-              <Slider
-                value={[localSettings.loginBlockVerticalPositionDesktop || 50]}
-                onValueChange={handleLoginBlockVerticalPositionDesktopChange}
-                min={0}
-                max={100}
-                step={1}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Oben</span>
-                <span>Unten</span>
-              </div>
-            </div>
-
-            {/* Tablet Slider */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <Label>Position Tablet</Label>
-                <span className="text-sm text-muted-foreground">
-                  {localSettings.loginBlockVerticalPositionTablet || 50}%
-                </span>
-              </div>
-              <Slider
-                value={[localSettings.loginBlockVerticalPositionTablet || 50]}
-                onValueChange={handleLoginBlockVerticalPositionTabletChange}
-                min={0}
-                max={100}
-                step={1}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Oben</span>
-                <span>Unten</span>
-              </div>
-            </div>
-
-            {/* Mobile Slider */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <Label>Position Mobile</Label>
-                <span className="text-sm text-muted-foreground">
-                  {localSettings.loginBlockVerticalPositionMobile || 50}%
-                </span>
-              </div>
-              <Slider
-                value={[localSettings.loginBlockVerticalPositionMobile || 50]}
-                onValueChange={handleLoginBlockVerticalPositionMobileChange}
-                min={0}
-                max={100}
-                step={1}
-                className="w-full"
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>Oben</span>
-                <span>Unten</span>
-              </div>
-            </div>
+            <Tabs defaultValue="desktop" className="w-full">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="desktop">Desktop</TabsTrigger>
+                <TabsTrigger value="tablet">Tablet</TabsTrigger>
+                <TabsTrigger value="mobile">Mobile</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="desktop" className="space-y-4 mt-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>Vertikale Position</Label>
+                    <span className="text-sm text-muted-foreground">
+                      {localSettings.loginBlockVerticalPositionDesktop || 50}%
+                    </span>
+                  </div>
+                  <Slider
+                    value={[localSettings.loginBlockVerticalPositionDesktop || 50]}
+                    onValueChange={handleLoginBlockVerticalPositionDesktopChange}
+                    min={0}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Oben</span>
+                    <span>Unten</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>Breite des Login-Blocks</Label>
+                    <span className="text-sm text-muted-foreground">
+                      {localSettings.loginBlockWidthDesktop || 400}px
+                    </span>
+                  </div>
+                  <Slider
+                    value={[localSettings.loginBlockWidthDesktop || 400]}
+                    onValueChange={handleLoginBlockWidthDesktopChange}
+                    min={300}
+                    max={600}
+                    step={10}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Schmal</span>
+                    <span>Breit</span>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="tablet" className="space-y-4 mt-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>Vertikale Position</Label>
+                    <span className="text-sm text-muted-foreground">
+                      {localSettings.loginBlockVerticalPositionTablet || 50}%
+                    </span>
+                  </div>
+                  <Slider
+                    value={[localSettings.loginBlockVerticalPositionTablet || 50]}
+                    onValueChange={handleLoginBlockVerticalPositionTabletChange}
+                    min={0}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Oben</span>
+                    <span>Unten</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>Breite des Login-Blocks</Label>
+                    <span className="text-sm text-muted-foreground">
+                      {localSettings.loginBlockWidthTablet || 380}px
+                    </span>
+                  </div>
+                  <Slider
+                    value={[localSettings.loginBlockWidthTablet || 380]}
+                    onValueChange={handleLoginBlockWidthTabletChange}
+                    min={300}
+                    max={600}
+                    step={10}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Schmal</span>
+                    <span>Breit</span>
+                  </div>
+                </div>
+              </TabsContent>
+              
+              <TabsContent value="mobile" className="space-y-4 mt-4">
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>Vertikale Position</Label>
+                    <span className="text-sm text-muted-foreground">
+                      {localSettings.loginBlockVerticalPositionMobile || 50}%
+                    </span>
+                  </div>
+                  <Slider
+                    value={[localSettings.loginBlockVerticalPositionMobile || 50]}
+                    onValueChange={handleLoginBlockVerticalPositionMobileChange}
+                    min={0}
+                    max={100}
+                    step={1}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Oben</span>
+                    <span>Unten</span>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <Label>Breite des Login-Blocks</Label>
+                    <span className="text-sm text-muted-foreground">
+                      {localSettings.loginBlockWidthMobile || 340}px
+                    </span>
+                  </div>
+                  <Slider
+                    value={[localSettings.loginBlockWidthMobile || 340]}
+                    onValueChange={handleLoginBlockWidthMobileChange}
+                    min={280}
+                    max={500}
+                    step={10}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>Schmal</span>
+                    <span>Breit</span>
+                  </div>
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
 
           {/* Countdown Settings */}
@@ -798,7 +888,12 @@ export function LoginBackgroundSettings() {
                           paddingTop: `${localSettings.loginBlockVerticalPositionDesktop || 50}vh`
                         }}
                       >
-                        <div className="w-full max-w-xs space-y-3">
+                        <div 
+                          className="w-full space-y-3"
+                          style={{
+                            maxWidth: `${localSettings.loginBlockWidthDesktop || 400}px`
+                          }}
+                        >
                           <div 
                             className="flex items-center gap-3 px-4"
                             style={{
@@ -891,7 +986,12 @@ export function LoginBackgroundSettings() {
                     paddingTop: `${localSettings.loginBlockVerticalPositionMobile || 50}vh`
                   }}
                 >
-                  <div className="w-full max-w-[240px] space-y-2">
+                  <div 
+                    className="w-full space-y-2"
+                    style={{
+                      maxWidth: `${localSettings.loginBlockWidthMobile || 340}px`
+                    }}
+                  >
                     <div 
                       className="flex items-center gap-2 px-3 text-xs"
                       style={{

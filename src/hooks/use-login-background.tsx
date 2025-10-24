@@ -17,6 +17,9 @@ export interface LoginBackground {
   loginBlockVerticalPositionDesktop: number;
   loginBlockVerticalPositionTablet: number;
   loginBlockVerticalPositionMobile: number;
+  loginBlockWidthDesktop: number;
+  loginBlockWidthTablet: number;
+  loginBlockWidthMobile: number;
   countdownEnabled: boolean;
   countdownEndDate: string | null;
   countdownText: string;
@@ -41,6 +44,9 @@ const DEFAULT_BACKGROUND: LoginBackground = {
   loginBlockVerticalPositionDesktop: 50,
   loginBlockVerticalPositionTablet: 50,
   loginBlockVerticalPositionMobile: 50,
+  loginBlockWidthDesktop: 400,
+  loginBlockWidthTablet: 380,
+  loginBlockWidthMobile: 340,
   countdownEnabled: false,
   countdownEndDate: null,
   countdownText: 'bis zur neuen Segelsaison',

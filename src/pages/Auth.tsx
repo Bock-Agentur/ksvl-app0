@@ -107,6 +107,20 @@ export function Auth() {
     }
   };
 
+  // Determine login block width based on screen size
+  const getLoginBlockWidth = () => {
+    if (typeof window === 'undefined') return background.loginBlockWidthDesktop || 400;
+    
+    const width = window.innerWidth;
+    if (width < 768) {
+      return background.loginBlockWidthMobile || 340;
+    } else if (width < 1024) {
+      return background.loginBlockWidthTablet || 380;
+    } else {
+      return background.loginBlockWidthDesktop || 400;
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -236,7 +250,12 @@ export function Auth() {
       )}
       
       {/* Login Form */}
-      <div className="w-full max-w-md sm:max-w-[85%] md:max-w-md relative z-10">
+      <div 
+        className="w-full relative z-10"
+        style={{
+          maxWidth: `${getLoginBlockWidth()}px`
+        }}
+      >
         <form onSubmit={handleLogin} className="w-full space-y-4 mb-8 pointer-events-auto" autoComplete="on">
           {/* Email Input with Glass Effect */}
           <div 
