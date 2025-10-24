@@ -708,77 +708,102 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             <h3 className="text-lg font-semibold text-foreground">Stammdaten</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>Mitgliedernummer:</Label>
-                {isEditing ? (
-                  <Input
-                    name="member-number"
-                    autoComplete="off"
-                    value={editedUser.memberNumber || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev!, memberNumber: e.target.value }))}
-                  />
-                ) : (
-                  <span className="text-sm font-mono bg-muted px-2 py-1 rounded inline-block">
-                    {user.memberNumber || '-'}
-                  </span>
-                )}
-              </div>
-              
-              {/* ÖSV Nummer moved to Custom Fields */}
-              
-              <div className="space-y-2">
-                <Label>Vorname:</Label>
-                {isEditing ? (
-                  <Input
-                    name="given-name"
-                    autoComplete="given-name"
-                    value={editedUser.firstName || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev!, firstName: e.target.value }))}
-                  />
-                ) : (
-                  <span className="text-sm">{user.firstName || '-'}</span>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>Nachname:</Label>
-                {isEditing ? (
-                  <Input
-                    name="family-name"
-                    autoComplete="family-name"
-                    value={editedUser.lastName || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev!, lastName: e.target.value }))}
-                  />
-                ) : (
-                  <span className="text-sm">{user.lastName || '-'}</span>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>Email:</Label>
-                {isEditing ? (
-                  <Input
-                    type="email"
-                    name="email"
-                    autoComplete="email"
-                    inputMode="email"
-                    value={editedUser.email}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, email: e.target.value }))}
-                  />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{user.email}</span>
-                  </div>
-                )}
-              </div>
-              
-              {/* Phone moved to Custom Fields */}
-              
-              {/* Street Address, Postal Code, City, Birth Date, Entry Date moved to Custom Fields */}
+              {/* Custom Fields - Kontakt */}
+              {!fieldsLoading && customFields.filter(f => f.group === 'Kontakt').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
+                <div key={field.id} className="space-y-2">
+                  <Label>{field.label}{field.required && " *"}</Label>
+                  {isEditing ? (
+                    <>
+                      {field.type === 'textarea' ? (
+                        <Textarea
+                          value={editedCustomValues[field.name] || ""}
+                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                        />
+                      ) : field.type === 'select' && field.options ? (
+                        <Select
+                          value={editedCustomValues[field.name] || ""}
+                          onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={field.placeholder || "Auswählen..."} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
+                          value={editedCustomValues[field.name] || ""}
+                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-sm">
+                      {customValues[field.name] || "-"}
+                    </span>
+                  )}
+                </div>
+              ))}
               
               {/* Custom Fields - Persönlich */}
               {!fieldsLoading && customFields.filter(f => f.group === 'Persönlich').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
+                <div key={field.id} className="space-y-2">
+                  <Label>{field.label}{field.required && " *"}</Label>
+                  {isEditing ? (
+                    <>
+                      {field.type === 'textarea' ? (
+                        <Textarea
+                          value={editedCustomValues[field.name] || ""}
+                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                        />
+                      ) : field.type === 'select' && field.options ? (
+                        <Select
+                          value={editedCustomValues[field.name] || ""}
+                          onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={field.placeholder || "Auswählen..."} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
+                          value={editedCustomValues[field.name] || ""}
+                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-sm">
+                      {customValues[field.name] || "-"}
+                    </span>
+                  )}
+                </div>
+              ))}
+              
+              {/* Custom Fields - Mitgliedschaft */}
+              {!fieldsLoading && customFields.filter(f => f.group === 'Mitgliedschaft').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
                 <div key={field.id} className="space-y-2">
                   <Label>{field.label}{field.required && " *"}</Label>
                   {isEditing ? (
@@ -858,172 +883,62 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             </div>
           </div>
           
-          {/* Vorstand Bereich (nur sichtbar wenn Vorstand-Rolle aktiv) */}
-          {(isEditing ? editedUser.roles?.includes('vorstand') : user?.roles?.includes('vorstand')) && (
-            <div className="space-y-4 pb-4 border-b">
-              <h3 className="text-lg font-semibold text-foreground">Vorstand</h3>
-              
-              <div className="space-y-2">
-                <Label>Funktion im Vorstand:</Label>
-                {isEditing ? (
-                  <Input
-                    name="vorstand-funktion"
-                    autoComplete="off"
-                    value={(editedUser as any).vorstandFunktion || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, vorstandFunktion: e.target.value } as any))}
-                    placeholder="z.B. Obmann, Kassier, Schriftführer"
-                  />
-                ) : (
-                  <span className="text-sm">{(user as any).vorstandFunktion || "-"}</span>
-                )}
-              </div>
-            </div>
-          )}
+          {/* Vorstand Bereich entfernt - jetzt als Custom Field */}
           
-          {/* Segeldaten */}
+          {/* Boot & Liegeplatz */}
           <div className="space-y-4 pb-4 border-b">
-            <h3 className="text-lg font-semibold text-foreground">Segeldaten</h3>
+            <h3 className="text-lg font-semibold text-foreground">Boot & Liegeplatz</h3>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>ÖSV Mitgliedsnummer:</Label>
-                {isEditing && isAdmin ? (
-                  <Input
-                    name="oesv-number"
-                    autoComplete="off"
-                    value={(editedUser as any).oesvNumber || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, oesvNumber: e.target.value } as any))}
-                    placeholder="ÖSV Nummer"
-                  />
-                ) : (
-                  <span className="text-sm">{(user as any).oesvNumber || "-"}</span>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Liegeplatznummer:</Label>
-                {isEditing && isAdmin ? (
-                  <Input
-                    name="berth-number"
-                    autoComplete="off"
-                    value={(editedUser as any).berthNumber || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, berthNumber: e.target.value } as any))}
-                    placeholder="Liegeplatz Nummer"
-                  />
-                ) : (
-                  <span className="text-sm">{(user as any).berthNumber || "-"}</span>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Beibootplatznummer:</Label>
-                {isEditing && isAdmin ? (
-                  <Input
-                    name="dinghy-berth-number"
-                    autoComplete="off"
-                    value={(editedUser as any).dinghyBerthNumber || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, dinghyBerthNumber: e.target.value } as any))}
-                    placeholder="Beibootplatz Nummer"
-                  />
-                ) : (
-                  <span className="text-sm">{(user as any).dinghyBerthNumber || "-"}</span>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Liegeplatztyp:</Label>
-                {isEditing ? (
-                  <Select
-                    name="berth-type"
-                    value={(editedUser as any).berthType || ""}
-                    onValueChange={(value) => setEditedUser(prev => ({ ...prev, berthType: value } as any))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Typ auswählen" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="schwimmsteg">Schwimmsteg</SelectItem>
-                      <SelectItem value="festliegeplatz">Festliegeplatz</SelectItem>
-                      <SelectItem value="bojenplatz">Bojenplatz</SelectItem>
-                      <SelectItem value="trockenplatz">Trockenplatz</SelectItem>
-                    </SelectContent>
-                  </Select>
-                ) : (
-                  <span className="text-sm">{(user as any).berthType || "-"}</span>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Bootstyp:</Label>
-                {isEditing ? (
-                  <Input
-                    name="boat-type"
-                    autoComplete="off"
-                    value={(editedUser as any).boatType || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, boatType: e.target.value } as any))}
-                    placeholder="z.B. Segelboot, Motorboot"
-                  />
-                ) : (
-                  <span className="text-sm">{(user as any).boatType || "-"}</span>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Bootsname:</Label>
-                {isEditing ? (
-                  <Input
-                    name="boat-name"
-                    autoComplete="off"
-                    value={editedUser.boatName || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, boatName: e.target.value }))}
-                    placeholder="Name Ihres Bootes"
-                  />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Anchor className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{user.boatName || '-'}</span>
-                  </div>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Bootslänge (m):</Label>
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    step="0.01"
-                    name="boat-length"
-                    autoComplete="off"
-                    inputMode="decimal"
-                    value={(editedUser as any).boatLength || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, boatLength: e.target.value ? parseFloat(e.target.value) : undefined } as any))}
-                    placeholder="z.B. 8.5"
-                  />
-                ) : (
-                  <span className="text-sm">{(user as any).boatLength ? `${(user as any).boatLength} m` : "-"}</span>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Bootsbreite (m):</Label>
-                {isEditing ? (
-                  <Input
-                    type="number"
-                    step="0.01"
-                    name="boat-width"
-                    autoComplete="off"
-                    inputMode="decimal"
-                    value={(editedUser as any).boatWidth || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, boatWidth: e.target.value ? parseFloat(e.target.value) : undefined } as any))}
-                    placeholder="z.B. 2.8"
-                  />
-                ) : (
-                  <span className="text-sm">{(user as any).boatWidth ? `${(user as any).boatWidth} m` : "-"}</span>
-                )}
-              </div>
-              
               {/* Custom Fields - Boot */}
               {!fieldsLoading && customFields.filter(f => f.group === 'Boot').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
+                <div key={field.id} className="space-y-2">
+                  <Label>{field.label}{field.required && " *"}</Label>
+                  {isEditing ? (
+                    <>
+                      {field.type === 'textarea' ? (
+                        <Textarea
+                          value={editedCustomValues[field.name] || ""}
+                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                        />
+                      ) : field.type === 'select' && field.options ? (
+                        <Select
+                          value={editedCustomValues[field.name] || ""}
+                          onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder={field.placeholder || "Auswählen..."} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {field.options.map((option) => (
+                              <SelectItem key={option} value={option}>
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Input
+                          type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
+                          value={editedCustomValues[field.name] || ""}
+                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          required={field.required}
+                        />
+                      )}
+                    </>
+                  ) : (
+                    <span className="text-sm">
+                      {customValues[field.name] || "-"}
+                    </span>
+                  )}
+                </div>
+              ))}
+              
+              {/* Custom Fields - Liegeplatz */}
+              {!fieldsLoading && customFields.filter(f => f.group === 'Liegeplatz').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
                 <div key={field.id} className="space-y-2">
                   <Label>{field.label}{field.required && " *"}</Label>
                   {isEditing ? (
