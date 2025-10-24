@@ -89,26 +89,29 @@ export function HarborChatWidget() {
 
 
   return (
-    <Card className="w-full" id="harbor-chat-widget">
-      <CardHeader className="pb-3 bg-gradient-to-r from-primary/10 to-primary/5">
-        <CardTitle className="text-lg font-semibold flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-primary" />
+    <Card 
+      className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)]" 
+      id="harbor-chat-widget"
+    >
+      <CardHeader className="pt-12 pb-4 px-[15px]">
+        <CardTitle className="text-2xl font-bold flex items-center gap-2 text-white">
+          <MessageSquare className="h-6 w-6" />
           KSVL-Assistent
         </CardTitle>
       </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="h-[400px] p-4" ref={scrollRef}>
-          <div className="space-y-3">
+      <CardContent className="px-[15px] pb-8">
+        <ScrollArea className="h-[400px] mb-4 bg-white/10 backdrop-blur-sm rounded-2xl" ref={scrollRef}>
+          <div className="space-y-3 p-4">
             {messages.map((msg, idx) => (
               <div
                 key={idx}
                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[85%] rounded-lg px-4 py-2.5 ${
+                  className={`max-w-[85%] rounded-xl px-4 py-2.5 ${
                     msg.role === 'user'
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted'
+                      ? 'bg-white/20 backdrop-blur-sm text-white'
+                      : 'bg-white/95 text-foreground'
                   }`}
                 >
                   <div 
@@ -124,7 +127,7 @@ export function HarborChatWidget() {
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-muted rounded-lg px-4 py-2.5">
+                <div className="bg-white/95 rounded-xl px-4 py-2.5">
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                 </div>
               </div>
@@ -132,7 +135,7 @@ export function HarborChatWidget() {
             <div ref={messagesEndRef} />
           </div>
         </ScrollArea>
-        <div className="p-4 border-t bg-muted/30">
+        <div className="space-y-2">
           <div className="flex gap-2">
             <Input
               value={input}
@@ -140,14 +143,14 @@ export function HarborChatWidget() {
               onKeyPress={handleKeyPress}
               placeholder="Frage zu Terminen oder Mitgliedern..."
               disabled={isLoading}
-              className="flex-1"
+              className="flex-1 bg-white/95 backdrop-blur-sm text-foreground border-0 rounded-2xl placeholder:text-muted-foreground"
               autoComplete="off"
             />
             <Button
               onClick={sendMessage}
               disabled={isLoading || !input.trim()}
               size="icon"
-              className="flex-shrink-0"
+              className="flex-shrink-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-0 rounded-full"
             >
               {isLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -156,7 +159,7 @@ export function HarborChatWidget() {
               )}
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-2">
+          <p className="text-xs text-white/80">
             💡 Fragen Sie nach Terminen, Buchungen, Mitgliederdaten oder Statistiken
           </p>
         </div>
