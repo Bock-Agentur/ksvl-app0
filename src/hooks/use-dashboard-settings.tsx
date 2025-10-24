@@ -56,7 +56,7 @@ export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = fals
 
   const toggleItem = (itemId: string) => {
     // Check if it's a section or widget
-    const isSectionId = ['welcomeSection', 'statsGrid', 'quickActions', 'activityFeed'].includes(itemId);
+    const isSectionId = ['headerCard', 'welcomeSection', 'statsGrid', 'quickActions', 'activityFeed'].includes(itemId);
     
     if (isSectionId) {
       const enabledSections = settings.enabledSections?.includes(itemId)
@@ -72,7 +72,7 @@ export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = fals
   };
 
   const isItemEnabled = (itemId: string): boolean => {
-    const isSectionId = ['welcomeSection', 'statsGrid', 'quickActions', 'activityFeed'].includes(itemId);
+    const isSectionId = ['headerCard', 'welcomeSection', 'statsGrid', 'quickActions', 'activityFeed'].includes(itemId);
     return isSectionId 
       ? (settings.enabledSections?.includes(itemId) ?? false)
       : settings.enabledWidgets.includes(itemId);

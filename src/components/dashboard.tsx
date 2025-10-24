@@ -201,6 +201,8 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
     return () => observer.disconnect();
   }, [isAnimationEnabled, settings.animationType, isInitialized]);
 
+  console.log("Dashboard allItems:", allItems.map(i => ({ id: i.id, enabled: true })));
+  
   return (
     <div className="p-4 max-w-7xl mx-auto">
       <div className={gridClassName}>
