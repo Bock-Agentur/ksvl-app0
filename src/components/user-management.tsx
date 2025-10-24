@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key, Eye, ChevronDown } from "lucide-react";
+import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key, Eye, ChevronDown, ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +41,8 @@ export function UserManagementRefactored() {
   const [allCustomValues, setAllCustomValues] = useState<Record<string, Record<string, any>>>({});
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [sortBy, setSortBy] = useState<'name' | 'email' | 'memberNumber' | 'role'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   
   // Load all custom field values for all users at once
   useEffect(() => {
@@ -112,6 +114,43 @@ export function UserManagementRefactored() {
         ...statusFilter
       }
     }
+  });
+
+  // Sortier-Logik
+  const sortedUsers = [...searchFilter.filteredData].sort((a, b) => {
+    let compareA: string | number = '';
+    let compareB: string | number = '';
+
+    switch (sortBy) {
+      case 'name':
+        const aFirstName = allCustomValues[a.id]?.['first_name'] || '';
+        const aLastName = allCustomValues[a.id]?.['last_name'] || '';
+        const aFullName = [aFirstName, aLastName].filter(Boolean).join(' ') || a.name;
+        
+        const bFirstName = allCustomValues[b.id]?.['first_name'] || '';
+        const bLastName = allCustomValues[b.id]?.['last_name'] || '';
+        const bFullName = [bFirstName, bLastName].filter(Boolean).join(' ') || b.name;
+        
+        compareA = aFullName.toLowerCase();
+        compareB = bFullName.toLowerCase();
+        break;
+      case 'email':
+        compareA = a.email.toLowerCase();
+        compareB = b.email.toLowerCase();
+        break;
+      case 'memberNumber':
+        compareA = (allCustomValues[a.id]?.['member_number'] || a.memberNumber || '').toLowerCase();
+        compareB = (allCustomValues[b.id]?.['member_number'] || b.memberNumber || '').toLowerCase();
+        break;
+      case 'role':
+        compareA = (a.role || '').toLowerCase();
+        compareB = (b.role || '').toLowerCase();
+        break;
+    }
+
+    if (compareA < compareB) return sortOrder === 'asc' ? -1 : 1;
+    if (compareA > compareB) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
   });
 
   // Form handling mit wiederverwendbarem Hook
@@ -513,8 +552,30 @@ export function UserManagementRefactored() {
                 )}
               </div>
               
-              <div className="text-sm text-muted-foreground">
-                {searchFilter.stats.filtered} von {searchFilter.stats.total} Benutzern angezeigt
+              <div className="flex items-center justify-between text-sm text-muted-foreground">
+                <span>{searchFilter.stats.filtered} von {searchFilter.stats.total} Benutzern</span>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="sort-mobile" className="text-xs">Sortieren:</Label>
+                  <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                    <SelectTrigger id="sort-mobile" className="h-8 w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="name">Name</SelectItem>
+                      <SelectItem value="email">E-Mail</SelectItem>
+                      <SelectItem value="memberNumber">Mitgliedsnr.</SelectItem>
+                      <SelectItem value="role">Rolle</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
+                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                  >
+                    <ArrowUpDown className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -524,9 +585,33 @@ export function UserManagementRefactored() {
       {/* Such- und Filter-Bereich - Normal auf Desktop */}
       <Card className="hidden sm:block">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Suche & Filter
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Suche & Filter
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="sort-desktop" className="text-sm font-normal">Sortieren:</Label>
+              <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
+                <SelectTrigger id="sort-desktop" className="h-9 w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="name">Name</SelectItem>
+                  <SelectItem value="email">E-Mail</SelectItem>
+                  <SelectItem value="memberNumber">Mitgliedsnummer</SelectItem>
+                  <SelectItem value="role">Rolle</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 w-9 p-0"
+                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+              >
+                <ArrowUpDown className="h-4 w-4" />
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -600,7 +685,7 @@ export function UserManagementRefactored() {
 
       {/* Benutzerliste */}
       <div className="space-y-3">
-        {searchFilter.filteredData.length === 0 ? (
+        {sortedUsers.length === 0 ? (
           <Card>
             <CardContent className="pt-6 text-center">
               <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
@@ -613,7 +698,7 @@ export function UserManagementRefactored() {
             </CardContent>
           </Card>
         ) : (
-          searchFilter.filteredData.map((user) => (
+          sortedUsers.map((user) => (
             <UserCardWithCustomFields
               key={user.id}
               user={user}
