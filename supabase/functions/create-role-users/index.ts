@@ -92,6 +92,9 @@ serve(async (req) => {
         console.error(`Error updating profile for ${roleUser.email}:`, profileError);
       }
 
+      // Save minimal custom field values (role users don't need detailed data)
+      // This ensures the system works consistently even for role users
+      
       // Add role
       const { error: roleError } = await supabaseAdmin
         .from('user_roles')

@@ -724,22 +724,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
               
-              <div className="space-y-2">
-                <Label>ÖSV Nummer:</Label>
-                {isEditing ? (
-                  <Input
-                    name="oesv-number"
-                    autoComplete="off"
-                    value={(editedUser as any).oesvNumber || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, oesvNumber: e.target.value } as any))}
-                    placeholder="ÖSV Mitgliedsnummer"
-                  />
-                ) : (
-                  <span className="text-sm">
-                    {(user as any).oesvNumber || '-'}
-                  </span>
-                )}
-              </div>
+              {/* ÖSV Nummer moved to Custom Fields */}
               
               <div className="space-y-2">
                 <Label>Vorname:</Label>
@@ -788,101 +773,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 )}
               </div>
               
-              <div className="space-y-2">
-                <Label>Telefonnummer:</Label>
-                {isEditing ? (
-                  <Input
-                    type="tel"
-                    name="tel"
-                    autoComplete="tel"
-                    inputMode="tel"
-                    value={editedUser.phone}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, phone: e.target.value }))}
-                  />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{user.phone || '-'}</span>
-                  </div>
-                )}
-              </div>
+              {/* Phone moved to Custom Fields */}
               
-              <div className="space-y-2">
-                <Label>Adresse:</Label>
-                {isEditing ? (
-                  <Input
-                    name="street-address"
-                    autoComplete="street-address"
-                    value={editedUser.streetAddress || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev!, streetAddress: e.target.value }))}
-                  />
-                ) : (
-                  <span className="text-sm">{user.streetAddress || '-'}</span>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>PLZ:</Label>
-                {isEditing ? (
-                  <Input
-                    name="postal-code"
-                    autoComplete="postal-code"
-                    inputMode="numeric"
-                    value={editedUser.postalCode || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev!, postalCode: e.target.value }))}
-                  />
-                ) : (
-                  <span className="text-sm">{user.postalCode || '-'}</span>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label>Stadt:</Label>
-                {isEditing ? (
-                  <Input
-                    name="address-level2"
-                    autoComplete="address-level2"
-                    value={editedUser.city || ''}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev!, city: e.target.value }))}
-                  />
-                ) : (
-                  <span className="text-sm">{user.city || '-'}</span>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Geburtsdatum:</Label>
-                {isEditing && isAdmin ? (
-                  <Input
-                    type="date"
-                    name="bday"
-                    autoComplete="bday"
-                    value={(editedUser as any).birthDate || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, birthDate: e.target.value } as any))}
-                  />
-                ) : (
-                  <span className="text-sm">
-                    {(user as any).birthDate ? new Date((user as any).birthDate).toLocaleDateString('de-AT') : "-"}
-                  </span>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Eintrittsdatum:</Label>
-                {isEditing && isAdmin ? (
-                  <Input
-                    type="date"
-                    name="entry-date"
-                    autoComplete="off"
-                    value={(editedUser as any).entryDate || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, entryDate: e.target.value } as any))}
-                  />
-                ) : (
-                  <span className="text-sm">
-                    {(user as any).entryDate ? new Date((user as any).entryDate).toLocaleDateString('de-AT') : "-"}
-                  </span>
-                )}
-              </div>
+              {/* Street Address, Postal Code, City, Birth Date, Entry Date moved to Custom Fields */}
               
               {/* Custom Fields - Persönlich */}
               {!fieldsLoading && customFields.filter(f => f.group === 'Persönlich').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (

@@ -1,6 +1,64 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// Helper function to save custom field values
+async function saveCustomFieldValues(supabaseAdmin: any, userId: string, userData: any) {
+  const customFieldMappings: Record<string, any> = {
+    phone: userData.phone,
+    street_address: userData.streetAddress,
+    postal_code: userData.postalCode,
+    city: userData.city,
+    emergency_contact: userData.emergencyContact,
+    birth_date: userData.birthDate,
+    oesv_number: userData.oesvNumber,
+    entry_date: userData.entryDate,
+    vorstand_funktion: userData.vorstandFunktion,
+    boat_name: userData.boatName,
+    boat_type: userData.boatType,
+    boat_length: userData.boatLength,
+    boat_width: userData.boatWidth,
+    berth_number: userData.berthNumber,
+    berth_type: userData.berthType,
+    dinghy_berth_number: userData.dinghyBerthNumber,
+    parking_permit_number: userData.parkingPermitNumber,
+    parking_permit_issue_date: userData.parkingPermitIssueDate,
+    beverage_chip_number: userData.beverageChipNumber,
+    beverage_chip_issue_date: userData.beverageChipIssueDate,
+    notes: userData.notes
+  };
+
+  // Get custom field IDs
+  const { data: customFields, error: fieldsError } = await supabaseAdmin
+    .from('custom_fields')
+    .select('id, name')
+    .in('name', Object.keys(customFieldMappings));
+
+  if (fieldsError) {
+    console.error('Error fetching custom fields:', fieldsError);
+    return;
+  }
+
+  // Save custom field values
+  for (const field of customFields || []) {
+    const value = customFieldMappings[field.name];
+    if (value != null && value !== '') {
+      const { error: upsertError } = await supabaseAdmin
+        .from('custom_field_values')
+        .upsert({
+          user_id: userId,
+          field_id: field.id,
+          value: String(value)
+        }, {
+          onConflict: 'user_id,field_id'
+        });
+
+      if (upsertError) {
+        console.error(`Error saving custom field ${field.name}:`, upsertError);
+      }
+    }
+  }
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -97,6 +155,9 @@ serve(async (req) => {
 
       console.log('Profile updated');
 
+      // Save custom field values
+      await saveCustomFieldValues(supabaseAdmin, authData.user.id, userData);
+
       // Add roles (mitglied is already added by trigger)
       if (userData.roles && userData.roles.length > 0) {
         for (const role of userData.roles) {
@@ -163,6 +224,9 @@ serve(async (req) => {
       }
 
       console.log('Profile updated');
+
+      // Save custom field values
+      await saveCustomFieldValues(supabaseAdmin, userId, userData);
 
       // Update roles - delete old ones first
       const { error: deleteError } = await supabaseAdmin

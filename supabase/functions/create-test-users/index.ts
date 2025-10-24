@@ -1,6 +1,64 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+// Helper function to save custom field values
+async function saveCustomFieldValues(supabaseAdmin: any, userId: string, userData: any) {
+  const customFieldMappings: Record<string, any> = {
+    phone: userData.phone,
+    street_address: userData.streetAddress,
+    postal_code: userData.postalCode,
+    city: userData.city,
+    emergency_contact: userData.emergencyContact,
+    birth_date: userData.birthDate,
+    oesv_number: userData.oesvNumber,
+    entry_date: userData.entryDate,
+    vorstand_funktion: userData.vorstandFunktion,
+    boat_name: userData.boatName,
+    boat_type: userData.boatType,
+    boat_length: userData.boatLength,
+    boat_width: userData.boatWidth,
+    berth_number: userData.berthNumber,
+    berth_type: userData.berthType,
+    dinghy_berth_number: userData.dinghyBerthNumber,
+    parking_permit_number: userData.parkingPermitNumber,
+    parking_permit_issue_date: userData.parkingPermitIssueDate,
+    beverage_chip_number: userData.beverageChipNumber,
+    beverage_chip_issue_date: userData.beverageChipIssueDate,
+    notes: userData.notes
+  };
+
+  // Get custom field IDs
+  const { data: customFields, error: fieldsError } = await supabaseAdmin
+    .from('custom_fields')
+    .select('id, name')
+    .in('name', Object.keys(customFieldMappings));
+
+  if (fieldsError) {
+    console.error('Error fetching custom fields:', fieldsError);
+    return;
+  }
+
+  // Save custom field values
+  for (const field of customFields || []) {
+    const value = customFieldMappings[field.name];
+    if (value != null && value !== '') {
+      const { error: upsertError } = await supabaseAdmin
+        .from('custom_field_values')
+        .upsert({
+          user_id: userId,
+          field_id: field.id,
+          value: String(value)
+        }, {
+          onConflict: 'user_id,field_id'
+        });
+
+      if (upsertError) {
+        console.error(`Error saving custom field ${field.name}:`, upsertError);
+      }
+    }
+  }
+}
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -174,6 +232,30 @@ serve(async (req) => {
         })
         .eq('id', authData.user.id)
 
+      // Save custom field values for crane operator
+      await saveCustomFieldValues(supabaseAdmin, authData.user.id, {
+        phone: `+43 664 ${getRandomNumber(1000000, 9999999)}`,
+        streetAddress: `${getRandomElement(streets)} ${getRandomNumber(1, 99)}`,
+        postalCode: String(getRandomNumber(1000, 9999)),
+        city: getRandomElement(cities),
+        birthDate: getRandomDate(1960, 1990),
+        entryDate: getRandomDate(2010, 2023),
+        boatName: `MY ${getRandomElement(boatNames)}`,
+        boatType: 'Motorboot',
+        boatLength: getRandomNumber(70, 120) / 10,
+        boatWidth: getRandomNumber(24, 35) / 10,
+        berthNumber: `B-${String(i).padStart(2, '0')}`,
+        berthType: getRandomElement(berthTypes),
+        dinghyBerthNumber: `D-${String(i).padStart(2, '0')}`,
+        parkingPermitNumber: `P-${String(100 + i).padStart(3, '0')}`,
+        parkingPermitIssueDate: '2024-01-01',
+        beverageChipNumber: `BC-${String(100 + i).padStart(3, '0')}`,
+        beverageChipIssueDate: '2024-01-01',
+        oesvNumber: `OESV-${getRandomNumber(20000, 29999)}`,
+        emergencyContact: `${getRandomElement(firstNames)} ${lastName}, +43 664 ${getRandomNumber(1000000, 9999999)}`,
+        notes: `Test-Kranführer ${i}`
+      });
+
       // Add kranfuehrer role
       await supabaseAdmin
         .from('user_roles')
@@ -259,6 +341,30 @@ serve(async (req) => {
           contact_public_in_ksvl: Math.random() > 0.4,
         })
         .eq('id', authData.user.id)
+
+      // Save custom field values for member
+      await saveCustomFieldValues(supabaseAdmin, authData.user.id, {
+        phone: `+43 664 ${getRandomNumber(1000000, 9999999)}`,
+        streetAddress: `${getRandomElement(streets)} ${getRandomNumber(1, 99)}`,
+        postalCode: String(getRandomNumber(1000, 9999)),
+        city: getRandomElement(cities),
+        birthDate: getRandomDate(1965, 1995),
+        entryDate: getRandomDate(2015, 2024),
+        boatName: boatPrefix ? `${boatPrefix} ${getRandomElement(boatNames)}` : getRandomElement(boatNames),
+        boatType: boatType,
+        boatLength: getRandomNumber(60, 110) / 10,
+        boatWidth: getRandomNumber(22, 32) / 10,
+        berthNumber: `C-${String(i).padStart(2, '0')}`,
+        berthType: getRandomElement(berthTypes),
+        dinghyBerthNumber: Math.random() > 0.3 ? `D-${String(100 + i).padStart(3, '0')}` : null,
+        parkingPermitNumber: `P-${String(200 + i).padStart(3, '0')}`,
+        parkingPermitIssueDate: '2024-01-01',
+        beverageChipNumber: `BC-${String(200 + i).padStart(3, '0')}`,
+        beverageChipIssueDate: '2024-01-01',
+        oesvNumber: Math.random() > 0.2 ? `OESV-${getRandomNumber(30000, 39999)}` : null,
+        emergencyContact: `${getRandomElement(firstNames)} ${lastName}, +43 664 ${getRandomNumber(1000000, 9999999)}`,
+        notes: `Test-Mitglied ${i}`
+      });
 
       // Member role is added automatically by trigger
       createdUsers.push({ id: authData.user.id, email, role: 'mitglied', existed: false })
