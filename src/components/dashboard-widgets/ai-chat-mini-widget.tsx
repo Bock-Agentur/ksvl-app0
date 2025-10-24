@@ -23,13 +23,19 @@ export function AIChatMiniWidget() {
   const { toast } = useToast();
   const { currentRole } = useRole();
 
-  // Auto-scroll to bottom whenever messages change
+  // Auto-scroll nur wenn Nachrichten vorhanden sind und gesendet werden
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    // Nur scrollen wenn Nachrichten vorhanden sind
+    if (messages.length > 0) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    // Nur bei neuen Nachrichten scrollen, nicht beim initialen Laden
+    if (messages.length > 0) {
+      scrollToBottom();
+    }
   }, [messages]);
 
   const sendMessage = async () => {

@@ -66,9 +66,12 @@ export function DashboardHeader({
     }
   }, [settings.headlineMode, settings.customHeadline]);
 
-  // Auto-scroll to bottom whenever messages change
+  // Auto-scroll nur wenn Nachrichten gesendet werden (nicht beim initialen Laden)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    // Nur scrollen wenn es mehr als die Welcome-Message gibt
+    if (messages.length > 1) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   }, [messages]);
 
   const [displayName, setDisplayName] = useState<string>("");

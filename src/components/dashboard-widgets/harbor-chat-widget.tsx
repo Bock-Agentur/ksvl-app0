@@ -25,13 +25,19 @@ export function HarborChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  // Auto-scroll to bottom whenever messages change
+  // Auto-scroll nur wenn neue Nachrichten gesendet werden
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    // Nur scrollen wenn mehr als die Welcome-Message vorhanden ist
+    if (messages.length > 1) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    // Nur bei neuen Nachrichten scrollen, nicht beim initialen Laden
+    if (messages.length > 1) {
+      scrollToBottom();
+    }
   }, [messages]);
 
   const sendMessage = async () => {
