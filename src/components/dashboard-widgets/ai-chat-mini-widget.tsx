@@ -24,6 +24,7 @@ export function AIChatMiniWidget() {
   const { toast } = useToast();
   const { currentRole } = useRole();
 
+  // Load agent name from settings
   useEffect(() => {
     const loadAgentName = async () => {
       try {
@@ -46,9 +47,18 @@ export function AIChatMiniWidget() {
     loadAgentName();
   }, []);
 
-  useEffect(() => {
+  // Auto-scroll nur wenn Nachrichten vorhanden sind und gesendet werden
+  const scrollToBottom = () => {
+    // Nur scrollen wenn Nachrichten vorhanden sind
     if (messages.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  };
+
+  useEffect(() => {
+    // Nur bei neuen Nachrichten scrollen, nicht beim initialen Laden
+    if (messages.length > 0) {
+      scrollToBottom();
     }
   }, [messages]);
 
@@ -59,9 +69,12 @@ export function AIChatMiniWidget() {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    
+    // Automatisch ausklappen bei neuer Nachricht
     setIsOpen(true);
 
     try {
+      // Get user data for first name
       const { data: { user } } = await supabase.auth.getUser();
       const { data: profileData } = await supabase
         .from('profiles')
@@ -82,7 +95,9 @@ export function AIChatMiniWidget() {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
 
       const assistantMessage = data.choices[0].message.content;
       setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
@@ -125,33 +140,29 @@ export function AIChatMiniWidget() {
       className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)]"
     >
       <CardHeader className="pt-8 pb-4 px-[15px]">
-        <CardTitle className="text-lg font-bold flex items-center gap-2 text-white">
-          <Bot className="h-5 w-5" />
-          AI-Assistent
-        </CardTitle>
-      </CardHeader>
-      
-      <CardContent className="px-[15px] pb-6 space-y-3">
-        {/* Toggle Button - Immer sichtbar, außerhalb Collapsible */}
-        <div className="flex items-center justify-end">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => {
-              console.log('Mini Card Toggle clicked, isOpen:', isOpen);
-              setIsOpen(!isOpen);
-            }}
-            className="h-12 w-12 bg-white/40 backdrop-blur-sm hover:bg-white/60 text-white rounded-full p-0 transition-all shadow-lg border-2 border-white/50"
-          >
-            {isOpen ? (
-              <ChevronUp className="h-5 w-5" />
-            ) : (
-              <ChevronDown className="h-5 w-5" />
-            )}
-          </Button>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-bold flex items-center gap-2 text-white">
+            <Bot className="h-5 w-5" />
+            AI-Assistent
+          </CardTitle>
+          {messages.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsOpen(!isOpen)}
+              className="h-8 w-8 p-0 text-white/80 hover:text-white hover:bg-white/10 rounded-full"
+            >
+              {isOpen ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+            </Button>
+          )}
         </div>
-
-        {/* Collapsible Chat Area */}
+      </CardHeader>
+      <CardContent className="px-[15px] pb-6">
+        {/* Collapsible Messages Area */}
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <CollapsibleContent>
             {messages.length > 0 && (
@@ -165,8 +176,8 @@ export function AIChatMiniWidget() {
                       <div
                         className={`max-w-[85%] rounded-xl px-4 py-2.5 ${
                           msg.role === 'user'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted text-foreground'
+                            ? 'bg-white/20 backdrop-blur-sm text-white'
+                            : 'bg-white/95 text-foreground'
                         }`}
                       >
                         <div 
@@ -194,7 +205,7 @@ export function AIChatMiniWidget() {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Input Area */}
+        {/* Input Field - Always Visible */}
         <div className="flex gap-2">
           <Input
             value={input}
