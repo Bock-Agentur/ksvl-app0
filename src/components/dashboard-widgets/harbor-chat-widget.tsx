@@ -16,7 +16,7 @@ export function HarborChatWidget() {
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: '👋 Hallo! Ich bin Ihr KSVL-Assistent. Ich kann Ihnen bei Kranterminen, Buchungen und Mitgliederdaten helfen. Was möchten Sie wissen?'
+      content: '👋 Ahoi! Ich bin dein KSVL-Assistent. Ich kann dir bei Kranterminen, Buchungen und Mitgliederdaten helfen. Was willst du wissen?'
     }
   ]);
   const [input, setInput] = useState('');
@@ -160,7 +160,7 @@ export function HarborChatWidget() {
             </Button>
           </div>
           <p className="text-xs text-white/80">
-            💡 Fragen Sie nach Terminen, Buchungen, Mitgliederdaten oder Statistiken
+            💡 Frag mich nach Terminen, Buchungen, Mitgliederdaten oder Statistiken
           </p>
         </div>
       </CardContent>
