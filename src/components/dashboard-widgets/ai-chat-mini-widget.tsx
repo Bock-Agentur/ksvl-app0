@@ -19,7 +19,7 @@ export function AIChatMiniWidget() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false); // Am Anfang eingeklappt
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { currentRole } = useRole();

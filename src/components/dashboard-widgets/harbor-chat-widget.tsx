@@ -16,7 +16,7 @@ interface Message {
 
 export function HarborChatWidget() {
   const [agentName, setAgentName] = useState('Capitano');
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(false); // Am Anfang eingeklappt
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -79,6 +79,7 @@ export function HarborChatWidget() {
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    setIsOpen(true); // Beim Senden automatisch öffnen
 
     try {
       // Hole Benutzerprofil für Vorname
