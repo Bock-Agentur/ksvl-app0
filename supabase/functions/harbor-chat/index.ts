@@ -67,6 +67,17 @@ serve(async (req) => {
 
     console.log('AI Settings:', { userTonality, maxTokens, hasCustomPrompt: !!customPrompt });
 
+    // Hilfsfunktion: Vollständiger Name aus first_name + last_name, Fallback auf name
+    const getFullName = (profile: any): string => {
+      if (profile?.first_name && profile?.last_name) {
+        return `${profile.first_name} ${profile.last_name}`;
+      }
+      if (profile?.first_name) {
+        return profile.first_name;
+      }
+      return profile?.name || 'Unbekannt';
+    };
+
     // Hole aktuelle und zukünftige Slots-Daten
     const today = new Date().toISOString().split('T')[0];
     const nextWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -121,7 +132,7 @@ serve(async (req) => {
 
     const { data: users } = await supabase
       .from('profiles')
-      .select('id, name, email, member_number, boat_name')
+      .select('id, first_name, last_name, name, email, member_number, boat_name')
       .in('id', allUserIds);
 
     const usersMap = new Map(users?.map(u => [u.id, u]) || []);
@@ -129,7 +140,7 @@ serve(async (req) => {
     // Hole öffentliche Mitgliederdaten (nur wenn data_public_in_ksvl = true)
     const { data: publicMembers, error: membersError } = await supabase
       .from('profiles')
-      .select('id, name, member_number, boat_name, boat_type, berth_number, email, phone, contact_public_in_ksvl, vorstand_funktion')
+      .select('id, first_name, last_name, name, member_number, boat_name, boat_type, berth_number, email, phone, contact_public_in_ksvl, vorstand_funktion')
       .eq('data_public_in_ksvl', true)
       .order('name', { ascending: true });
 
@@ -142,6 +153,8 @@ serve(async (req) => {
       .from('profiles')
       .select(`
         id,
+        first_name,
+        last_name,
         name,
         vorstand_funktion,
         email,
@@ -165,13 +178,13 @@ AKTUELLE KRANTERMIN-DATEN (${today} bis ${nextWeek}):
 VERFÜGBARE TERMINE (${availableSlots.length}):
 ${availableSlots.map(s => {
   const craneOp = usersMap.get(s.crane_operator_id);
-  return `- ${formatDate(s.date)} um ${s.time} Uhr (${s.duration} Min) - Kranführer: ${craneOp?.name || 'Unbekannt'}${craneOp?.member_number ? ` (Nr: ${craneOp.member_number})` : ''} - [Details anzeigen](/?date=${s.date})`;
+  return `- ${formatDate(s.date)} um ${s.time} Uhr (${s.duration} Min) - Kranführer: ${getFullName(craneOp)}${craneOp?.member_number ? ` (Nr: ${craneOp.member_number})` : ''} - [Details anzeigen](/?date=${s.date})`;
 }).join('\n') || 'Keine verfügbaren Termine'}
 
 GEBUCHTE TERMINE (${bookedSlots.length}):
 ${bookedSlots.map(s => {
   const member = usersMap.get(s.member_id);
-  return `- ${formatDate(s.date)} um ${s.time} Uhr - gebucht von ${member?.name || 'Unbekannt'}${member?.boat_name ? ` (Boot: ${member.boat_name})` : ''} - [Details anzeigen](/?date=${s.date})`;
+  return `- ${formatDate(s.date)} um ${s.time} Uhr - gebucht von ${getFullName(member)}${member?.boat_name ? ` (Boot: ${member.boat_name})` : ''} - [Details anzeigen](/?date=${s.date})`;
 }).join('\n') || 'Keine Buchungen'}
 
 STATISTIK:
@@ -192,13 +205,13 @@ VERGANGENE KRANTERMIN-DATEN (${thirtyDaysAgo} bis ${today}):
 VERGANGENE VERFÜGBARE TERMINE (${pastAvailableSlots.length}):
 ${pastAvailableSlots.slice(0, 10).map(s => {
   const craneOp = usersMap.get(s.crane_operator_id);
-  return `- ${formatDate(s.date)} um ${s.time} Uhr (${s.duration} Min) - Kranführer: ${craneOp?.name || 'Unbekannt'}${craneOp?.member_number ? ` (Nr: ${craneOp.member_number})` : ''}`;
+  return `- ${formatDate(s.date)} um ${s.time} Uhr (${s.duration} Min) - Kranführer: ${getFullName(craneOp)}${craneOp?.member_number ? ` (Nr: ${craneOp.member_number})` : ''}`;
 }).join('\n') || 'Keine vergangenen verfügbaren Termine'}
 
 VERGANGENE GEBUCHTE TERMINE (${pastBookedSlots.length}):
 ${pastBookedSlots.slice(0, 10).map(s => {
   const member = usersMap.get(s.member_id);
-  return `- ${formatDate(s.date)} um ${s.time} Uhr - gebucht von ${member?.name || 'Unbekannt'}${member?.boat_name ? ` (Boot: ${member.boat_name})` : ''}`;
+  return `- ${formatDate(s.date)} um ${s.time} Uhr - gebucht von ${getFullName(member)}${member?.boat_name ? ` (Boot: ${member.boat_name})` : ''}`;
 }).join('\n') || 'Keine vergangenen Buchungen'}
 
 VERGANGENE STATISTIK:
@@ -212,7 +225,7 @@ VERGANGENE STATISTIK:
 
 ÖFFENTLICHE MITGLIEDERDATEN (${publicMembers.length} Mitglieder):
 ${publicMembers.map(m => {
-  let info = `- ${m.name}${m.member_number ? ` (Nr: ${m.member_number})` : ''}${m.boat_name ? ` - Boot: ${m.boat_name}` : ''}${m.boat_type ? ` (${m.boat_type})` : ''}${m.berth_number ? ` - Liegeplatz: ${m.berth_number}` : ''}`;
+  let info = `- ${getFullName(m)}${m.member_number ? ` (Nr: ${m.member_number})` : ''}${m.boat_name ? ` - Boot: ${m.boat_name}` : ''}${m.boat_type ? ` (${m.boat_type})` : ''}${m.berth_number ? ` - Liegeplatz: ${m.berth_number}` : ''}`;
   if (m.contact_public_in_ksvl) {
     info += `${m.email ? ` - Email: ${m.email}` : ''}${m.phone ? ` - Tel: ${m.phone}` : ''}`;
   }
@@ -226,7 +239,7 @@ WICHTIG: Zeige nur Daten von Mitgliedern, die ihre Daten öffentlich freigegeben
 
 VORSTAND (${vorstandMembers.length} Mitglieder):
 ${vorstandMembers.map(v => {
-  let info = `- ${v.name}${v.vorstand_funktion ? ` - ${v.vorstand_funktion}` : ''}`;
+  let info = `- ${getFullName(v)}${v.vorstand_funktion ? ` - ${v.vorstand_funktion}` : ''}`;
   if (v.contact_public_in_ksvl) {
     info += `${v.email ? ` - Email: ${v.email}` : ''}${v.phone ? ` - Tel: ${v.phone}` : ''}`;
   }
