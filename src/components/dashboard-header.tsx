@@ -123,6 +123,7 @@ export function DashboardHeader({
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
+    setIsCollapsed(false); // Chat öffnen beim Senden
 
     try {
       // Get first name from profile
