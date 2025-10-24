@@ -25,6 +25,7 @@ export function useDashboardAnimations() {
 
     // Reset all states to hidden
     const initialStates: Record<string, AnimationState> = {
+      headerCard: "hidden",
       welcome: "hidden",
       stats: "hidden",
       widgets: "hidden",
@@ -68,6 +69,7 @@ export function useDashboardAnimations() {
       default:
         // Show all immediately
         setAnimationStates({
+          headerCard: "visible",
           welcome: "visible",
           stats: "visible",
           widgets: "visible",
@@ -78,7 +80,7 @@ export function useDashboardAnimations() {
   };
 
   const startFadeInAnimation = () => {
-    const sections = ["welcome", "stats", "widgets", "quickActions", "activityFeed"];
+    const sections = ["headerCard", "welcome", "stats", "widgets", "quickActions", "activityFeed"];
     sections.forEach((section, index) => {
       setTimeout(() => {
         setAnimationStates(prev => ({ ...prev, [section]: "visible" }));
@@ -87,7 +89,7 @@ export function useDashboardAnimations() {
   };
 
   const startDropDownAnimation = () => {
-    const sections = ["welcome", "stats", "widgets", "quickActions", "activityFeed"];
+    const sections = ["headerCard", "welcome", "stats", "widgets", "quickActions", "activityFeed"];
     sections.forEach((section, index) => {
       setTimeout(() => {
         setAnimationStates(prev => ({ ...prev, [section]: "animating" }));
@@ -101,6 +103,7 @@ export function useDashboardAnimations() {
   const startScrollRevealAnimation = () => {
     // For scroll reveal, we'll show elements immediately but with scroll-based classes
     setAnimationStates({
+      headerCard: "visible",
       welcome: "visible",
       stats: "visible", 
       widgets: "visible",
@@ -110,7 +113,7 @@ export function useDashboardAnimations() {
   };
 
   const startSlideFromSidesAnimation = () => {
-    const sections = ["welcome", "stats", "widgets", "quickActions", "activityFeed"];
+    const sections = ["headerCard", "welcome", "stats", "widgets", "quickActions", "activityFeed"];
     sections.forEach((section, index) => {
       setTimeout(() => {
         setAnimationStates(prev => ({ ...prev, [section]: "animating" }));
@@ -122,7 +125,7 @@ export function useDashboardAnimations() {
   };
 
   const startStaggeredAnimation = () => {
-    const sections = ["welcome", "stats", "widgets", "quickActions", "activityFeed"];
+    const sections = ["headerCard", "welcome", "stats", "widgets", "quickActions", "activityFeed"];
     sections.forEach((section, index) => {
       setTimeout(() => {
         setAnimationStates(prev => ({ ...prev, [section]: "visible" }));
@@ -131,7 +134,7 @@ export function useDashboardAnimations() {
   };
 
   const startBounceAnimation = () => {
-    const sections = ["welcome", "stats", "widgets", "quickActions", "activityFeed"];
+    const sections = ["headerCard", "welcome", "stats", "widgets", "quickActions", "activityFeed"];
     sections.forEach((section, index) => {
       setTimeout(() => {
         setAnimationStates(prev => ({ ...prev, [section]: "animating" }));
