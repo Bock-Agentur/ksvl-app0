@@ -22,7 +22,7 @@ export function WelcomeSection({ stats, currentUser, currentRole }: WelcomeSecti
   const welcomeMessage = currentRole ? getWelcomeMessage(currentRole) : "";
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-primary/5 via-primary/3 to-background border-primary/20">
+    <Card className="p-6 bg-gradient-to-br from-primary/5 via-primary/3 to-background border-primary/20 md:rounded-[2rem]">
       <div className="space-y-4">
         <div>
           <h2 className="text-2xl font-bold mb-2">

@@ -17,7 +17,7 @@ export function QuickActionsSection({ stats, onNavigate }: QuickActionsSectionPr
   if (!stats?.quickActions || stats.quickActions.length === 0) return null;
 
   return (
-    <Card>
+    <Card className="md:rounded-[2rem]">
       <CardHeader>
         <CardTitle className="text-lg">Schnellzugriff</CardTitle>
       </CardHeader>

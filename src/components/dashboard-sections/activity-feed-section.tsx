@@ -21,7 +21,7 @@ export function ActivityFeedSection({ stats }: ActivityFeedSectionProps) {
   if (!stats?.recentActivity || stats.recentActivity.length === 0) return null;
 
   return (
-    <Card>
+    <Card className="md:rounded-[2rem]">
       <CardHeader>
         <CardTitle className="text-lg">Live-Activity Feed</CardTitle>
       </CardHeader>

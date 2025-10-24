@@ -45,7 +45,7 @@ export function FinanceOverviewWidget() {
   };
 
   return (
-    <Card className="shadow-card-maritime">
+    <Card className="shadow-card-maritime md:rounded-[2rem]">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           <Euro className="h-5 w-5 text-primary" />

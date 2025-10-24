@@ -54,7 +54,7 @@ export function EventsCalendarWidget() {
   const upcomingEvents = events.filter(e => e.status === "upcoming").length;
 
   return (
-    <Card className="shadow-card-maritime">
+    <Card className="shadow-card-maritime md:rounded-[2rem]">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2 justify-between">
           <div className="flex items-center gap-2">
