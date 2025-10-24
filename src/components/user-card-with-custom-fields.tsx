@@ -30,7 +30,8 @@ export function UserCardWithCustomFields({
   const lastName = customValues['last_name'] || '';
   const fullName = [firstName, lastName].filter(Boolean).join(' ') || user.name;
   
-  const username = customValues['username'] || null;
+  // Username kommt aus user.username oder user.name
+  const username = user.username || user.name || customValues['username'] || null;
   const memberNumber = customValues['member_number'] || customValues['mitgliedsnummer'] || null;
   const email = customValues['email'] || user.email;
   const phone = customValues['phone'] || customValues['telefon'] || null;
