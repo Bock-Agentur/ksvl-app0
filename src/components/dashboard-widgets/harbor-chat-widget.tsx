@@ -3,7 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Send, Bot } from "lucide-react";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
+import { Loader2, Send, Bot, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
@@ -15,6 +16,7 @@ interface Message {
 
 export function HarborChatWidget() {
   const [agentName, setAgentName] = useState('Capitano');
+  const [isOpen, setIsOpen] = useState(true);
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
@@ -147,11 +149,27 @@ export function HarborChatWidget() {
       id="harbor-chat-widget"
     >
       <CardHeader className="pt-12 pb-4 px-[15px]">
-        <CardTitle className="text-2xl font-bold flex items-center gap-2 text-white">
-          <Bot className="h-6 w-6" />
-          KSVL-Assistent
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-2xl font-bold flex items-center gap-2 text-white">
+            <Bot className="h-6 w-6" />
+            KSVL-Assistent
+          </CardTitle>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsOpen(!isOpen)}
+            className="h-8 w-8 p-0 text-white/80 hover:text-white hover:bg-white/10 rounded-full"
+          >
+            {isOpen ? (
+              <ChevronUp className="h-5 w-5" />
+            ) : (
+              <ChevronDown className="h-5 w-5" />
+            )}
+          </Button>
+        </div>
       </CardHeader>
+      <Collapsible open={isOpen}>
+        <CollapsibleContent>
       <CardContent className="px-[15px] pb-8">
         <ScrollArea className="h-[400px] mb-4 bg-white rounded-2xl" ref={scrollRef}>
           <div className="space-y-3 p-4">
@@ -217,6 +235,8 @@ export function HarborChatWidget() {
           </p>
         </div>
       </CardContent>
+      </CollapsibleContent>
+      </Collapsible>
     </Card>
   );
 }

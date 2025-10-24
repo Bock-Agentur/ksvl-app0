@@ -145,20 +145,18 @@ export function AIChatMiniWidget() {
             <Bot className="h-5 w-5" />
             AI-Assistent
           </CardTitle>
-          {messages.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setIsOpen(!isOpen)}
-              className="h-8 w-8 p-0 text-white/80 hover:text-white hover:bg-white/10 rounded-full"
-            >
-              {isOpen ? (
-                <ChevronUp className="h-4 w-4" />
-              ) : (
-                <ChevronDown className="h-4 w-4" />
-              )}
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsOpen(!isOpen)}
+            className="h-8 w-8 p-0 text-white/80 hover:text-white hover:bg-white/10 rounded-full"
+          >
+            {isOpen ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="px-[15px] pb-6">
