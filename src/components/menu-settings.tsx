@@ -8,10 +8,12 @@ import { UserRole } from "@/types";
 import { GripVertical, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function MenuSettings() {
   const { settings, updateHeaderItemsOrder, updateDefaultRole, resetToDefaults, forceRefresh, getOrderedHeaderItems } = useMenuSettings();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [draggedItem, setDraggedItem] = useState<MenuItemConfig | null>(null);
   const [draggedOver, setDraggedOver] = useState<string | null>(null);
 
@@ -93,6 +95,19 @@ export function MenuSettings() {
     }
   };
 
+  const getDisplayLabel = (label: string) => {
+    if (!isMobile) return label;
+    
+    // Mobile-spezifische Kürzungen
+    const mobileLabels: Record<string, string> = {
+      "Mitgliederverwaltung": "Mitglieder",
+      "Einstellungen": "Settings"
+    };
+    
+    return mobileLabels[label] || label;
+  };
+
+
   return (
     <div className="space-y-6">
       <Card>
@@ -165,7 +180,7 @@ export function MenuSettings() {
                 >
                   <GripVertical className="h-4 w-4 text-muted-foreground" />
                   <div className="flex-1 flex items-center gap-3">
-                    <span className="font-medium">{item.label}</span>
+                    <span className="font-medium">{getDisplayLabel(item.label)}</span>
                     {item.badge && (
                       <Badge variant="secondary" className="text-xs">
                         {item.badge}
