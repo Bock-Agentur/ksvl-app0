@@ -450,66 +450,41 @@ export function UserManagementRefactored() {
         ) : (
           searchFilter.filteredData.map((user) => (
             <Card key={user.id} className="transition-colors hover:bg-muted/50">
-              <CardContent className="p-4 sm:p-5">
-                <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
                   {/* User Info Section */}
-                  <div className="flex-1 min-w-0 space-y-3">
-                    {/* Name - Large and Prominent */}
-                    <h3 className="text-xl sm:text-2xl font-bold">{user.name}</h3>
-                    
-                    {/* Badges */}
-                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-                      {/* Role Badges */}
-                      {sortRoles(user.roles || []).map((role) => {
-                        const badgeLabel = role === 'kranfuehrer' ? 'Kran' : 
-                                         role === 'gastmitglied' ? 'Gast' :
-                                         ROLE_LABELS[role] || role;
-                        return (
-                          <Badge 
-                            key={role} 
-                            className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1" 
-                            style={getRoleBadgeInlineStyle(role)}
-                          >
-                            {badgeLabel}
-                          </Badge>
-                        );
-                      })}
+                  <div className="flex-1 min-w-0 space-y-2 sm:space-y-1">
+                    {/* Name and Badges Row */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <h3 className="font-medium text-base sm:text-sm">{user.name}</h3>
                       
-                      {/* Status Badge - Aktiv */}
-                      {user.status === "active" && (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {/* Role Badges */}
+                        {sortRoles(user.roles || []).map((role) => {
+                          return (
+                            <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
+                              {ROLE_LABELS[role] || role}
+                            </Badge>
+                          );
+                        })}
+                        
+                        {/* Status Badge */}
                         <Badge 
-                          variant="default"
-                          className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-green-600 text-white"
+                          variant={user.status === "active" ? "default" : "secondary"}
+                          className="text-xs px-2 py-0.5 h-5"
                         >
-                          Aktiv
+                          {user.status === "active" ? "Aktiv" : "Inaktiv"}
                         </Badge>
-                      )}
+                      </div>
                     </div>
                     
-                    {/* Contact and Member Info */}
-                    <div className="space-y-1.5 text-sm text-muted-foreground">
-                      {/* Member Number */}
-                      {user.memberNumber && (
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4 flex-shrink-0" />
-                          <span className="text-xs sm:text-sm">Mitgliedsnummer: {user.memberNumber}</span>
-                        </div>
-                      )}
-                      
-                      {/* Username - if available from database */}
-                      {(dbUsers.find(u => u.id === user.id) as any)?.username && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs sm:text-sm font-medium">Username: {(dbUsers.find(u => u.id === user.id) as any).username}</span>
-                        </div>
-                      )}
-                      
-                      {/* Email */}
+                    {/* Contact Info */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2 min-w-0">
                         <Mail className="w-4 h-4 flex-shrink-0" />
                         <span className="truncate text-xs sm:text-sm">{user.email}</span>
                       </div>
                       
-                      {/* Phone */}
                       {user.phone && (
                         <div className="flex items-center gap-2">
                           <Phone className="w-4 h-4 flex-shrink-0" />
@@ -517,42 +492,50 @@ export function UserManagementRefactored() {
                         </div>
                       )}
                     </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex sm:flex-col items-center gap-2 sm:ml-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewUser(user)}
-                      className="h-8 px-2 sm:px-3 flex-1 sm:flex-none sm:w-full"
-                    >
-                      <Eye className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Ansehen</span>
-                    </Button>
                     
+                    {/* Member Info */}
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1.5">
+                        <Anchor className="w-4 h-4 flex-shrink-0" />
+                        <span className="text-xs sm:text-sm font-medium">{user.memberNumber}</span>
+                      </div>
+                      {user.boatName && (
+                        <span className="text-xs sm:text-sm">Boot: {user.boatName}</span>
+                      )}
+                    </div>
+                  </div>
+                  
+                  {/* Action Buttons */}
+                  <div className="flex gap-2 sm:ml-4 self-end sm:self-center">
                     <Button
-                      variant="outline"
                       size="sm"
+                      variant="outline"
+                      onClick={() => handleViewUser(user)}
+                      className="h-8 w-8 p-0"
+                    >
+                      <Eye className="w-4 h-4" />
+                      <span className="sr-only">Ansehen</span>
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() => {
                         setPasswordUserId(user.id);
-                        setPassword("");
                         setShowPasswordDialog(true);
                       }}
-                      className="h-8 px-2 sm:px-3 flex-1 sm:flex-none sm:w-full"
+                      className="h-8 w-8 p-0"
                     >
-                      <Key className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Passwort</span>
+                      <Key className="w-4 h-4" />
+                      <span className="sr-only">Passwort ändern</span>
                     </Button>
-                    
                     <Button
-                      variant="outline"
                       size="sm"
+                      variant="outline"
                       onClick={() => handleDeleteUser(user.id)}
-                      className="h-8 px-2 sm:px-3 text-destructive hover:text-destructive flex-1 sm:flex-none sm:w-full"
+                      className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
                     >
-                      <Trash2 className="h-4 w-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Löschen</span>
+                      <Trash2 className="w-4 h-4" />
+                      <span className="sr-only">Löschen</span>
                     </Button>
                   </div>
                 </div>
