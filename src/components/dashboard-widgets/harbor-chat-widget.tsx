@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useRole } from "@/hooks/use-role";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -24,6 +25,7 @@ export function HarborChatWidget() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { currentRole } = useRole();
 
   // Auto-scroll nur wenn neue Nachrichten gesendet werden
   const scrollToBottom = () => {
@@ -49,8 +51,25 @@ export function HarborChatWidget() {
     setIsLoading(true);
 
     try {
+      // Hole Benutzerprofil für Vorname
+      const { data: { user } } = await supabase.auth.getUser();
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('first_name, name, email')
+        .eq('id', user?.id)
+        .single();
+
+      const firstName = profileData?.first_name || 
+                       profileData?.name?.split(' ')[0] || 
+                       user?.email?.split('@')[0] || 
+                       'Segelfreund';
+
       const { data, error } = await supabase.functions.invoke('harbor-chat', {
-        body: { messages: [...messages, userMessage] }
+        body: { 
+          messages: [...messages, userMessage],
+          firstName: firstName,
+          userRole: currentRole
+        }
       });
 
       if (error) {

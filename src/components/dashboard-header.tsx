@@ -126,13 +126,17 @@ export function DashboardHeader({
 
     try {
       // Get first name from profile
+      const { data: { user } } = await supabase.auth.getUser();
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('first_name, name')
+        .select('first_name, name, email')
         .eq('id', currentUser?.id)
         .single();
 
-      const firstName = profileData?.first_name || displayName;
+      const firstName = profileData?.first_name || 
+                       profileData?.name?.split(' ')[0] || 
+                       user?.email?.split('@')[0] || 
+                       'Segelfreund';
 
       const { data, error } = await supabase.functions.invoke('harbor-chat', {
         body: { 
