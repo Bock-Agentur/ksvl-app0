@@ -56,7 +56,9 @@ function AppContent() {
 
   // Scroll to top when tab changes
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
   }, [activeTab]);
 
   // Let TestDataProvider handle initialization - no forced scenario loading
@@ -102,6 +104,11 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Scroll to top on initial load
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    
     // Check for existing session first
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
