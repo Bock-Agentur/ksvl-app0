@@ -4,6 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import { useAIAssistantSettings } from "@/hooks/use-ai-assistant-settings";
 import { TONALITY_LABELS, TONALITY_DESCRIPTIONS, RESPONSE_LENGTH_LABELS, RESPONSE_LENGTH_DESCRIPTIONS, Tonality, ResponseLength } from "@/types/ai-assistant";
 import { ROLE_LABELS } from "@/lib/role-order";
@@ -11,7 +12,7 @@ import { UserRole } from "@/types/user";
 import { Loader2 } from "lucide-react";
 
 export function AIAssistantSettings() {
-  const { settings, updateTonality, updateResponseLength, updateSystemPrompt, isLoading } = useAIAssistantSettings();
+  const { settings, updateTonality, updateResponseLength, updateSystemPrompt, updateAgentName, isLoading } = useAIAssistantSettings();
 
   if (isLoading) {
     return (
@@ -31,6 +32,32 @@ export function AIAssistantSettings() {
           Passen Sie das Verhalten des AI-Assistenten an verschiedene Benutzerrollen an.
         </p>
       </div>
+
+      {/* Agent-Name */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Agent-Name</CardTitle>
+          <CardDescription>
+            Geben Sie dem AI-Assistenten einen individuellen Namen.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Label htmlFor="agent-name">Name des AI-Assistenten</Label>
+            <Input
+              id="agent-name"
+              type="text"
+              placeholder="z.B. Harbor-Bot, Hafenmeister AI, Kran-Klaus..."
+              value={settings.agentName || 'Harbor-Bot'}
+              onChange={(e) => updateAgentName(e.target.value)}
+              className="max-w-md"
+            />
+            <p className="text-sm text-muted-foreground">
+              Der Agent wird sich mit diesem Namen vorstellen.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Tonalität pro Rolle */}
       <Card>

@@ -11,7 +11,8 @@ const DEFAULT_SETTINGS: AIAssistantSettings = {
     gastmitglied: 'witty'
   },
   responseLength: 'medium',
-  customSystemPrompt: ''
+  customSystemPrompt: '',
+  agentName: 'Harbor-Bot'
 };
 
 export function useAIAssistantSettings() {
@@ -46,11 +47,19 @@ export function useAIAssistantSettings() {
     });
   };
 
+  const updateAgentName = (name: string) => {
+    setSettings({
+      ...settings,
+      agentName: name
+    });
+  };
+
   return {
     settings,
     updateTonality,
     updateResponseLength,
     updateSystemPrompt,
+    updateAgentName,
     setSettings,
     isLoading
   };

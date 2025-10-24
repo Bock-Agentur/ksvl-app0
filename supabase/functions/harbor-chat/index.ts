@@ -64,8 +64,9 @@ serve(async (req) => {
     const tonalityInstruction = tonalityPrompts[userTonality] || tonalityPrompts.witty;
     const maxTokens = lengthToTokens[settings.responseLength] || 1000;
     const customPrompt = settings.customSystemPrompt || '';
+    const agentName = settings.agentName || 'Harbor-Bot';
 
-    console.log('AI Settings:', { userTonality, maxTokens, hasCustomPrompt: !!customPrompt });
+    console.log('AI Settings:', { userTonality, maxTokens, hasCustomPrompt: !!customPrompt, agentName });
 
     // Hilfsfunktion: Vollständiger Name aus first_name + last_name, Fallback auf name
     const getFullName = (profile: any): string => {
@@ -254,7 +255,8 @@ ${vorstandMembers.map(v => {
 
     const userName = firstName || 'Segelfreund';
     
-    const systemPrompt = `Du bist der KI-Assistent für das KSVL Hafenverwaltungssystem.
+    const systemPrompt = `Du bist ${agentName}, der KI-Assistent für das KSVL Hafenverwaltungssystem.
+Stelle dich bei der ersten Antwort kurz mit deinem Namen vor (z.B. "Ahoi! Ich bin ${agentName}, dein Assistent für alle Fragen rund um den Hafen! ⚓️").
 
 Der Nutzer heißt ${userName}. Sprich ihn mit "Du" und seinem Vornamen an (z.B. "Ahoi ${userName}!"), aber nicht in jeder Antwort - nur wenn es persönlich und freundlich wirkt.
 WICHTIG: Verwende NUR den Vornamen, nicht den vollen Namen oder formelle Anreden!

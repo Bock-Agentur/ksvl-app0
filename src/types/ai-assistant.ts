@@ -7,6 +7,7 @@ export interface AIAssistantSettings {
   tonality: Record<UserRole, Tonality>;
   responseLength: ResponseLength;
   customSystemPrompt?: string;
+  agentName?: string;
 }
 
 export interface AIWelcomeMessageSettings {
