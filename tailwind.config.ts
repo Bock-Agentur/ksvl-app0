@@ -18,6 +18,10 @@ export default {
 			}
 		},
 		extend: {
+			spacing: {
+				'safe': 'env(safe-area-inset-top)',
+				'safe-bottom': 'env(safe-area-inset-bottom)',
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
