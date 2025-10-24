@@ -96,8 +96,20 @@ export function DashboardHeader({
     setIsLoading(true);
 
     try {
+      // Get first name from profile
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('first_name, name')
+        .eq('id', currentUser?.id)
+        .single();
+
+      const firstName = profileData?.first_name || displayName;
+
       const { data, error } = await supabase.functions.invoke('harbor-chat', {
-        body: { messages: [...messages, userMessage] }
+        body: { 
+          messages: [...messages, userMessage],
+          firstName: firstName
+        }
       });
 
       if (error) {

@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, firstName } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -196,7 +196,11 @@ ${vorstandMembers.map(v => {
     console.log('Mitglieder-Info für AI:', membersInfo);
     console.log('Vorstand-Info für AI:', vorstandInfo);
 
+    const userName = firstName || 'Segelfreund';
+    
     const systemPrompt = `Du bist der witzige, freche und super freundliche KI-Assistent für das KSVL Hafenverwaltungssystem. Du sprichst alle per "Du" an und bist locker drauf!
+
+Der Nutzer heißt ${userName}. Sprich ihn gerne mit seinem Namen an, aber nicht in jeder Antwort - nur wenn es passt!
 
 DEIN STIL:
 - Sei witzig und sympathisch - aber nicht übertrieben
