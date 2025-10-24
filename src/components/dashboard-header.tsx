@@ -9,13 +9,18 @@ interface DashboardHeaderProps {
   userImage?: string;
   onSearch?: (query: string) => void;
   showSearch?: boolean;
+  currentUser?: any;
+  stats?: any;
+  currentRole?: any;
+  onNavigate?: any;
 }
 
 export function DashboardHeader({ 
-  userName = "User",
+  userName,
   userImage,
   onSearch,
-  showSearch = true
+  showSearch = true,
+  currentUser
 }: DashboardHeaderProps) {
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -33,6 +38,9 @@ export function DashboardHeader({
       .slice(0, 2);
   };
 
+  const displayName = userName || (currentUser as any)?.user_metadata?.full_name || currentUser?.email?.split('@')[0] || "User";
+  const displayImage = userImage || (currentUser as any)?.user_metadata?.avatar_url;
+
   return (
     <div className="bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white pt-12 pb-8 px-[15px] rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)]">
       {/* White Headline */}
@@ -43,16 +51,16 @@ export function DashboardHeader({
         <div className="flex items-center gap-3">
           {/* Profilbild */}
           <Avatar className="w-12 h-12 ring-2 ring-white/20">
-            <AvatarImage src={userImage || defaultAvatar} alt={userName} />
+            <AvatarImage src={displayImage || defaultAvatar} alt={displayName} />
             <AvatarFallback className="bg-white/20 backdrop-blur-sm text-white font-semibold">
-              {getInitials(userName)}
+              {getInitials(displayName)}
             </AvatarFallback>
           </Avatar>
           
           {/* Begrüßung */}
           <div>
             <p className="text-sm text-white/80">{getGreeting()}</p>
-            <h1 className="text-xl font-bold">{userName}</h1>
+            <h1 className="text-xl font-bold">{displayName}</h1>
           </div>
         </div>
         
