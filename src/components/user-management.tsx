@@ -15,7 +15,9 @@ import { User, UserRole, generateRolesFromPrimary } from "@/types";
 import { ProfileView } from "./profile-view";
 import { cn } from "@/lib/utils";
 import { UserRoleSelector } from "./user-role-selector";
+import { UserCardWithCustomFields } from "./user-card-with-custom-fields";
 import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
+import { useCustomFields, useCustomFieldValues } from "@/hooks/use-custom-fields";
 import { 
   getRoleLabel, 
   calculateUserStats, 
@@ -34,6 +36,7 @@ export function UserManagementRefactored() {
   const { users: dbUsers, loading, deleteUser: deleteDbUser, refreshUsers } = useUsers();
   const { toast } = useToast();
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
+  const { customFields } = useCustomFields();
   
   // Convert DatabaseUser to User format for compatibility
   const users: User[] = dbUsers.map(u => ({
@@ -450,101 +453,18 @@ export function UserManagementRefactored() {
           </Card>
         ) : (
           searchFilter.filteredData.map((user) => (
-            <Card key={user.id} className="transition-colors hover:bg-muted/50">
-              <CardContent className="p-3 sm:p-4">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
-                  {/* User Info Section */}
-                  <div className="flex-1 min-w-0 space-y-2">
-                    {/* 1. Vorname Nachname - groß oben */}
-                    <h3 className="font-semibold text-lg">{user.name}</h3>
-                    
-                    {/* 2. Badges */}
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      {/* Role Badges */}
-                      {sortRoles(user.roles || []).map((role) => {
-                        const label = role === 'admin' ? 'Admin' :
-                                     role === 'vorstand' ? 'Vorstand' :
-                                     role === 'mitglied' ? 'Mitglied' :
-                                     role === 'gastmitglied' ? 'Gast' :
-                                     role === 'kranfuehrer' ? 'Kran' :
-                                     ROLE_LABELS[role] || role;
-                        
-                        return (
-                          <Badge 
-                            key={role} 
-                            className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5" 
-                            style={getRoleBadgeInlineStyle(role)}
-                          >
-                            {label}
-                          </Badge>
-                        );
-                      })}
-                      
-                      {/* Status Badge */}
-                      {user.status === "active" && (
-                        <Badge 
-                          variant="default"
-                          className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5"
-                        >
-                          Aktiv
-                        </Badge>
-                      )}
-                    </div>
-                    
-                    {/* 3. Mitgliedsnummer, Username, Email, Telefon */}
-                    <div className="space-y-1 text-sm text-muted-foreground">
-                      {user.memberNumber && (
-                        <div>Mitgliedsnummer: {user.memberNumber}</div>
-                      )}
-                      
-                      {(user as any).username && (
-                        <div>Username: {(user as any).username}</div>
-                      )}
-                      
-                      <div>Email: {user.email}</div>
-                      
-                      {user.phone && (
-                        <div>Telefon: {user.phone}</div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Action Buttons */}
-                  <div className="flex gap-2 sm:ml-4 self-end sm:self-center">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleViewUser(user)}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Eye className="w-4 h-4" />
-                      <span className="sr-only">Ansehen</span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => {
-                        setPasswordUserId(user.id);
-                        setShowPasswordDialog(true);
-                      }}
-                      className="h-8 w-8 p-0"
-                    >
-                      <Key className="w-4 h-4" />
-                      <span className="sr-only">Passwort ändern</span>
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDeleteUser(user.id)}
-                      className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      <span className="sr-only">Löschen</span>
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <UserCardWithCustomFields
+              key={user.id}
+              user={user}
+              customFields={customFields}
+              getRoleBadgeInlineStyle={getRoleBadgeInlineStyle}
+              onViewUser={handleViewUser}
+              onPasswordChange={(userId) => {
+                setPasswordUserId(userId);
+                setShowPasswordDialog(true);
+              }}
+              onDeleteUser={handleDeleteUser}
+            />
           ))
         )}
       </div>
