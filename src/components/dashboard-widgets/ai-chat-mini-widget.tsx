@@ -15,6 +15,7 @@ interface Message {
 }
 
 export function AIChatMiniWidget() {
+  const [agentName, setAgentName] = useState('Capitano');
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -22,6 +23,29 @@ export function AIChatMiniWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { currentRole } = useRole();
+
+  // Load agent name from settings
+  useEffect(() => {
+    const loadAgentName = async () => {
+      try {
+        const { data: settings } = await supabase
+          .from('app_settings')
+          .select('setting_value')
+          .eq('setting_key', 'aiAssistantSettings')
+          .eq('is_global', true)
+          .maybeSingle();
+
+        if (settings?.setting_value) {
+          const aiSettings = settings.setting_value as any;
+          const name = aiSettings.agentName || 'Capitano';
+          setAgentName(name);
+        }
+      } catch (error) {
+        console.error('Error loading agent name:', error);
+      }
+    };
+    loadAgentName();
+  }, []);
 
   // Auto-scroll nur wenn Nachrichten vorhanden sind und gesendet werden
   const scrollToBottom = () => {
@@ -187,7 +211,7 @@ export function AIChatMiniWidget() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Frage stellen..."
+            placeholder={`Frage ${agentName}...`}
             disabled={isLoading}
             className="flex-1 bg-white/95 backdrop-blur-sm text-foreground border-0 rounded-2xl placeholder:text-muted-foreground"
             autoComplete="off"

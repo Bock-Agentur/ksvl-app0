@@ -12,7 +12,7 @@ const DEFAULT_SETTINGS: AIAssistantSettings = {
   },
   responseLength: 'medium',
   customSystemPrompt: '',
-  agentName: 'Harbor-Bot'
+  agentName: 'Capitano'
 };
 
 export function useAIAssistantSettings() {

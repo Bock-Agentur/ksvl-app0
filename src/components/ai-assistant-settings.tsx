@@ -38,23 +38,34 @@ export function AIAssistantSettings() {
         <CardHeader>
           <CardTitle>Agent-Name</CardTitle>
           <CardDescription>
-            Geben Sie dem AI-Assistenten einen individuellen Namen.
+            Definieren Sie einen individuellen Namen für den AI-Assistenten.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2">
-            <Label htmlFor="agent-name">Name des AI-Assistenten</Label>
-            <Input
-              id="agent-name"
-              type="text"
-              placeholder="z.B. Harbor-Bot, Hafenmeister AI, Kran-Klaus..."
-              value={settings.agentName || 'Harbor-Bot'}
-              onChange={(e) => updateAgentName(e.target.value)}
-              className="max-w-md"
-            />
-            <p className="text-sm text-muted-foreground">
-              Der Agent wird sich mit diesem Namen vorstellen.
-            </p>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Standard-Name</Label>
+              <div className="px-3 py-2 bg-muted rounded-md text-sm">
+                Capitano
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Dies ist der Standard-Name, wenn kein eigener Name definiert ist.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="agent-name">Eigener Name (optional)</Label>
+              <Input
+                id="agent-name"
+                type="text"
+                placeholder="z.B. Hafenmeister AI, Kran-Klaus, Marina-Max..."
+                value={settings.agentName === 'Capitano' ? '' : (settings.agentName || '')}
+                onChange={(e) => updateAgentName(e.target.value || 'Capitano')}
+                className="max-w-md"
+              />
+              <p className="text-sm text-muted-foreground">
+                Der Agent wird sich mit diesem Namen vorstellen.
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>

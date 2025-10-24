@@ -14,10 +14,11 @@ interface Message {
 }
 
 export function HarborChatWidget() {
+  const [agentName, setAgentName] = useState('Capitano');
   const [messages, setMessages] = useState<Message[]>([
     {
       role: 'assistant',
-      content: '👋 Ahoi! Ich bin dein KSVL-Assistent. Ich kann dir bei Kranterminen, Buchungen und Mitgliederdaten helfen. Was willst du wissen?'
+      content: `👋 Ahoi! Ich bin ${agentName}, dein KSVL-Assistent. Ich kann dir bei Kranterminen, Buchungen und Mitgliederdaten helfen. Was willst du wissen?`
     }
   ]);
   const [input, setInput] = useState('');
@@ -26,6 +27,33 @@ export function HarborChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { currentRole } = useRole();
+
+  // Load agent name from settings
+  useEffect(() => {
+    const loadAgentName = async () => {
+      try {
+        const { data: settings } = await supabase
+          .from('app_settings')
+          .select('setting_value')
+          .eq('setting_key', 'aiAssistantSettings')
+          .eq('is_global', true)
+          .maybeSingle();
+
+        if (settings?.setting_value) {
+          const aiSettings = settings.setting_value as any;
+          const name = aiSettings.agentName || 'Capitano';
+          setAgentName(name);
+          setMessages([{
+            role: 'assistant',
+            content: `👋 Ahoi! Ich bin ${name}, dein KSVL-Assistent. Ich kann dir bei Kranterminen, Buchungen und Mitgliederdaten helfen. Was willst du wissen?`
+          }]);
+        }
+      } catch (error) {
+        console.error('Error loading agent name:', error);
+      }
+    };
+    loadAgentName();
+  }, []);
 
   // Auto-scroll nur wenn neue Nachrichten gesendet werden
   const scrollToBottom = () => {
@@ -185,7 +213,7 @@ export function HarborChatWidget() {
             </Button>
           </div>
           <p className="text-xs text-white/80">
-            💡 Frag mich nach Terminen, Buchungen, Mitgliederdaten oder Statistiken
+            💡 {agentName} kann dir bei Terminen, Buchungen, Mitgliederdaten und Statistiken helfen
           </p>
         </div>
       </CardContent>

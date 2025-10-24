@@ -64,7 +64,7 @@ serve(async (req) => {
     const tonalityInstruction = tonalityPrompts[userTonality] || tonalityPrompts.witty;
     const maxTokens = lengthToTokens[settings.responseLength] || 1000;
     const customPrompt = settings.customSystemPrompt || '';
-    const agentName = settings.agentName || 'Harbor-Bot';
+    const agentName = settings.agentName || 'Capitano';
 
     console.log('AI Settings:', { userTonality, maxTokens, hasCustomPrompt: !!customPrompt, agentName });
 
