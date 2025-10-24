@@ -190,12 +190,12 @@ export function AIChatMiniWidget() {
         </Collapsible>
 
         {/* Input Field - Always Visible */}
-        <div className="flex items-end justify-end mb-2">
+        <div className="flex items-center justify-end mb-2">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setIsOpen(!isOpen)}
-            className="flex-shrink-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-0 rounded-full"
+            className="h-10 w-10 flex-shrink-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white border-0 rounded-full p-0"
           >
             {isOpen ? (
               <ChevronUp className="h-4 w-4" />
