@@ -248,6 +248,7 @@ export type Database = {
           status: string | null
           street_address: string | null
           updated_at: string | null
+          username: string | null
           vorstand_funktion: string | null
         }
         Insert: {
@@ -287,6 +288,7 @@ export type Database = {
           status?: string | null
           street_address?: string | null
           updated_at?: string | null
+          username?: string | null
           vorstand_funktion?: string | null
         }
         Update: {
@@ -326,6 +328,7 @@ export type Database = {
           status?: string | null
           street_address?: string | null
           updated_at?: string | null
+          username?: string | null
           vorstand_funktion?: string | null
         }
         Relationships: []
