@@ -109,23 +109,35 @@ export function MenuSettings() {
 
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            Drawer-Menü Einstellungen
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleForceRefresh}>
-                Icons aktualisieren
+    <div className={cn(
+      "space-y-6",
+      isMobile ? "p-0" : "p-6"
+    )}>
+      <Card className={isMobile ? "rounded-none border-x-0" : ""}>
+        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
+          <CardTitle className={cn(
+            "flex items-center justify-between font-bold",
+            isMobile ? "text-lg flex-col gap-3" : "text-2xl"
+          )}>
+            <span>Drawer-Menü Einstellungen</span>
+            <div className={cn(
+              "flex gap-2",
+              isMobile && "w-full justify-end"
+            )}>
+              <Button variant="outline" size={isMobile ? "sm" : "sm"} onClick={handleForceRefresh}>
+                {!isMobile && "Icons aktualisieren"}
               </Button>
-              <Button variant="outline" size="sm" onClick={handleReset}>
+              <Button variant="outline" size={isMobile ? "sm" : "sm"} onClick={handleReset}>
                 <RotateCcw className="h-4 w-4 mr-2" />
-                Zurücksetzen
+                {!isMobile && "Zurücksetzen"}
               </Button>
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className={cn(
+          "space-y-6",
+          isMobile && "px-4 pb-4"
+        )}>
           {/* Info Banner */}
           <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <p className="text-sm text-blue-900 dark:text-blue-100">

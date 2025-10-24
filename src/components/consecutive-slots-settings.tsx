@@ -9,11 +9,13 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export function ConsecutiveSlotsSettings() {
   const { consecutiveSlotsEnabled, setConsecutiveSlotsEnabled } = useConsecutiveSlots();
   const [roleSwitchingEnabled, setRoleSwitchingEnabled] = useState(true);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     loadRoleSwitchingSetting();
@@ -95,17 +97,29 @@ export function ConsecutiveSlotsSettings() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Settings className="w-5 h-5" />
+    <div className={cn(
+      "space-y-6",
+      isMobile ? "p-0" : "p-6"
+    )}>
+    <Card className={isMobile ? "rounded-none border-x-0" : ""}>
+      <CardHeader className={isMobile ? "px-4 py-3" : ""}>
+        <CardTitle className={cn(
+          "flex items-center gap-2 font-bold",
+          isMobile ? "text-lg" : "text-2xl"
+        )}>
+          <Settings className={isMobile ? "w-5 h-5" : "w-6 h-6"} />
           System-Einstellungen
         </CardTitle>
-        <CardDescription>
-          Systemweite Konfiguration für Slot-Buchungen und Betriebsverhalten
-        </CardDescription>
+        {!isMobile && (
+          <CardDescription>
+            Systemweite Konfiguration für Slot-Buchungen und Betriebsverhalten
+          </CardDescription>
+        )}
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className={cn(
+        "space-y-6",
+        isMobile && "px-4 pb-4"
+      )}>
         {/* Role Switching Setting */}
         <div className="space-y-4">
           <Label className="text-base font-medium">Rollenwechsel-System</Label>
@@ -202,5 +216,6 @@ export function ConsecutiveSlotsSettings() {
         </div>
       </CardContent>
     </Card>
+    </div>
   );
 }

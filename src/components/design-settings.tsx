@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useSlotDesign, SlotDesignSettings } from "@/hooks/use-slot-design";
 import { StatusLabel } from "@/components/ui/status-label";
 import { cn } from "@/lib/utils";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   Palette, 
   RotateCcw, 
@@ -148,6 +149,7 @@ export function DesignSettings() {
   const { toast } = useToast();
   const { settings, updateSlotType, resetToDefaults, resetToOriginalDefaults, isLoading } = useSlotDesign();
   const [refreshKey, setRefreshKey] = useState(0);
+  const isMobile = useIsMobile();
 
   const forceRefreshPreview = () => {
     // Force update CSS custom properties
@@ -257,19 +259,30 @@ export function DesignSettings() {
   ];
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Palette className="w-5 h-5" />
+    <div className={cn(
+      "space-y-6",
+      isMobile ? "p-0" : "p-6"
+    )}>
+      <Card className={isMobile ? "rounded-none border-x-0" : ""}>
+        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
+          <CardTitle className={cn(
+            "flex items-center gap-2 font-bold",
+            isMobile ? "text-lg" : "text-2xl"
+          )}>
+            <Palette className={isMobile ? "w-5 h-5" : "w-6 h-6"} />
             Slot Design-Einstellungen
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Passen Sie die Farben der Slots in der Wochenansicht und Slot-Verwaltung an. 
-            Alle Farben unterstützen Transparenz (Alpha-Kanal).
-          </p>
+          {!isMobile && (
+            <p className="text-sm text-muted-foreground">
+              Passen Sie die Farben der Slots in der Wochenansicht und Slot-Verwaltung an. 
+              Alle Farben unterstützen Transparenz (Alpha-Kanal).
+            </p>
+          )}
         </CardHeader>
-        <CardContent className="space-y-8">
+        <CardContent className={cn(
+          "space-y-8",
+          isMobile && "px-4 pb-4"
+        )}>
           {/* Live Demo Slots - Shows trendy style with standard colors */}
           <div className="space-y-4">
             <Label className="text-base font-medium">

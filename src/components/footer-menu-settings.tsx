@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { UserRole } from "@/types/user";
 import { useFooterMenuSettings, FooterMenuItem } from "@/hooks/use-footer-menu-settings";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   Navigation, 
   Plus, 
@@ -67,6 +68,7 @@ const ICON_MAP = {
 
 export function FooterMenuSettings() {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const {
     settings,
     displaySettings,
@@ -180,18 +182,29 @@ export function FooterMenuSettings() {
   };
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Navigation className="w-5 h-5" />
+    <div className={cn(
+      "space-y-6",
+      isMobile ? "p-0" : "p-6"
+    )}>
+      <Card className={isMobile ? "rounded-none border-x-0" : ""}>
+        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
+          <CardTitle className={cn(
+            "flex items-center gap-2 font-bold",
+            isMobile ? "text-lg" : "text-2xl"
+          )}>
+            <Navigation className={isMobile ? "w-5 h-5" : "w-6 h-6"} />
             Footer-Menü Einstellungen
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Konfigurieren Sie die Menüpunkte im unteren Navigationsbereich für jede Benutzerrolle. Maximal 6 Menüpunkte pro Rolle.
-          </p>
+          {!isMobile && (
+            <p className="text-sm text-muted-foreground">
+              Konfigurieren Sie die Menüpunkte im unteren Navigationsbereich für jede Benutzerrolle. Maximal 6 Menüpunkte pro Rolle.
+            </p>
+          )}
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className={cn(
+          "space-y-6",
+          isMobile && "px-4 pb-4"
+        )}>
           {/* Role Selector */}
           <div className="space-y-3">
             <Label className="text-base font-medium">Rolle auswählen</Label>
