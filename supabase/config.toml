@@ -1,8 +1,5 @@
 project_id = "zivkmpyvfxudzypqezhu"
 
-[functions.create-test-users]
-verify_jwt = false
-
 [functions.delete-test-data]
 verify_jwt = false
 
