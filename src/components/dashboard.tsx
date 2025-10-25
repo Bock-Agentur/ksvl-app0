@@ -214,17 +214,7 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
     return () => observer.disconnect();
   }, [isAnimationEnabled, settings.animationType, isInitialized]);
 
-  // Show loading state until everything is ready
-  if (!isContentReady) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-muted-foreground">Dashboard wird geladen...</p>
-        </div>
-      </div>
-    );
-  }
+  // Don't show loading state - parent handles it
 
   return (
     <div className={cn(
