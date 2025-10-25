@@ -53,17 +53,16 @@ function AppContent() {
   // Initialize slot design system
   useSlotDesign();
 
-  // Reset to dashboard only on initial load/refresh and mark as ready
+  // Mark as ready once data is loaded
   useEffect(() => {
     if (!roleLoading && !settingsLoading && isInitialLoad) {
-      setActiveTabRaw('dashboard', true);
       setIsInitialLoad(false);
       // Small delay to ensure smooth transition
       requestAnimationFrame(() => {
         setIsReady(true);
       });
     }
-  }, [roleLoading, settingsLoading, isInitialLoad, setActiveTabRaw]);
+  }, [roleLoading, settingsLoading, isInitialLoad]);
 
   // Scroll to top when tab changes
   useEffect(() => {
@@ -137,19 +136,6 @@ const Index = () => {
           navigate("/auth");
         } else if (event === 'SIGNED_IN') {
           navigate("/", { replace: true });
-          
-          // Update activeTab in background
-          setTimeout(() => {
-            supabase
-              .from('app_settings')
-              .upsert({ 
-                setting_key: 'activeTab', 
-                setting_value: 'dashboard',
-                user_id: session?.user?.id 
-              }, {
-                onConflict: 'user_id,setting_key'
-              });
-          }, 0);
         }
       }
     );
