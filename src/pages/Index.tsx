@@ -19,9 +19,9 @@ import { CalendarView } from "@/components/calendar-view";
 // Inner component that uses the role context
 function AppContent() {
   const { currentRole, currentUser, setRole, isLoading: roleLoading } = useRole();
-  const testData = useTestData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [showContent, setShowContent] = useState(false);
   
   // Use database for active tab storage
   const { value: activeTab, setValue: setActiveTabRaw, isLoading: settingsLoading } = useAppSettings<string>(
@@ -63,6 +63,8 @@ function AppContent() {
     if (!isAppLoading && isInitialLoad) {
       setActiveTabRaw('dashboard', true);
       setIsInitialLoad(false);
+      // Delay content display for smooth fade-in
+      setTimeout(() => setShowContent(true), 50);
     }
   }, [isAppLoading, isInitialLoad, setActiveTabRaw]);
 
@@ -97,9 +99,9 @@ function AppContent() {
   };
 
   // Show loading only during initial data fetch
-  if (isAppLoading || !currentUser) {
+  if (isAppLoading || !currentUser || !showContent) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-background animate-fade-in">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="text-muted-foreground">Lade Anwendung...</p>
@@ -109,15 +111,17 @@ function AppContent() {
   }
 
   return (
-    <AppShell
-      currentRole={currentRole}
-      currentUser={currentUser}
-      onRoleChange={setRole}
-      activeTab={activeTab}
-      onTabChange={setActiveTab}
-    >
-      {renderContent()}
-    </AppShell>
+    <div className="animate-fade-in">
+      <AppShell
+        currentRole={currentRole}
+        currentUser={currentUser}
+        onRoleChange={setRole}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      >
+        {renderContent()}
+      </AppShell>
+    </div>
   );
 }
 
