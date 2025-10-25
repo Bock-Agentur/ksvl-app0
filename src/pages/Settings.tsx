@@ -101,7 +101,7 @@ export function Settings() {
       )}>
         {/* Header */}
         <Card className={cn(
-          "bg-gradient-to-br from-[hsl(210,100%,50%)] to-[hsl(220,100%,40%)] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
+          "bg-gradient-ocean text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
           isMobile && "mx-4"
         )}>
           <CardHeader className="pb-6">
