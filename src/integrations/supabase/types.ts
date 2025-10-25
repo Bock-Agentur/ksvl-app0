@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_assistant_defaults: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          tonality: string
+          updated_at: string | null
+          welcome_message: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: string
+          tonality: string
+          updated_at?: string | null
+          welcome_message: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          tonality?: string
+          updated_at?: string | null
+          welcome_message?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           created_at: string | null
@@ -120,6 +147,129 @@ export type Database = {
           placeholder?: string | null
           required?: boolean | null
           type?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      dashboard_section_definitions: {
+        Row: {
+          allowed_roles: string[]
+          category: string
+          component_name: string
+          created_at: string | null
+          default_column: number
+          default_enabled: boolean | null
+          default_order: number
+          description: string | null
+          id: string
+          name: string
+          size: string
+          updated_at: string | null
+        }
+        Insert: {
+          allowed_roles: string[]
+          category: string
+          component_name: string
+          created_at?: string | null
+          default_column: number
+          default_enabled?: boolean | null
+          default_order: number
+          description?: string | null
+          id: string
+          name: string
+          size: string
+          updated_at?: string | null
+        }
+        Update: {
+          allowed_roles?: string[]
+          category?: string
+          component_name?: string
+          created_at?: string | null
+          default_column?: number
+          default_enabled?: boolean | null
+          default_order?: number
+          description?: string | null
+          id?: string
+          name?: string
+          size?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      dashboard_widget_definitions: {
+        Row: {
+          allowed_roles: string[]
+          category: string
+          component_name: string
+          created_at: string | null
+          default_column: number
+          default_enabled: boolean | null
+          default_order: number
+          description: string | null
+          id: string
+          name: string
+          settings: Json | null
+          size: string
+          updated_at: string | null
+        }
+        Insert: {
+          allowed_roles: string[]
+          category: string
+          component_name: string
+          created_at?: string | null
+          default_column: number
+          default_enabled?: boolean | null
+          default_order: number
+          description?: string | null
+          id: string
+          name: string
+          settings?: Json | null
+          size: string
+          updated_at?: string | null
+        }
+        Update: {
+          allowed_roles?: string[]
+          category?: string
+          component_name?: string
+          created_at?: string | null
+          default_column?: number
+          default_enabled?: boolean | null
+          default_order?: number
+          description?: string | null
+          id?: string
+          name?: string
+          settings?: Json | null
+          size?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      menu_item_definitions: {
+        Row: {
+          allowed_roles: string[]
+          created_at: string | null
+          icon: string
+          id: string
+          label: string
+          menu_type: string
+          updated_at: string | null
+        }
+        Insert: {
+          allowed_roles: string[]
+          created_at?: string | null
+          icon: string
+          id: string
+          label: string
+          menu_type: string
+          updated_at?: string | null
+        }
+        Update: {
+          allowed_roles?: string[]
+          created_at?: string | null
+          icon?: string
+          id?: string
+          label?: string
+          menu_type?: string
           updated_at?: string | null
         }
         Relationships: []
@@ -356,6 +506,33 @@ export type Database = {
           id?: string
           role?: string
           text_color?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      role_configurations: {
+        Row: {
+          created_at: string | null
+          display_order: number
+          id: string
+          label: string
+          role: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order: number
+          id?: string
+          label: string
+          role: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number
+          id?: string
+          label?: string
+          role?: string
           updated_at?: string | null
         }
         Relationships: []
