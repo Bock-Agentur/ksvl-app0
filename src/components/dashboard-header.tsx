@@ -225,12 +225,12 @@ export function DashboardHeader({
         <div className="mb-4">
           <div className="flex items-center gap-2 mb-2">
             <Bot className="h-6 w-6 text-white" />
-            <span className="text-2xl font-bold text-white">AI-Assistent</span>
+            <span className="text-base font-semibold text-white">AI-Assistent</span>
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="ml-auto rounded-full text-white/80 hover:text-white hover:bg-white/10"
+              className="ml-auto h-10 w-10 rounded-full text-white/80 hover:text-white hover:bg-white/10"
             >
               {isCollapsed ? (
                 <ChevronDown className="h-5 w-5" />
