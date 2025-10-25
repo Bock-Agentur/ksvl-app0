@@ -363,6 +363,7 @@ export type Database = {
       profiles: {
         Row: {
           address: string | null
+          ai_info_enabled: boolean | null
           avatar_url: string | null
           berth_number: string | null
           berth_type: string | null
@@ -403,6 +404,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          ai_info_enabled?: boolean | null
           avatar_url?: string | null
           berth_number?: string | null
           berth_type?: string | null
@@ -443,6 +445,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          ai_info_enabled?: boolean | null
           avatar_url?: string | null
           berth_number?: string | null
           berth_type?: string | null

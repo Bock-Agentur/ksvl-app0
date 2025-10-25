@@ -45,6 +45,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const [isManagingFields, setIsManagingFields] = useState(false);
   const [editedUser, setEditedUser] = useState<UserType | null>(null);
   const [editedCustomValues, setEditedCustomValues] = useState<Record<string, any>>({});
+  const [aiInfoEnabled, setAiInfoEnabled] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [newPassword, setNewPassword] = useState("");
@@ -176,6 +177,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
 
       setUser(userData);
       setEditedUser(userData);
+      setAiInfoEnabled(profile.ai_info_enabled === true);
     } catch (error) {
       console.error('Error loading user:', error);
       toast({
@@ -364,7 +366,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           notes: toNullIfEmpty((editedUser as any).notes),
           vorstand_funktion: toNullIfEmpty((editedUser as any).vorstandFunktion),
           data_public_in_ksvl: (editedUser as any).dataPublicInKsvl === true,
-          contact_public_in_ksvl: (editedUser as any).contactPublicInKsvl === true
+          contact_public_in_ksvl: (editedUser as any).contactPublicInKsvl === true,
+          ai_info_enabled: aiInfoEnabled
         };
 
         const { error } = await supabase
@@ -833,6 +836,49 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               ))}
             </div>
             
+            {/* AI-Assistent Einstellungen */}
+            <div className="space-y-3 pt-4 mt-4 border-t">
+              <h4 className="text-sm font-medium text-foreground">AI-Assistent</h4>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="ai-info-enabled"
+                  checked={aiInfoEnabled}
+                  onCheckedChange={(checked) => setAiInfoEnabled(checked === true)}
+                  disabled={!isEditing}
+                />
+                <label
+                  htmlFor="ai-info-enabled"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  AI-Assistent Info aktivieren
+                </label>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Wenn aktiviert, kann der AI-Assistent die unten eingetragenen Informationen bei Fragen über Sie verwenden.
+              </p>
+              
+              {/* AI Agent Info Custom Field */}
+              {!fieldsLoading && customFields.filter(f => f.name === 'ai_agent_info').map((field) => (
+                <div key={field.id} className="space-y-2">
+                  <Label>{field.label}</Label>
+                  {isEditing ? (
+                    <Textarea
+                      value={editedCustomValues[field.name] || ""}
+                      onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                      placeholder={field.placeholder}
+                      disabled={!aiInfoEnabled}
+                      className={cn(!aiInfoEnabled && "opacity-50 cursor-not-allowed")}
+                      rows={4}
+                    />
+                  ) : (
+                    <span className="text-sm">
+                      {aiInfoEnabled ? (customValues[field.name] || "-") : "Deaktiviert"}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+
             {/* Öffentliche Daten im KSVL */}
             <div className="space-y-3 pt-4 mt-4 border-t">
               <h4 className="text-sm font-medium text-foreground">Öffentliche Anzeige</h4>
