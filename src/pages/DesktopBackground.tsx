@@ -33,27 +33,28 @@ function DesktopBackgroundContent() {
         backgroundAttachment: 'fixed'
       } : undefined}
     >
-      <div className="max-w-4xl mx-auto">{/* Header */}
+      <div className={cn("max-w-4xl mx-auto", isMobile ? "pt-6" : "pt-0")}>
+      {/* Header */}
       <Card className={cn(
-        "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
+        "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6 mt-6",
         isMobile && "mx-4"
       )}>
         <CardHeader className="pb-6">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
+            <button
               onClick={() => navigate("/settings")}
-              className="text-white hover:bg-white/10"
+              className="w-10 h-10 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center hover:bg-white/30 transition-colors"
             >
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
+              <ArrowLeft className="h-5 w-5 text-white" />
+            </button>
             <CardTitle className={cn(
-              "font-bold flex-1",
-              isMobile ? "text-2xl" : "text-4xl"
+              "font-bold flex-1 text-center text-white",
+              isMobile ? "text-xl" : "text-2xl"
             )}>
               Desktop-Hintergrund
             </CardTitle>
+            {/* Spacer für Zentrierung */}
+            <div className="w-10" />
           </div>
         </CardHeader>
       </Card>
