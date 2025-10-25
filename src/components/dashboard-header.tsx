@@ -1,4 +1,4 @@
-import { Bell, Send, Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Bell, Send, Loader2, ChevronDown, ChevronUp, Bot } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -223,18 +223,19 @@ export function DashboardHeader({
       {/* Chat Messages - nur anzeigen wenn Nachrichten vorhanden sind */}
       {messages.length > 0 && (
         <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-white/80">Antworten</span>
+          <div className="flex items-center gap-2 mb-2">
+            <Bot className="h-6 w-6 text-white" />
+            <span className="text-base font-semibold text-white">AI-Assistent</span>
             <Button
               variant="ghost"
-              size="iconRound"
+              size="icon"
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="h-6 w-6 text-white/80 hover:text-white hover:bg-white/10"
+              className="ml-auto h-10 w-10 rounded-full text-white/80 hover:text-white hover:bg-white/10"
             >
               {isCollapsed ? (
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className="h-5 w-5" />
               ) : (
-                <ChevronUp className="h-4 w-4" />
+                <ChevronUp className="h-5 w-5" />
               )}
             </Button>
           </div>
