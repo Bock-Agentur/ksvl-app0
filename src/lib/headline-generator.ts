@@ -1,6 +1,6 @@
 /**
  * Automatic Headline Generator
- * Generates contextual headlines based on time of day, season, and special occasions
+ * Generates contextual headlines based on time of day
  */
 
 import { toZonedTime } from 'date-fns-tz';
@@ -9,75 +9,9 @@ export function generateAutomaticHeadline(): string {
   // Use Vienna timezone
   const viennaTime = toZonedTime(new Date(), 'Europe/Vienna');
   const hour = viennaTime.getHours();
-  const month = viennaTime.getMonth(); // 0-11
-  const day = viennaTime.getDate();
 
-  // Check for special occasions first
-  const specialOccasion = getSpecialOccasion(month, day);
-  if (specialOccasion) return specialOccasion;
-
-  // Check season
-  const seasonalHeadline = getSeasonalHeadline(month, hour);
-  if (seasonalHeadline) return seasonalHeadline;
-
-  // Default time-based headlines
+  // Only use time-based headlines
   return getTimeBasedHeadline(hour);
-}
-
-function getSpecialOccasion(month: number, day: number): string | null {
-  // Christmas Season (December)
-  if (month === 11 && day >= 1 && day <= 26) {
-    return "Frohe Weihnachten! ⛵🎄\nBereit für eine Winterfahrt?";
-  }
-
-  // New Year
-  if (month === 0 && day === 1) {
-    return "Frohes neues Jahr! 🎊\nNeue Ziele, neue Abenteuer!";
-  }
-
-  // Easter (approximate - early April)
-  if (month === 3 && day >= 1 && day <= 20) {
-    return "Frohe Ostern! 🐰⛵\nPerfekt für einen Segeltörn!";
-  }
-
-  // Summer Start (June 1)
-  if (month === 5 && day === 1) {
-    return "Der Sommer ist da! ☀️\nWo geht die Reise hin?";
-  }
-
-  return null;
-}
-
-function getSeasonalHeadline(month: number, hour: number): string | null {
-  // Spring (March-May)
-  if (month >= 2 && month <= 4) {
-    if (hour < 12) return "Guten Morgen! 🌸\nPerfektes Frühlingswetter zum Segeln!";
-    if (hour < 18) return "Ahoi! 🌸\nDie Frühlingsbrisen rufen!";
-    return "Schönen Abend! 🌅\nNoch eine Runde segeln?";
-  }
-
-  // Summer (June-August)
-  if (month >= 5 && month <= 7) {
-    if (hour < 12) return "Moin Moin! ☀️\nBereit für Sommerabenteuer?";
-    if (hour < 18) return "Ahoi! 🏖️\nWo soll's heute hingehen?";
-    return "Laue Sommernacht! 🌙\nNoch Lust auf eine Fahrt?";
-  }
-
-  // Autumn (September-November)
-  if (month >= 8 && month <= 10) {
-    if (hour < 12) return "Guten Morgen! 🍂\nHerbstwind im Rücken?";
-    if (hour < 18) return "Moin! 🍁\nPerfekte Segelbedingungen!";
-    return "Schöner Herbstabend! 🌇\nNoch eine Tour?";
-  }
-
-  // Winter (December-February)
-  if (month === 11 || month <= 1) {
-    if (hour < 12) return "Guten Morgen! ❄️\nWinterliches Segelabenteuer?";
-    if (hour < 18) return "Moin! ⛄\nMutige segeln auch im Winter!";
-    return "Winterabend! 🌨️\nGemütlich bleiben oder raus?";
-  }
-
-  return null;
 }
 
 function getTimeBasedHeadline(hour: number): string {
