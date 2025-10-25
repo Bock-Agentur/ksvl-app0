@@ -20,6 +20,7 @@ function AppContent() {
   const { currentRole, currentUser, setRole, isLoading: roleLoading } = useRole();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isReady, setIsReady] = useState(false);
   
   // Use database for active tab storage
   const { value: activeTab, setValue: setActiveTabRaw, isLoading: settingsLoading } = useAppSettings<string>(
@@ -52,11 +53,15 @@ function AppContent() {
   // Initialize slot design system
   useSlotDesign();
 
-  // Reset to dashboard only on initial load/refresh
+  // Reset to dashboard only on initial load/refresh and mark as ready
   useEffect(() => {
     if (!roleLoading && !settingsLoading && isInitialLoad) {
       setActiveTabRaw('dashboard', true);
       setIsInitialLoad(false);
+      // Small delay to ensure smooth transition
+      requestAnimationFrame(() => {
+        setIsReady(true);
+      });
     }
   }, [roleLoading, settingsLoading, isInitialLoad, setActiveTabRaw]);
 
@@ -84,8 +89,8 @@ function AppContent() {
     }
   };
 
-  // Show minimal loading only for initial auth check
-  if (roleLoading || settingsLoading || !currentUser) {
+  // Show nothing until fully ready
+  if (!isReady || roleLoading || settingsLoading || !currentUser) {
     return null;
   }
 
@@ -153,14 +158,7 @@ const Index = () => {
   }, [navigate]);
 
   if (loading || !session || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-muted-foreground">Lade Anwendung...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (
