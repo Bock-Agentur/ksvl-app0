@@ -33,6 +33,7 @@ import {
   Database, 
   ChevronRight, 
   ArrowLeft,
+  Type,
   type LucideIcon
 } from "lucide-react";
 
@@ -41,7 +42,8 @@ type SettingSection = {
   label: string;
   description?: string;
   icon: LucideIcon;
-  component: React.ComponentType;
+  component?: React.ComponentType;
+  route?: string;
   group: string;
 };
 
@@ -53,6 +55,7 @@ export function Settings() {
 
   const sections: SettingSection[] = [
     { id: "dashboard", label: "Dashboard", description: "Widgets und Layout anpassen", icon: LayoutDashboard, component: DashboardSettings, group: "dashboard" },
+    { id: "headermessage", label: "Header-Nachricht", description: "Dashboard-Überschrift anpassen", icon: Type, route: "/header-message", group: "dashboard" },
     { id: "messages", label: "Startnachrichten", description: "Willkommensnachrichten nach Rolle", icon: MessageSquare, component: RoleWelcomeSettings, group: "dashboard" },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
       { id: "aiwelcome", label: "AI-Startnachricht", description: "KI-generierte Begrüßung", icon: Bot, component: AIWelcomeMessageSettings, group: "dashboard" }
@@ -81,8 +84,13 @@ export function Settings() {
   };
 
   const handleSelectSection = (sectionId: string) => {
-    setActiveSection(sectionId);
-    setIsOverview(false);
+    const section = sections.find(s => s.id === sectionId);
+    if (section?.route) {
+      window.location.href = section.route;
+    } else {
+      setActiveSection(sectionId);
+      setIsOverview(false);
+    }
   };
 
   const handleBack = () => {

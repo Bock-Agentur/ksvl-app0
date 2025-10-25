@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Settings } from "./pages/Settings";
 import { Auth } from "./pages/Auth";
+import { HeaderMessage } from "./pages/HeaderMessage";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ const App = () => {
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/settings" element={<Settings />} />
+              <Route path="/header-message" element={<HeaderMessage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
