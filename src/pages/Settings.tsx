@@ -12,12 +12,12 @@ import { TestDataManager } from "@/components/test-data-manager";
 import { UserListDatabase } from "@/components/user-list-database";
 import { CustomFieldsManager } from "@/components/custom-fields-manager";
 import { LoginBackgroundSettings } from "@/components/login-background-settings";
+import { DesktopBackgroundSettings } from "@/components/desktop-background-settings";
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/hooks/use-role";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useNavigate } from "react-router-dom";
 import { 
   LayoutDashboard, 
   MessageSquare, 
@@ -41,9 +41,8 @@ type SettingSection = {
   label: string;
   description?: string;
   icon: LucideIcon;
-  component?: React.ComponentType;
+  component: React.ComponentType;
   group: string;
-  route?: string;
 };
 
 export function Settings() {
@@ -51,7 +50,6 @@ export function Settings() {
   const [isOverview, setIsOverview] = useState(true);
   const { currentRole } = useRole();
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
 
   const sections: SettingSection[] = [
     { id: "dashboard", label: "Dashboard", description: "Widgets und Layout anpassen", icon: LayoutDashboard, component: DashboardSettings, group: "dashboard" },
@@ -65,7 +63,7 @@ export function Settings() {
     { id: "theme", label: "Theme", description: "Hell/Dunkel-Modus", icon: Brush, component: ThemeManager, group: "design" },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
       { id: "loginpage", label: "Login-Seite", description: "Hintergrundbild anpassen", icon: Image, component: LoginBackgroundSettings, group: "design" },
-      { id: "desktopbg", label: "Desktop-Hintergrund", description: "Hintergrundbild auf Desktop", icon: Monitor, route: "/desktop-background", group: "design" }
+      { id: "desktopbg", label: "Desktop-Hintergrund", description: "Hintergrundbild auf Desktop", icon: Monitor, component: DesktopBackgroundSettings, group: "design" }
     ] : []),
     { id: "customfields", label: "Custom Fields", description: "Benutzerdefinierte Felder", icon: ListChecks, component: CustomFieldsManager, group: "advanced" },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
@@ -83,13 +81,8 @@ export function Settings() {
   };
 
   const handleSelectSection = (sectionId: string) => {
-    const section = sections.find(s => s.id === sectionId);
-    if (section?.route) {
-      navigate(section.route);
-    } else {
-      setActiveSection(sectionId);
-      setIsOverview(false);
-    }
+    setActiveSection(sectionId);
+    setIsOverview(false);
   };
 
   const handleBack = () => {
