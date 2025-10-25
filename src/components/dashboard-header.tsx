@@ -229,7 +229,7 @@ export function DashboardHeader({
               variant="ghost"
               size="sm"
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="h-6 px-2 text-white/80 hover:text-white hover:bg-white/10"
+              className="h-6 px-2 rounded-full text-white/80 hover:text-white hover:bg-white/10"
             >
               {isCollapsed ? (
                 <ChevronDown className="h-4 w-4" />
