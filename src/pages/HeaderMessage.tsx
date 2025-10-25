@@ -23,7 +23,7 @@ function HeaderMessageContent() {
     <div 
       className={cn(
         "min-h-screen pb-20 bg-background",
-        isMobile ? "pt-6" : "p-6"
+        isMobile ? "pt-4" : "p-6"
       )}
       style={showBackground ? {
         backgroundImage: `url(${background})`,
