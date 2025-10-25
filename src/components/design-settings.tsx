@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -280,28 +280,17 @@ export function DesignSettings() {
 
   return (
     <div className="space-y-6">
-      <Card className={cn(
-        isMobile ? "rounded-none border-x-0" : "bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0"
-      )}>
-        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
-          <CardTitle className={cn(
-            "flex items-center gap-2 font-bold",
-            isMobile ? "text-lg" : "text-2xl"
-          )}>
-            <Palette className={isMobile ? "w-5 h-5" : "w-6 h-6"} />
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Palette className="w-6 h-6" />
             Slot Design-Einstellungen
           </CardTitle>
-          {!isMobile && (
-            <p className="text-sm text-muted-foreground">
-              Passen Sie die Farben der Slots in der Wochenansicht und Slot-Verwaltung an. 
-              Alle Farben unterstützen Transparenz (Alpha-Kanal).
-            </p>
-          )}
+          <CardDescription>
+            Passen Sie die Farben der Slots in der Wochenansicht und Slot-Verwaltung an. Alle Farben unterstützen Transparenz (Alpha-Kanal).
+          </CardDescription>
         </CardHeader>
-        <CardContent className={cn(
-          "space-y-8",
-          isMobile && "px-4 pb-4"
-        )}>
+        <CardContent className="space-y-8">
           {/* Live Demo Slots - Shows trendy style with standard colors */}
           <div className="space-y-4">
             <Label className="text-base font-medium">
