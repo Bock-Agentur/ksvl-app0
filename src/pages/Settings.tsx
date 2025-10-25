@@ -306,7 +306,7 @@ function SettingsContent() {
       </Card>
 
       {/* Settings Component */}
-      <div>
+      <div className={cn(isMobile ? "px-4" : "")}>
         {ActiveComponent && <ActiveComponent />}
       </div>
       </div>
