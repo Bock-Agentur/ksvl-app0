@@ -16,7 +16,7 @@ import { DesktopBackgroundSettings } from "@/components/desktop-background-setti
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
 import { cn } from "@/lib/utils";
-import { useRole } from "@/hooks/use-role";
+import { RoleProvider, useRole } from "@/hooks/use-role";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { 
   LayoutDashboard, 
@@ -47,7 +47,7 @@ type SettingSection = {
   group: string;
 };
 
-export function Settings() {
+function SettingsContent() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [isOverview, setIsOverview] = useState(true);
   const { currentRole } = useRole();
@@ -278,5 +278,13 @@ export function Settings() {
         {ActiveComponent && <ActiveComponent />}
       </div>
     </div>
+  );
+}
+
+export function Settings() {
+  return (
+    <RoleProvider>
+      <SettingsContent />
+    </RoleProvider>
   );
 }
