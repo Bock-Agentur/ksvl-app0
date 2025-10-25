@@ -21,9 +21,9 @@ function AppContent() {
   const { currentRole, currentUser, setRole } = useRole();
   const testData = useTestData();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [isPageReady, setIsPageReady] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   
-  // Use database for active tab storage - always default to dashboard
+  // Use database for active tab storage
   const { value: activeTab, setValue: setActiveTabRaw, isLoading } = useAppSettings<string>(
     "activeTab",
     "dashboard",
@@ -55,13 +55,13 @@ function AppContent() {
   // Initialize slot design system
   useSlotDesign();
 
-  // Reset to dashboard on initial load/refresh
+  // Reset to dashboard only on initial load/refresh
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && isInitialLoad) {
       setActiveTabRaw('dashboard', true);
-      setIsPageReady(true);
+      setIsInitialLoad(false);
     }
-  }, [isLoading, setActiveTabRaw]);
+  }, [isLoading, isInitialLoad, setActiveTabRaw]);
 
   // Scroll to top when tab changes
   useEffect(() => {
@@ -93,8 +93,8 @@ function AppContent() {
     }
   };
 
-  // Show loading until page is ready
-  if (!isPageReady || isLoading) {
+  // Show loading only during initial load
+  if (isLoading && isInitialLoad) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
