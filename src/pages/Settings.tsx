@@ -101,15 +101,15 @@ export function Settings() {
       )}>
         {/* Header */}
         <Card className={cn(
-          "bg-primary text-primary-foreground mb-6",
-          isMobile && "rounded-none border-x-0"
+          "bg-gradient-ocean text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
+          isMobile && "mx-4"
         )}>
           <CardHeader>
             <CardTitle className={cn(
               "font-bold text-center",
               isMobile ? "text-xl" : "text-2xl"
             )}>
-              Einstellungen
+              Settings
             </CardTitle>
           </CardHeader>
         </Card>
