@@ -3,8 +3,9 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { DesktopBackgroundSettings } from "@/components/desktop-background-settings";
+import { RoleProvider } from "@/hooks/use-role";
 
-export function DesktopBackground() {
+function DesktopBackgroundContent() {
   const navigate = useNavigate();
 
   return (
@@ -31,6 +32,14 @@ export function DesktopBackground() {
       {/* Settings Component */}
       <DesktopBackgroundSettings />
     </div>
+  );
+}
+
+export function DesktopBackground() {
+  return (
+    <RoleProvider>
+      <DesktopBackgroundContent />
+    </RoleProvider>
   );
 }
 

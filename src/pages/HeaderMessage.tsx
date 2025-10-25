@@ -5,8 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { HeaderMessageSettings } from "@/components/header-message-settings";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { RoleProvider } from "@/hooks/use-role";
 
-export function HeaderMessage() {
+function HeaderMessageContent() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -45,5 +46,13 @@ export function HeaderMessage() {
         <HeaderMessageSettings />
       </div>
     </div>
+  );
+}
+
+export function HeaderMessage() {
+  return (
+    <RoleProvider>
+      <HeaderMessageContent />
+    </RoleProvider>
   );
 }
