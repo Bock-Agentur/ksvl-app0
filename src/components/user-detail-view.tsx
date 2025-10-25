@@ -40,6 +40,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<UserType>(user);
   const [editedCustomValues, setEditedCustomValues] = useState<Record<string, any>>({});
+  const [aiInfoEnabled, setAiInfoEnabled] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
@@ -73,6 +74,19 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
 
   useEffect(() => {
     setEditedUser(user);
+    // Load ai_info_enabled from user profile
+    const loadAiInfoEnabled = async () => {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('ai_info_enabled')
+        .eq('id', user.id)
+        .single();
+      
+      if (profile) {
+        setAiInfoEnabled(profile.ai_info_enabled === true);
+      }
+    };
+    loadAiInfoEnabled();
   }, [user]);
   
   useEffect(() => {
@@ -86,6 +100,17 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error('Nicht angemeldet');
+      }
+
+      // First update ai_info_enabled in profiles table
+      const { error: aiInfoError } = await supabase
+        .from('profiles')
+        .update({ ai_info_enabled: aiInfoEnabled })
+        .eq('id', user.id);
+
+      if (aiInfoError) {
+        console.error('Error updating ai_info_enabled:', aiInfoError);
+        throw aiInfoError;
       }
 
       const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`, {
@@ -866,6 +891,59 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
 
               <Separator />
 
+
+              <Separator />
+
+              {/* AI-Assistent */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-medium text-foreground border-b pb-2">
+                  AI-Assistent
+                </h3>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="aiInfoEnabled"
+                      checked={aiInfoEnabled}
+                      onCheckedChange={(checked) => setAiInfoEnabled(checked === true)}
+                      disabled={!isEditing}
+                    />
+                    <Label
+                      htmlFor="aiInfoEnabled"
+                      className={cn(
+                        "text-sm font-normal cursor-pointer",
+                        !isEditing && "cursor-default"
+                      )}
+                    >
+                      AI-Assistent Info aktivieren
+                    </Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Wenn aktiviert, kann der AI-Assistent die unten eingetragenen Informationen bei Fragen über Sie verwenden.
+                  </p>
+                  
+                  {/* AI Agent Info Custom Field */}
+                  {!fieldsLoading && customFields.filter(f => f.name === 'ai_agent_info').map((field) => (
+                    <div key={field.id} className="space-y-2">
+                      <Label>{field.label}</Label>
+                      {isEditing ? (
+                        <Textarea
+                          value={editedCustomValues[field.name] || ""}
+                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                          placeholder={field.placeholder}
+                          disabled={!aiInfoEnabled}
+                          className={cn(!aiInfoEnabled && "opacity-50 cursor-not-allowed")}
+                          rows={4}
+                        />
+                      ) : (
+                        <span className="text-sm text-muted-foreground">
+                          {aiInfoEnabled ? (customValues[field.name] || "-") : "Deaktiviert"}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
 
               <Separator />
 

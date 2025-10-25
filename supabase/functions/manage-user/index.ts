@@ -214,7 +214,8 @@ serve(async (req) => {
           entry_date: userData.entryDate || null,
           vorstand_funktion: userData.vorstandFunktion || null,
           data_public_in_ksvl: userData.dataPublicInKsvl === true,
-          contact_public_in_ksvl: userData.contactPublicInKsvl === true
+          contact_public_in_ksvl: userData.contactPublicInKsvl === true,
+          ai_info_enabled: userData.aiInfoEnabled === true
         })
         .eq('id', userId);
 

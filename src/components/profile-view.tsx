@@ -844,11 +844,10 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                   id="ai-info-enabled"
                   checked={aiInfoEnabled}
                   onCheckedChange={(checked) => setAiInfoEnabled(checked === true)}
-                  disabled={!isEditing}
                 />
                 <label
                   htmlFor="ai-info-enabled"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  className="text-sm font-medium leading-none cursor-pointer"
                 >
                   AI-Assistent Info aktivieren
                 </label>
