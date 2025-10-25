@@ -169,7 +169,8 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       setRole, 
       setCurrentUser: handleSetCurrentUser, 
       hasPermission,
-      hasAnyRole
+      hasAnyRole,
+      isLoading: isInitialLoad
     }}>
       {children}
     </RoleContext.Provider>

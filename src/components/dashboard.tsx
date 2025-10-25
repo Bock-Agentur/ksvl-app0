@@ -46,7 +46,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onNavigate }: DashboardProps = {}) {
-  const { currentRole, currentUser } = useRole();
+  const { currentRole, currentUser, isLoading: roleLoading } = useRole();
   const { slots, isLoading: slotsLoading } = useSlots();
   const { users, loading: usersLoading } = useUsers();
   const isMobileOrTablet = useIsMobile();
@@ -54,18 +54,9 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
   const settings = dashboardSettingsHook.settings;
   const { getAnimationClass, isInitialized, isAnimationEnabled } = useDashboardAnimations();
   
-  const [isContentReady, setIsContentReady] = useState(false);
+  // Wait for all critical data before rendering
+  const isContentReady = !roleLoading && !slotsLoading && !usersLoading && isInitialized && currentUser;
   
-  // Wait for all data to be loaded before showing content
-  useEffect(() => {
-    if (!slotsLoading && !usersLoading && isInitialized) {
-      // Small delay to ensure everything is rendered
-      const timer = setTimeout(() => {
-        setIsContentReady(true);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [slotsLoading, usersLoading, isInitialized]);
 
   // Calculate quick actions based on role
   const getQuickActions = () => {
@@ -214,7 +205,10 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
     return () => observer.disconnect();
   }, [isAnimationEnabled, settings.animationType, isInitialized]);
 
-  // Don't show loading state - parent handles it
+  // Return null if not ready - parent Index handles loading screen
+  if (!isContentReady) {
+    return null;
+  }
 
   return (
     <div className={cn(

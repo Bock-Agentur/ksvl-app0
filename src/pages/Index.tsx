@@ -18,17 +18,20 @@ import { CalendarView } from "@/components/calendar-view";
 
 // Inner component that uses the role context
 function AppContent() {
-  const { currentRole, currentUser, setRole } = useRole();
+  const { currentRole, currentUser, setRole, isLoading: roleLoading } = useRole();
   const testData = useTestData();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   
   // Use database for active tab storage
-  const { value: activeTab, setValue: setActiveTabRaw, isLoading } = useAppSettings<string>(
+  const { value: activeTab, setValue: setActiveTabRaw, isLoading: settingsLoading } = useAppSettings<string>(
     "activeTab",
     "dashboard",
     false
   );
+  
+  // Wait for both role and settings to load
+  const isAppLoading = roleLoading || settingsLoading;
   
   // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
@@ -57,11 +60,11 @@ function AppContent() {
 
   // Reset to dashboard only on initial load/refresh
   useEffect(() => {
-    if (!isLoading && isInitialLoad) {
+    if (!isAppLoading && isInitialLoad) {
       setActiveTabRaw('dashboard', true);
       setIsInitialLoad(false);
     }
-  }, [isLoading, isInitialLoad, setActiveTabRaw]);
+  }, [isAppLoading, isInitialLoad, setActiveTabRaw]);
 
   // Scroll to top when tab changes
   useEffect(() => {
@@ -93,13 +96,13 @@ function AppContent() {
     }
   };
 
-  // Show loading only during initial load
-  if (isLoading && isInitialLoad) {
+  // Show loading only during initial data fetch
+  if (isAppLoading || !currentUser) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-muted-foreground">Seite wird geladen...</p>
+          <p className="text-muted-foreground">Lade Anwendung...</p>
         </div>
       </div>
     );

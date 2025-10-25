@@ -70,6 +70,7 @@ export interface RoleContextType {
   setCurrentUser: (user: User | null) => void;
   hasPermission: (requiredRoles: UserRole[]) => boolean;
   hasAnyRole: (roles: UserRole[]) => boolean;
+  isLoading: boolean;
 }
 
 // Helper function to generate roles based on primary role
