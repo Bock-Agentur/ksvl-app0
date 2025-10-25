@@ -110,33 +110,22 @@ export function MenuSettings() {
 
   return (
     <div className="space-y-6">
-      <Card className={cn(
-        isMobile ? "rounded-none border-x-0" : "bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0"
-      )}>
-        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
-          <CardTitle className={cn(
-            "flex items-center justify-between font-bold",
-            isMobile ? "text-lg flex-col gap-3" : "text-2xl"
-          )}>
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
             <span>Drawer-Menü Einstellungen</span>
-            <div className={cn(
-              "flex gap-2",
-              isMobile && "w-full justify-end"
-            )}>
-              <Button variant="outline" size={isMobile ? "sm" : "sm"} onClick={handleForceRefresh}>
-                {!isMobile && "Icons aktualisieren"}
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleForceRefresh}>
+                Icons aktualisieren
               </Button>
-              <Button variant="outline" size={isMobile ? "sm" : "sm"} onClick={handleReset}>
+              <Button variant="outline" size="sm" onClick={handleReset}>
                 <RotateCcw className="h-4 w-4 mr-2" />
-                {!isMobile && "Zurücksetzen"}
+                Zurücksetzen
               </Button>
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className={cn(
-          "space-y-6",
-          isMobile && "px-4 pb-4"
-        )}>
+        <CardContent className="space-y-6">
           {/* Info Banner */}
           <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
             <p className="text-sm text-blue-900 dark:text-blue-100">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppSettings } from "@/hooks/use-app-settings";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -183,27 +183,17 @@ export function FooterMenuSettings() {
 
   return (
     <div className="space-y-6">
-      <Card className={cn(
-        isMobile ? "rounded-none border-x-0" : "bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0"
-      )}>
-        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
-          <CardTitle className={cn(
-            "flex items-center gap-2 font-bold",
-            isMobile ? "text-lg" : "text-2xl"
-          )}>
-            <Navigation className={isMobile ? "w-5 h-5" : "w-6 h-6"} />
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Navigation className="w-6 h-6" />
             Footer-Menü Einstellungen
           </CardTitle>
-          {!isMobile && (
-            <p className="text-sm text-muted-foreground">
-              Konfigurieren Sie die Menüpunkte im unteren Navigationsbereich für jede Benutzerrolle. Maximal 6 Menüpunkte pro Rolle.
-            </p>
-          )}
+          <CardDescription>
+            Konfigurieren Sie die Menüpunkte im unteren Navigationsbereich für jede Benutzerrolle. Maximal 6 Menüpunkte pro Rolle.
+          </CardDescription>
         </CardHeader>
-        <CardContent className={cn(
-          "space-y-6",
-          isMobile && "px-4 pb-4"
-        )}>
+        <CardContent className="space-y-6">
           {/* Role Selector */}
           <div className="space-y-3">
             <Label className="text-base font-medium">Rolle auswählen</Label>
@@ -451,9 +441,7 @@ export function FooterMenuSettings() {
       </Card>
 
       {/* Statistics */}
-      <Card className={cn(
-        isMobile ? "rounded-none border-x-0" : "bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0"
-      )}>
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg">Übersicht</CardTitle>
         </CardHeader>
