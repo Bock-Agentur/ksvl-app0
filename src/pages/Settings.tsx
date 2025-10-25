@@ -18,6 +18,9 @@ import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settin
 import { cn } from "@/lib/utils";
 import { RoleProvider, useRole } from "@/hooks/use-role";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useNavigate } from "react-router-dom";
+import { useLoginBackground } from "@/hooks/use-login-background";
+import { useDesktopBackground } from "@/hooks/use-desktop-background";
 import { 
   LayoutDashboard, 
   MessageSquare, 
@@ -52,6 +55,11 @@ function SettingsContent() {
   const [isOverview, setIsOverview] = useState(true);
   const { currentRole } = useRole();
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
+  const { background } = useLoginBackground();
+  const { settings: desktopBackgroundSettings } = useDesktopBackground();
+
+  const showBackground = desktopBackgroundSettings.enabled && background;
 
   const sections: SettingSection[] = [
     { id: "dashboard", label: "Dashboard", description: "Widgets und Layout anpassen", icon: LayoutDashboard, component: DashboardSettings, group: "dashboard" },
@@ -86,7 +94,7 @@ function SettingsContent() {
   const handleSelectSection = (sectionId: string) => {
     const section = sections.find(s => s.id === sectionId);
     if (section?.route) {
-      window.location.href = section.route;
+      navigate(section.route);
     } else {
       setActiveSection(sectionId);
       setIsOverview(false);
@@ -103,11 +111,20 @@ function SettingsContent() {
 
   if (isOverview) {
     return (
-      <div className={cn(
-        "max-w-4xl mx-auto",
-        isMobile ? "p-0" : "p-6"
-      )}>
-        {/* Header */}
+      <div 
+        className={cn(
+          "min-h-screen",
+          isMobile ? "p-0" : "p-6"
+        )}
+        style={showBackground ? {
+          backgroundImage: `url(${background})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
+        } : undefined}
+      >
+        <div className="max-w-4xl mx-auto">{/* Header */}
         <Card className={cn(
           "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
           isMobile && "mx-4"
@@ -236,17 +253,27 @@ function SettingsContent() {
             </Card>
           )}
         </div>
+        </div>
       </div>
     );
   }
 
   // Detail View
   return (
-    <div className={cn(
-      "max-w-4xl mx-auto",
-      isMobile ? "p-0" : "p-6"
-    )}>
-      {/* Header mit Zurück-Button */}
+    <div 
+      className={cn(
+        "min-h-screen",
+        isMobile ? "p-0" : "p-6"
+      )}
+      style={showBackground ? {
+        backgroundImage: `url(${background})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
+      } : undefined}
+    >
+      <div className="max-w-4xl mx-auto">{/* Header mit Zurück-Button */}
       <Card className={cn(
         "bg-primary text-primary-foreground mb-6",
         isMobile && "rounded-none border-x-0"
@@ -276,6 +303,7 @@ function SettingsContent() {
       {/* Settings Component */}
       <div>
         {ActiveComponent && <ActiveComponent />}
+      </div>
       </div>
     </div>
   );
