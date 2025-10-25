@@ -128,7 +128,7 @@ function SettingsContent() {
       >
         <div className="max-w-4xl mx-auto">{/* Header */}
         <Card className={cn(
-          "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
+          "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6 mt-6",
           isMobile && "mx-4"
         )}>
           <CardHeader className="pb-6">
@@ -280,8 +280,8 @@ function SettingsContent() {
     >
       <div className="max-w-4xl mx-auto">{/* Header mit Zurück-Button */}
       <Card className={cn(
-        "bg-primary text-primary-foreground mb-6",
-        isMobile && "rounded-none border-x-0"
+        "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6 mt-6",
+        isMobile && "mx-4"
       )}>
         <CardHeader>
           <div className="flex items-center gap-4">
@@ -289,12 +289,12 @@ function SettingsContent() {
               variant="ghost"
               size="icon"
               onClick={handleBack}
-              className="text-primary-foreground hover:bg-primary-foreground/10"
+              className="text-white hover:bg-white/10"
             >
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <CardTitle className={cn(
-              "font-bold flex-1 text-center",
+              "font-bold flex-1 text-center text-white",
               isMobile ? "text-xl" : "text-2xl"
             )}>
               {activeLabel}
