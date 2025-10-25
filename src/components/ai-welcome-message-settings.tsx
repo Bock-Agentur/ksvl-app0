@@ -51,16 +51,9 @@ export function AIWelcomeMessageSettings() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold mb-2">AI-Startnachricht</h2>
-        <p className="text-muted-foreground">
-          Konfigurieren Sie eine automatische Nachricht, die allen Mitgliedern beim Dashboard-Start angezeigt wird.
-        </p>
-      </div>
-
+    <div className="space-y-4">
       {/* Aktivierung */}
-      <Card>
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle>Automatische Nachricht</CardTitle>
           <CardDescription>
@@ -82,7 +75,7 @@ export function AIWelcomeMessageSettings() {
       </Card>
 
       {/* Nachrichteninhalt */}
-      <Card>
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle>Nachrichteninhalt</CardTitle>
           <CardDescription>
@@ -129,7 +122,7 @@ export function AIWelcomeMessageSettings() {
 
       {/* Vorschau */}
       {localMessage && (
-        <Card>
+        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
           <CardHeader>
             <CardTitle>Vorschau</CardTitle>
             <CardDescription>
