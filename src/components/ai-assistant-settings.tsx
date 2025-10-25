@@ -34,7 +34,7 @@ export function AIAssistantSettings() {
       </div>
 
       {/* Agent-Name */}
-      <Card>
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle>Agent-Name</CardTitle>
           <CardDescription>
@@ -71,7 +71,7 @@ export function AIAssistantSettings() {
       </Card>
 
       {/* Tonalität pro Rolle */}
-      <Card>
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle>Tonalität pro Rolle</CardTitle>
           <CardDescription>
@@ -124,7 +124,7 @@ export function AIAssistantSettings() {
       </Card>
 
       {/* Antwortlänge */}
-      <Card>
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle>Antwortlänge</CardTitle>
           <CardDescription>
@@ -159,7 +159,7 @@ export function AIAssistantSettings() {
       </Card>
 
       {/* Eigener System-Prompt */}
-      <Card>
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle>Eigener System-Prompt</CardTitle>
           <CardDescription>
