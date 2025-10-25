@@ -1,11 +1,10 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
 import type { User, Session } from "@supabase/supabase-js";
 import { RoleProvider, useRole } from "@/hooks/use-role";
 import { useSlotDesign } from "@/hooks/use-slot-design";
-import { TestDataProvider, useTestData } from "@/hooks/use-test-data";
+import { TestDataProvider } from "@/hooks/use-test-data";
 import { ConsecutiveSlotsProvider } from "@/hooks/use-consecutive-slots";
 import { useAppSettings } from "@/hooks/use-app-settings";
 import { AppShell } from "@/components/app-shell";
@@ -21,7 +20,6 @@ function AppContent() {
   const { currentRole, currentUser, setRole, isLoading: roleLoading } = useRole();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [showContent, setShowContent] = useState(false);
   
   // Use database for active tab storage
   const { value: activeTab, setValue: setActiveTabRaw, isLoading: settingsLoading } = useAppSettings<string>(
@@ -29,9 +27,6 @@ function AppContent() {
     "dashboard",
     false
   );
-  
-  // Wait for both role and settings to load
-  const isAppLoading = roleLoading || settingsLoading;
   
   // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
@@ -44,7 +39,6 @@ function AppContent() {
       if (!isNaN(date.getTime())) {
         setSelectedCalendarDate(date);
         setActiveTabRaw('calendar', true);
-        // Entferne den Parameter aus der URL
         setSearchParams({});
       }
     }
@@ -52,7 +46,7 @@ function AppContent() {
   
   // Wrapper to save without toast notification
   const setActiveTab = (tab: string) => {
-    setActiveTabRaw(tab, true); // skipToast = true
+    setActiveTabRaw(tab, true);
   };
   
   // Initialize slot design system
@@ -60,30 +54,22 @@ function AppContent() {
 
   // Reset to dashboard only on initial load/refresh
   useEffect(() => {
-    if (!isAppLoading && isInitialLoad) {
+    if (!roleLoading && !settingsLoading && isInitialLoad) {
       setActiveTabRaw('dashboard', true);
       setIsInitialLoad(false);
-      // Delay content display for smooth fade-in
-      setTimeout(() => setShowContent(true), 50);
     }
-  }, [isAppLoading, isInitialLoad, setActiveTabRaw]);
+  }, [roleLoading, settingsLoading, isInitialLoad, setActiveTabRaw]);
 
   // Scroll to top when tab changes
   useEffect(() => {
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: 'instant' });
   }, [activeTab]);
 
-  // Let TestDataProvider handle initialization - no forced scenario loading
-
   const renderContent = () => {
-    console.log("Rendering content for activeTab:", activeTab);
     switch (activeTab) {
       case "dashboard":
         return <Dashboard onNavigate={setActiveTab} />;
       case "calendar":
-        console.log("Rendering CalendarView with selectedDate:", selectedCalendarDate);
         return <CalendarView initialDate={selectedCalendarDate} />;
       case "profile":
         return <ProfileView currentRole={currentRole} />;
@@ -98,8 +84,8 @@ function AppContent() {
     }
   };
 
-  // Show loading only during initial data fetch
-  if (isAppLoading || !currentUser || !showContent) {
+  // Show minimal loading only for initial auth check
+  if (roleLoading || settingsLoading || !currentUser) {
     return null;
   }
 
@@ -125,12 +111,7 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Scroll to top on initial load
-    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
-    
-    // Check for existing session first
+    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -150,10 +131,9 @@ const Index = () => {
         if (event === 'SIGNED_OUT') {
           navigate("/auth");
         } else if (event === 'SIGNED_IN') {
-          // Immediately navigate to homepage
           navigate("/", { replace: true });
           
-          // Defer database update to avoid blocking
+          // Update activeTab in background
           setTimeout(() => {
             supabase
               .from('app_settings')
