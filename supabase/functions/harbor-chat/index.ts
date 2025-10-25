@@ -141,7 +141,7 @@ serve(async (req) => {
     // Hole öffentliche Mitgliederdaten (nur wenn data_public_in_ksvl = true)
     const { data: publicMembers, error: membersError } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, name, member_number, boat_name, boat_type, berth_number, email, phone, contact_public_in_ksvl, vorstand_funktion')
+      .select('id, first_name, last_name, name, member_number, boat_name, boat_type, berth_number, email, phone, contact_public_in_ksvl, vorstand_funktion, ai_info_enabled')
       .eq('data_public_in_ksvl', true)
       .order('name', { ascending: true });
 
@@ -173,6 +173,21 @@ serve(async (req) => {
         customValuesMap.get(cfv.user_id)![field.name] = cfv.value;
       }
     });
+
+    // Hole AI-Info Daten (nur für Mitglieder, die ai_info_enabled haben)
+    const membersWithAiInfo = publicMembers?.filter(m => m.ai_info_enabled) || [];
+    const aiInfoText = membersWithAiInfo.length > 0 ? `
+
+ZUSÄTZLICHE AI-INFOS VON MITGLIEDERN (${membersWithAiInfo.length} Mitglieder):
+${membersWithAiInfo.map(m => {
+  const customValues = customValuesMap.get(m.id) || {};
+  const aiInfo = customValues['ai_agent_info'];
+  if (!aiInfo) return null;
+  return `- ${getFullName(m)}${m.member_number ? ` (Nr: ${m.member_number})` : ''}: ${aiInfo}`;
+}).filter(Boolean).join('\n')}
+
+WICHTIG: Diese Infos sind direkt von den Mitgliedern für den AI-Assistenten freigegeben. Nutze sie bei Fragen über diese Personen.
+` : '';
 
     // Filtere Vorstandsmitglieder separat
     const { data: vorstandMembers, error: vorstandError } = await supabase
@@ -355,6 +370,7 @@ ${slotsInfo}
 ${pastSlotsInfo}
 ${membersInfo}
 ${vorstandInfo}
+${aiInfoText}
 
 Für andere Vereinsangelegenheiten (Events, Finanzen, Regattaergebnisse, Hafeninformationen) kannst du allgemeine Informationen geben und auf den Vorstand verweisen.
 
