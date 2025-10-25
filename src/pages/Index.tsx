@@ -21,9 +21,10 @@ function AppContent() {
   const { currentRole, currentUser, setRole } = useRole();
   const testData = useTestData();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isPageReady, setIsPageReady] = useState(false);
   
-  // Use database for active tab storage
-  const { value: activeTab, setValue: setActiveTabRaw } = useAppSettings<string>(
+  // Use database for active tab storage - always default to dashboard
+  const { value: activeTab, setValue: setActiveTabRaw, isLoading } = useAppSettings<string>(
     "activeTab",
     "dashboard",
     false
@@ -54,6 +55,14 @@ function AppContent() {
   // Initialize slot design system
   useSlotDesign();
 
+  // Reset to dashboard on initial load/refresh
+  useEffect(() => {
+    if (!isLoading) {
+      setActiveTabRaw('dashboard', true);
+      setIsPageReady(true);
+    }
+  }, [isLoading, setActiveTabRaw]);
+
   // Scroll to top when tab changes
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -83,6 +92,18 @@ function AppContent() {
         return <Dashboard />;
     }
   };
+
+  // Show loading until page is ready
+  if (!isPageReady || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted-foreground">Seite wird geladen...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AppShell
