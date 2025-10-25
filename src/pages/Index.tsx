@@ -18,10 +18,9 @@ import { CalendarView } from "@/components/calendar-view";
 
 // Inner component that uses the role context
 function AppContent() {
-  const { currentRole, currentUser, setRole, isLoading: roleLoading } = useRole();
+  const { currentRole, currentUser, setRole } = useRole();
   const [searchParams, setSearchParams] = useSearchParams();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [showContent, setShowContent] = useState(false);
   
   // Use database for active tab storage
   const { value: activeTab, setValue: setActiveTabRaw, isLoading: settingsLoading } = useAppSettings<string>(
@@ -29,9 +28,6 @@ function AppContent() {
     "dashboard",
     false
   );
-  
-  // Wait for both role and settings to load
-  const isAppLoading = roleLoading || settingsLoading;
   
   // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
@@ -60,13 +56,11 @@ function AppContent() {
 
   // Reset to dashboard only on initial load/refresh
   useEffect(() => {
-    if (!isAppLoading && isInitialLoad) {
+    if (!settingsLoading && isInitialLoad) {
       setActiveTabRaw('dashboard', true);
       setIsInitialLoad(false);
-      // Delay content display for smooth fade-in
-      setTimeout(() => setShowContent(true), 50);
     }
-  }, [isAppLoading, isInitialLoad, setActiveTabRaw]);
+  }, [settingsLoading, isInitialLoad, setActiveTabRaw]);
 
   // Scroll to top when tab changes
   useEffect(() => {
@@ -98,18 +92,7 @@ function AppContent() {
     }
   };
 
-  // Show loading only during initial data fetch
-  if (isAppLoading || !currentUser || !showContent) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background animate-fade-in">
-        <div className="text-center space-y-4">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-muted-foreground">Lade Anwendung...</p>
-        </div>
-      </div>
-    );
-  }
-
+  // Don't show loading screen - render immediately
   return (
     <div className="animate-fade-in">
       <AppShell
