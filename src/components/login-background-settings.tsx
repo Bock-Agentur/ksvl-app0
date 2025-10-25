@@ -15,6 +15,7 @@ import { Upload, Trash2, Eye, Maximize2 } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
@@ -381,7 +382,9 @@ export function LoginBackgroundSettings() {
 
   return (
     <div className="space-y-6">
-      <Card>
+      <Card className={cn(
+        "bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0"
+      )}>
         <CardHeader>
           <CardTitle>Login-Hintergrund</CardTitle>
           <CardDescription>

@@ -208,14 +208,15 @@ export function CustomFieldsManager() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">Custom Fields Verwaltung</h2>
-          <p className="text-muted-foreground">
+    <div className="space-y-6 p-6">
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold">Custom Fields Verwaltung</CardTitle>
+          <CardDescription>
             Verwalten Sie benutzerdefinierte Felder für Benutzerprofile
-          </p>
-        </div>
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-end">
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <Button>
@@ -305,7 +306,8 @@ export function CustomFieldsManager() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
+        </CardContent>
+      </Card>
 
       <div className="space-y-6">
         {fieldGroups.map((groupName) => {

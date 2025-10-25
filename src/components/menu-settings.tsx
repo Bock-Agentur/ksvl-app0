@@ -113,7 +113,9 @@ export function MenuSettings() {
       "space-y-6",
       isMobile ? "p-0" : "p-6"
     )}>
-      <Card className={isMobile ? "rounded-none border-x-0" : ""}>
+      <Card className={cn(
+        isMobile ? "rounded-none border-x-0" : "bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0"
+      )}>
         <CardHeader className={isMobile ? "px-4 py-3" : ""}>
           <CardTitle className={cn(
             "flex items-center justify-between font-bold",
