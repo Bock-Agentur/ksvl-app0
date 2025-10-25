@@ -661,11 +661,19 @@ export function DashboardSettings() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
+      <Card className={cn(
+        isMobile ? "rounded-none border-x-0" : "bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0"
+      )}>
+        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
           <CardTitle>Anzeigeoptionen</CardTitle>
+          <CardDescription>
+            Passen Sie Animationen und Darstellung an
+          </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className={cn(
+          "space-y-4",
+          isMobile && "px-4 pb-4"
+        )}>
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Animationen aktivieren</Label>
