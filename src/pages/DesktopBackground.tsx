@@ -23,7 +23,7 @@ function DesktopBackgroundContent() {
     <div 
       className={cn(
         "min-h-screen pb-20 bg-background",
-        isMobile ? "p-0" : "p-6"
+        isMobile ? "pt-6" : "p-6"
       )}
       style={showBackground ? {
         backgroundImage: `url(${background})`,
