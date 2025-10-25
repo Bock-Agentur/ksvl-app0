@@ -66,7 +66,7 @@ export function Settings() {
     { id: "theme", label: "Theme", description: "Hell/Dunkel-Modus", icon: Brush, component: ThemeManager, group: "design" },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
       { id: "loginpage", label: "Login-Seite", description: "Hintergrundbild anpassen", icon: Image, component: LoginBackgroundSettings, group: "design" },
-      { id: "desktopbg", label: "Desktop-Hintergrund", description: "Hintergrundbild auf Desktop", icon: Monitor, component: DesktopBackgroundSettings, group: "design" }
+      { id: "desktopbg", label: "Desktop-Hintergrund", description: "Hintergrundbild auf Desktop", icon: Monitor, route: "/desktop-background", group: "design" }
     ] : []),
     { id: "customfields", label: "Custom Fields", description: "Benutzerdefinierte Felder", icon: ListChecks, component: CustomFieldsManager, group: "advanced" },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
