@@ -47,7 +47,7 @@ export function WelcomeSection({ stats, currentUser, currentRole }: WelcomeSecti
   }, [currentUser]);
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-primary/5 via-primary/3 to-background border-primary/20 md:rounded-[2rem]">
+    <Card className="p-6 bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
       <div className="space-y-4">
         <div>
           <h2 className="text-2xl font-bold mb-2">
