@@ -8,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { RoleProvider } from "@/hooks/use-role";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { useDesktopBackground } from "@/hooks/use-desktop-background";
+import { SettingsFooter } from "@/components/settings-footer";
 
 function HeaderMessageContent() {
   const navigate = useNavigate();
@@ -18,9 +19,10 @@ function HeaderMessageContent() {
   const showBackground = desktopBackgroundSettings.enabled && background;
 
   return (
+    <>
     <div 
       className={cn(
-        "min-h-screen",
+        "min-h-screen pb-20",
         isMobile ? "p-0" : "p-6"
       )}
       style={showBackground ? {
@@ -62,6 +64,8 @@ function HeaderMessageContent() {
       </div>
       </div>
     </div>
+    <SettingsFooter />
+    </>
   );
 }
 

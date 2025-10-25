@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { useDesktopBackground } from "@/hooks/use-desktop-background";
+import { SettingsFooter } from "@/components/settings-footer";
 
 function DesktopBackgroundContent() {
   const navigate = useNavigate();
@@ -18,9 +19,10 @@ function DesktopBackgroundContent() {
   const showBackground = desktopBackgroundSettings.enabled && background;
 
   return (
+    <>
     <div 
       className={cn(
-        "min-h-screen",
+        "min-h-screen pb-20",
         isMobile ? "p-0" : "p-6"
       )}
       style={showBackground ? {
@@ -62,6 +64,8 @@ function DesktopBackgroundContent() {
       </div>
       </div>
     </div>
+    <SettingsFooter />
+    </>
   );
 }
 

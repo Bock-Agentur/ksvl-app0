@@ -21,6 +21,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { useDesktopBackground } from "@/hooks/use-desktop-background";
+import { SettingsFooter } from "@/components/settings-footer";
 import { 
   LayoutDashboard, 
   MessageSquare, 
@@ -111,9 +112,10 @@ function SettingsContent() {
 
   if (isOverview) {
     return (
+      <>
       <div 
         className={cn(
-          "min-h-screen",
+          "min-h-screen pb-20",
           isMobile ? "p-0" : "p-6"
         )}
         style={showBackground ? {
@@ -255,14 +257,17 @@ function SettingsContent() {
         </div>
         </div>
       </div>
+      <SettingsFooter />
+      </>
     );
   }
 
   // Detail View
   return (
+    <>
     <div 
       className={cn(
-        "min-h-screen",
+        "min-h-screen pb-20",
         isMobile ? "p-0" : "p-6"
       )}
       style={showBackground ? {
@@ -306,6 +311,8 @@ function SettingsContent() {
       </div>
       </div>
     </div>
+    <SettingsFooter />
+    </>
   );
 }
 
