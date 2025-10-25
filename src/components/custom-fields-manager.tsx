@@ -208,7 +208,7 @@ export function CustomFieldsManager() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Custom Fields Verwaltung</CardTitle>

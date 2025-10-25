@@ -200,7 +200,7 @@ export function TestDataManager() {
   };
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <Alert className="bg-[hsl(348_77%_67%)] text-white border-[hsl(348_77%_67%)]">
         <AlertTriangle className="h-4 w-4 text-white" />
         <AlertDescription className="text-white">
