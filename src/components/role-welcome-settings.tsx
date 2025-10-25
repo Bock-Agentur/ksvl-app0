@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -94,27 +94,17 @@ export function RoleWelcomeSettings() {
 
   return (
     <div className="space-y-6">
-      <Card className={cn(
-        isMobile ? "rounded-none border-x-0" : "bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0"
-      )}>
-        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
-          <CardTitle className={cn(
-            "flex items-center gap-2 font-bold",
-            isMobile ? "text-lg" : "text-2xl"
-          )}>
-            <MessageSquare className={isMobile ? "w-5 h-5" : "w-6 h-6"} />
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MessageSquare className="w-5 h-5" />
             Rollen-Startnachrichten
           </CardTitle>
-          {!isMobile && (
-            <p className="text-sm text-muted-foreground">
-              Definieren Sie benutzerdefinierte Willkommensnachrichten für jede Benutzerrolle.
-            </p>
-          )}
+          <CardDescription>
+            Definieren Sie benutzerdefinierte Willkommensnachrichten für jede Benutzerrolle.
+          </CardDescription>
         </CardHeader>
-        <CardContent className={cn(
-          "space-y-6",
-          isMobile && "px-4 pb-4"
-        )}>
+        <CardContent className="space-y-6">
           {/* Role Selection */}
           <div className="space-y-3">
             <Label className={cn(
@@ -235,22 +225,14 @@ export function RoleWelcomeSettings() {
       </Card>
 
       {/* Summary */}
-      <Card className={cn(
-        isMobile ? "rounded-none border-x-0" : "bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0"
-      )}>
-        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
-          <CardTitle className={cn(
-            "flex items-center gap-2",
-            isMobile ? "text-base" : ""
-          )}>
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5" />
             Übersicht aller Rollen
           </CardTitle>
         </CardHeader>
-        <CardContent className={cn(
-          "space-y-3",
-          isMobile && "px-4 pb-4"
-        )}>
+        <CardContent className="space-y-3">
           <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
             {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
               const Icon = getRoleIcon(role);
