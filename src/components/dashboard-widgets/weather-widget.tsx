@@ -48,7 +48,7 @@ export function WeatherWidget() {
   };
 
   return (
-    <Card className="shadow-card-maritime md:rounded-[2rem]">
+    <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
           {getWeatherIcon()}
