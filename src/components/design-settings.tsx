@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
@@ -39,6 +40,12 @@ interface ColorPickerProps {
 
 function ColorPicker({ color, onChange, label }: ColorPickerProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [localColor, setLocalColor] = useState(color);
+  
+  // Update local color when prop changes
+  useEffect(() => {
+    setLocalColor(color);
+  }, [color]);
   
   // Trendy Color Palette
   const trendyColors = [
@@ -71,7 +78,17 @@ function ColorPicker({ color, onChange, label }: ColorPickerProps) {
     return `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`;
   };
   
-  const rgbaColor = parseRgba(color);
+  const rgbaColor = parseRgba(localColor);
+
+  const handleColorChange = (newColor: string | { r: number; g: number; b: number; a: number }) => {
+    const colorString = typeof newColor === 'string' ? newColor : rgbaToString(newColor);
+    setLocalColor(colorString);
+  };
+
+  const handleApply = () => {
+    onChange(localColor);
+    setIsOpen(false);
+  };
 
   return (
     <div className="space-y-2">
@@ -84,9 +101,9 @@ function ColorPicker({ color, onChange, label }: ColorPickerProps) {
           >
             <div 
               className="w-6 h-6 rounded border mr-2 flex-shrink-0"
-              style={{ backgroundColor: color }}
+              style={{ backgroundColor: localColor }}
             />
-            <span className="text-sm font-mono truncate">{color}</span>
+            <span className="text-sm font-mono truncate">{localColor}</span>
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-4" align="start">
@@ -96,7 +113,7 @@ function ColorPicker({ color, onChange, label }: ColorPickerProps) {
               <Label className="text-xs font-medium text-muted-foreground">Individuelle Farbauswahl</Label>
               <RgbaColorPicker
                 color={rgbaColor}
-                onChange={(newColor) => onChange(rgbaToString(newColor))}
+                onChange={handleColorChange}
               />
             </div>
             
@@ -112,7 +129,7 @@ function ColorPicker({ color, onChange, label }: ColorPickerProps) {
                     variant="outline"
                     size="sm"
                     className="h-8 w-full p-1"
-                    onClick={() => onChange(trendyColor.value)}
+                    onClick={() => handleColorChange(trendyColor.value)}
                     title={trendyColor.name}
                   >
                     <div 
@@ -134,10 +151,14 @@ function ColorPicker({ color, onChange, label }: ColorPickerProps) {
             <div className="flex items-center gap-2">
               <div 
                 className="w-8 h-8 rounded border"
-                style={{ backgroundColor: color }}
+                style={{ backgroundColor: localColor }}
               />
-              <span className="text-xs font-mono">{color}</span>
+              <span className="text-xs font-mono">{localColor}</span>
             </div>
+
+            <Button onClick={handleApply} className="w-full" size="sm">
+              Anwenden
+            </Button>
           </div>
         </PopoverContent>
       </Popover>
@@ -147,9 +168,15 @@ function ColorPicker({ color, onChange, label }: ColorPickerProps) {
 
 export function DesignSettings() {
   const { toast } = useToast();
-  const { settings, updateSlotType, resetToDefaults, resetToOriginalDefaults, isLoading } = useSlotDesign();
+  const { settings, updateSlotType, resetToDefaults, resetToOriginalDefaults, isLoading, saveSettings } = useSlotDesign();
   const [refreshKey, setRefreshKey] = useState(0);
+  const [localSettings, setLocalSettings] = useState(settings);
   const isMobile = useIsMobile();
+
+  // Update local settings when server settings change
+  useEffect(() => {
+    setLocalSettings(settings);
+  }, [settings]);
 
   const forceRefreshPreview = () => {
     // Force update CSS custom properties
@@ -206,13 +233,6 @@ export function DesignSettings() {
 
   const demoSettings = DEMO_TRENDY_DESIGN;
 
-  const handleReset = () => {
-    resetToOriginalDefaults();
-    toast({
-      title: "Design zurückgesetzt",
-      description: "Alle Slot-Farben wurden auf die ursprünglichen Standardwerte zurückgesetzt."
-    });
-  };
 
   if (isLoading) {
     return (
@@ -420,8 +440,16 @@ export function DesignSettings() {
                     {colorTypes.map(({ key: colorKey, label: colorLabel }) => (
                       <ColorPicker
                         key={colorKey}
-                        color={settings[key][colorKey]}
-                        onChange={(color) => updateSlotType(key, colorKey, color)}
+                        color={localSettings[key][colorKey]}
+                        onChange={(color) => {
+                          setLocalSettings({
+                            ...localSettings,
+                            [key]: {
+                              ...localSettings[key],
+                              [colorKey]: color
+                            }
+                          });
+                        }}
                         label={colorLabel}
                       />
                     ))}
@@ -437,16 +465,33 @@ export function DesignSettings() {
           <div className="flex flex-col sm:flex-row justify-between gap-4">
             <Button
               variant="outline"
-              onClick={handleReset}
+              onClick={() => {
+                resetToOriginalDefaults();
+                setLocalSettings(settings);
+                toast({
+                  title: "Design zurückgesetzt",
+                  description: "Alle Slot-Farben wurden auf die ursprünglichen Standardwerte zurückgesetzt."
+                });
+              }}
               className="flex items-center gap-2"
             >
               <RotateCcw className="w-4 h-4" />
               Auf Standard zurücksetzen
             </Button>
             
-            <div className="text-sm text-muted-foreground">
-              Änderungen werden automatisch gespeichert
-            </div>
+            <Button
+              onClick={() => {
+                saveSettings(localSettings);
+                toast({
+                  title: "Einstellungen gespeichert",
+                  description: "Alle Farbeinstellungen wurden erfolgreich gespeichert."
+                });
+              }}
+              className="flex items-center gap-2"
+            >
+              <Save className="w-4 h-4" />
+              Einstellungen speichern
+            </Button>
           </div>
         </CardContent>
       </Card>
