@@ -18,85 +18,256 @@ import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settin
 import { cn } from "@/lib/utils";
 import { useRole } from "@/hooks/use-role";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { 
+  LayoutDashboard, 
+  MessageSquare, 
+  Menu, 
+  List, 
+  Palette, 
+  Brush, 
+  Image, 
+  Monitor, 
+  ListChecks, 
+  Bot, 
+  Settings as SettingsIcon, 
+  Database, 
+  ChevronRight, 
+  ArrowLeft,
+  type LucideIcon
+} from "lucide-react";
+
+type SettingSection = {
+  id: string;
+  label: string;
+  description?: string;
+  icon: LucideIcon;
+  component: React.ComponentType;
+  group: string;
+};
 
 export function Settings() {
-  const [activeSection, setActiveSection] = useState("dashboard");
+  const [activeSection, setActiveSection] = useState<string | null>(null);
+  const [isOverview, setIsOverview] = useState(true);
   const { currentRole } = useRole();
   const isMobile = useIsMobile();
 
-  const sections = [
-    { id: "dashboard", label: "Dashboard", component: DashboardSettings },
-    { id: "messages", label: "Startnachrichten", component: RoleWelcomeSettings },
-    { id: "menu", label: "Drawer-Menü", component: MenuSettings },
-    { id: "footer", label: "Footer-Menü", component: FooterMenuSettings },
-    { id: "design", label: "Design", component: DesignSettings },
-    { id: "theme", label: "Theme", component: ThemeManager },
-    { id: "customfields", label: "Custom Fields", component: CustomFieldsManager },
-    { id: "system", label: "System", component: ConsecutiveSlotsSettings },
-    { id: "testdata", label: "Testdaten", component: TestDataManager },
+  const sections: SettingSection[] = [
+    { id: "dashboard", label: "Dashboard", description: "Widgets und Layout anpassen", icon: LayoutDashboard, component: DashboardSettings, group: "dashboard" },
+    { id: "messages", label: "Startnachrichten", description: "Willkommensnachrichten nach Rolle", icon: MessageSquare, component: RoleWelcomeSettings, group: "dashboard" },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
-      { id: "aiassistant", label: "AI-Assistent", component: AIAssistantSettings },
-      { id: "aiwelcome", label: "AI-Startnachricht", component: AIWelcomeMessageSettings },
-      { id: "loginpage", label: "Login-Seite", component: LoginBackgroundSettings },
-      { id: "desktopbg", label: "Desktop-Hintergrund", component: DesktopBackgroundSettings }
+      { id: "aiwelcome", label: "AI-Startnachricht", description: "KI-generierte Begrüßung", icon: Bot, component: AIWelcomeMessageSettings, group: "dashboard" }
     ] : []),
+    { id: "menu", label: "Drawer-Menü", description: "Navigation anpassen", icon: Menu, component: MenuSettings, group: "navigation" },
+    { id: "footer", label: "Footer-Menü", description: "Fußzeile konfigurieren", icon: List, component: FooterMenuSettings, group: "navigation" },
+    { id: "design", label: "Design", description: "Farben und Stile", icon: Palette, component: DesignSettings, group: "design" },
+    { id: "theme", label: "Theme", description: "Hell/Dunkel-Modus", icon: Brush, component: ThemeManager, group: "design" },
+    ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
+      { id: "loginpage", label: "Login-Seite", description: "Hintergrundbild anpassen", icon: Image, component: LoginBackgroundSettings, group: "design" },
+      { id: "desktopbg", label: "Desktop-Hintergrund", description: "Hintergrundbild auf Desktop", icon: Monitor, component: DesktopBackgroundSettings, group: "design" }
+    ] : []),
+    { id: "customfields", label: "Custom Fields", description: "Benutzerdefinierte Felder", icon: ListChecks, component: CustomFieldsManager, group: "advanced" },
+    ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
+      { id: "aiassistant", label: "AI-Assistent", description: "KI-Einstellungen", icon: Bot, component: AIAssistantSettings, group: "advanced" }
+    ] : []),
+    { id: "system", label: "System", description: "Systemeinstellungen", icon: SettingsIcon, component: ConsecutiveSlotsSettings, group: "advanced" },
+    { id: "testdata", label: "Testdaten", description: "Testdaten verwalten", icon: Database, component: TestDataManager, group: "advanced" },
   ];
 
-  const ActiveComponent = sections.find(section => section.id === activeSection)?.component || DashboardSettings;
+  const groupedSections = {
+    dashboard: sections.filter(s => s.group === "dashboard"),
+    navigation: sections.filter(s => s.group === "navigation"),
+    design: sections.filter(s => s.group === "design"),
+    advanced: sections.filter(s => s.group === "advanced"),
+  };
 
+  const handleSelectSection = (sectionId: string) => {
+    setActiveSection(sectionId);
+    setIsOverview(false);
+  };
+
+  const handleBack = () => {
+    setIsOverview(true);
+    setActiveSection(null);
+  };
+
+  const ActiveComponent = sections.find(section => section.id === activeSection)?.component;
+  const activeLabel = sections.find(section => section.id === activeSection)?.label;
+
+  if (isOverview) {
+    return (
+      <div className={cn(
+        "max-w-4xl mx-auto",
+        isMobile ? "p-0" : "p-6"
+      )}>
+        {/* Header */}
+        <Card className={cn(
+          "bg-primary text-primary-foreground mb-6",
+          isMobile && "rounded-none border-x-0"
+        )}>
+          <CardHeader>
+            <CardTitle className={cn(
+              "font-bold text-center",
+              isMobile ? "text-xl" : "text-2xl"
+            )}>
+              Einstellungen
+            </CardTitle>
+          </CardHeader>
+        </Card>
+
+        {/* Settings Cards Groups */}
+        <div className={cn("space-y-4", isMobile ? "px-4" : "")}>
+          {/* Dashboard & Ansicht */}
+          {groupedSections.dashboard.length > 0 && (
+            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
+              {groupedSections.dashboard.map((section, index) => (
+                <div key={section.id}>
+                  <div
+                    onClick={() => handleSelectSection(section.id)}
+                    className="flex items-center justify-between py-4 px-6 hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <section.icon className="h-5 w-5 text-primary" />
+                      <div className="flex-1">
+                        <div className="font-medium">{section.label}</div>
+                        {section.description && (
+                          <div className="text-sm text-muted-foreground">{section.description}</div>
+                        )}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  {index < groupedSections.dashboard.length - 1 && (
+                    <div className="border-t border-border/50 mx-6" />
+                  )}
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {/* Navigation */}
+          {groupedSections.navigation.length > 0 && (
+            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
+              {groupedSections.navigation.map((section, index) => (
+                <div key={section.id}>
+                  <div
+                    onClick={() => handleSelectSection(section.id)}
+                    className="flex items-center justify-between py-4 px-6 hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <section.icon className="h-5 w-5 text-primary" />
+                      <div className="flex-1">
+                        <div className="font-medium">{section.label}</div>
+                        {section.description && (
+                          <div className="text-sm text-muted-foreground">{section.description}</div>
+                        )}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  {index < groupedSections.navigation.length - 1 && (
+                    <div className="border-t border-border/50 mx-6" />
+                  )}
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {/* Design & Darstellung */}
+          {groupedSections.design.length > 0 && (
+            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
+              {groupedSections.design.map((section, index) => (
+                <div key={section.id}>
+                  <div
+                    onClick={() => handleSelectSection(section.id)}
+                    className="flex items-center justify-between py-4 px-6 hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <section.icon className="h-5 w-5 text-primary" />
+                      <div className="flex-1">
+                        <div className="font-medium">{section.label}</div>
+                        {section.description && (
+                          <div className="text-sm text-muted-foreground">{section.description}</div>
+                        )}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  {index < groupedSections.design.length - 1 && (
+                    <div className="border-t border-border/50 mx-6" />
+                  )}
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {/* Erweitert */}
+          {groupedSections.advanced.length > 0 && (
+            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
+              {groupedSections.advanced.map((section, index) => (
+                <div key={section.id}>
+                  <div
+                    onClick={() => handleSelectSection(section.id)}
+                    className="flex items-center justify-between py-4 px-6 hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <section.icon className="h-5 w-5 text-primary" />
+                      <div className="flex-1">
+                        <div className="font-medium">{section.label}</div>
+                        {section.description && (
+                          <div className="text-sm text-muted-foreground">{section.description}</div>
+                        )}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  {index < groupedSections.advanced.length - 1 && (
+                    <div className="border-t border-border/50 mx-6" />
+                  )}
+                </div>
+              ))}
+            </Card>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Detail View
   return (
     <div className={cn(
-      "space-y-4 max-w-7xl mx-auto",
-      isMobile ? "p-0" : "p-4 space-y-6"
+      "max-w-4xl mx-auto",
+      isMobile ? "p-0" : "p-6"
     )}>
-      {/* Header Card - Mobile optimiert */}
+      {/* Header mit Zurück-Button */}
       <Card className={cn(
-        "bg-primary text-primary-foreground",
+        "bg-primary text-primary-foreground mb-6",
         isMobile && "rounded-none border-x-0"
       )}>
-        <CardHeader className={isMobile ? "pb-3" : ""}>
-          <CardTitle className={cn(
-            "font-bold text-center",
-            isMobile ? "text-xl" : "text-2xl"
-          )}>
-            Einstellungen
-          </CardTitle>
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleBack}
+              className="text-primary-foreground hover:bg-primary-foreground/10"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <CardTitle className={cn(
+              "font-bold flex-1 text-center",
+              isMobile ? "text-xl" : "text-2xl"
+            )}>
+              {activeLabel}
+            </CardTitle>
+            {/* Spacer für Zentrierung */}
+            <div className="w-10" />
+          </div>
         </CardHeader>
-        {!isMobile && (
-          <CardContent className="text-center py-4">
-            <p className="text-primary-foreground/90 mb-3">
-              Hier können Sie die Systemeinstellungen verwalten.
-            </p>
-          </CardContent>
-        )}
       </Card>
 
-      {/* Navigation Buttons - Mobile optimiert */}
-      <div className={cn(
-        "flex flex-wrap gap-2 justify-center",
-        isMobile ? "px-2" : "gap-4"
-      )}>
-        {sections.map((section) => (
-          <Button
-            key={section.id}
-            variant={activeSection === section.id ? "default" : "outline"}
-            onClick={() => setActiveSection(section.id)}
-            className={cn(
-              "font-medium transition-all",
-              isMobile ? "px-3 py-2 text-xs h-auto" : "px-6 py-3 text-sm",
-              activeSection === section.id 
-                ? "shadow-md" 
-                : "hover:shadow-sm"
-            )}
-          >
-            {section.label}
-          </Button>
-        ))}
-      </div>
-
-      {/* Active Section Content - Mobile optimiert */}
-      <div className={isMobile ? "" : "mt-8"}>
-        <ActiveComponent />
+      {/* Settings Component */}
+      <div>
+        {ActiveComponent && <ActiveComponent />}
       </div>
     </div>
   );
