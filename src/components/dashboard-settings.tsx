@@ -499,13 +499,13 @@ export function DashboardSettings() {
       <Card className={cn(
         isMobile ? "rounded-none border-x-0" : "bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0"
       )}>
-        <CardHeader>
+        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
           <CardTitle>Dashboard-Layout</CardTitle>
           <CardDescription>
             Wählen Sie die Anzahl der Spalten für Ihr Dashboard
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className={isMobile ? "px-4 pb-4" : ""}>
           <div className="grid grid-cols-3 gap-4">
             {([1, 2, 3] as const).map(cols => (
               <Card 
@@ -538,13 +538,13 @@ export function DashboardSettings() {
       <Card className={cn(
         isMobile ? "rounded-none border-x-0" : "bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0"
       )}>
-        <CardHeader>
+        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
           <CardTitle>Dashboard-Elemente</CardTitle>
           <CardDescription>
             Konfigurieren Sie die Anordnung für Desktop und Mobile/Tablet getrennt
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className={isMobile ? "px-4 pb-4" : ""}>
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "desktop" | "mobile")}>
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="desktop" className="gap-2">
