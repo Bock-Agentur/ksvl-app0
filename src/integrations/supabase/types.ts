@@ -365,39 +365,65 @@ export type Database = {
           address: string | null
           ai_info_enabled: boolean | null
           avatar_url: string | null
+          berth_length: number | null
           berth_number: string | null
           berth_type: string | null
+          berth_width: number | null
           beverage_chip_issue_date: string | null
           beverage_chip_number: string | null
+          beverage_chip_status: string | null
           birth_date: string | null
+          board_position_end_date: string | null
+          board_position_history: Json | null
+          board_position_start_date: string | null
+          boat_color: string | null
           boat_length: number | null
           boat_name: string | null
           boat_type: string | null
           boat_width: number | null
+          buoy_radius: number | null
           city: string | null
           contact_public_in_ksvl: boolean | null
           created_at: string | null
+          created_by: string | null
           data_public_in_ksvl: boolean | null
           dinghy_berth_number: string | null
+          document_berth_contract: string | null
+          document_bfa: string | null
+          document_insurance: string | null
+          document_member_photo: string | null
           email: string
           emergency_contact: string | null
+          emergency_contact_name: string | null
+          emergency_contact_phone: string | null
+          emergency_contact_relationship: string | null
           entry_date: string | null
           first_name: string | null
+          has_dinghy_berth: boolean | null
           id: string
           is_role_user: boolean | null
           is_test_data: boolean | null
           last_name: string | null
           member_number: string | null
+          membership_status: string | null
+          membership_status_history: Json | null
+          membership_type: string | null
+          modified_by: string | null
           monday_item_id: string | null
           name: string | null
+          newsletter_optin: boolean | null
           notes: string | null
           oesv_number: string | null
           parking_permit_issue_date: string | null
           parking_permit_number: string | null
+          password_change_required: boolean | null
           phone: string | null
           postal_code: string | null
+          privacy_accepted: boolean | null
           status: string | null
+          statute_accepted: boolean | null
           street_address: string | null
+          two_factor_method: string | null
           updated_at: string | null
           username: string | null
           vorstand_funktion: string | null
@@ -406,39 +432,65 @@ export type Database = {
           address?: string | null
           ai_info_enabled?: boolean | null
           avatar_url?: string | null
+          berth_length?: number | null
           berth_number?: string | null
           berth_type?: string | null
+          berth_width?: number | null
           beverage_chip_issue_date?: string | null
           beverage_chip_number?: string | null
+          beverage_chip_status?: string | null
           birth_date?: string | null
+          board_position_end_date?: string | null
+          board_position_history?: Json | null
+          board_position_start_date?: string | null
+          boat_color?: string | null
           boat_length?: number | null
           boat_name?: string | null
           boat_type?: string | null
           boat_width?: number | null
+          buoy_radius?: number | null
           city?: string | null
           contact_public_in_ksvl?: boolean | null
           created_at?: string | null
+          created_by?: string | null
           data_public_in_ksvl?: boolean | null
           dinghy_berth_number?: string | null
+          document_berth_contract?: string | null
+          document_bfa?: string | null
+          document_insurance?: string | null
+          document_member_photo?: string | null
           email: string
           emergency_contact?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
           entry_date?: string | null
           first_name?: string | null
+          has_dinghy_berth?: boolean | null
           id: string
           is_role_user?: boolean | null
           is_test_data?: boolean | null
           last_name?: string | null
           member_number?: string | null
+          membership_status?: string | null
+          membership_status_history?: Json | null
+          membership_type?: string | null
+          modified_by?: string | null
           monday_item_id?: string | null
           name?: string | null
+          newsletter_optin?: boolean | null
           notes?: string | null
           oesv_number?: string | null
           parking_permit_issue_date?: string | null
           parking_permit_number?: string | null
+          password_change_required?: boolean | null
           phone?: string | null
           postal_code?: string | null
+          privacy_accepted?: boolean | null
           status?: string | null
+          statute_accepted?: boolean | null
           street_address?: string | null
+          two_factor_method?: string | null
           updated_at?: string | null
           username?: string | null
           vorstand_funktion?: string | null
@@ -447,39 +499,65 @@ export type Database = {
           address?: string | null
           ai_info_enabled?: boolean | null
           avatar_url?: string | null
+          berth_length?: number | null
           berth_number?: string | null
           berth_type?: string | null
+          berth_width?: number | null
           beverage_chip_issue_date?: string | null
           beverage_chip_number?: string | null
+          beverage_chip_status?: string | null
           birth_date?: string | null
+          board_position_end_date?: string | null
+          board_position_history?: Json | null
+          board_position_start_date?: string | null
+          boat_color?: string | null
           boat_length?: number | null
           boat_name?: string | null
           boat_type?: string | null
           boat_width?: number | null
+          buoy_radius?: number | null
           city?: string | null
           contact_public_in_ksvl?: boolean | null
           created_at?: string | null
+          created_by?: string | null
           data_public_in_ksvl?: boolean | null
           dinghy_berth_number?: string | null
+          document_berth_contract?: string | null
+          document_bfa?: string | null
+          document_insurance?: string | null
+          document_member_photo?: string | null
           email?: string
           emergency_contact?: string | null
+          emergency_contact_name?: string | null
+          emergency_contact_phone?: string | null
+          emergency_contact_relationship?: string | null
           entry_date?: string | null
           first_name?: string | null
+          has_dinghy_berth?: boolean | null
           id?: string
           is_role_user?: boolean | null
           is_test_data?: boolean | null
           last_name?: string | null
           member_number?: string | null
+          membership_status?: string | null
+          membership_status_history?: Json | null
+          membership_type?: string | null
+          modified_by?: string | null
           monday_item_id?: string | null
           name?: string | null
+          newsletter_optin?: boolean | null
           notes?: string | null
           oesv_number?: string | null
           parking_permit_issue_date?: string | null
           parking_permit_number?: string | null
+          password_change_required?: boolean | null
           phone?: string | null
           postal_code?: string | null
+          privacy_accepted?: boolean | null
           status?: string | null
+          statute_accepted?: boolean | null
           street_address?: string | null
+          two_factor_method?: string | null
           updated_at?: string | null
           username?: string | null
           vorstand_funktion?: string | null

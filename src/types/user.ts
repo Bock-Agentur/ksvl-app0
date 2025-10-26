@@ -27,6 +27,56 @@ export interface User {
   isActive: boolean;
   dataPublicInKsvl?: boolean;
   contactPublicInKsvl?: boolean;
+  
+  // Zugangsdaten
+  passwordChangeRequired?: boolean;
+  twoFactorMethod?: 'Aus' | 'TOTP' | 'SMS';
+  
+  // Mitgliedschaft
+  membershipType?: 'Ordentlich' | 'Außerordentlich' | 'Ehrenmitglied' | 'Jugend' | 'Gast';
+  membershipStatus?: 'Aktiv' | 'Probezeit' | 'Ruhend' | 'Beendet (Austritt)' | 'Gestrichen' | 'Ausgeschlossen';
+  boardPositionStartDate?: string;
+  boardPositionEndDate?: string;
+  
+  // Boot & Liegeplatz
+  boatColor?: string;
+  berthLength?: number;
+  berthWidth?: number;
+  buoyRadius?: number;
+  hasDinghyBerth?: boolean;
+  
+  // Parkplatz & Getränkechip
+  beverageChipStatus?: 'Aktiv' | 'Gesperrt' | 'Verlust';
+  
+  // Datenschutz
+  statuteAccepted?: boolean;
+  privacyAccepted?: boolean;
+  newsletterOptin?: boolean;
+  
+  // Notfallkontakt
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelationship?: string;
+  
+  // Dokumente
+  documentBfa?: string; // URL
+  documentInsurance?: string; // URL
+  documentBerthContract?: string; // URL
+  documentMemberPhoto?: string; // URL
+  
+  // Historie
+  membershipStatusHistory?: Array<{
+    status: string;
+    date: string;
+    changedBy: string;
+  }>;
+  boardPositionHistory?: Array<{
+    position: string;
+    startDate: string;
+    endDate?: string;
+  }>;
+  createdBy?: string;
+  modifiedBy?: string;
 }
 
 // ===== API TYPES =====
