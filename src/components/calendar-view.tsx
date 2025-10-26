@@ -125,7 +125,7 @@ export function CalendarView({
   return <div className="flex flex-col h-screen overflow-hidden bg-background max-w-7xl mx-auto">
       {/* Sticky Navigation Card with soft transparent shadow */}
       <div className="flex-shrink-0 pt-4 pb-0 relative z-10 my-0 p-4">
-        <Card className="relative bg-card/95 backdrop-blur-xl border-border/50 shadow-[0_12px_50px_-8px_rgba(0,0,0,0.2)]">
+        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle>Kalender</CardTitle>
         </CardHeader>
