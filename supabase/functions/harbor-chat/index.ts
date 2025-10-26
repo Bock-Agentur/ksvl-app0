@@ -133,7 +133,7 @@ serve(async (req) => {
 
     const { data: users } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, name, email, member_number, boat_name')
+      .select('id, first_name, last_name, name, username, email, member_number, boat_name')
       .in('id', allUserIds);
 
     const usersMap = new Map(users?.map(u => [u.id, u]) || []);
@@ -141,7 +141,7 @@ serve(async (req) => {
     // Hole öffentliche Mitgliederdaten (nur wenn data_public_in_ksvl = true)
     const { data: publicMembers, error: membersError } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, name, member_number, boat_name, boat_type, berth_number, email, phone, contact_public_in_ksvl, vorstand_funktion, ai_info_enabled')
+      .select('id, first_name, last_name, name, username, member_number, boat_name, boat_type, berth_number, email, phone, contact_public_in_ksvl, vorstand_funktion, ai_info_enabled')
       .eq('data_public_in_ksvl', true)
       .order('name', { ascending: true });
 
@@ -197,6 +197,7 @@ WICHTIG: Diese Infos sind direkt von den Mitgliedern für den AI-Assistenten fre
         first_name,
         last_name,
         name,
+        username,
         vorstand_funktion,
         email,
         phone,
