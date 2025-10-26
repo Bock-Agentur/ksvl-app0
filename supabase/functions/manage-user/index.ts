@@ -172,7 +172,11 @@ serve(async (req) => {
           privacy_accepted: userData.privacyAccepted === true,
           newsletter_optin: userData.newsletterOptin === true,
           data_public_in_ksvl: userData.dataPublicInKsvl === true,
-          contact_public_in_ksvl: userData.contactPublicInKsvl === true
+          contact_public_in_ksvl: userData.contactPublicInKsvl === true,
+          document_bfa: userData.documentBfa || null,
+          document_insurance: userData.documentInsurance || null,
+          document_berth_contract: userData.documentBerthContract || null,
+          document_member_photo: userData.documentMemberPhoto || null
         })
         .eq('id', authData.user.id);
 
@@ -271,7 +275,11 @@ serve(async (req) => {
           newsletter_optin: userData.newsletterOptin === true,
           data_public_in_ksvl: userData.dataPublicInKsvl === true,
           contact_public_in_ksvl: userData.contactPublicInKsvl === true,
-          ai_info_enabled: userData.aiInfoEnabled === true
+          ai_info_enabled: userData.aiInfoEnabled === true,
+          document_bfa: userData.documentBfa || null,
+          document_insurance: userData.documentInsurance || null,
+          document_berth_contract: userData.documentBerthContract || null,
+          document_member_photo: userData.documentMemberPhoto || null
         })
         .eq('id', userId);
 
