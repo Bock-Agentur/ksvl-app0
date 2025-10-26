@@ -14,6 +14,7 @@ import { SlotManagement } from "@/components/slot-management";
 import { ProfileView } from "@/components/profile-view";
 import { Settings } from "@/pages/Settings";
 import { CalendarView } from "@/components/calendar-view";
+import { cn } from "@/lib/utils";
 
 // Inner component that uses the role context
 function AppContent() {
@@ -32,8 +33,8 @@ function AppContent() {
   // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   
-  // Animation key for smooth transitions between tabs
-  const [animationKey, setAnimationKey] = useState(0);
+  // Transition state for smooth page changes
+  const [isTransitioning, setIsTransitioning] = useState(false);
   
   // Verarbeite URL-Parameter für Datumsnavigation
   useEffect(() => {
@@ -48,10 +49,13 @@ function AppContent() {
     }
   }, [searchParams, setSearchParams, setActiveTabRaw]);
   
-  // Wrapper to save without toast notification
-  const setActiveTab = (tab: string) => {
+  // Wrapper with smooth transition
+  const setActiveTab = async (tab: string) => {
+    setIsTransitioning(true);
+    await new Promise(resolve => setTimeout(resolve, 150)); // Fade out
     setActiveTabRaw(tab, true);
-    setAnimationKey(prev => prev + 1); // Trigger animation on tab change
+    await new Promise(resolve => setTimeout(resolve, 50)); // Small delay
+    setIsTransitioning(false);
   };
   
   // Initialize slot design system
@@ -98,7 +102,10 @@ function AppContent() {
   }
 
   return (
-    <div key={animationKey} className="animate-fade-in">
+    <div className={cn(
+      "transition-opacity duration-300",
+      isTransitioning ? "opacity-0" : "opacity-100 animate-page-transition-in"
+    )}>
       <AppShell
         currentRole={currentRole}
         currentUser={currentUser}

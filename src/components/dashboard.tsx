@@ -211,7 +211,7 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
   }
 
   return (
-    <div className="p-4 max-w-7xl mx-auto animate-fade-in">
+    <div className="p-4 max-w-7xl mx-auto">
       <div className={gridClassName}>
         {sortedColumns.map((columnItems, columnIndex) => (
           <div key={columnIndex} className="space-y-4">

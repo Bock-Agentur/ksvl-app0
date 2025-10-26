@@ -299,12 +299,30 @@ All colors MUST be HSL for proper theme support.
 
 /* Dashboard Animations - Enhanced animation system for better UX */
 .animate-fade-in {
-  animation: fadeIn 1.5s ease-in-out;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-page-transition-in {
+  animation: pageTransitionIn 0.3s ease-out;
+}
+
+.animate-page-transition-out {
+  animation: pageTransitionOut 0.15s ease-out;
 }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pageTransitionIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pageTransitionOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 /* Scroll reveal animations */
