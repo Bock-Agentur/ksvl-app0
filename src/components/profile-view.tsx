@@ -558,51 +558,53 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
 
   const content = (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">
-            {userId ? "Benutzerprofil" : "Mein Profil"}
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {userId ? "Benutzerdaten ansehen und bearbeiten" : "Verwalten Sie Ihre Kontoinformationen"}
-          </p>
-        </div>
-        
-        {!isEditing && (
-          <Button onClick={() => {
-            setIsEditing(true);
-            setEditedUser(user);
-            setEditedCustomValues(customValues);
-          }}>
-            <Edit className="w-4 h-4 mr-2" />
-            Bearbeiten
-          </Button>
-        )}
-      </div>
-
-      {/* Profile Card */}
+      {/* Hero Card */}
       <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
-        <CardHeader className="pb-6">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground text-2xl font-bold">
-              {user.name.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1">
-              <CardTitle className="text-2xl mb-1">{user.name}</CardTitle>
-              {user?.roles?.includes('vorstand') && (user as any).vorstandFunktion && (
-                <p className="text-sm text-muted-foreground mb-2">{(user as any).vorstandFunktion}</p>
-              )}
-              <div className="flex flex-wrap gap-2">
-                {sortRoles(user.roles || []).map((role) => (
-                  <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
-                    {ROLE_LABELS[role] || roleLabels[role]}
-                  </Badge>
-                ))}
+        <CardContent className="p-6">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            {/* Left: Avatar + Name + Roles */}
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground text-3xl font-bold">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-foreground mb-1">
+                  {user.name}
+                </h1>
+                {user?.roles?.includes('vorstand') && (user as any).vorstandFunktion && (
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {(user as any).vorstandFunktion}
+                  </p>
+                )}
+                <div className="flex flex-wrap gap-2">
+                  {sortRoles(user.roles || []).map((role) => (
+                    <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
+                      {ROLE_LABELS[role] || roleLabels[role]}
+                    </Badge>
+                  ))}
+                </div>
               </div>
             </div>
+            
+            {/* Right: Edit Button */}
+            <div className="flex gap-2">
+              {!isEditing && (
+                <Button onClick={() => {
+                  setIsEditing(true);
+                  setEditedUser(user);
+                  setEditedCustomValues(customValues);
+                }}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Bearbeiten
+                </Button>
+              )}
+            </div>
           </div>
-        </CardHeader>
+        </CardContent>
+      </Card>
+
+      {/* Profile Details Card */}
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         
         <CardContent className="space-y-8">
           {/* Rollen - Nur für Admins sichtbar */}
