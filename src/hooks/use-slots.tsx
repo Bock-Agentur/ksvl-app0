@@ -15,13 +15,19 @@ export interface CreateSlotData {
   blockId?: string;
 }
 
-export function useSlots() {
+export function useSlots(options?: { enabled?: boolean }) {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const enabled = options?.enabled ?? true;
 
   // Fetch all slots from database with profiles data
   const fetchSlots = async () => {
+    if (!enabled) {
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       setIsLoading(true);
       
@@ -442,11 +448,18 @@ export function useSlots() {
     }
   };
 
-  // Set up realtime subscription
+  // Set up realtime subscription (only when enabled)
   useEffect(() => {
+    if (!enabled) {
+      setIsLoading(false);
+      return;
+    }
+
     console.log('🔄 Setting up slots realtime subscription');
     fetchSlots();
 
+    let debounceTimeout: NodeJS.Timeout;
+    
     const channel = supabase
       .channel('slots-changes')
       .on(
@@ -458,8 +471,11 @@ export function useSlots() {
         },
         (payload) => {
           console.log('🔔 REALTIME UPDATE RECEIVED:', payload.eventType, payload);
-          // Refetch all slots on any change
-          fetchSlots();
+          // ✅ Debounced refetch (300ms)
+          clearTimeout(debounceTimeout);
+          debounceTimeout = setTimeout(() => {
+            fetchSlots();
+          }, 300);
         }
       )
       .subscribe((status) => {
@@ -468,9 +484,10 @@ export function useSlots() {
 
     return () => {
       console.log('🔌 Cleaning up realtime subscription');
+      clearTimeout(debounceTimeout);
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [enabled]);
 
   return {
     slots,

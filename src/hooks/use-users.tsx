@@ -77,12 +77,18 @@ export interface DatabaseUser {
   modified_by?: string | null;
 }
 
-export function useUsers() {
+export function useUsers(options?: { enabled?: boolean }) {
   const [users, setUsers] = useState<DatabaseUser[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const enabled = options?.enabled ?? true;
 
   const fetchUsers = async () => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       setLoading(true);
       
@@ -205,25 +211,39 @@ export function useUsers() {
   };
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      return;
+    }
+
     fetchUsers();
 
-    // Subscribe to changes
+    let debounceTimeout: NodeJS.Timeout;
+    const debouncedFetch = () => {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = setTimeout(() => {
+        fetchUsers();
+      }, 300);
+    };
+
+    // Subscribe to changes (only when enabled)
     const profilesChannel = supabase
       .channel('profiles-changes')
       .on('postgres_changes', 
         { event: '*', schema: 'public', table: 'profiles' }, 
-        () => fetchUsers()
+        debouncedFetch
       )
       .on('postgres_changes',
         { event: '*', schema: 'public', table: 'user_roles' },
-        () => fetchUsers()
+        debouncedFetch
       )
       .subscribe();
 
     return () => {
+      clearTimeout(debounceTimeout);
       profilesChannel.unsubscribe();
     };
-  }, []);
+  }, [enabled]);
 
   const deleteUser = async (userId: string) => {
     try {

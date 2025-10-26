@@ -37,50 +37,22 @@ function AppContent() {
     false
   );
   
-  // Load data for dashboard and calendar
-  const { isLoading: slotsLoading } = useSlots();
-  const { loading: usersLoading } = useUsers();
-  
-  // Load AI-related data
-  const { isLoading: aiAssistantLoading } = useAIAssistantSettings();
-  const { isLoading: aiWelcomeLoading } = useAIWelcomeMessage();
-  const { isLoading: harborChatLoading } = useHarborChatData();
-  const { isLoading: profileLoading } = useProfileData();
-  
-  // Load footer menu data
-  const { isLoading: footerLoading } = useFooterMenuSettings();
-  
-  // Load dashboard settings
-  const { isLoading: dashboardSettingsLoading } = useDashboardSettings(currentRole, false);
-  
-  // Load full user name for header (direct DB call to avoid double loading)
-  const [displayNameLoading, setDisplayNameLoading] = useState(true);
-  const [displayName, setDisplayName] = useState('');
+  // ✅ Phase 1: Conditional Hook Execution (Lazy Loading)
+  const shouldLoadSlots = activeTab === 'dashboard' || activeTab === 'calendar';
+  const shouldLoadUsers = activeTab === 'dashboard' || activeTab === 'users';
+  const shouldLoadDashboard = activeTab === 'dashboard';
 
-  useEffect(() => {
-    const loadDisplayName = async () => {
-      if (!currentUser?.id) {
-        setDisplayName('User');
-        setDisplayNameLoading(false);
-        return;
-      }
-      
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('first_name, last_name, name')
-        .eq('id', currentUser.id)
-        .single();
-      
-      const fullName = profileData?.first_name && profileData?.last_name
-        ? `${profileData.first_name} ${profileData.last_name}`
-        : profileData?.name || 'User';
-      
-      setDisplayName(fullName);
-      setDisplayNameLoading(false);
-    };
-    
-    loadDisplayName();
-  }, [currentUser?.id]);
+  const { isLoading: slotsLoading } = useSlots({ enabled: shouldLoadSlots });
+  const { loading: usersLoading } = useUsers({ enabled: shouldLoadUsers });
+  const { isLoading: aiAssistantLoading } = useAIAssistantSettings({ enabled: shouldLoadDashboard });
+  const { isLoading: aiWelcomeLoading } = useAIWelcomeMessage({ enabled: shouldLoadDashboard });
+  const { agentName, isLoading: harborChatLoading } = useHarborChatData({ enabled: shouldLoadDashboard });
+  const { firstName, fullName: displayName, isLoading: profileLoading } = useProfileData({ enabled: shouldLoadDashboard });
+  const { settings: footerSettings, isLoading: footerLoading } = useFooterMenuSettings();
+  const {
+    settings: dashboardSettings,
+    isLoading: dashboardSettingsLoading,
+  } = useDashboardSettings(currentRole, false, { enabled: shouldLoadDashboard });
   
   // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
@@ -98,7 +70,7 @@ function AppContent() {
     
     switch(tab) {
       case 'dashboard': 
-        return baseLoading || slotsLoading || usersLoading || harborChatLoading || aiWelcomeLoading || profileLoading || dashboardSettingsLoading || displayNameLoading;
+        return baseLoading || slotsLoading || usersLoading || harborChatLoading || aiWelcomeLoading || profileLoading || dashboardSettingsLoading;
       case 'calendar': 
         return baseLoading || slotsLoading;
       case 'users': 

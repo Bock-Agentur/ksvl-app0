@@ -15,11 +15,14 @@ const DEFAULT_SETTINGS: AIAssistantSettings = {
   agentName: 'Capitano'
 };
 
-export function useAIAssistantSettings() {
+export function useAIAssistantSettings(options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true;
+  
   const { value: settings, setValue: setSettings, isLoading } = useAppSettings<AIAssistantSettings>(
     "aiAssistantSettings",
     DEFAULT_SETTINGS,
-    true // Global setting
+    true, // Global setting
+    { enabled }
   );
 
   const updateTonality = (role: UserRole, tonality: Tonality) => {

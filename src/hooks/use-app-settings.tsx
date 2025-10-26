@@ -20,14 +20,21 @@ export interface AppSetting {
 export function useAppSettings<T = any>(
   settingKey: string,
   defaultValue: T,
-  isGlobal: boolean = false
+  isGlobal: boolean = false,
+  options?: { enabled?: boolean }
 ) {
   const [value, setValue] = useState<T>(defaultValue);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const enabled = options?.enabled ?? true;
 
   // Load setting from database
   const loadSetting = useCallback(async () => {
+    if (!enabled) {
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       
@@ -82,7 +89,7 @@ export function useAppSettings<T = any>(
     } finally {
       setIsLoading(false);
     }
-  }, [settingKey, defaultValue, isGlobal]);
+  }, [settingKey, defaultValue, isGlobal, enabled]);
 
   // Save setting to database
   const saveSetting = async (newValue: T, skipToast: boolean = false) => {

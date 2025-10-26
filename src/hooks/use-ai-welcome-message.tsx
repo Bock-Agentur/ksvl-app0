@@ -6,11 +6,14 @@ const DEFAULT_SETTINGS: AIWelcomeMessageSettings = {
   message: ""
 };
 
-export function useAIWelcomeMessage() {
+export function useAIWelcomeMessage(options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true;
+  
   const { value, setValue, isLoading } = useAppSettings<AIWelcomeMessageSettings>(
     "aiWelcomeMessage",
     DEFAULT_SETTINGS,
-    true // Global setting
+    true, // Global setting
+    { enabled }
   );
 
   return {

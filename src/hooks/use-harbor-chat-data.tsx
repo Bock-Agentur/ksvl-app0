@@ -1,7 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export function useHarborChatData() {
+export function useHarborChatData(options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true;
+  
   const { data: agentName = 'Capitano', isLoading } = useQuery({
     queryKey: ['ai-assistant-settings'],
     queryFn: async () => {
@@ -20,6 +22,7 @@ export function useHarborChatData() {
     },
     staleTime: 30 * 60 * 1000, // 30 minutes cache
     gcTime: 60 * 60 * 1000, // 60 minutes in cache
+    enabled,
   });
 
   return { agentName, isLoading };

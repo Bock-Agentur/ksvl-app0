@@ -56,8 +56,8 @@ export function Dashboard({ onNavigate, displayName }: DashboardProps) {
   const { getAnimationClass, isAnimationEnabled } = useDashboardAnimations();
   
 
-  // Calculate quick actions based on role
-  const getQuickActions = () => {
+  // ✅ Phase 3: Memoize Quick Actions
+  const quickActions = useMemo(() => {
     const baseActions = [
       { id: "new-booking", label: "Neue Buchung", icon: Calendar, action: () => onNavigate?.("calendar"), roles: ["mitglied", "gastmitglied", "kranfuehrer", "admin", "vorstand"] },
       { id: "my-bookings", label: "Meine Buchungen", icon: Users, action: () => onNavigate?.("calendar"), roles: ["mitglied", "gastmitglied"] },
@@ -66,10 +66,10 @@ export function Dashboard({ onNavigate, displayName }: DashboardProps) {
     ];
     
     return baseActions.filter(action => action.roles.includes(currentRole));
-  };
+  }, [currentRole, onNavigate]);
 
-  // Calculate dashboard stats
-  const stats = useMemo<DashboardStats>(() => {
+  // ✅ Phase 3: Split stats calculation into smaller memos
+  const slotStats = useMemo(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const weekStart = new Date(today);
@@ -85,29 +85,34 @@ export function Dashboard({ onNavigate, displayName }: DashboardProps) {
       return slotDate >= weekStart;
     }) || [];
 
-    const bookedToday = todaySlots.filter(s => s.isBooked).length;
-    const bookedWeekly = weeklySlots.filter(s => s.isBooked).length;
-    const available = slots?.filter(s => !s.isBooked).length || 0;
-    const utilizationCalc = slots && slots.length > 0 
-      ? Math.round((slots.filter(s => s.isBooked).length / slots.length) * 100)
-      : 0;
+    return {
+      todayBookings: todaySlots.filter(s => s.isBooked).length,
+      weeklyBookings: weeklySlots.filter(s => s.isBooked).length,
+      availableSlots: slots?.filter(s => !s.isBooked).length || 0,
+      utilization: slots && slots.length > 0 
+        ? Math.round((slots.filter(s => s.isBooked).length / slots.length) * 100)
+        : 0,
+    };
+  }, [slots]);
 
-    // Get next booking for member
+  const nextBooking = useMemo(() => {
+    const today = new Date();
     const userBookings = slots?.filter(slot => 
       slot.isBooked && 
       slot.memberId === currentUser?.id &&
       new Date(slot.date) >= today
     ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) || [];
 
-    const nextBooking = userBookings[0] ? {
+    return userBookings[0] ? {
       time: `${userBookings[0].date} ${userBookings[0].time}`,
       member: userBookings[0].memberName || (currentUser as any)?.user_metadata?.full_name || currentUser?.email || "Unbekannt",
       duration: `${userBookings[0].duration} min`,
       id: userBookings[0].id
     } : undefined;
+  }, [slots, currentUser]);
 
-    // Recent activity
-    const recentActivity = slots?.slice(0, 5).map((slot, index) => ({
+  const recentActivity = useMemo(() => {
+    return slots?.slice(0, 5).map((slot, index) => ({
       id: slot.id,
       type: slot.isBooked ? "booking" as const : "availability" as const,
       message: slot.isBooked 
@@ -117,23 +122,30 @@ export function Dashboard({ onNavigate, displayName }: DashboardProps) {
       member: slot.memberName,
       priority: index === 0 ? "high" as const : "low" as const
     })) || [];
+  }, [slots]);
 
-    return {
-      todayBookings: bookedToday,
-      weeklyBookings: bookedWeekly,
-      availableSlots: available,
-      utilization: utilizationCalc,
-      totalMembers: users?.length || 0,
-      nextBooking,
-      recentActivity,
-      quickActions: getQuickActions()
-    };
-  }, [slots, users, currentUser, currentRole, onNavigate]);
+  // ✅ Combine into final stats (lightweight)
+  const stats = useMemo<DashboardStats>(() => ({
+    ...slotStats,
+    totalMembers: users?.length || 0,
+    nextBooking,
+    recentActivity,
+    quickActions
+  }), [slotStats, users, nextBooking, recentActivity, quickActions]);
 
-  // Get all dashboard items and sort them by columns
+  // ✅ Phase 3: Optimize allItems & sortedColumns - Stabilize with JSON.stringify
+  const settingsKey = useMemo(() => 
+    JSON.stringify({
+      enabledWidgets: settings.enabledWidgets,
+      enabledSections: settings.enabledSections,
+      allItemsPositions: settings.allItemsPositions,
+    }), 
+    [settings.enabledWidgets, settings.enabledSections, settings.allItemsPositions]
+  );
+
   const allItems = useMemo(() => {
     return getAllDashboardItems(currentRole, settings);
-  }, [currentRole, settings]);
+  }, [currentRole, settingsKey]);
 
   const sortedColumns = useMemo(() => {
     // On mobile/tablet, always use single column with custom order
@@ -170,7 +182,7 @@ export function Dashboard({ onNavigate, displayName }: DashboardProps) {
     
     // Desktop: use column layout
     return sortAllItemsByPosition(allItems, settings.allItemsPositions, settings.columnLayout);
-  }, [allItems, settings.allItemsPositions, settings.columnLayout, settings.mobileItemsOrder, isMobileOrTablet]);
+  }, [allItems, settingsKey, settings.columnLayout, settings.mobileItemsOrder, isMobileOrTablet]);
 
   const gridClassName = useMemo(() => {
     // On mobile/tablet, always use single column

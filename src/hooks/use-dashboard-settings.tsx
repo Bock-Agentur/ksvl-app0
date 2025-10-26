@@ -7,7 +7,9 @@ import { useAppSettings } from "./use-app-settings";
 import { DashboardSettings, DEFAULT_DASHBOARD_SETTINGS } from "@/lib/dashboard-config";
 import { UserRole } from "@/types/user";
 
-export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = false) {
+export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = false, options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true;
+  
   // For admins configuring other roles, use a different storage key pattern
   const getStorageKey = (role: UserRole) => {
     if (isAdmin && role !== userRole) {
@@ -20,7 +22,8 @@ export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = fals
   const { value: rawSettings, setValue, isLoading } = useAppSettings<DashboardSettings>(
     storageKey,
     DEFAULT_DASHBOARD_SETTINGS,
-    false
+    false,
+    { enabled }
   );
 
   // Migration: Ensure headerCard is in enabledSections
