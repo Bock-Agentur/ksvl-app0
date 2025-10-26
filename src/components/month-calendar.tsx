@@ -165,7 +165,7 @@ export function MonthCalendar({ onDayClick, onSlotCreate }: MonthCalendarProps) 
 
       {/* Calendar Grid */}
       <div className="space-y-4">
-      <Card>
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardContent className="p-0">
           {/* Calendar Header - Weekday Names - Sticky */}
           <div className="sticky top-0 z-10 grid grid-cols-7 border-b bg-muted/30 backdrop-blur-sm">
