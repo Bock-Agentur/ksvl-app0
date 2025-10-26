@@ -33,8 +33,10 @@ function AppContent() {
   // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   
-  // Transition state for smooth page changes
+  // 2-Phase transition system for smooth page changes
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [contentReady, setContentReady] = useState(true);
+  const [pendingTab, setPendingTab] = useState<string | null>(null);
   
   // Verarbeite URL-Parameter für Datumsnavigation
   useEffect(() => {
@@ -49,13 +51,27 @@ function AppContent() {
     }
   }, [searchParams, setSearchParams, setActiveTabRaw]);
   
-  // Wrapper with smooth transition
+  // Phase 2: Wait for new page to be fully rendered
+  useEffect(() => {
+    if (pendingTab && activeTab === pendingTab) {
+      // Wait for 2 animation frames to ensure DOM is fully updated and laid out
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setContentReady(true);
+          setIsTransitioning(false);
+          setPendingTab(null);
+        });
+      });
+    }
+  }, [activeTab, pendingTab]);
+  
+  // Phase 1: Fade out and trigger tab switch
   const setActiveTab = async (tab: string) => {
     setIsTransitioning(true);
-    await new Promise(resolve => setTimeout(resolve, 150)); // Fade out
-    setActiveTabRaw(tab, true);
-    await new Promise(resolve => setTimeout(resolve, 50)); // Small delay
-    setIsTransitioning(false);
+    setContentReady(false);
+    await new Promise(resolve => setTimeout(resolve, 200)); // Fade out duration
+    setPendingTab(tab);
+    setActiveTabRaw(tab, true); // This triggers React to start rendering new page
   };
   
   // Initialize slot design system
@@ -103,8 +119,8 @@ function AppContent() {
 
   return (
     <div className={cn(
-      "transition-opacity duration-300",
-      isTransitioning ? "opacity-0" : "opacity-100 animate-page-transition-in"
+      "transition-opacity duration-200",
+      !contentReady || isTransitioning ? "opacity-0" : "opacity-100"
     )}>
       <AppShell
         currentRole={currentRole}
