@@ -12,6 +12,7 @@ import { useUsers } from "@/hooks/use-users";
 import { useAIAssistantSettings } from "@/hooks/use-ai-assistant-settings";
 import { useAIWelcomeMessage } from "@/hooks/use-ai-welcome-message";
 import { useHarborChatData } from "@/hooks/use-harbor-chat-data";
+import { useProfileData } from "@/hooks/use-profile-data";
 import { AppShell } from "@/components/app-shell";
 import { Dashboard } from "@/components/dashboard";
 import { UserManagementRefactored as UserManagement } from "@/components/user-management";
@@ -42,6 +43,7 @@ function AppContent() {
   const { isLoading: aiAssistantLoading } = useAIAssistantSettings();
   const { isLoading: aiWelcomeLoading } = useAIWelcomeMessage();
   const { isLoading: harborChatLoading } = useHarborChatData();
+  const { isLoading: profileLoading } = useProfileData();
   
   // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
@@ -56,7 +58,7 @@ function AppContent() {
   const getLoadingStateForTab = (tab: string): boolean => {
     switch(tab) {
       case 'dashboard': 
-        return slotsLoading || usersLoading || harborChatLoading || aiWelcomeLoading;
+        return slotsLoading || usersLoading || harborChatLoading || aiWelcomeLoading || profileLoading;
       case 'calendar': 
         return slotsLoading;
       case 'users': 
