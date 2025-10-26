@@ -25,24 +25,34 @@ export function useStickyHeaderLayout() {
     true // global setting
   );
 
+  // Migration: Ensure pages object exists (for backward compatibility)
+  const settings: StickyHeaderLayoutSettings = {
+    enabled: value.enabled,
+    pages: value.pages || {
+      calendar: value.enabled,
+      slotManagement: value.enabled,
+      userManagement: value.enabled,
+    }
+  };
+
   // Helper: Prüfen ob Seite sticky sein soll
   const isPageSticky = (page: keyof StickyHeaderLayoutSettings['pages']) => {
-    return value.enabled && value.pages[page];
+    return settings.enabled && settings.pages[page];
   };
 
   // Helper: Einzelne Seite togglen
   const togglePage = (page: keyof StickyHeaderLayoutSettings['pages'], enabled: boolean) => {
     setValue({
-      ...value,
+      ...settings,
       pages: {
-        ...value.pages,
+        ...settings.pages,
         [page]: enabled,
       }
     });
   };
 
   return {
-    settings: value,
+    settings,
     setSettings: setValue,
     isPageSticky,
     togglePage,
