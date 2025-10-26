@@ -18,6 +18,8 @@ import { useRole } from "@/hooks/use-role";
 import { useCustomFields, useCustomFieldValues } from "@/hooks/use-custom-fields";
 import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
+import { DocumentUpload } from "@/components/common/document-upload";
+import { UserHistoryTimeline } from "@/components/common/user-history-timeline";
 
 // ProfileViewProps is now imported from @/types
 
@@ -358,16 +360,36 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           boat_type: toNullIfEmpty((editedUser as any).boatType),
           boat_length: toNullIfEmpty((editedUser as any).boatLength),
           boat_width: toNullIfEmpty((editedUser as any).boatWidth),
+          boat_color: toNullIfEmpty((editedUser as any).boatColor),
+          berth_length: toNullIfEmpty((editedUser as any).berthLength),
+          berth_width: toNullIfEmpty((editedUser as any).berthWidth),
+          buoy_radius: toNullIfEmpty((editedUser as any).buoyRadius),
+          has_dinghy_berth: (editedUser as any).hasDinghyBerth === true,
           parking_permit_number: toNullIfEmpty((editedUser as any).parkingPermitNumber),
           parking_permit_issue_date: toNullIfEmpty((editedUser as any).parkingPermitIssueDate),
           beverage_chip_number: toNullIfEmpty((editedUser as any).beverageChipNumber),
           beverage_chip_issue_date: toNullIfEmpty((editedUser as any).beverageChipIssueDate),
+          beverage_chip_status: toNullIfEmpty((editedUser as any).beverageChipStatus),
           emergency_contact: toNullIfEmpty((editedUser as any).emergencyContact),
+          emergency_contact_name: toNullIfEmpty((editedUser as any).emergencyContactName),
+          emergency_contact_phone: toNullIfEmpty((editedUser as any).emergencyContactPhone),
+          emergency_contact_relationship: toNullIfEmpty((editedUser as any).emergencyContactRelationship),
           notes: toNullIfEmpty((editedUser as any).notes),
           vorstand_funktion: toNullIfEmpty((editedUser as any).vorstandFunktion),
+          membership_type: toNullIfEmpty((editedUser as any).membershipType),
+          membership_status: toNullIfEmpty((editedUser as any).membershipStatus),
+          board_position_start_date: toNullIfEmpty((editedUser as any).boardPositionStartDate),
+          board_position_end_date: toNullIfEmpty((editedUser as any).boardPositionEndDate),
+          password_change_required: (editedUser as any).passwordChangeRequired === true,
+          two_factor_method: toNullIfEmpty((editedUser as any).twoFactorMethod),
           data_public_in_ksvl: (editedUser as any).dataPublicInKsvl === true,
           contact_public_in_ksvl: (editedUser as any).contactPublicInKsvl === true,
-          ai_info_enabled: aiInfoEnabled
+          newsletter_optin: (editedUser as any).newsletterOptin === true,
+          ai_info_enabled: aiInfoEnabled,
+          document_bfa: toNullIfEmpty((editedUser as any).documentBfa),
+          document_insurance: toNullIfEmpty((editedUser as any).documentInsurance),
+          document_berth_contract: toNullIfEmpty((editedUser as any).documentBerthContract),
+          document_member_photo: toNullIfEmpty((editedUser as any).documentMemberPhoto)
         };
 
         const { error } = await supabase
@@ -1772,6 +1794,87 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           </div>
         </CardContent>
       </Card>
+
+      {/* 📎 Dokumente Card */}
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            📎 Dokumente
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 gap-6">
+            <DocumentUpload
+              userId={user.id}
+              documentType="bfa"
+              label="Befähigungsnachweis (BFA Binnen)"
+              currentUrl={(user as any).documentBfa}
+              onUploadComplete={(url) => {
+                setEditedUser(prev => prev ? { ...prev, documentBfa: url } as any : null);
+                loadCurrentUser();
+              }}
+              disabled={!isEditing}
+            />
+
+            <DocumentUpload
+              userId={user.id}
+              documentType="insurance"
+              label="Versicherung Nachweis"
+              currentUrl={(user as any).documentInsurance}
+              onUploadComplete={(url) => {
+                setEditedUser(prev => prev ? { ...prev, documentInsurance: url } as any : null);
+                loadCurrentUser();
+              }}
+              disabled={!isEditing}
+            />
+
+            <DocumentUpload
+              userId={user.id}
+              documentType="berth_contract"
+              label="Liegeplatzvertrag"
+              currentUrl={(user as any).documentBerthContract}
+              onUploadComplete={(url) => {
+                setEditedUser(prev => prev ? { ...prev, documentBerthContract: url } as any : null);
+                loadCurrentUser();
+              }}
+              disabled={!isEditing}
+            />
+
+            <DocumentUpload
+              userId={user.id}
+              documentType="member_photo"
+              label="Mitgliederfoto"
+              currentUrl={(user as any).documentMemberPhoto}
+              onUploadComplete={(url) => {
+                setEditedUser(prev => prev ? { ...prev, documentMemberPhoto: url } as any : null);
+                loadCurrentUser();
+              }}
+              disabled={!isEditing}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 🗂️ Historie & Verwaltung Card - nur für Admin */}
+      {isAdmin && (
+        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              🗂️ Historie & Verwaltung
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <UserHistoryTimeline
+              membershipHistory={(user as any).membershipStatusHistory}
+              boardHistory={(user as any).boardPositionHistory}
+              createdAt={(user as any).created_at}
+              createdBy={(user as any).createdBy}
+              updatedAt={(user as any).updated_at}
+              modifiedBy={(user as any).modifiedBy}
+            />
+          </CardContent>
+        </Card>
+      )}
           
       {/* Custom Fields Card (alte Struktur behalten für Kompatibilität) */}
       <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
