@@ -57,7 +57,6 @@ function AppContent() {
   const [contentReady, setContentReady] = useState(true);
   const [pendingTab, setPendingTab] = useState<string | null>(null);
   const [animationKey, setAnimationKey] = useState(0);
-  const [showFooter, setShowFooter] = useState(false);
   
   // Centralized loading state - determines when to show PageLoader
   const getLoadingStateForTab = (tab: string): boolean => {
@@ -104,10 +103,6 @@ function AppContent() {
             setContentReady(true);
             setIsTransitioning(false);
             setPendingTab(null);
-            
-            setTimeout(() => {
-              setShowFooter(true);
-            }, 150);
           });
         });
       }
@@ -174,7 +169,6 @@ function AppContent() {
           onRoleChange={setRole}
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          showFooter={showFooter}
         >
           {renderContent()}
         </AppShell>

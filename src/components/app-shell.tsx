@@ -59,9 +59,8 @@ export function AppShell({
   onRoleChange,
   activeTab,
   onTabChange,
-  children,
-  showFooter = true,
-}: AppShellProps & { showFooter?: boolean }) {
+  children
+}: AppShellProps) {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [forceUpdate, setForceUpdate] = useState(0);
@@ -127,15 +126,13 @@ export function AppShell({
   }, []);
   
   useEffect(() => {
-    if (isInitialized && !footerLoading && showFooter) {
+    if (isInitialized && !footerLoading) {
       const timer = setTimeout(() => {
         setIsFooterReady(true);
-      }, 100);
+      }, 300);
       return () => clearTimeout(timer);
-    } else {
-      setIsFooterReady(false);
     }
-  }, [isInitialized, footerLoading, showFooter]);
+  }, [isInitialized, footerLoading]);
   const roleLabels: Record<UserRole, string> = {
     gastmitglied: "Gastmitglied",
     mitglied: "Mitglied",
