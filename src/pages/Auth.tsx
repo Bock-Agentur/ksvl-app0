@@ -167,10 +167,13 @@ export function Auth() {
   const { background, isLoading } = useLoginBackground();
   const isMobile = useIsMobile();
 
-  // Reload background on mount to ensure fresh data
+  // Force re-render when background changes
+  const [, forceUpdate] = useState({});
   useEffect(() => {
-    // Force a re-render when background changes
-  }, [background]);
+    if (!isLoading) {
+      forceUpdate({});
+    }
+  }, [background, isLoading]);
 
   // Determine countdown position based on screen size
   const getCountdownPosition = () => {
@@ -349,7 +352,7 @@ export function Auth() {
   return (
     <div 
       className={`min-h-screen flex flex-col items-center p-4 relative ${
-        effectiveBackground.type === 'gradient' || !effectiveBackground.url 
+        effectiveBackground.type === 'gradient' && !effectiveBackground.url 
           ? 'bg-gradient-to-br from-background to-muted' 
           : ''
       }`}
