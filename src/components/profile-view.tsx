@@ -561,44 +561,191 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       {/* Hero Card */}
       <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            {/* Left: Avatar + Name + Roles */}
-            <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground text-3xl font-bold">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold text-foreground mb-1">
-                  {user.name}
-                </h1>
-                {user?.roles?.includes('vorstand') && (user as any).vorstandFunktion && (
-                  <p className="text-sm text-muted-foreground mb-2">
-                    {(user as any).vorstandFunktion}
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-2">
-                  {sortRoles(user.roles || []).map((role) => (
-                    <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
-                      {ROLE_LABELS[role] || roleLabels[role]}
-                    </Badge>
-                  ))}
-                </div>
+          {/* Mobile: Avatar rechts, Name links */}
+          <div className="flex items-start justify-between gap-4 mb-4">
+            <div className="flex-1 space-y-2">
+              <h1 className="text-xl md:text-3xl font-bold text-foreground">
+                {user.name}
+              </h1>
+              {user?.roles?.includes('vorstand') && (user as any).vorstandFunktion && (
+                <p className="text-sm text-muted-foreground">
+                  {(user as any).vorstandFunktion}
+                </p>
+              )}
+              <div className="flex flex-wrap gap-1.5">
+                {sortRoles(user.roles || []).map((role) => (
+                  <Badge 
+                    key={role} 
+                    className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5" 
+                    style={getRoleBadgeInlineStyle(role)}
+                  >
+                    {ROLE_LABELS[role] || roleLabels[role]}
+                  </Badge>
+                ))}
               </div>
             </div>
-            
-            {/* Right: Edit Button */}
-            <div className="flex gap-2">
-              {!isEditing && (
-                <Button onClick={() => {
-                  setIsEditing(true);
-                  setEditedUser(user);
-                  setEditedCustomValues(customValues);
-                }}>
-                  <Edit className="w-4 h-4 mr-2" />
+
+            {/* Avatar rechts oben */}
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground text-2xl md:text-3xl font-bold shrink-0">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+          </div>
+
+          {/* Buttons unten */}
+          <div className="flex gap-2">
+            {!isEditing && (
+              <>
+                <Button 
+                  onClick={() => {
+                    setIsEditing(true);
+                    setEditedUser(user);
+                    setEditedCustomValues(customValues);
+                  }} 
+                  size="sm" 
+                  className="h-8"
+                >
+                  <Edit className="w-3 h-3 mr-1.5" />
                   Bearbeiten
                 </Button>
-              )}
-            </div>
+                {isAdmin && (
+                  <Dialog open={isManagingFields} onOpenChange={setIsManagingFields}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="h-8">
+                        <Settings className="w-3 h-3 mr-1.5" />
+                        Felder verwalten
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                      <DialogHeader>
+                        <DialogTitle>Custom Fields verwalten</DialogTitle>
+                        <DialogDescription>
+                          Verwalten Sie zusätzliche Felder für alle Benutzerprofile.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-6">
+                        {/* Add New Field Form */}
+                        <div className="border rounded-lg p-4 space-y-4">
+                          <h3 className="font-semibold">Neues Feld hinzufügen</h3>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label htmlFor="field-name">Feldname (technisch)</Label>
+                              <Input
+                                id="field-name"
+                                value={newField.name || ""}
+                                onChange={(e) => setNewField(prev => ({ ...prev, name: e.target.value }))}
+                                placeholder="z.B. custom_field_1"
+                              />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor="field-label">Anzeigename</Label>
+                              <Input
+                                id="field-label"
+                                value={newField.label || ""}
+                                onChange={(e) => setNewField(prev => ({ ...prev, label: e.target.value }))}
+                                placeholder="z.B. Zusätzliche Info"
+                              />
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor="field-type">Feldtyp</Label>
+                              <Select
+                                value={newField.type || "text"}
+                                onValueChange={(value) => setNewField(prev => ({ ...prev, type: value as any }))}
+                              >
+                                <SelectTrigger id="field-type">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="text">Text</SelectItem>
+                                  <SelectItem value="textarea">Mehrzeiliger Text</SelectItem>
+                                  <SelectItem value="number">Zahl</SelectItem>
+                                  <SelectItem value="date">Datum</SelectItem>
+                                  <SelectItem value="select">Auswahl</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label htmlFor="field-placeholder">Platzhalter</Label>
+                              <Input
+                                id="field-placeholder"
+                                value={newField.placeholder || ""}
+                                onChange={(e) => setNewField(prev => ({ ...prev, placeholder: e.target.value }))}
+                                placeholder="Optional"
+                              />
+                            </div>
+                          </div>
+                          
+                          {newField.type === "select" && (
+                            <div className="space-y-2">
+                              <Label htmlFor="field-options">Auswahloptionen (kommagetrennt)</Label>
+                              <Input
+                                id="field-options"
+                                value={newField.options?.join(", ") || ""}
+                                onChange={(e) => setNewField(prev => ({ 
+                                  ...prev, 
+                                  options: e.target.value.split(",").map(o => o.trim()).filter(o => o) 
+                                }))}
+                                placeholder="Option 1, Option 2, Option 3"
+                              />
+                            </div>
+                          )}
+                          
+                          <div className="flex items-center space-x-2">
+                            <Checkbox
+                              id="field-required"
+                              checked={newField.required || false}
+                              onCheckedChange={(checked) => setNewField(prev => ({ ...prev, required: checked === true }))}
+                            />
+                            <label htmlFor="field-required" className="text-sm font-medium cursor-pointer">
+                              Pflichtfeld
+                            </label>
+                          </div>
+                          
+                          <Button onClick={handleAddCustomField}>
+                            <Plus className="w-4 h-4 mr-2" />
+                            Feld hinzufügen
+                          </Button>
+                        </div>
+
+                        {/* Existing Fields List */}
+                        <div className="space-y-4">
+                          <h3 className="font-semibold">Vorhandene Felder</h3>
+                          
+                          {fieldsLoading ? (
+                            <p className="text-sm text-muted-foreground">Lade Felder...</p>
+                          ) : customFields.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">Keine benutzerdefinierten Felder vorhanden.</p>
+                          ) : (
+                            <div className="space-y-2">
+                              {customFields.map((field) => (
+                                <div key={field.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                  <div className="flex-1">
+                                    <p className="font-medium">{field.label}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                      {field.name} • {field.type} {field.required && "• Pflichtfeld"}
+                                    </p>
+                                  </div>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeleteCustomField(field.id)}
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                )}
+              </>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -1216,146 +1363,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Custom Fields Management Dialog (Admin only) */}
-      {isAdmin && (
-        <Dialog open={isManagingFields} onOpenChange={setIsManagingFields}>
-          <DialogTrigger asChild>
-            <Button variant="outline" className="mt-4">
-              <Settings className="w-4 h-4 mr-2" />
-              Felder verwalten
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Custom Fields verwalten</DialogTitle>
-              <DialogDescription>
-                Verwalten Sie zusätzliche Felder für alle Benutzerprofile.
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-6">
-              {/* Add New Field Form */}
-              <div className="border rounded-lg p-4 space-y-4">
-                <h3 className="font-semibold">Neues Feld hinzufügen</h3>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="field-name">Feldname (technisch)</Label>
-                    <Input
-                      id="field-name"
-                      value={newField.name || ""}
-                      onChange={(e) => setNewField(prev => ({ ...prev, name: e.target.value }))}
-                      placeholder="z.B. custom_field_1"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="field-label">Anzeigename</Label>
-                    <Input
-                      id="field-label"
-                      value={newField.label || ""}
-                      onChange={(e) => setNewField(prev => ({ ...prev, label: e.target.value }))}
-                      placeholder="z.B. Zusätzliche Info"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="field-type">Feldtyp</Label>
-                    <Select
-                      value={newField.type || "text"}
-                      onValueChange={(value) => setNewField(prev => ({ ...prev, type: value as any }))}
-                    >
-                      <SelectTrigger id="field-type">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="text">Text</SelectItem>
-                        <SelectItem value="textarea">Mehrzeiliger Text</SelectItem>
-                        <SelectItem value="number">Zahl</SelectItem>
-                        <SelectItem value="date">Datum</SelectItem>
-                        <SelectItem value="select">Auswahl</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="field-placeholder">Platzhalter</Label>
-                    <Input
-                      id="field-placeholder"
-                      value={newField.placeholder || ""}
-                      onChange={(e) => setNewField(prev => ({ ...prev, placeholder: e.target.value }))}
-                      placeholder="Optional"
-                    />
-                  </div>
-                </div>
-                
-                {newField.type === "select" && (
-                  <div className="space-y-2">
-                    <Label htmlFor="field-options">Auswahloptionen (kommagetrennt)</Label>
-                    <Input
-                      id="field-options"
-                      value={newField.options?.join(", ") || ""}
-                      onChange={(e) => setNewField(prev => ({ 
-                        ...prev, 
-                        options: e.target.value.split(",").map(o => o.trim()).filter(o => o) 
-                      }))}
-                      placeholder="Option 1, Option 2, Option 3"
-                    />
-                  </div>
-                )}
-                
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="field-required"
-                    checked={newField.required || false}
-                    onCheckedChange={(checked) => setNewField(prev => ({ ...prev, required: checked === true }))}
-                  />
-                  <label htmlFor="field-required" className="text-sm font-medium cursor-pointer">
-                    Pflichtfeld
-                  </label>
-                </div>
-                
-                <Button onClick={handleAddCustomField}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Feld hinzufügen
-                </Button>
-              </div>
-
-              {/* Existing Fields List */}
-              <div className="space-y-4">
-                <h3 className="font-semibold">Vorhandene Felder</h3>
-                
-                {fieldsLoading ? (
-                  <p className="text-sm text-muted-foreground">Lade Felder...</p>
-                ) : customFields.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Keine benutzerdefinierten Felder vorhanden.</p>
-                ) : (
-                  <div className="space-y-2">
-                    {customFields.map((field) => (
-                      <div key={field.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex-1">
-                          <p className="font-medium">{field.label}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {field.name} • {field.type} {field.required && "• Pflichtfeld"}
-                          </p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteCustomField(field.id)}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
   );
 
