@@ -64,9 +64,11 @@ export function AppShell({
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [forceUpdate, setForceUpdate] = useState(0);
+  const [isFooterReady, setIsFooterReady] = useState(false);
   const {
     getMenuItemsForRole,
-    getDisplaySettingsForRole
+    getDisplaySettingsForRole,
+    isLoading: footerLoading
   } = useFooterMenuSettings();
   const {
     getOrderedHeaderItems
@@ -115,6 +117,15 @@ export function AppShell({
       window.removeEventListener('menuSettingsChanged', handleSettingsChange);
     };
   }, []);
+
+  // Trigger footer slide-up animation when data is ready
+  useEffect(() => {
+    if (!footerLoading) {
+      requestAnimationFrame(() => {
+        setIsFooterReady(true);
+      });
+    }
+  }, [footerLoading]);
   const roleLabels: Record<UserRole, string> = {
     gastmitglied: "Gastmitglied",
     mitglied: "Mitglied",
@@ -168,7 +179,11 @@ export function AppShell({
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-2 pb-safe-bottom shadow-elevated-maritime z-50">
+      <nav className={cn(
+        "fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-2 pb-safe-bottom shadow-elevated-maritime z-50",
+        "transition-transform duration-500 ease-out",
+        isFooterReady ? "translate-y-0" : "translate-y-full"
+      )}>
         <div className="flex justify-evenly items-center max-w-md mx-auto">
             {footerItems.map((item, index) => {
               // Dynamic icon loading from lucide-react

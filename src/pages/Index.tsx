@@ -13,6 +13,7 @@ import { useAIAssistantSettings } from "@/hooks/use-ai-assistant-settings";
 import { useAIWelcomeMessage } from "@/hooks/use-ai-welcome-message";
 import { useHarborChatData } from "@/hooks/use-harbor-chat-data";
 import { useProfileData } from "@/hooks/use-profile-data";
+import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
 import { AppShell } from "@/components/app-shell";
 import { Dashboard } from "@/components/dashboard";
 import { UserManagementRefactored as UserManagement } from "@/components/user-management";
@@ -45,6 +46,9 @@ function AppContent() {
   const { isLoading: harborChatLoading } = useHarborChatData();
   const { isLoading: profileLoading } = useProfileData();
   
+  // Load footer menu data
+  const { isLoading: footerLoading } = useFooterMenuSettings();
+  
   // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   
@@ -56,17 +60,20 @@ function AppContent() {
   
   // Centralized loading state - determines when to show PageLoader
   const getLoadingStateForTab = (tab: string): boolean => {
+    // Footer must always be loaded on every tab
+    const baseLoading = footerLoading;
+    
     switch(tab) {
       case 'dashboard': 
-        return slotsLoading || usersLoading || harborChatLoading || aiWelcomeLoading || profileLoading;
+        return baseLoading || slotsLoading || usersLoading || harborChatLoading || aiWelcomeLoading || profileLoading;
       case 'calendar': 
-        return slotsLoading;
+        return baseLoading || slotsLoading;
       case 'users': 
-        return usersLoading;
+        return baseLoading || usersLoading;
       case 'settings':
-        return aiAssistantLoading || aiWelcomeLoading;
+        return baseLoading || aiAssistantLoading || aiWelcomeLoading;
       default: 
-        return false; // No additional data needed
+        return baseLoading;
     }
   };
   

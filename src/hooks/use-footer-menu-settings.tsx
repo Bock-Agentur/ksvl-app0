@@ -79,17 +79,19 @@ const DEFAULT_FOOTER_SETTINGS: FooterMenuSettings = {
 };
 
 export function useFooterMenuSettings() {
-  const { value: settings, setValue: setSettings } = useAppSettings<FooterMenuSettings>(
+  const { value: settings, setValue: setSettings, isLoading: settingsLoading } = useAppSettings<FooterMenuSettings>(
     "footerMenuSettings",
     DEFAULT_FOOTER_SETTINGS,
     true // Global
   );
 
-  const { value: displaySettings, setValue: setDisplaySettings } = useAppSettings<FooterDisplaySettings>(
+  const { value: displaySettings, setValue: setDisplaySettings, isLoading: displayLoading } = useAppSettings<FooterDisplaySettings>(
     "footerDisplaySettings",
     DEFAULT_DISPLAY_SETTINGS,
     true // Global
   );
+
+  const isLoading = settingsLoading || displayLoading;
 
   const saveSettings = (newSettings: FooterMenuSettings) => {
     setSettings(newSettings);
@@ -138,6 +140,7 @@ export function useFooterMenuSettings() {
   return {
     settings,
     displaySettings,
+    isLoading,
     getMenuItemsForRole,
     updateRoleMenuItems,
     resetToDefaults,
