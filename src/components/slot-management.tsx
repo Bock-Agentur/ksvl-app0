@@ -272,7 +272,7 @@ export function SlotManagement() {
   return <div className="flex flex-col h-screen overflow-hidden bg-background max-w-7xl mx-auto">
       {/* Fixed Top Card */}
       <div className="flex-shrink-0 pt-4 pb-0 relative z-10 my-0 px-4">
-        <Card className="bg-card border shadow-sm rounded-lg">
+        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
           <CardHeader>
             <CardTitle>Slot-Verwaltung</CardTitle>
             <CardDescription>
