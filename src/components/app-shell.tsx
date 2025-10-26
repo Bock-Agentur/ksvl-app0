@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Calendar, Home, MessageSquare, Settings, User, Users, UserCheck, Menu, X, FileText, TestTube, Palette, Layers, LogOut, LogIn } from "lucide-react";
+import { Calendar, Home, MessageSquare, Settings, User, Users, UserCheck, Menu, X, FileText, TestTube, Palette, Layers, LogOut, LogIn, FolderOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -48,7 +48,8 @@ const iconMap = {
   Calendar,
   FileText,
   Settings,
-  Layers
+  Layers,
+  FolderOpen
 };
 
 // AppShellProps is now imported from @/types
@@ -284,15 +285,24 @@ export function AppShell({
                           {availableHeaderItems.map(item => {
                             const Icon = item.icon;
                             const isActive = activeTab === item.id;
+                            
+                            // Handle special navigation cases
+                            const handleClick = () => {
+                              if (item.id === 'file-manager') {
+                                navigate('/file-manager');
+                                setIsMenuOpen(false);
+                              } else {
+                                onTabChange(item.id);
+                                setIsMenuOpen(false);
+                              }
+                            };
+                            
                             return (
                               <Button 
                                 key={item.id} 
                                 variant={isActive ? "secondary" : "ghost"} 
                                 className="w-full justify-start relative" 
-                                onClick={() => {
-                                  onTabChange(item.id);
-                                  setIsMenuOpen(false);
-                                }}
+                                onClick={handleClick}
                               >
                                 <Icon className="w-4 h-4 mr-2" />
                                 <span>{item.label}</span>

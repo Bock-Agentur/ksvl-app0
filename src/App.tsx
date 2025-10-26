@@ -11,6 +11,7 @@ import { Settings } from "./pages/Settings";
 import { Auth } from "./pages/Auth";
 import { HeaderMessage } from "./pages/HeaderMessage";
 import { DesktopBackground } from "./pages/DesktopBackground";
+import { FileManager } from "./pages/FileManager";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => {
               <Route path="/settings" element={<Settings />} />
               <Route path="/header-message" element={<HeaderMessage />} />
               <Route path="/desktop-background" element={<DesktopBackground />} />
+              <Route path="/file-manager" element={<FileManager />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
