@@ -32,6 +32,9 @@ function AppContent() {
   // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   
+  // Animation key for smooth transitions between tabs
+  const [animationKey, setAnimationKey] = useState(0);
+  
   // Verarbeite URL-Parameter für Datumsnavigation
   useEffect(() => {
     const dateParam = searchParams.get('date');
@@ -48,6 +51,7 @@ function AppContent() {
   // Wrapper to save without toast notification
   const setActiveTab = (tab: string) => {
     setActiveTabRaw(tab, true);
+    setAnimationKey(prev => prev + 1); // Trigger animation on tab change
   };
   
   // Initialize slot design system
@@ -94,7 +98,7 @@ function AppContent() {
   }
 
   return (
-    <div className="animate-fade-in">
+    <div key={animationKey} className="animate-fade-in">
       <AppShell
         currentRole={currentRole}
         currentUser={currentUser}
