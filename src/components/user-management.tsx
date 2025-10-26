@@ -390,14 +390,23 @@ export function UserManagementRefactored() {
               </p>
             </div>
             
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={handleExport}>
-                <Download className="w-4 h-4 mr-2" />
-                Export CSV
+            <div className="flex items-center gap-1.5 sm:gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleExport}
+                className="text-xs sm:text-sm px-2 sm:px-4 py-1.5 sm:py-2 h-auto"
+              >
+                <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Export CSV</span>
+                <span className="sm:hidden">CSV</span>
               </Button>
-              <Button onClick={handleAddUser}>
-                <Plus className="w-4 h-4 mr-2" />
-                Benutzer hinzufügen
+              <Button 
+                onClick={handleAddUser}
+                className="text-xs sm:text-sm px-2 sm:px-4 py-1.5 sm:py-2 h-auto"
+              >
+                <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Benutzer hinzufügen</span>
+                <span className="sm:hidden">Neu</span>
               </Button>
             </div>
           </div>
@@ -407,44 +416,51 @@ export function UserManagementRefactored() {
       {/* Statistiken Cards - Collapsible auf Mobile */}
       <Collapsible open={isStatsOpen} onOpenChange={setIsStatsOpen} className="sm:hidden">
         <CollapsibleTrigger asChild>
-          <Button variant="outline" className="w-full flex items-center justify-between">
-            <span>Statistiken anzeigen</span>
-            <ChevronDown className={`h-4 w-4 transition-transform ${isStatsOpen ? 'rotate-180' : ''}`} />
+          <Button 
+            variant="outline" 
+            className="w-full flex items-center justify-between bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 hover:bg-white/90 px-6 py-4 h-auto"
+          >
+            <span className="font-semibold text-sm">Statistiken anzeigen</span>
+            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isStatsOpen ? 'rotate-180' : ''}`} />
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-2">
-          <div className="grid grid-cols-2 gap-2">
-            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
-              <CardContent className="pt-3 pb-2">
-                <div className="text-lg font-bold text-primary">{stats.total}</div>
-                <p className="text-[10px] text-muted-foreground">Gesamt</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
-              <CardContent className="pt-3 pb-2">
-                <div className="text-lg font-bold text-green-600">{stats.active}</div>
-                <p className="text-[10px] text-muted-foreground">Aktiv</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
-              <CardContent className="pt-3 pb-2">
-                <div className="text-lg font-bold text-blue-600">{stats.roleCount.mitglied}</div>
-                <p className="text-[10px] text-muted-foreground">Mitglieder</p>
-              </CardContent>
-            </Card>
-            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
-              <CardContent className="pt-3 pb-2">
-                <div className="text-lg font-bold text-purple-600">{stats.roleCount.kranfuehrer}</div>
-                <p className="text-[10px] text-muted-foreground">Kranführer</p>
-              </CardContent>
-            </Card>
-            <Card className="col-span-2 bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
-              <CardContent className="pt-3 pb-2">
-                <div className="text-lg font-bold text-red-600">{stats.roleCount.admin}</div>
-                <p className="text-[10px] text-muted-foreground">Admins</p>
-              </CardContent>
-            </Card>
-          </div>
+          <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+            <CardContent className="p-4">
+              <div className="grid grid-cols-2 gap-2">
+                <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+                  <CardContent className="pt-3 pb-2">
+                    <div className="text-lg font-bold text-primary">{stats.total}</div>
+                    <p className="text-[10px] text-muted-foreground">Gesamt</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+                  <CardContent className="pt-3 pb-2">
+                    <div className="text-lg font-bold text-green-600">{stats.active}</div>
+                    <p className="text-[10px] text-muted-foreground">Aktiv</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+                  <CardContent className="pt-3 pb-2">
+                    <div className="text-lg font-bold text-blue-600">{stats.roleCount.mitglied}</div>
+                    <p className="text-[10px] text-muted-foreground">Mitglieder</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+                  <CardContent className="pt-3 pb-2">
+                    <div className="text-lg font-bold text-purple-600">{stats.roleCount.kranfuehrer}</div>
+                    <p className="text-[10px] text-muted-foreground">Kranführer</p>
+                  </CardContent>
+                </Card>
+                <Card className="col-span-2 bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+                  <CardContent className="pt-3 pb-2">
+                    <div className="text-lg font-bold text-red-600">{stats.roleCount.admin}</div>
+                    <p className="text-[10px] text-muted-foreground">Admins</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
         </CollapsibleContent>
       </Collapsible>
 
@@ -485,12 +501,15 @@ export function UserManagementRefactored() {
       {/* Such- und Filter-Bereich - Collapsible auf Mobile */}
       <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen} className="sm:hidden">
         <CollapsibleTrigger asChild>
-          <Button variant="outline" className="w-full flex items-center justify-between">
+          <Button 
+            variant="outline" 
+            className="w-full flex items-center justify-between bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 hover:bg-white/90 px-6 py-4 h-auto"
+          >
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
-              <span>Suche & Filter</span>
+              <span className="font-semibold text-sm">Suche & Filter</span>
             </div>
-            <ChevronDown className={`h-4 w-4 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
+            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-2">
