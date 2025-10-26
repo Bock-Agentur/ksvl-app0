@@ -94,14 +94,28 @@ export function UserManagementRefactored() {
   const { userRoleFilter, statusFilter } = useCommonFilters();
   
   const searchFilter = useSearchFilter(users, {
-    searchFields: ['name', 'email', 'memberNumber', 'phone'],
+    searchFields: [
+      'name',
+      'firstName',
+      'lastName',
+      'email',
+      'username',
+      'memberNumber',
+      'phone',
+      'boatName',
+      'berthNumber',
+      'oesvNumber',
+      'address',
+      'city',
+      'vorstandFunktion'
+    ],
     filters: {
       role: {
         field: 'role',
         ...userRoleFilter
       },
       status: {
-        field: 'status', 
+        field: 'status',
         ...statusFilter
       }
     }

@@ -141,7 +141,7 @@ serve(async (req) => {
     // Hole öffentliche Mitgliederdaten (nur wenn data_public_in_ksvl = true)
     const { data: publicMembers, error: membersError } = await supabase
       .from('profiles')
-      .select('id, first_name, last_name, name, username, member_number, boat_name, boat_type, berth_number, email, phone, contact_public_in_ksvl, vorstand_funktion, ai_info_enabled')
+      .select('*')
       .eq('data_public_in_ksvl', true)
       .order('name', { ascending: true });
 
@@ -268,38 +268,93 @@ VERGANGENE STATISTIK:
 ÖFFENTLICHE MITGLIEDERDATEN (${publicMembers.length} Mitglieder):
 ${publicMembers.map(m => {
   const customValues = customValuesMap.get(m.id) || {};
-  let info = `- ${getFullName(m)}${m.member_number ? ` (Nr: ${m.member_number})` : ''}`;
   
-  // Boot-Informationen
-  if (m.boat_name) info += ` - Boot: ${m.boat_name}`;
-  if (m.boat_type) info += ` (${m.boat_type})`;
-  if (m.berth_number) info += ` - Liegeplatz: ${m.berth_number}`;
+  // 1. BASISDATEN
+  let info = `\n--- ${getFullName(m)} ---`;
+  if (m.member_number) info += `\n  Mitgliedsnummer: ${m.member_number}`;
+  if (m.username) info += `\n  Username: ${m.username}`;
+  if (m.membership_type) info += `\n  Mitgliedschaftstyp: ${m.membership_type}`;
+  if (m.membership_status) info += `\n  Status: ${m.membership_status}`;
   
-  // Kontaktdaten (nur wenn öffentlich)
+  // 2. KONTAKTDATEN (nur wenn öffentlich)
   if (m.contact_public_in_ksvl) {
-    if (m.email) info += ` - Email: ${m.email}`;
-    if (m.phone) info += ` - Tel: ${m.phone}`;
+    if (m.email) info += `\n  Email: ${m.email}`;
+    if (m.phone) info += `\n  Telefon: ${m.phone}`;
   }
   
-  // Custom Fields hinzufügen (nur wichtige anzeigen)
-  const relevantFields = ['address', 'city', 'postal_code', 'street_address', 'oesv_number'];
-  const customFieldInfo = relevantFields
-    .filter(fieldName => customValues[fieldName])
-    .map(fieldName => {
-      const field = customFields?.find(f => f.name === fieldName);
-      return `${field?.label || fieldName}: ${customValues[fieldName]}`;
-    })
-    .join(', ');
+  // 3. ADRESSDATEN
+  if (m.street_address) info += `\n  Straße: ${m.street_address}`;
+  if (m.postal_code || m.city) {
+    info += `\n  Ort: ${m.postal_code || ''} ${m.city || ''}`.trim();
+  }
   
-  if (customFieldInfo) {
-    info += ` - ${customFieldInfo}`;
+  // 4. BOOT-INFORMATIONEN
+  if (m.boat_name) info += `\n  Boot: ${m.boat_name}`;
+  if (m.boat_type) info += `\n  Boot-Typ: ${m.boat_type}`;
+  if (m.boat_color) info += `\n  Boot-Farbe: ${m.boat_color}`;
+  if (m.boat_length || m.boat_width) {
+    info += `\n  Boot-Maße: ${m.boat_length || '?'}m x ${m.boat_width || '?'}m`;
+  }
+  
+  // 5. LIEGEPLATZ-INFORMATIONEN
+  if (m.berth_number) info += `\n  Liegeplatz: ${m.berth_number}`;
+  if (m.berth_type) info += `\n  Liegeplatz-Typ: ${m.berth_type}`;
+  if (m.berth_length || m.berth_width) {
+    info += `\n  Liegeplatz-Maße: ${m.berth_length || '?'}m x ${m.berth_width || '?'}m`;
+  }
+  if (m.buoy_radius) info += `\n  Boje-Radius: ${m.buoy_radius}m`;
+  if (m.has_dinghy_berth) {
+    info += `\n  Dinghy-Liegeplatz: ${m.dinghy_berth_number || 'Ja'}`;
+  }
+  
+  // 6. VORSTAND
+  if (m.vorstand_funktion) info += `\n  Vorstandsfunktion: ${m.vorstand_funktion}`;
+  if (m.board_position_start_date) info += `\n  Vorstand seit: ${m.board_position_start_date}`;
+  if (m.board_position_end_date) info += `\n  Vorstand bis: ${m.board_position_end_date}`;
+  
+  // 7. ZUSATZINFORMATIONEN
+  if (m.oesv_number) info += `\n  OESV-Nummer: ${m.oesv_number}`;
+  if (m.parking_permit_number) info += `\n  Parkausweis: ${m.parking_permit_number}`;
+  if (m.beverage_chip_number) info += `\n  Getränkechip: ${m.beverage_chip_number} (${m.beverage_chip_status || 'Aktiv'})`;
+  
+  // 8. NOTFALLKONTAKT
+  if (m.emergency_contact_name) {
+    info += `\n  Notfallkontakt: ${m.emergency_contact_name}`;
+    if (m.emergency_contact_phone) info += ` (${m.emergency_contact_phone})`;
+    if (m.emergency_contact_relationship) info += ` - ${m.emergency_contact_relationship}`;
+  }
+  
+  // 9. DOKUMENTE (nur ob vorhanden)
+  const docs = [];
+  if (m.document_bfa) docs.push('BFA');
+  if (m.document_insurance) docs.push('Versicherung');
+  if (m.document_berth_contract) docs.push('Liegeplatzvertrag');
+  if (m.document_member_photo) docs.push('Mitgliedsfoto');
+  if (docs.length > 0) {
+    info += `\n  Dokumente: ${docs.join(', ')}`;
+  }
+  
+  // 10. CUSTOM FIELDS (alle verfügbaren)
+  const allCustomFields = customFields || [];
+  const customFieldsInfo = allCustomFields
+    .filter(field => customValues[field.name])
+    .map(field => `    ${field.label}: ${customValues[field.name]}`)
+    .join('\n');
+  
+  if (customFieldsInfo) {
+    info += `\n  Custom Fields:\n${customFieldsInfo}`;
+  }
+  
+  // 11. NOTIZEN (falls vorhanden)
+  if (m.notes) {
+    info += `\n  Notizen: ${m.notes}`;
   }
   
   return info;
 }).join('\n')}
 
 WICHTIG: Zeige nur Daten von Mitgliedern, die ihre Daten öffentlich freigegeben haben!
-` : '\n\nKEINE ÖFFENTLICHEN MITGLIEDERDATEN verfügbar (kein Mitglied hat Daten freigegeben).';
+` : '\n\nKEINE ÖFFENTLICHEN MITGLIEDERDATEN verfügbar.';
 
     const vorstandInfo = vorstandMembers && vorstandMembers.length > 0 ? `
 

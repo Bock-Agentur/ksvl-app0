@@ -40,10 +40,14 @@ export interface User {
   
   // Boot & Liegeplatz
   boatColor?: string;
+  berthNumber?: string;
   berthLength?: number;
   berthWidth?: number;
   buoyRadius?: number;
   hasDinghyBerth?: boolean;
+  oesvNumber?: string;
+  address?: string;
+  vorstandFunktion?: string;
   
   // Parkplatz & Getränkechip
   beverageChipStatus?: 'Aktiv' | 'Gesperrt' | 'Verlust';
