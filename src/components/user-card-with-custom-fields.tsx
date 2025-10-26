@@ -4,12 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Eye, Key, Trash2 } from "lucide-react";
 import { User } from "@/types";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
-import { CustomField } from "@/types";
 
 interface UserCardProps {
   user: User;
-  customFields: CustomField[];
-  customValues: Record<string, any>;
   getRoleBadgeInlineStyle: (role: string) => any;
   onViewUser: (user: User) => void;
   onPasswordChange: (userId: string) => void;
@@ -18,23 +15,17 @@ interface UserCardProps {
 
 export function UserCardWithCustomFields({
   user,
-  customFields,
-  customValues,
   getRoleBadgeInlineStyle,
   onViewUser,
   onPasswordChange,
   onDeleteUser
 }: UserCardProps) {
-  // Get specific custom field values for display
-  const firstName = customValues['first_name'] || '';
-  const lastName = customValues['last_name'] || '';
-  const fullName = [firstName, lastName].filter(Boolean).join(' ') || user.name;
-  
-  // Username kommt aus user.username oder user.name
-  const username = user.username || user.name || customValues['username'] || null;
-  const memberNumber = customValues['member_number'] || customValues['mitgliedsnummer'] || null;
-  const email = customValues['email'] || user.email;
-  const phone = customValues['phone'] || customValues['telefon'] || null;
+  // Get all data directly from user object
+  const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ') || user.name;
+  const username = user.username || null;
+  const memberNumber = user.memberNumber || null;
+  const email = user.email;
+  const phone = user.phone || null;
 
   return (
     <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 transition-colors hover:bg-muted/50">

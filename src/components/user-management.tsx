@@ -19,8 +19,7 @@ import { cn } from "@/lib/utils";
 import { UserRoleSelector } from "./user-role-selector";
 import { UserCardWithCustomFields } from "./user-card-with-custom-fields";
 import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
-import { useCustomFields, useCustomFieldValues } from "@/hooks/use-custom-fields";
-import { 
+import {
   getRoleLabel, 
   calculateUserStats, 
   convertToCSV, 
@@ -38,44 +37,11 @@ export function UserManagementRefactored() {
   const { users: dbUsers, loading, deleteUser: deleteDbUser, refreshUsers } = useUsers();
   const { toast } = useToast();
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
-  const { customFields } = useCustomFields();
   const { settings: stickyHeaderSettings } = useStickyHeaderLayout();
-  const [allCustomValues, setAllCustomValues] = useState<Record<string, Record<string, any>>>({});
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'email' | 'memberNumber' | 'role'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
-  
-  // Load all custom field values for all users at once
-  useEffect(() => {
-    const fetchAllCustomValues = async () => {
-      try {
-        const { data, error } = await supabase
-          .from('custom_field_values')
-          .select('user_id, value, custom_fields(name)');
-
-        if (error) throw error;
-
-        const valuesByUser: Record<string, Record<string, any>> = {};
-        data?.forEach(item => {
-          if (!valuesByUser[item.user_id]) {
-            valuesByUser[item.user_id] = {};
-          }
-          if (item.custom_fields) {
-            valuesByUser[item.user_id][(item.custom_fields as any).name] = item.value;
-          }
-        });
-
-        setAllCustomValues(valuesByUser);
-      } catch (error) {
-        console.error('Error fetching all custom values:', error);
-      }
-    };
-
-    if (dbUsers.length > 0) {
-      fetchAllCustomValues();
-    }
-  }, [dbUsers.length]);
   
   // Convert DatabaseUser to User format for compatibility
   const users: User[] = dbUsers.map(u => ({
@@ -147,13 +113,9 @@ export function UserManagementRefactored() {
 
     switch (sortBy) {
       case 'name':
-        const aFirstName = allCustomValues[a.id]?.['first_name'] || '';
-        const aLastName = allCustomValues[a.id]?.['last_name'] || '';
-        const aFullName = [aFirstName, aLastName].filter(Boolean).join(' ') || a.name;
-        
-        const bFirstName = allCustomValues[b.id]?.['first_name'] || '';
-        const bLastName = allCustomValues[b.id]?.['last_name'] || '';
-        const bFullName = [bFirstName, bLastName].filter(Boolean).join(' ') || b.name;
+        // Use firstName and lastName directly from user object
+        const aFullName = [a.firstName, a.lastName].filter(Boolean).join(' ') || a.name;
+        const bFullName = [b.firstName, b.lastName].filter(Boolean).join(' ') || b.name;
         
         compareA = aFullName.toLowerCase();
         compareB = bFullName.toLowerCase();
@@ -163,8 +125,8 @@ export function UserManagementRefactored() {
         compareB = b.email.toLowerCase();
         break;
       case 'memberNumber':
-        compareA = (allCustomValues[a.id]?.['member_number'] || a.memberNumber || '').toLowerCase();
-        compareB = (allCustomValues[b.id]?.['member_number'] || b.memberNumber || '').toLowerCase();
+        compareA = (a.memberNumber || '').toLowerCase();
+        compareB = (b.memberNumber || '').toLowerCase();
         break;
       case 'role':
         compareA = (a.role || '').toLowerCase();
@@ -763,8 +725,6 @@ export function UserManagementRefactored() {
             <UserCardWithCustomFields
               key={user.id}
               user={user}
-              customFields={customFields}
-              customValues={allCustomValues[user.id] || {}}
               getRoleBadgeInlineStyle={getRoleBadgeInlineStyle}
               onViewUser={handleViewUser}
               onPasswordChange={(userId) => {

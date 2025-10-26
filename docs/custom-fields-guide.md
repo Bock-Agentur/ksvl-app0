@@ -1,8 +1,74 @@
-# Custom Fields Guide
+# Custom Fields Anleitung
 
 ## Was sind Custom Fields?
 
-Custom Fields erlauben es Administratoren, zusätzliche Felder für Benutzerprofile anzulegen, ohne Code-Änderungen vornehmen zu müssen. Dies bietet maximale Flexibilität für die Verwaltung von Benutzerdaten.
+**WICHTIG:** Custom Fields sind ausschließlich für **zusätzliche, individuelle Felder** gedacht, die **nicht** zu den Standard-Profilfeldern gehören.
+
+### ⚠️ Standard-Felder (NICHT als Custom Field anlegen!)
+
+Die folgenden Felder sind bereits in der `profiles` Tabelle vorhanden und werden automatisch in jedem Benutzerprofil verwaltet. Diese sollten **NIEMALS** als Custom Fields angelegt werden:
+
+#### Basis & Identifikation
+- Name, Vorname (first_name), Nachname (last_name)
+- Email, Username
+- Mitgliedsnummer (member_number), ÖSV-Nummer (oesv_number)
+- Status, Mitgliedschafts-Typ, Mitgliedschafts-Status
+
+#### Kontaktdaten
+- Telefon (phone)
+- Straße (street_address), PLZ (postal_code), Stadt (city), Adresse (address)
+
+#### Boot
+- Bootsname (boat_name), Bootstyp (boat_type), Bootsfarbe (boat_color)
+- Bootslänge (boat_length), Bootsbreite (boat_width)
+
+#### Liegeplatz
+- Liegeplatz-Nummer (berth_number), Liegeplatz-Typ (berth_type)
+- Liegeplatz-Länge (berth_length), Liegeplatz-Breite (berth_width)
+- Boje-Radius (buoy_radius)
+- Dingi-Liegeplatz (has_dinghy_berth, dinghy_berth_number)
+
+#### Sonstiges
+- Notfall-Kontakt (emergency_contact_name, emergency_contact_phone, emergency_contact_relationship)
+- Parkplatz (parking_permit_number, parking_permit_issue_date)
+- Getränkechip (beverage_chip_number, beverage_chip_status, beverage_chip_issue_date)
+- Notizen (notes)
+
+#### Datenschutz & Einstellungen
+- Satzung akzeptiert (statute_accepted), Datenschutz akzeptiert (privacy_accepted)
+- Newsletter (newsletter_optin)
+- Daten öffentlich (data_public_in_ksvl, contact_public_in_ksvl)
+- AI Info aktiviert (ai_info_enabled)
+
+#### Zugang
+- Passwort-Änderung erforderlich (password_change_required)
+- Zwei-Faktor-Methode (two_factor_method)
+
+#### Dokumente
+- BFA-Dokument, Versicherung, Liegeplatz-Vertrag, Mitglieds-Foto
+
+## ✅ Wann Custom Fields verwenden?
+
+Custom Fields sollten NUR für Felder verwendet werden, die:
+1. **Nicht** in der obigen Liste enthalten sind
+2. Spezifisch für Ihren Verein sind
+3. Temporär oder nur für bestimmte Zwecke benötigt werden
+
+### Beispiele für sinnvolle Custom Fields
+
+✅ **Gute Beispiele:**
+- "Segelschein-Klasse" (Select: A, B, C)
+- "Rettungswesten an Bord" (Number)
+- "WhatsApp Gruppe Mitglied" (Ja/Nein)
+- "Regatta 2025 - Anmeldung" (Ja/Nein)
+- "Stammtisch-Teilnahme" (Ja/Nein)
+- "Lieblingsgetränk" (Text)
+
+❌ **Schlechte Beispiele (bereits als Standard-Felder vorhanden):**
+- "first_name" → Standard-Feld "Vorname"
+- "phone" → Standard-Feld "Telefon"
+- "boat_name" → Standard-Feld "Bootsname"
+- "member_number" → Standard-Feld "Mitgliedsnummer"
 
 ## Wie lege ich ein Custom Field an?
 

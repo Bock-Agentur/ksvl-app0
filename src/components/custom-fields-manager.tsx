@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useCustomFields } from "@/hooks/use-custom-fields";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, GripVertical } from "lucide-react";
+import { Plus, Pencil, Trash2, GripVertical, Info } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import type { CustomField } from "@/types/common";
@@ -209,6 +210,17 @@ export function CustomFieldsManager() {
 
   return (
     <div className="space-y-6">
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertTitle>Hinweis zu Custom Fields</AlertTitle>
+        <AlertDescription>
+          Custom Fields sind für <strong>zusätzliche, individuelle Felder</strong> gedacht, die nicht zu den Standard-Profilfeldern gehören. 
+          Standard-Felder wie Name, Email, Telefon, Adresse, Bootsname, Mitgliedsnummer etc. werden automatisch in jedem Benutzerprofil verwaltet und müssen hier nicht angelegt werden.
+          <br /><br />
+          <strong>Beispiele für sinnvolle Custom Fields:</strong> Segelschein-Klasse, Lieblingsgetränk, WhatsApp-Gruppen-Mitgliedschaft, Regatta-Teilnahme
+        </AlertDescription>
+      </Alert>
+      
       <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Custom Fields Verwaltung</CardTitle>

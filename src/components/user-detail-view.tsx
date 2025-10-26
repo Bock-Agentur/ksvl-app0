@@ -13,11 +13,10 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
 import { cn } from "@/lib/utils";
-import { User as UserType, UserRole, CustomField, generateRolesFromPrimary } from "@/types";
+import { User as UserType, UserRole, generateRolesFromPrimary } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { generateMemberNumber } from "@/lib/business-logic";
 import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
-import { useCustomFields, useCustomFieldValues } from "@/hooks/use-custom-fields";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 
 interface UserDetailViewProps {
@@ -39,17 +38,10 @@ const roleLabels: Record<UserRole, string> = {
 export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailViewProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<UserType>(user);
-  const [editedCustomValues, setEditedCustomValues] = useState<Record<string, any>>({});
   const [aiInfoEnabled, setAiInfoEnabled] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
-  
-  // Load custom fields from database
-  const { customFields, loading: fieldsLoading } = useCustomFields();
-  
-  // Load custom field values for the user
-  const { customValues, saveAllCustomValues } = useCustomFieldValues(user.id);
   
   // Check admin status
   useEffect(() => {
@@ -88,12 +80,6 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
     };
     loadAiInfoEnabled();
   }, [user]);
-  
-  useEffect(() => {
-    if (customValues) {
-      setEditedCustomValues(customValues);
-    }
-  }, [customValues]);
 
   const handleSaveProfile = async () => {
     try {
@@ -160,11 +146,6 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
       const result = await response.json();
       if (!response.ok || result.error) {
         throw new Error(result.error || 'Benutzer konnte nicht aktualisiert werden');
-      }
-
-      // Save custom field values to database
-      if (Object.keys(editedCustomValues).length > 0) {
-        await saveAllCustomValues(customFields, editedCustomValues);
       }
 
       setIsEditing(false);
@@ -632,53 +613,6 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                       </div>
                     )}
                   </div>
-                  
-                  {/* Custom Fields - Boot */}
-                  {!fieldsLoading && customFields.filter(f => f.group === 'Boot').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
-                    <div key={field.id} className="space-y-2">
-                      <Label>{field.label}{field.required && " *"}</Label>
-                      {isEditing ? (
-                        <>
-                          {field.type === 'textarea' ? (
-                            <Textarea
-                              value={editedCustomValues[field.name] || ""}
-                              onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                              placeholder={field.placeholder}
-                              required={field.required}
-                            />
-                          ) : field.type === 'select' && field.options ? (
-                            <Select
-                              value={editedCustomValues[field.name] || ""}
-                              onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder={field.placeholder || "Auswählen..."} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {field.options.map((option) => (
-                                  <SelectItem key={option} value={option}>
-                                    {option}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          ) : (
-                            <Input
-                              type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
-                              value={editedCustomValues[field.name] || ""}
-                              onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                              placeholder={field.placeholder}
-                              required={field.required}
-                            />
-                          )}
-                        </>
-                      ) : (
-                        <div className="text-sm text-muted-foreground">
-                          {customValues[field.name] || "-"}
-                        </div>
-                      )}
-                    </div>
-                  ))}
                 </div>
               </div>
 
@@ -745,53 +679,6 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                       </div>
                     )}
                   </div>
-                  
-                  {/* Custom Fields - Liegeplatz */}
-                  {!fieldsLoading && customFields.filter(f => f.group === 'Liegeplatz').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
-                    <div key={field.id} className="space-y-2">
-                      <Label>{field.label}{field.required && " *"}</Label>
-                      {isEditing ? (
-                        <>
-                          {field.type === 'textarea' ? (
-                            <Textarea
-                              value={editedCustomValues[field.name] || ""}
-                              onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                              placeholder={field.placeholder}
-                              required={field.required}
-                            />
-                          ) : field.type === 'select' && field.options ? (
-                            <Select
-                              value={editedCustomValues[field.name] || ""}
-                              onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
-                            >
-                              <SelectTrigger>
-                                <SelectValue placeholder={field.placeholder || "Auswählen..."} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {field.options.map((option) => (
-                                  <SelectItem key={option} value={option}>
-                                    {option}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          ) : (
-                            <Input
-                              type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
-                              value={editedCustomValues[field.name] || ""}
-                              onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                              placeholder={field.placeholder}
-                              required={field.required}
-                            />
-                          )}
-                        </>
-                      ) : (
-                        <div className="text-sm text-muted-foreground">
-                          {customValues[field.name] || "-"}
-                        </div>
-                      )}
-                    </div>
-                  ))}
                 </div>
               </div>
 
@@ -921,27 +808,6 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   <p className="text-xs text-muted-foreground">
                     Wenn aktiviert, kann der AI-Assistent die unten eingetragenen Informationen bei Fragen über Sie verwenden.
                   </p>
-                  
-                  {/* AI Agent Info Custom Field */}
-                  {!fieldsLoading && customFields.filter(f => f.name === 'ai_agent_info').map((field) => (
-                    <div key={field.id} className="space-y-2">
-                      <Label>{field.label}</Label>
-                      {isEditing ? (
-                        <Textarea
-                          value={editedCustomValues[field.name] || ""}
-                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                          placeholder={field.placeholder}
-                          disabled={!aiInfoEnabled}
-                          className={cn(!aiInfoEnabled && "opacity-50 cursor-not-allowed")}
-                          rows={4}
-                        />
-                      ) : (
-                        <span className="text-sm text-muted-foreground">
-                          {aiInfoEnabled ? (customValues[field.name] || "-") : "Deaktiviert"}
-                        </span>
-                      )}
-                    </div>
-                  ))}
                 </div>
               </div>
 
@@ -1005,7 +871,6 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                 variant="outline" 
                 onClick={() => {
                   setEditedUser(user);
-                  setEditedCustomValues(customValues);
                   setIsEditing(false);
                 }}
               >
