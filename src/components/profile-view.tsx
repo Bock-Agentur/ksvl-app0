@@ -156,6 +156,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         joinDate: profile.entry_date || profile.created_at || '',
         joinedAt: profile.entry_date || profile.created_at || '',
         isActive: profile.status === 'active',
+        
+        // Existing fields
         oesvNumber: profile.oesv_number || '',
         address: profile.address || '',
         berthNumber: profile.berth_number || '',
@@ -174,7 +176,35 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         notes: profile.notes || '',
         vorstandFunktion: profile.vorstand_funktion || '',
         dataPublicInKsvl: profile.data_public_in_ksvl === true,
-        contactPublicInKsvl: profile.contact_public_in_ksvl === true
+        contactPublicInKsvl: profile.contact_public_in_ksvl === true,
+        
+        // New fields
+        passwordChangeRequired: profile.password_change_required || false,
+        twoFactorMethod: profile.two_factor_method || 'Aus',
+        membershipType: profile.membership_type || undefined,
+        membershipStatus: profile.membership_status || 'Aktiv',
+        boardPositionStartDate: profile.board_position_start_date || undefined,
+        boardPositionEndDate: profile.board_position_end_date || undefined,
+        boatColor: profile.boat_color || undefined,
+        berthLength: profile.berth_length || undefined,
+        berthWidth: profile.berth_width || undefined,
+        buoyRadius: profile.buoy_radius || undefined,
+        hasDinghyBerth: profile.has_dinghy_berth || false,
+        beverageChipStatus: profile.beverage_chip_status || 'Aktiv',
+        statuteAccepted: profile.statute_accepted || false,
+        privacyAccepted: profile.privacy_accepted || false,
+        newsletterOptin: profile.newsletter_optin || false,
+        emergencyContactName: profile.emergency_contact_name || undefined,
+        emergencyContactPhone: profile.emergency_contact_phone || undefined,
+        emergencyContactRelationship: profile.emergency_contact_relationship || undefined,
+        documentBfa: profile.document_bfa || undefined,
+        documentInsurance: profile.document_insurance || undefined,
+        documentBerthContract: profile.document_berth_contract || undefined,
+        documentMemberPhoto: profile.document_member_photo || undefined,
+        membershipStatusHistory: profile.membership_status_history || [],
+        boardPositionHistory: profile.board_position_history || [],
+        createdBy: profile.created_by || undefined,
+        modifiedBy: profile.modified_by || undefined
       } as any;
 
       setUser(userData);
