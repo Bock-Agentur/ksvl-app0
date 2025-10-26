@@ -35,11 +35,24 @@ export function useMenuSettings() {
     true // Global setting for all users
   );
 
-  // Auto-update wenn neue Items in DEFAULT_HEADER_ITEMS sind - FORCE RESET
+  // Auto-update: Nur neue Items hinzufügen, ohne Toast
   useEffect(() => {
-    // Immer die neuesten Defaults verwenden
-    setValue(DEFAULT_SETTINGS);
-    window.dispatchEvent(new CustomEvent("menuSettingsChanged"));
+    const currentIds = settings.headerItems.map(item => item.id);
+    const defaultIds = DEFAULT_HEADER_ITEMS.map(item => item.id);
+    const newItems = DEFAULT_HEADER_ITEMS.filter(item => !currentIds.includes(item.id));
+    
+    if (newItems.length > 0) {
+      const mergedItems = [...settings.headerItems, ...newItems].map((item, index) => ({
+        ...item,
+        order: index
+      }));
+      
+      // Direktes setValue ohne Toast-Trigger
+      setValue({
+        ...settings,
+        headerItems: mergedItems
+      });
+    }
   }, []);
 
   const saveSettings = (newSettings: MenuSettings) => {
