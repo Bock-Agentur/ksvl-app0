@@ -220,23 +220,24 @@ export function AppShell({
                 </Button>
               </DrawerTrigger>
               
-              <DrawerContent className="max-h-[85vh]">
-                <DrawerHeader>
-                  <DrawerTitle>Menü</DrawerTitle>
+              <DrawerContent className="max-h-[90vh]">
+                <DrawerHeader className="pb-2">
+                  <DrawerTitle className="text-base">Menü</DrawerTitle>
                 </DrawerHeader>
                 
-                <div className="overflow-y-auto px-4 pb-6 space-y-6">
+                <div className="overflow-y-auto px-3 pb-4 space-y-3"
+>
                   {/* User Info & Assigned Roles */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-muted-foreground">Zugewiesene Rollen</h3>
-                    <div className="flex flex-col gap-2">
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-medium text-muted-foreground">Zugewiesene Rollen</h3>
+                    <div className="flex flex-col gap-1.5">
                       {currentUser?.roles && currentUser.roles.length > 0 ? (
                         <div className="flex flex-wrap gap-1">
                           {sortRoles(currentUser.roles).map(role => (
                             <Badge 
                               key={role} 
                               className={cn(
-                                "text-xs", 
+                                "text-[10px] px-1.5 py-0 h-5", 
                                 role === currentRole ? roleColors[role] : "bg-muted text-muted-foreground"
                               )}
                             >
@@ -246,34 +247,36 @@ export function AppShell({
                           ))}
                         </div>
                       ) : (
-                        <Badge variant="outline" className="text-xs w-fit">
+                        <Badge variant="outline" className="text-[10px] w-fit px-1.5 py-0 h-5">
                           Keine Rollen
                         </Badge>
                       )}
                       {currentUser && (
-                        <p className="text-sm text-muted-foreground">{currentUser.name}</p>
+                        <p className="text-xs text-muted-foreground">{currentUser.name}</p>
                       )}
                     </div>
                   </div>
 
-                  <Separator />
+                  <Separator className="my-2" />
 
                   {/* Role Switcher */}
-                  <div className="space-y-3">
-                    <h3 className="text-sm font-medium text-muted-foreground">Rolle wechseln</h3>
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-medium text-muted-foreground">Rolle wechseln</h3>
                     <Select value={currentRole} onValueChange={(value: UserRole) => onRoleChange(value)}>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full h-8 text-sm">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="gastmitglied">👋 Gastmitglied</SelectItem>
-                        <SelectItem value="mitglied">👤 Mitglied</SelectItem>
-                        <SelectItem value="kranfuehrer">⚓ Kranführer</SelectItem>
-                        <SelectItem value="admin">🔧 Admin</SelectItem>
-                        <SelectItem value="vorstand">🏛️ Vorstand</SelectItem>
+                        <SelectItem value="gastmitglied" className="text-sm">👋 Gastmitglied</SelectItem>
+                        <SelectItem value="mitglied" className="text-sm">👤 Mitglied</SelectItem>
+                        <SelectItem value="kranfuehrer" className="text-sm">⚓ Kranführer</SelectItem>
+                        <SelectItem value="admin" className="text-sm">🔧 Admin</SelectItem>
+                        <SelectItem value="vorstand" className="text-sm">🏛️ Vorstand</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+
+                  <Separator className="my-2" />
 
                   {/* Admin Functions */}
                   {availableHeaderItems.length > 0 && (
@@ -319,19 +322,17 @@ export function AppShell({
                     </>
                   )}
 
-                  <Separator />
-
                   {/* Logout Button */}
-                  <div className="pt-2">
+                  <div className="pt-1">
                     <Button 
                       variant="destructive" 
-                      className="w-full gap-2" 
+                      className="w-full gap-2 h-8 text-sm" 
                       onClick={() => {
                         handleLogout();
                         setIsMenuOpen(false);
                       }}
                     >
-                      <LogOut className="w-4 h-4" />
+                      <LogOut className="w-3.5 h-3.5" />
                       Abmelden
                     </Button>
                   </div>

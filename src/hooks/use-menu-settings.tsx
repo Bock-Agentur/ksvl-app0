@@ -35,31 +35,11 @@ export function useMenuSettings() {
     true // Global setting for all users
   );
 
-  // Auto-update wenn neue Items in DEFAULT_HEADER_ITEMS sind
+  // Auto-update wenn neue Items in DEFAULT_HEADER_ITEMS sind - FORCE RESET
   useEffect(() => {
-    const currentIds = settings.headerItems.map(item => item.id);
-    const defaultIds = DEFAULT_HEADER_ITEMS.map(item => item.id);
-    const hasNewItems = defaultIds.some(id => !currentIds.includes(id));
-    
-    if (hasNewItems) {
-      // Merge: behalte bestehende Items und füge neue hinzu
-      const existingItems = settings.headerItems;
-      const newItems = DEFAULT_HEADER_ITEMS.filter(
-        defaultItem => !currentIds.includes(defaultItem.id)
-      );
-      
-      const mergedItems = [...existingItems, ...newItems].map((item, index) => ({
-        ...item,
-        order: index
-      }));
-      
-      setValue({
-        ...settings,
-        headerItems: mergedItems
-      });
-      
-      window.dispatchEvent(new CustomEvent("menuSettingsChanged"));
-    }
+    // Immer die neuesten Defaults verwenden
+    setValue(DEFAULT_SETTINGS);
+    window.dispatchEvent(new CustomEvent("menuSettingsChanged"));
   }, []);
 
   const saveSettings = (newSettings: MenuSettings) => {
