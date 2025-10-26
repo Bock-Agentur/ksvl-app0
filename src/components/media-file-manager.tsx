@@ -89,6 +89,14 @@ export function MediaFileManager({ onSelect, selectedFilename }: MediaFileManage
       title: "Datei ausgewählt",
       description: `${file.name} wurde als Hintergrund ausgewählt`
     });
+
+    // Close the dialog programmatically
+    setTimeout(() => {
+      const closeButton = document.querySelector('[data-state="open"] button[aria-label="Close"]') as HTMLButtonElement;
+      if (closeButton) {
+        closeButton.click();
+      }
+    }, 100);
   };
 
   const formatFileSize = (bytes: number | undefined) => {

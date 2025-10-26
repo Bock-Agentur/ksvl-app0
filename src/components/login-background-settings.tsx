@@ -208,58 +208,20 @@ export function LoginBackgroundSettings() {
     }
   };
 
-  const handleDelete = async () => {
-    try {
-      // Delete file from storage
-      if (localSettings.filename) {
-        await supabase.storage
-          .from('login-media')
-          .remove([localSettings.filename]);
-      }
+  const handleResetToDefaults = async () => {
+    // Reset to gradient without deleting files from storage
+    const newSettings = {
+      ...localSettings,
+      type: 'gradient' as const,
+      url: null,
+      filename: null
+    };
+    setLocalSettings(newSettings);
 
-      // Reset to gradient in local settings
-      const newSettings = {
-        type: 'gradient' as const,
-        url: null,
-        filename: null,
-        videoOnMobile: false,
-        cardOpacity: localSettings.cardOpacity,
-        cardBorderBlur: localSettings.cardBorderBlur,
-        cardBorderRadius: localSettings.cardBorderRadius,
-        overlayColor: localSettings.overlayColor,
-        overlayOpacity: localSettings.overlayOpacity,
-        mediaBlur: localSettings.mediaBlur,
-        inputBgColor: localSettings.inputBgColor,
-        inputBgOpacity: localSettings.inputBgOpacity,
-        loginBlockVerticalPositionDesktop: localSettings.loginBlockVerticalPositionDesktop,
-        loginBlockVerticalPositionTablet: localSettings.loginBlockVerticalPositionTablet,
-        loginBlockVerticalPositionMobile: localSettings.loginBlockVerticalPositionMobile,
-        loginBlockWidthDesktop: localSettings.loginBlockWidthDesktop,
-        loginBlockWidthTablet: localSettings.loginBlockWidthTablet,
-        loginBlockWidthMobile: localSettings.loginBlockWidthMobile,
-        countdownEnabled: localSettings.countdownEnabled,
-        countdownEndDate: localSettings.countdownEndDate,
-        countdownText: localSettings.countdownText,
-        countdownShowDays: localSettings.countdownShowDays,
-        countdownFontSize: localSettings.countdownFontSize,
-        countdownFontWeight: localSettings.countdownFontWeight,
-        countdownVerticalPositionDesktop: localSettings.countdownVerticalPositionDesktop,
-        countdownVerticalPositionTablet: localSettings.countdownVerticalPositionTablet,
-        countdownVerticalPositionMobile: localSettings.countdownVerticalPositionMobile
-      };
-      setLocalSettings(newSettings);
-
-      toast({
-        title: "Hintergrund wird zurückgesetzt",
-        description: "Klicke auf 'Speichern' um die Änderungen zu übernehmen."
-      });
-    } catch (error: any) {
-      toast({
-        title: "Fehler beim Löschen",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
+    toast({
+      title: "Auf Standard zurückgesetzt",
+      description: "Klicke auf 'Speichern' um die Änderungen zu übernehmen."
+    });
   };
 
   const handleSave = async () => {
@@ -279,11 +241,8 @@ export function LoginBackgroundSettings() {
   };
 
   const handleTypeChange = (type: 'gradient' | 'image' | 'video') => {
-    if (type === 'gradient') {
-      handleDelete();
-    } else {
-      setLocalSettings({ ...localSettings, type });
-    }
+    // Just change the type without resetting other settings
+    setLocalSettings({ ...localSettings, type });
   };
 
   const handleVideoOnMobileChange = (checked: boolean) => {
@@ -421,6 +380,28 @@ export function LoginBackgroundSettings() {
             </div>
           </div>
 
+          {/* Gradient Editor */}
+          {localSettings.type === 'gradient' && (
+            <div className="space-y-3 p-4 border rounded-lg bg-muted/50">
+              <Label>Gradient CSS</Label>
+              <Input
+                value={localSettings.url || 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))'}
+                onChange={(e) => setLocalSettings({ ...localSettings, url: e.target.value })}
+                placeholder="z.B. linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+                className="font-mono text-sm"
+              />
+              <p className="text-xs text-muted-foreground">
+                Gib einen CSS-Gradient ein. Beispiele: 
+                linear-gradient(135deg, #667eea, #764ba2) oder 
+                radial-gradient(circle, #ff6b6b, #4ecdc4)
+              </p>
+              <div 
+                className="w-full h-20 rounded border"
+                style={{ background: localSettings.url || 'linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)))' }}
+              />
+            </div>
+          )}
+
           {/* File Upload & File Manager */}
           {localSettings.type !== 'gradient' && (
             <Tabs defaultValue="upload" className="w-full">
@@ -465,29 +446,6 @@ export function LoginBackgroundSettings() {
                       </div>
                     </div>
                   )}
-                  {localSettings.url && (
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="icon">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Hintergrund löschen?</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Der aktuelle Hintergrund wird entfernt und der Standard-Gradient wird aktiviert.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleDelete}>
-                            Löschen
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  )}
                 </div>
                 {localSettings.filename && (
                   <p className="text-xs text-muted-foreground truncate">
@@ -508,17 +466,52 @@ export function LoginBackgroundSettings() {
               </TabsContent>
               
               <TabsContent value="manager" className="mt-4">
-                <MediaFileManager
-                  onSelect={(url, filename, type) => {
-                    setLocalSettings({
-                      ...localSettings,
-                      type,
-                      url,
-                      filename
-                    });
-                  }}
-                  selectedFilename={localSettings.filename}
-                />
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" className="w-full">
+                      Gespeicherte Dateien durchsuchen
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+                    <MediaFileManager
+                      onSelect={(url, filename, type) => {
+                        setLocalSettings({
+                          ...localSettings,
+                          type,
+                          url,
+                          filename
+                        });
+                      }}
+                      selectedFilename={localSettings.filename}
+                    />
+                  </DialogContent>
+                </Dialog>
+                {localSettings.filename && (
+                  <div className="mt-4 p-3 border rounded-lg bg-muted/50">
+                    <p className="text-sm font-medium">Ausgewählte Datei:</p>
+                    <p className="text-xs text-muted-foreground truncate mt-1">{localSettings.filename}</p>
+                    {localSettings.url && (
+                      <div className="relative w-full h-40 rounded border overflow-hidden mt-2">
+                        {localSettings.type === 'video' ? (
+                          <video
+                            src={localSettings.url}
+                            className="w-full h-full object-cover"
+                            muted
+                            loop
+                            playsInline
+                            autoPlay
+                          />
+                        ) : (
+                          <img
+                            src={localSettings.url}
+                            alt="Vorschau"
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </TabsContent>
             </Tabs>
           )}
@@ -1171,8 +1164,8 @@ export function LoginBackgroundSettings() {
             </div>
           )}
 
-          {/* Save Button */}
-          <div className="pt-4 border-t">
+          {/* Action Buttons */}
+          <div className="pt-4 border-t space-y-3">
             <Button 
               onClick={handleSave} 
               className="w-full relative"
@@ -1186,6 +1179,27 @@ export function LoginBackgroundSettings() {
                 </Badge>
               )}
             </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="outline" className="w-full">
+                  Auf Standard zurücksetzen
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Auf Standard zurücksetzen?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Dies setzt den Login-Screen auf den Standard-Gradient zurück. Gespeicherte Dateien im Dateimanager bleiben erhalten.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleResetToDefaults}>
+                    Zurücksetzen
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         </CardContent>
       </Card>

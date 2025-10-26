@@ -164,8 +164,13 @@ export function Auth() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { background } = useLoginBackground();
+  const { background, isLoading } = useLoginBackground();
   const isMobile = useIsMobile();
+
+  // Reload background on mount to ensure fresh data
+  useEffect(() => {
+    // Force a re-render when background changes
+  }, [background]);
 
   // Determine countdown position based on screen size
   const getCountdownPosition = () => {
@@ -338,15 +343,19 @@ export function Auth() {
   const cardBorderBlur = background.cardBorderBlur || 8;
   const cardBorderRadius = background.cardBorderRadius || 8;
 
+  // Show gradient background during loading
+  const effectiveBackground = isLoading ? { ...background, type: 'gradient' as const, url: null } : background;
+
   return (
     <div 
       className={`min-h-screen flex flex-col items-center p-4 relative ${
-        background.type === 'gradient' || !background.url 
+        effectiveBackground.type === 'gradient' || !effectiveBackground.url 
           ? 'bg-gradient-to-br from-background to-muted' 
           : ''
       }`}
       style={{
-        paddingTop: `${getLoginBlockPosition()}vh`
+        paddingTop: `${getLoginBlockPosition()}vh`,
+        background: effectiveBackground.type === 'gradient' && effectiveBackground.url ? effectiveBackground.url : undefined
       }}
     >
       {renderBackground()}
