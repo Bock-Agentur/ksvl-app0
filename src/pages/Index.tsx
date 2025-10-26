@@ -9,6 +9,9 @@ import { ConsecutiveSlotsProvider } from "@/hooks/use-consecutive-slots";
 import { useAppSettings } from "@/hooks/use-app-settings";
 import { useSlots } from "@/hooks/use-slots";
 import { useUsers } from "@/hooks/use-users";
+import { useAIAssistantSettings } from "@/hooks/use-ai-assistant-settings";
+import { useAIWelcomeMessage } from "@/hooks/use-ai-welcome-message";
+import { useHarborChatData } from "@/hooks/use-harbor-chat-data";
 import { AppShell } from "@/components/app-shell";
 import { Dashboard } from "@/components/dashboard";
 import { UserManagementRefactored as UserManagement } from "@/components/user-management";
@@ -35,6 +38,11 @@ function AppContent() {
   const { isLoading: slotsLoading } = useSlots();
   const { loading: usersLoading } = useUsers();
   
+  // Load AI-related data
+  const { isLoading: aiAssistantLoading } = useAIAssistantSettings();
+  const { isLoading: aiWelcomeLoading } = useAIWelcomeMessage();
+  const { isLoading: harborChatLoading } = useHarborChatData();
+  
   // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   
@@ -48,11 +56,13 @@ function AppContent() {
   const getLoadingStateForTab = (tab: string): boolean => {
     switch(tab) {
       case 'dashboard': 
-        return slotsLoading || usersLoading;
+        return slotsLoading || usersLoading || harborChatLoading || aiWelcomeLoading;
       case 'calendar': 
         return slotsLoading;
       case 'users': 
         return usersLoading;
+      case 'settings':
+        return aiAssistantLoading || aiWelcomeLoading;
       default: 
         return false; // No additional data needed
     }

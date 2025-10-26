@@ -7,6 +7,7 @@ import { Loader2, Send, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
+import { useHarborChatData } from "@/hooks/use-harbor-chat-data";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -14,13 +15,8 @@ interface Message {
 }
 
 export function HarborChatWidget() {
-  const [agentName, setAgentName] = useState('Capitano');
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: `👋 Ahoi! Ich bin ${agentName}, dein KSVL-Assistent. Ich kann dir bei Kranterminen, Buchungen und Mitgliederdaten helfen. Was willst du wissen?`
-    }
-  ]);
+  const { agentName, isLoading: agentLoading } = useHarborChatData();
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -28,32 +24,15 @@ export function HarborChatWidget() {
   const { toast } = useToast();
   const { currentRole } = useRole();
 
-  // Load agent name from settings
+  // Set initial message when agent name is loaded
   useEffect(() => {
-    const loadAgentName = async () => {
-      try {
-        const { data: settings } = await supabase
-          .from('app_settings')
-          .select('setting_value')
-          .eq('setting_key', 'aiAssistantSettings')
-          .eq('is_global', true)
-          .maybeSingle();
-
-        if (settings?.setting_value) {
-          const aiSettings = settings.setting_value as any;
-          const name = aiSettings.agentName || 'Capitano';
-          setAgentName(name);
-          setMessages([{
-            role: 'assistant',
-            content: `👋 Ahoi! Ich bin ${name}, dein KSVL-Assistent. Ich kann dir bei Kranterminen, Buchungen und Mitgliederdaten helfen. Was willst du wissen?`
-          }]);
-        }
-      } catch (error) {
-        console.error('Error loading agent name:', error);
-      }
-    };
-    loadAgentName();
-  }, []);
+    if (!agentLoading && messages.length === 0) {
+      setMessages([{
+        role: 'assistant',
+        content: `👋 Ahoi! Ich bin ${agentName}, dein KSVL-Assistent. Ich kann dir bei Kranterminen, Buchungen und Mitgliederdaten helfen. Was willst du wissen?`
+      }]);
+    }
+  }, [agentLoading, agentName, messages.length]);
 
   // Auto-scroll nur wenn neue Nachrichten gesendet werden
   const scrollToBottom = () => {
