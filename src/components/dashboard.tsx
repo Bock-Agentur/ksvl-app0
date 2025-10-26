@@ -46,16 +46,13 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onNavigate }: DashboardProps = {}) {
-  const { currentRole, currentUser, isLoading: roleLoading } = useRole();
+  const { currentRole, currentUser } = useRole();
   const { slots, isLoading: slotsLoading } = useSlots();
   const { users, loading: usersLoading } = useUsers();
   const isMobileOrTablet = useIsMobile();
   const dashboardSettingsHook = useDashboardSettings(currentRole, false);
   const settings = dashboardSettingsHook.settings;
-  const { getAnimationClass, isInitialized, isAnimationEnabled } = useDashboardAnimations();
-  
-  // Wait for all critical data before rendering
-  const isContentReady = !roleLoading && !slotsLoading && !usersLoading && isInitialized && currentUser;
+  const { getAnimationClass, isAnimationEnabled } = useDashboardAnimations();
   
 
   // Calculate quick actions based on role
@@ -203,12 +200,7 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
     elements.forEach(el => observer.observe(el));
 
     return () => observer.disconnect();
-  }, [isAnimationEnabled, settings.animationType, isInitialized]);
-
-  // Return null if not ready - parent Index handles loading screen
-  if (!isContentReady) {
-    return null;
-  }
+  }, [isAnimationEnabled, settings.animationType]);
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
