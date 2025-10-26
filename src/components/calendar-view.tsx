@@ -276,7 +276,7 @@ export function CalendarView({
       </div>
 
       {/* Scrollable Calendar Content */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 pt-2">
+      <div className="flex-1 overflow-y-auto px-4 pb-4 pt-6">
         {viewMode === "day" || viewMode === "week" ? <WeekCalendar key={selectedDate.toISOString()} onSlotEdit={handleSlotEdit} selectedDate={selectedDate} selectedDay={selectedDay} viewMode={viewMode === "day" ? "day" : "week"} /> : <MonthCalendar onDayClick={handleDayClick} onSlotCreate={handleSlotEdit} />}
       </div>
 
