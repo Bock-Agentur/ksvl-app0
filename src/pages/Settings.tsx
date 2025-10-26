@@ -16,6 +16,7 @@ import { DesktopBackgroundSettings } from "@/components/desktop-background-setti
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
 import { StickyHeaderLayoutSettings } from "@/components/sticky-header-layout-settings";
+import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
 import { cn } from "@/lib/utils";
 import { RoleProvider, useRole } from "@/hooks/use-role";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -61,6 +62,8 @@ function SettingsContent() {
   const navigate = useNavigate();
   const { background } = useLoginBackground();
   const { settings: desktopBackgroundSettings } = useDesktopBackground();
+  const { isPageSticky } = useStickyHeaderLayout();
+  const isStickyEnabled = isPageSticky('settings');
 
   const showBackground = desktopBackgroundSettings.enabled && background;
 
@@ -272,7 +275,8 @@ function SettingsContent() {
     <div 
       className={cn(
         "min-h-screen pb-20 bg-background",
-        isMobile ? "pt-4" : "p-6"
+        isMobile ? "pt-4" : "p-6",
+        isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : ""
       )}
       style={showBackground ? {
         backgroundImage: `url(${background})`,
@@ -282,36 +286,45 @@ function SettingsContent() {
         backgroundAttachment: 'fixed'
       } : undefined}
     >
-      <div className={cn("max-w-4xl mx-auto")}>
-      {/* Header mit Zurück-Button */}
-      <Card className={cn(
-        "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
-        isMobile && "mx-4"
+      <div className={cn(
+        "max-w-4xl mx-auto",
+        isStickyEnabled ? "flex flex-col h-full overflow-hidden" : ""
       )}>
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            <button
-              onClick={handleBack}
-              className="w-10 h-10 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center hover:bg-white/30 transition-colors"
-            >
-              <ArrowLeft className="h-5 w-5 text-white" />
-            </button>
-            <CardTitle className={cn(
-              "font-bold flex-1 text-center text-white",
-              isMobile ? "text-xl" : "text-2xl"
-            )}>
-              {activeLabel}
-            </CardTitle>
-            {/* Spacer für Zentrierung */}
-            <div className="w-10" />
-          </div>
-        </CardHeader>
-      </Card>
+        {/* Sticky Header */}
+        <div className={cn(
+          isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
+        )}>
+          <Card className={cn(
+            "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
+            isMobile && "mx-4"
+          )}>
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={handleBack}
+                  className="w-10 h-10 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center hover:bg-white/30 transition-colors"
+                >
+                  <ArrowLeft className="h-5 w-5 text-white" />
+                </button>
+                <CardTitle className={cn(
+                  "font-bold flex-1 text-center text-white",
+                  isMobile ? "text-xl" : "text-2xl"
+                )}>
+                  {activeLabel}
+                </CardTitle>
+                <div className="w-10" />
+              </div>
+            </CardHeader>
+          </Card>
+        </div>
 
-      {/* Settings Component */}
-      <div className={cn(isMobile ? "px-4" : "")}>
-        {ActiveComponent && <ActiveComponent />}
-      </div>
+        {/* Scrollable Settings Content */}
+        <div className={cn(
+          isMobile ? "px-4" : "",
+          isStickyEnabled ? "flex-1 overflow-y-auto" : ""
+        )}>
+          {ActiveComponent && <ActiveComponent />}
+        </div>
       </div>
     </div>
     <SettingsFooter />

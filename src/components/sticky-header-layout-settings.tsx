@@ -23,7 +23,9 @@ export function StickyHeaderLayoutSettings() {
     const pageNames = {
       calendar: 'Kalender',
       slotManagement: 'Slot Management',
-      userManagement: 'Mitgliederverwaltung'
+      userManagement: 'Mitgliederverwaltung',
+      profile: 'Profilseite',
+      settings: 'Einstellungsseite'
     };
     
     togglePage(page, enabled);
@@ -106,6 +108,30 @@ export function StickyHeaderLayoutSettings() {
                 onCheckedChange={(checked) => handlePageToggle('userManagement', checked)}
               />
             </div>
+
+            {/* Profilseite */}
+            <div className="flex items-center justify-between">
+              <Label htmlFor="sticky-profile" className="text-sm font-normal">
+                👤 Profilseite
+              </Label>
+              <Switch
+                id="sticky-profile"
+                checked={settings.pages.profile}
+                onCheckedChange={(checked) => handlePageToggle('profile', checked)}
+              />
+            </div>
+
+            {/* Einstellungsseite */}
+            <div className="flex items-center justify-between">
+              <Label htmlFor="sticky-settings" className="text-sm font-normal">
+                ⚙️ Einstellungsseite
+              </Label>
+              <Switch
+                id="sticky-settings"
+                checked={settings.pages.settings}
+                onCheckedChange={(checked) => handlePageToggle('settings', checked)}
+              />
+            </div>
           </div>
         )}
 
@@ -120,6 +146,8 @@ export function StickyHeaderLayoutSettings() {
                 {settings.pages.calendar && <li>📅 Kalender-Seite</li>}
                 {settings.pages.slotManagement && <li>🎯 Slot Management</li>}
                 {settings.pages.userManagement && <li>👥 Mitgliederverwaltung</li>}
+                {settings.pages.profile && <li>👤 Profilseite</li>}
+                {settings.pages.settings && <li>⚙️ Einstellungsseite</li>}
               </ul>
               <p className="mt-3">
                 Die Header-Card bleibt auf den aktivierten Seiten oben fixiert.

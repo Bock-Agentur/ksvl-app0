@@ -6,6 +6,8 @@ export interface StickyHeaderLayoutSettings {
     calendar: boolean;
     slotManagement: boolean;
     userManagement: boolean;
+    profile: boolean;
+    settings: boolean;
   };
 }
 
@@ -15,6 +17,8 @@ const DEFAULT_SETTINGS: StickyHeaderLayoutSettings = {
     calendar: true,
     slotManagement: true,
     userManagement: true,
+    profile: true,
+    settings: true,
   }
 };
 
@@ -32,6 +36,8 @@ export function useStickyHeaderLayout() {
       calendar: value.enabled,
       slotManagement: value.enabled,
       userManagement: value.enabled,
+      profile: value.enabled,
+      settings: value.enabled,
     }
   };
 
