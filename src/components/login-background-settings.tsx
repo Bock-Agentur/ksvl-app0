@@ -16,6 +16,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { MediaFileManager } from "@/components/media-file-manager";
+import { Badge } from "@/components/ui/badge";
 
 const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
@@ -111,11 +113,18 @@ export function LoginBackgroundSettings() {
   
   const [isOverlayColorOpen, setIsOverlayColorOpen] = useState(false);
   const [isInputBgColorOpen, setIsInputBgColorOpen] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   // Update local state when background changes from server
   useEffect(() => {
     setLocalSettings(background);
   }, [background]);
+
+  // Track unsaved changes
+  useEffect(() => {
+    const hasChanges = JSON.stringify(localSettings) !== JSON.stringify(background);
+    setHasUnsavedChanges(hasChanges);
+  }, [localSettings, background]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -182,13 +191,10 @@ export function LoginBackgroundSettings() {
         filename: fileName
       };
       setLocalSettings(newSettings);
-      
-      // Automatically save to database
-      await setBackground(newSettings);
 
       toast({
-        title: "Erfolgreich hochgeladen und gespeichert",
-        description: `Hintergrund wurde aktualisiert`
+        title: "Erfolgreich hochgeladen",
+        description: `Bild wurde hochgeladen. Klicke auf "Speichern" um die Änderungen zu übernehmen.`
       });
     } catch (error: any) {
       toast({
@@ -242,13 +248,10 @@ export function LoginBackgroundSettings() {
         countdownVerticalPositionMobile: localSettings.countdownVerticalPositionMobile
       };
       setLocalSettings(newSettings);
-      
-      // Automatically save to database
-      await setBackground(newSettings);
 
       toast({
-        title: "Hintergrund gelöscht und gespeichert",
-        description: "Gradient wurde aktiviert"
+        title: "Hintergrund wird zurückgesetzt",
+        description: "Klicke auf 'Speichern' um die Änderungen zu übernehmen."
       });
     } catch (error: any) {
       toast({
@@ -418,57 +421,106 @@ export function LoginBackgroundSettings() {
             </div>
           </div>
 
-          {/* File Upload */}
+          {/* File Upload & File Manager */}
           {localSettings.type !== 'gradient' && (
-            <div className="space-y-3">
-              <Label htmlFor="file-upload">
-                {localSettings.type === 'video' ? 'Video hochladen' : 'Bild hochladen'}
-              </Label>
-              <div className="flex gap-2">
-                <Input
-                  id="file-upload"
-                  type="file"
-                  accept={localSettings.type === 'video' ? 'video/mp4,video/webm' : 'image/jpeg,image/png,image/webp'}
-                  onChange={handleFileUpload}
-                  disabled={uploading}
-                  className="flex-1"
-                />
-                {localSettings.url && (
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive" size="icon">
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Hintergrund löschen?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          Der aktuelle Hintergrund wird gelöscht und der Standard-Gradient wird aktiviert.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete}>
-                          Löschen
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {localSettings.type === 'video'
-                  ? 'Empfohlen: MP4 oder WEBM, max 50MB, 1920x1080, 30fps'
-                  : 'Empfohlen: JPG, PNG oder WEBP, max 20MB, 1920x1080'
-                }
-              </p>
-              {uploading && (
-                <div className="text-sm text-muted-foreground">
-                  Wird hochgeladen...
+            <Tabs defaultValue="upload" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upload">Neue Datei hochladen</TabsTrigger>
+                <TabsTrigger value="manager">Gespeicherte Dateien</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="upload" className="space-y-3 mt-4">
+                <Label htmlFor="file-upload">
+                  {localSettings.type === 'video' ? 'Video hochladen' : 'Bild hochladen'}
+                </Label>
+                <div className="flex gap-2 items-start">
+                  <Input
+                    key={localSettings.filename || 'empty'}
+                    id="file-upload"
+                    type="file"
+                    accept={localSettings.type === 'video' ? 'video/mp4,video/webm' : 'image/jpeg,image/png,image/webp'}
+                    onChange={handleFileUpload}
+                    disabled={uploading}
+                    className="flex-1"
+                  />
+                  {localSettings.url && (
+                    <div className="relative w-20 h-20 rounded border overflow-hidden flex-shrink-0">
+                      {localSettings.type === 'video' ? (
+                        <video
+                          src={localSettings.url}
+                          className="w-full h-full object-cover"
+                          muted
+                          loop
+                          playsInline
+                        />
+                      ) : (
+                        <img
+                          src={localSettings.url}
+                          alt="Vorschau"
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                        <Eye className="w-6 h-6 text-white" />
+                      </div>
+                    </div>
+                  )}
+                  {localSettings.url && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="icon">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Hintergrund löschen?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Der aktuelle Hintergrund wird entfernt und der Standard-Gradient wird aktiviert.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDelete}>
+                            Löschen
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
                 </div>
-              )}
-            </div>
+                {localSettings.filename && (
+                  <p className="text-xs text-muted-foreground truncate">
+                    Aktuelle Datei: {localSettings.filename}
+                  </p>
+                )}
+                <p className="text-sm text-muted-foreground">
+                  {localSettings.type === 'video'
+                    ? 'Empfohlen: MP4 oder WEBM, max 50MB, 1920x1080, 30fps'
+                    : 'Empfohlen: JPG, PNG oder WEBP, max 20MB, 1920x1080'
+                  }
+                </p>
+                {uploading && (
+                  <div className="text-sm text-muted-foreground">
+                    Wird hochgeladen...
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="manager" className="mt-4">
+                <MediaFileManager
+                  onSelect={(url, filename, type) => {
+                    setLocalSettings({
+                      ...localSettings,
+                      type,
+                      url,
+                      filename
+                    });
+                  }}
+                  selectedFilename={localSettings.filename}
+                />
+              </TabsContent>
+            </Tabs>
           )}
 
           {/* Video on Mobile Option */}
@@ -1123,10 +1175,16 @@ export function LoginBackgroundSettings() {
           <div className="pt-4 border-t">
             <Button 
               onClick={handleSave} 
-              className="w-full"
+              className="w-full relative"
               size="lg"
+              disabled={!hasUnsavedChanges}
             >
               Einstellungen speichern
+              {hasUnsavedChanges && (
+                <Badge className="absolute -top-1 -right-1 h-3 min-w-3 p-0 flex items-center justify-center animate-pulse bg-destructive">
+                  <span className="sr-only">Ungespeicherte Änderungen</span>
+                </Badge>
+              )}
             </Button>
           </div>
         </CardContent>
