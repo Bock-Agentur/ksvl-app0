@@ -640,7 +640,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           <div className="flex items-start justify-between gap-4 mb-4">
             <div className="flex-1 space-y-2">
               <h1 className="text-xl md:text-3xl font-bold text-foreground">
-                {user.name}
+                {user.firstName && user.lastName 
+                  ? `${user.firstName} ${user.lastName}` 
+                  : user.name}
               </h1>
               {user?.roles?.includes('vorstand') && (user as any).vorstandFunktion && (
                 <p className="text-sm text-muted-foreground">
