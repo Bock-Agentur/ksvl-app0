@@ -433,7 +433,7 @@ export function SlotManagement() {
       {/* Scrollable Slots Area */}
       {!isEditing && <div className="flex-1 overflow-y-auto pb-4 pt-6 px-[16px]">
           {/* Desktop/Tablet: Card wrapper */}
-          <Card className="hidden md:block border rounded-lg overflow-hidden bg-background">
+          <Card className="hidden md:block bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
             <CardContent className="p-4">
               <h3 className="text-sm font-medium text-foreground border-b pb-2 mb-3">
                 {getFilterTitle()} 
