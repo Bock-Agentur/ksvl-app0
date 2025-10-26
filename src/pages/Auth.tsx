@@ -299,9 +299,11 @@ export function Auth() {
           <img 
             src={background.url} 
             alt="Login background"
-            className="absolute inset-0 w-full h-full object-cover"
+            className="absolute w-full h-full object-cover"
             style={{ 
               filter: `blur(${background.mediaBlur}px)`,
+              transform: 'scale(1.1)',
+              inset: '-5%',
               zIndex: 0
             }}
           />
@@ -321,9 +323,11 @@ export function Auth() {
               muted 
               loop 
               playsInline
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute w-full h-full object-cover"
               style={{ 
                 filter: `blur(${background.mediaBlur}px)`,
+                transform: 'scale(1.1)',
+                inset: '-5%',
                 zIndex: 0
               }}
             >
