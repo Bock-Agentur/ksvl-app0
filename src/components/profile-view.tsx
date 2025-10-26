@@ -559,7 +559,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const content = (
     <div className="space-y-6">
       {/* Hero Card */}
-      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+      <Card className="bg-card rounded-[2rem] shadow-sm border">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             {/* Left: Avatar + Name + Roles */}
@@ -603,622 +603,574 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         </CardContent>
       </Card>
 
-      {/* Profile Details Card */}
-      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
-        
-        <CardContent className="space-y-8">
-          {/* Rollen - Nur für Admins sichtbar */}
-          {isAdmin && userId && (
-            <div className="space-y-4 pb-4 border-b">
-              <h3 className="text-lg font-semibold text-foreground">Rollen</h3>
-              {isEditing ? (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {/* Reihenfolge: Admin, Vorstand, Kranführer, Mitglied, Gastmitglied */}
-                  {(['admin', 'vorstand', 'kranfuehrer', 'mitglied', 'gastmitglied'] as UserRole[]).map((role) => {
-                    const isChecked = editedUser?.roles?.includes(role) || false;
-                    
-                    return (
-                      <div key={role} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`role-${role}`}
-                          checked={isChecked}
-                          onCheckedChange={(checked) => {
-                            if (!editedUser) return;
-                            const currentRoles = editedUser.roles || [];
-                            let newRoles: UserRole[];
-                            
-                            if (checked) {
-                              newRoles = [...currentRoles, role];
-                            } else {
-                              newRoles = currentRoles.filter(r => r !== role);
-                            }
-                            
-                            // Update primary role if needed
-                            const primaryRole = newRoles.find(r => r === 'vorstand') 
-                              || newRoles.find(r => r === 'admin') 
-                              || newRoles.find(r => r === 'kranfuehrer') 
-                              || newRoles.find(r => r === 'mitglied') 
-                              || 'gastmitglied';
-                            
-                            setEditedUser({
-                              ...editedUser,
-                              roles: newRoles,
-                              role: primaryRole
-                            });
-                          }}
-                        />
-                          <label
-                            htmlFor={`role-${role}`}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-                          >
-                            {roleLabels[role]}
-                          </label>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {sortRoles(user.roles || []).map((role) => (
-                    <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
-                      {ROLE_LABELS[role] || roleLabels[role]}
-                    </Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-          
-          {/* Grunddaten - User-Name und Passwort */}
-          <div className="space-y-4 pb-4 border-b">
-            <h3 className="text-lg font-semibold text-foreground">Grunddaten</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>Passwort:</Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">********</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setShowPasswordDialog(true)}
-                  className="text-sm text-primary hover:underline flex items-center gap-1"
-                >
-                  <Key className="w-3 h-3" />
-                  Passwort ändern
-                </button>
+      {/* Rollen Card - Nur für Admins sichtbar */}
+      {isAdmin && userId && (
+        <Card className="bg-card rounded-[2rem] shadow-sm border">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold">Rollen</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isEditing ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {(['admin', 'vorstand', 'kranfuehrer', 'mitglied', 'gastmitglied'] as UserRole[]).map((role) => {
+                  const isChecked = editedUser?.roles?.includes(role) || false;
+                  
+                  return (
+                    <div key={role} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`role-${role}`}
+                        checked={isChecked}
+                        onCheckedChange={(checked) => {
+                          if (!editedUser) return;
+                          const currentRoles = editedUser.roles || [];
+                          let newRoles: UserRole[];
+                          
+                          if (checked) {
+                            newRoles = [...currentRoles, role];
+                          } else {
+                            newRoles = currentRoles.filter(r => r !== role);
+                          }
+                          
+                          // Update primary role if needed
+                          const primaryRole = newRoles.find(r => r === 'vorstand') 
+                            || newRoles.find(r => r === 'admin') 
+                            || newRoles.find(r => r === 'kranfuehrer') 
+                            || newRoles.find(r => r === 'mitglied') 
+                            || 'gastmitglied';
+                          
+                          setEditedUser({
+                            ...editedUser,
+                            roles: newRoles,
+                            role: primaryRole
+                          });
+                        }}
+                      />
+                      <label
+                        htmlFor={`role-${role}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        {roleLabels[role]}
+                      </label>
+                    </div>
+                  );
+                })}
               </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {sortRoles(user.roles || []).map((role) => (
+                  <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
+                    {ROLE_LABELS[role] || roleLabels[role]}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+          
+      {/* Grunddaten Card - Passwort */}
+      <Card className="bg-card rounded-[2rem] shadow-sm border">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Grunddaten</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label>Passwort:</Label>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">********</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPasswordDialog(true)}
+                className="text-sm text-primary hover:underline flex items-center gap-1"
+              >
+                <Key className="w-3 h-3" />
+                Passwort ändern
+              </button>
             </div>
           </div>
+        </CardContent>
+      </Card>
           
-          {/* Stammdaten */}
-          <div className="space-y-4 pb-4 border-b">
-            <h3 className="text-lg font-semibold text-foreground">Stammdaten</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Custom Fields - Kontakt */}
-              {!fieldsLoading && customFields.filter(f => f.group === 'Kontakt').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
-                <div key={field.id} className="space-y-2">
-                  <Label>{field.label}{field.required && " *"}</Label>
-                  {isEditing ? (
-                    <>
-                      {field.type === 'textarea' ? (
-                        <Textarea
-                          value={editedCustomValues[field.name] || ""}
-                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                          placeholder={field.placeholder}
-                          required={field.required}
-                        />
-                      ) : field.type === 'select' && field.options ? (
-                        <Select
-                          value={editedCustomValues[field.name] || ""}
-                          onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={field.placeholder || "Auswählen..."} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {field.options.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
-                          value={editedCustomValues[field.name] || ""}
-                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                          placeholder={field.placeholder}
-                          required={field.required}
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-sm">
-                      {customValues[field.name] || "-"}
-                    </span>
-                  )}
-                </div>
-              ))}
-              
-              {/* Custom Fields - Persönlich */}
-              {!fieldsLoading && customFields.filter(f => f.group === 'Persönlich').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
-                <div key={field.id} className="space-y-2">
-                  <Label>{field.label}{field.required && " *"}</Label>
-                  {isEditing ? (
-                    <>
-                      {field.type === 'textarea' ? (
-                        <Textarea
-                          value={editedCustomValues[field.name] || ""}
-                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                          placeholder={field.placeholder}
-                          required={field.required}
-                        />
-                      ) : field.type === 'select' && field.options ? (
-                        <Select
-                          value={editedCustomValues[field.name] || ""}
-                          onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={field.placeholder || "Auswählen..."} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {field.options.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
-                          value={editedCustomValues[field.name] || ""}
-                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                          placeholder={field.placeholder}
-                          required={field.required}
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-sm">
-                      {customValues[field.name] || "-"}
-                    </span>
-                  )}
-                </div>
-              ))}
-              
-              {/* Custom Fields - Mitgliedschaft */}
-              {!fieldsLoading && customFields.filter(f => f.group === 'Mitgliedschaft').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
-                <div key={field.id} className="space-y-2">
-                  <Label>{field.label}{field.required && " *"}</Label>
-                  {isEditing ? (
-                    <>
-                      {field.type === 'textarea' ? (
-                        <Textarea
-                          value={editedCustomValues[field.name] || ""}
-                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                          placeholder={field.placeholder}
-                          required={field.required}
-                        />
-                      ) : field.type === 'select' && field.options ? (
-                        <Select
-                          value={editedCustomValues[field.name] || ""}
-                          onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={field.placeholder || "Auswählen..."} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {field.options.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
-                          value={editedCustomValues[field.name] || ""}
-                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                          placeholder={field.placeholder}
-                          required={field.required}
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-sm">
-                      {customValues[field.name] || "-"}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-            
-            {/* AI-Assistent Einstellungen */}
-            <div className="space-y-3 pt-4 mt-4 border-t">
-              <h4 className="text-sm font-medium text-foreground">AI-Assistent</h4>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="ai-info-enabled"
-                  checked={aiInfoEnabled}
-                  onCheckedChange={(checked) => setAiInfoEnabled(checked === true)}
-                />
-                <label
-                  htmlFor="ai-info-enabled"
-                  className="text-sm font-medium leading-none cursor-pointer"
-                >
-                  AI-Assistent Info aktivieren
-                </label>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Wenn aktiviert, kann der AI-Assistent die unten eingetragenen Informationen bei Fragen über Sie verwenden.
-              </p>
-              
-              {/* AI Agent Info Custom Field */}
-              {!fieldsLoading && customFields.filter(f => f.name === 'ai_agent_info').map((field) => (
-                <div key={field.id} className="space-y-2">
-                  <Label>{field.label}</Label>
-                  {isEditing ? (
-                    <Textarea
-                      value={editedCustomValues[field.name] || ""}
-                      onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                      placeholder={field.placeholder}
-                      disabled={!aiInfoEnabled}
-                      className={cn(!aiInfoEnabled && "opacity-50 cursor-not-allowed")}
-                      rows={4}
-                    />
-                  ) : (
-                    <span className="text-sm">
-                      {aiInfoEnabled ? (customValues[field.name] || "-") : "Deaktiviert"}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Öffentliche Daten im KSVL */}
-            <div className="space-y-3 pt-4 mt-4 border-t">
-              <h4 className="text-sm font-medium text-foreground">Öffentliche Anzeige</h4>
-              <p className="text-xs text-muted-foreground">Diese Einstellungen ermöglichen es dem AI-Assistenten und anderen Mitgliedern, deine Daten zu sehen.</p>
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="data-public"
-                  checked={(editedUser as any).dataPublicInKsvl || false}
-                  onCheckedChange={async (checked) => {
-                    const newValue = checked === true;
-                    setEditedUser(prev => ({ ...prev, dataPublicInKsvl: newValue } as any));
-                    
-                    // Sofort in der Datenbank speichern
-                    try {
-                      let targetUserId: string;
-                      if (userId) {
-                        targetUserId = userId;
-                      } else {
-                        const { data: { user: authUser } } = await supabase.auth.getUser();
-                        if (!authUser) throw new Error('Nicht angemeldet');
-                        targetUserId = authUser.id;
-                      }
-
-                      const { error } = await supabase
-                        .from('profiles')
-                        .update({ data_public_in_ksvl: newValue })
-                        .eq('id', targetUserId);
-
-                      if (error) throw error;
-
-                      toast({
-                        title: "Einstellung gespeichert",
-                        description: newValue ? "Deine Daten sind jetzt öffentlich sichtbar." : "Deine Daten sind jetzt privat."
-                      });
-                    } catch (error: any) {
-                      console.error('Error saving setting:', error);
-                      toast({
-                        title: "Fehler",
-                        description: "Einstellung konnte nicht gespeichert werden.",
-                        variant: "destructive"
-                      });
-                    }
-                  }}
-                />
-                <Label htmlFor="data-public" className="text-sm font-normal cursor-pointer">
-                  Meine Daten öffentlich im KSVL anzeigen (Name, Mitgliedsnummer, Boot, Liegeplatz)
-                </Label>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="contact-public"
-                  checked={(editedUser as any).contactPublicInKsvl || false}
-                  onCheckedChange={async (checked) => {
-                    const newValue = checked === true;
-                    setEditedUser(prev => ({ ...prev, contactPublicInKsvl: newValue } as any));
-                    
-                    // Sofort in der Datenbank speichern
-                    try {
-                      let targetUserId: string;
-                      if (userId) {
-                        targetUserId = userId;
-                      } else {
-                        const { data: { user: authUser } } = await supabase.auth.getUser();
-                        if (!authUser) throw new Error('Nicht angemeldet');
-                        targetUserId = authUser.id;
-                      }
-
-                      const { error } = await supabase
-                        .from('profiles')
-                        .update({ contact_public_in_ksvl: newValue })
-                        .eq('id', targetUserId);
-
-                      if (error) throw error;
-
-                      toast({
-                        title: "Einstellung gespeichert",
-                        description: newValue ? "Deine Kontaktdaten sind jetzt öffentlich sichtbar." : "Deine Kontaktdaten sind jetzt privat."
-                      });
-                    } catch (error: any) {
-                      console.error('Error saving setting:', error);
-                      toast({
-                        title: "Fehler",
-                        description: "Einstellung konnte nicht gespeichert werden.",
-                        variant: "destructive"
-                      });
-                    }
-                  }}
-                />
-                <Label htmlFor="contact-public" className="text-sm font-normal cursor-pointer">
-                  Email und Telefonnummer öffentlich im KSVL anzeigen
-                </Label>
-              </div>
-            </div>
-          </div>
-          
-          {/* Vorstand Bereich entfernt - jetzt als Custom Field */}
-          
-          {/* Boot & Liegeplatz */}
-          <div className="space-y-4 pb-4 border-b">
-            <h3 className="text-lg font-semibold text-foreground">Boot & Liegeplatz</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Custom Fields - Boot */}
-              {!fieldsLoading && customFields.filter(f => f.group === 'Boot').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
-                <div key={field.id} className="space-y-2">
-                  <Label>{field.label}{field.required && " *"}</Label>
-                  {isEditing ? (
-                    <>
-                      {field.type === 'textarea' ? (
-                        <Textarea
-                          value={editedCustomValues[field.name] || ""}
-                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                          placeholder={field.placeholder}
-                          required={field.required}
-                        />
-                      ) : field.type === 'select' && field.options ? (
-                        <Select
-                          value={editedCustomValues[field.name] || ""}
-                          onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={field.placeholder || "Auswählen..."} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {field.options.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
-                          value={editedCustomValues[field.name] || ""}
-                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                          placeholder={field.placeholder}
-                          required={field.required}
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-sm">
-                      {customValues[field.name] || "-"}
-                    </span>
-                  )}
-                </div>
-              ))}
-              
-              {/* Custom Fields - Liegeplatz */}
-              {!fieldsLoading && customFields.filter(f => f.group === 'Liegeplatz').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
-                <div key={field.id} className="space-y-2">
-                  <Label>{field.label}{field.required && " *"}</Label>
-                  {isEditing ? (
-                    <>
-                      {field.type === 'textarea' ? (
-                        <Textarea
-                          value={editedCustomValues[field.name] || ""}
-                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                          placeholder={field.placeholder}
-                          required={field.required}
-                        />
-                      ) : field.type === 'select' && field.options ? (
-                        <Select
-                          value={editedCustomValues[field.name] || ""}
-                          onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder={field.placeholder || "Auswählen..."} />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {field.options.map((option) => (
-                              <SelectItem key={option} value={option}>
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      ) : (
-                        <Input
-                          type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
-                          value={editedCustomValues[field.name] || ""}
-                          onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-                          placeholder={field.placeholder}
-                          required={field.required}
-                        />
-                      )}
-                    </>
-                  ) : (
-                    <span className="text-sm">
-                      {customValues[field.name] || "-"}
-                    </span>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Parkplatz und Getränke */}
-          <div className="space-y-4 pb-4 border-b">
-            <h3 className="text-lg font-semibold text-foreground">Parkplatz und Getränke</h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label>Parkberechtigungs-Nummer:</Label>
-                {isEditing && isAdmin ? (
-                  <Input
-                    name="parking-permit-number"
-                    autoComplete="off"
-                    value={(editedUser as any).parkingPermitNumber || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, parkingPermitNumber: e.target.value } as any))}
-                    placeholder="Parkausweis Nummer"
-                  />
-                ) : (
-                  <span className="text-sm">{(user as any).parkingPermitNumber || "-"}</span>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Ausgabedatum:</Label>
-                {isEditing && isAdmin ? (
-                  <Input
-                    type="date"
-                    name="parking-permit-issue-date"
-                    autoComplete="off"
-                    value={(editedUser as any).parkingPermitIssueDate || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, parkingPermitIssueDate: e.target.value } as any))}
-                  />
+      {/* Stammdaten Card */}
+      <Card className="bg-card rounded-[2rem] shadow-sm border">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Stammdaten</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Custom Fields - Kontakt */}
+            {!fieldsLoading && customFields.filter(f => f.group === 'Kontakt').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
+              <div key={field.id} className="space-y-2">
+                <Label>{field.label}{field.required && " *"}</Label>
+                {isEditing ? (
+                  <>
+                    {field.type === 'textarea' ? (
+                      <Textarea
+                        value={editedCustomValues[field.name] || ""}
+                        onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                      />
+                    ) : field.type === 'select' && field.options ? (
+                      <Select
+                        value={editedCustomValues[field.name] || ""}
+                        onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={field.placeholder || "Auswählen..."} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {field.options.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
+                        value={editedCustomValues[field.name] || ""}
+                        onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                      />
+                    )}
+                  </>
                 ) : (
                   <span className="text-sm">
-                    {(user as any).parkingPermitIssueDate ? new Date((user as any).parkingPermitIssueDate).toLocaleDateString('de-AT') : "-"}
+                    {customValues[field.name] || "-"}
                   </span>
                 )}
               </div>
-              
-              <div className="space-y-2">
-                <Label>Getränkechip-Nummer:</Label>
-                {isEditing && isAdmin ? (
-                  <Input
-                    name="beverage-chip-number"
-                    autoComplete="off"
-                    value={(editedUser as any).beverageChipNumber || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, beverageChipNumber: e.target.value } as any))}
-                    placeholder="Chip Nummer"
-                  />
-                ) : (
-                  <span className="text-sm">{(user as any).beverageChipNumber || "-"}</span>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label>Ausgabedatum:</Label>
-                {isEditing && isAdmin ? (
-                  <Input
-                    type="date"
-                    name="beverage-chip-issue-date"
-                    autoComplete="off"
-                    value={(editedUser as any).beverageChipIssueDate || ""}
-                    onChange={(e) => setEditedUser(prev => ({ ...prev, beverageChipIssueDate: e.target.value } as any))}
-                  />
+            ))}
+            
+            {/* Custom Fields - Persönlich */}
+            {!fieldsLoading && customFields.filter(f => f.group === 'Persönlich').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
+              <div key={field.id} className="space-y-2">
+                <Label>{field.label}{field.required && " *"}</Label>
+                {isEditing ? (
+                  <>
+                    {field.type === 'textarea' ? (
+                      <Textarea
+                        value={editedCustomValues[field.name] || ""}
+                        onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                      />
+                    ) : field.type === 'select' && field.options ? (
+                      <Select
+                        value={editedCustomValues[field.name] || ""}
+                        onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={field.placeholder || "Auswählen..."} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {field.options.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
+                        value={editedCustomValues[field.name] || ""}
+                        onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                      />
+                    )}
+                  </>
                 ) : (
                   <span className="text-sm">
-                    {(user as any).beverageChipIssueDate ? new Date((user as any).beverageChipIssueDate).toLocaleDateString('de-AT') : "-"}
+                    {customValues[field.name] || "-"}
                   </span>
                 )}
               </div>
-            </div>
-          </div>
-          
-          
-          {/* Notfallkontakt */}
-          <div className="space-y-4 pb-4 border-b">
-            <h3 className="text-lg font-semibold text-foreground">Notfallkontakt</h3>
+            ))}
             
-            <div className="space-y-2">
-              <Label>Kontaktinformationen:</Label>
-              {isEditing ? (
-                <Textarea
-                  value={(editedUser as any).emergencyContact || ""}
-                  onChange={(e) => setEditedUser(prev => ({ ...prev, emergencyContact: e.target.value } as any))}
-                  placeholder="Name, Telefonnummer und Beziehung"
-                  rows={3}
-                />
-              ) : (
-                <p className="text-sm">{(user as any).emergencyContact || "-"}</p>
-              )}
-            </div>
-          </div>
-          
-          {/* Notizen */}
-          <div className="space-y-4 pb-4 border-b">
-            <h3 className="text-lg font-semibold text-foreground">Notizen</h3>
-            
-            <div className="space-y-2">
-              <Label>Zusätzliche Informationen:</Label>
-              {isEditing ? (
-                <Textarea
-                  value={(editedUser as any).notes || ""}
-                  onChange={(e) => setEditedUser(prev => ({ ...prev, notes: e.target.value } as any))}
-                  placeholder="Zusätzliche Notizen..."
-                  rows={4}
-                />
-              ) : (
-                <p className="text-sm whitespace-pre-wrap">{(user as any).notes || "-"}</p>
-              )}
-            </div>
-          </div>
-
-
-          {/* Save/Cancel Buttons */}
-          {isEditing && (
-            <div className="pt-6 border-t">
-              <div className="flex gap-2 justify-end">
-                <Button variant="outline" onClick={() => {
-                  setIsEditing(false);
-                  setEditedUser(user);
-                  setEditedCustomValues(customValues);
-                }}>
-                  <X className="w-4 h-4 mr-2" />
-                  Abbrechen
-                </Button>
-                <Button onClick={handleSaveProfile}>
-                  <Save className="w-4 h-4 mr-2" />
-                  Speichern
-                </Button>
+            {/* Custom Fields - Mitgliedschaft */}
+            {!fieldsLoading && customFields.filter(f => f.group === 'Mitgliedschaft').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
+              <div key={field.id} className="space-y-2">
+                <Label>{field.label}{field.required && " *"}</Label>
+                {isEditing ? (
+                  <>
+                    {field.type === 'textarea' ? (
+                      <Textarea
+                        value={editedCustomValues[field.name] || ""}
+                        onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                      />
+                    ) : field.type === 'select' && field.options ? (
+                      <Select
+                        value={editedCustomValues[field.name] || ""}
+                        onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={field.placeholder || "Auswählen..."} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {field.options.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
+                        value={editedCustomValues[field.name] || ""}
+                        onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <span className="text-sm">
+                    {customValues[field.name] || "-"}
+                  </span>
+                )}
               </div>
-            </div>
-          )}
+            ))}
+          </div>
         </CardContent>
       </Card>
 
+      {/* AI-Assistent & Datenschutz Card */}
+      <Card className="bg-card rounded-[2rem] shadow-sm border">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">AI-Assistent & Datenschutz</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* AI-Assistent Einstellungen */}
+          <div className="space-y-3">
+            <h4 className="text-sm font-medium text-foreground">AI-Assistent</h4>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="ai-info-enabled"
+                checked={aiInfoEnabled}
+                onCheckedChange={(checked) => setAiInfoEnabled(checked === true)}
+              />
+              <label
+                htmlFor="ai-info-enabled"
+                className="text-sm font-medium leading-none cursor-pointer"
+              >
+                AI-Assistent Info aktivieren
+              </label>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Wenn aktiviert, kann der AI-Assistent die unten eingetragenen Informationen bei Fragen über Sie verwenden.
+            </p>
+            
+            {/* AI Agent Info Custom Field */}
+            {!fieldsLoading && customFields.filter(f => f.name === 'ai_agent_info').map((field) => (
+              <div key={field.id} className="space-y-2">
+                <Label>{field.label}</Label>
+                {isEditing ? (
+                  <Textarea
+                    value={editedCustomValues[field.name] || ""}
+                    onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                    placeholder={field.placeholder}
+                    disabled={!aiInfoEnabled}
+                    className={cn(!aiInfoEnabled && "opacity-50 cursor-not-allowed")}
+                    rows={4}
+                  />
+                ) : (
+                  <span className="text-sm">
+                    {aiInfoEnabled ? (customValues[field.name] || "-") : "Deaktiviert"}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+          
+          {/* Öffentliche Anzeige in KSVL */}
+          <div className="space-y-3 pt-4 border-t">
+            <h4 className="text-sm font-medium text-foreground">Öffentliche Anzeige in KSVL</h4>
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="data-public"
+                  checked={editedUser?.dataPublicInKsvl || false}
+                  onCheckedChange={(checked) => {
+                    if (!editedUser) return;
+                    setEditedUser({
+                      ...editedUser,
+                      dataPublicInKsvl: checked === true
+                    });
+                  }}
+                />
+                <label
+                  htmlFor="data-public"
+                  className="text-sm font-medium leading-none cursor-pointer"
+                >
+                  Daten öffentlich in KSVL anzeigen
+                </label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Checkbox
+                  id="contact-public"
+                  checked={editedUser?.contactPublicInKsvl || false}
+                  onCheckedChange={(checked) => {
+                    if (!editedUser) return;
+                    setEditedUser({
+                      ...editedUser,
+                      contactPublicInKsvl: checked === true
+                    });
+                  }}
+                />
+                <label
+                  htmlFor="contact-public"
+                  className="text-sm font-medium leading-none cursor-pointer"
+                >
+                  Kontaktdaten öffentlich in KSVL anzeigen
+                </label>
+              </div>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Diese Einstellungen steuern, welche Ihrer Informationen in der KSVL-Mitgliederliste sichtbar sind.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+          
+      {/* Boot & Liegeplatz Card */}
+      <Card className="bg-card rounded-[2rem] shadow-sm border">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Boot & Liegeplatz</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Custom Fields - Boot */}
+            {!fieldsLoading && customFields.filter(f => f.group === 'Boot').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
+              <div key={field.id} className="space-y-2">
+                <Label>{field.label}{field.required && " *"}</Label>
+                {isEditing ? (
+                  <>
+                    {field.type === 'textarea' ? (
+                      <Textarea
+                        value={editedCustomValues[field.name] || ""}
+                        onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                      />
+                    ) : field.type === 'select' && field.options ? (
+                      <Select
+                        value={editedCustomValues[field.name] || ""}
+                        onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={field.placeholder || "Auswählen..."} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {field.options.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
+                        value={editedCustomValues[field.name] || ""}
+                        onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <span className="text-sm">
+                    {customValues[field.name] || "-"}
+                  </span>
+                )}
+              </div>
+            ))}
+            
+            {/* Custom Fields - Liegeplatz */}
+            {!fieldsLoading && customFields.filter(f => f.group === 'Liegeplatz').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
+              <div key={field.id} className="space-y-2">
+                <Label>{field.label}{field.required && " *"}</Label>
+                {isEditing ? (
+                  <>
+                    {field.type === 'textarea' ? (
+                      <Textarea
+                        value={editedCustomValues[field.name] || ""}
+                        onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                      />
+                    ) : field.type === 'select' && field.options ? (
+                      <Select
+                        value={editedCustomValues[field.name] || ""}
+                        onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={field.placeholder || "Auswählen..."} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {field.options.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
+                        value={editedCustomValues[field.name] || ""}
+                        onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <span className="text-sm">
+                    {customValues[field.name] || "-"}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+          
+      {/* Parkplatz & Getränkemarke Card */}
+      <Card className="bg-card rounded-[2rem] shadow-sm border">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Parkplatz & Getränkemarke</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Custom Fields - Sonstiges */}
+            {!fieldsLoading && customFields.filter(f => f.group === 'Sonstiges').sort((a, b) => (a.order || 0) - (b.order || 0)).map((field) => (
+              <div key={field.id} className="space-y-2">
+                <Label>{field.label}{field.required && " *"}</Label>
+                {isEditing ? (
+                  <>
+                    {field.type === 'textarea' ? (
+                      <Textarea
+                        value={editedCustomValues[field.name] || ""}
+                        onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                      />
+                    ) : field.type === 'select' && field.options ? (
+                      <Select
+                        value={editedCustomValues[field.name] || ""}
+                        onValueChange={(value) => setEditedCustomValues(prev => ({ ...prev, [field.name]: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={field.placeholder || "Auswählen..."} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {field.options.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        type={field.type === 'date' ? 'date' : field.type === 'number' ? 'number' : field.type === 'email' ? 'email' : field.type === 'phone' ? 'tel' : 'text'}
+                        value={editedCustomValues[field.name] || ""}
+                        onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        required={field.required}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <span className="text-sm">
+                    {customValues[field.name] || "-"}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+          
+      {/* Notfallkontakt & Notizen Card */}
+      <Card className="bg-card rounded-[2rem] shadow-sm border">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold">Notfallkontakt & Notizen</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Notfallkontakt</Label>
+              {isEditing ? (
+                <Textarea
+                  value={(editedUser as any)?.emergencyContact || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, emergencyContact: e.target.value } as any : null)}
+                  placeholder="Name, Telefon, Beziehung"
+                />
+              ) : (
+                <span className="text-sm">
+                  {(user as any)?.emergencyContact || "-"}
+                </span>
+              )}
+            </div>
+            
+            <div className="space-y-2">
+              <Label>Notizen</Label>
+              {isEditing ? (
+                <Textarea
+                  value={(editedUser as any)?.notes || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, notes: e.target.value } as any : null)}
+                  placeholder="Interne Notizen"
+                />
+              ) : (
+                <span className="text-sm">
+                  {(user as any)?.notes || "-"}
+                </span>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Save/Cancel Buttons */}
+      {isEditing && (
+        <div className="flex gap-2 justify-end">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setIsEditing(false);
+              setEditedUser(user);
+              setEditedCustomValues(customValues);
+            }}
+          >
+            <X className="w-4 h-4 mr-2" />
+            Abbrechen
+          </Button>
+          <Button onClick={handleSaveProfile}>
+            <Save className="w-4 h-4 mr-2" />
+            Speichern
+          </Button>
+        </div>
+      )}
+
       {/* Password Change Dialog */}
       <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
-        <DialogContent className="max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Passwort ändern</DialogTitle>
             <DialogDescription>
-              Geben Sie das neue Passwort zweimal ein, um es zu ändern.
+              Bitte geben Sie ein neues Passwort ein.
             </DialogDescription>
           </DialogHeader>
           
@@ -1245,9 +1197,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               />
             </div>
             
-            <div className="flex gap-2 justify-end pt-4">
-              <Button 
-                variant="outline" 
+            <div className="flex gap-2 justify-end">
+              <Button
+                variant="outline"
                 onClick={() => {
                   setShowPasswordDialog(false);
                   setNewPassword("");
@@ -1257,10 +1209,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               >
                 Abbrechen
               </Button>
-              <Button 
-                onClick={handleChangePassword}
-                disabled={isChangingPassword || !newPassword || !confirmPassword}
-              >
+              <Button onClick={handleChangePassword} disabled={isChangingPassword}>
                 {isChangingPassword ? "Wird geändert..." : "Passwort ändern"}
               </Button>
             </div>
@@ -1268,105 +1217,144 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         </DialogContent>
       </Dialog>
 
-      {/* Admin Field Management - Bottom Section */}
-      {currentRole === "admin" && (
-        <div className="flex justify-center">
-          <Dialog open={isManagingFields} onOpenChange={setIsManagingFields}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="w-full sm:w-auto">
-                <Settings className="w-4 h-4 mr-2" />
-                Felder verwalten
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-md">
-              <DialogHeader>
-                <DialogTitle>Benutzerdefinierte Felder verwalten</DialogTitle>
-                <DialogDescription className="sr-only">
-                  Verwalten Sie benutzerdefinierte Felder für Ihr Profil
-                </DialogDescription>
-              </DialogHeader>
-              
-              <div className="space-y-4">
-                {/* Existing Fields */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Vorhandene Felder</Label>
-                  {customFields.map(field => (
-                    <div key={field.id} className="flex items-center justify-between p-2 border rounded">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium">{field.label}</p>
-                        <p className="text-xs text-muted-foreground">{field.type}</p>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleDeleteCustomField(field.id)}
-                        className="text-destructive hover:bg-destructive/10"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
+      {/* Custom Fields Management Dialog (Admin only) */}
+      {isAdmin && (
+        <Dialog open={isManagingFields} onOpenChange={setIsManagingFields}>
+          <DialogTrigger asChild>
+            <Button variant="outline" className="mt-4">
+              <Settings className="w-4 h-4 mr-2" />
+              Felder verwalten
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Custom Fields verwalten</DialogTitle>
+              <DialogDescription>
+                Verwalten Sie zusätzliche Felder für alle Benutzerprofile.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              {/* Add New Field Form */}
+              <div className="border rounded-lg p-4 space-y-4">
+                <h3 className="font-semibold">Neues Feld hinzufügen</h3>
                 
-                <Separator />
-                
-                {/* Add New Field */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-medium">Neues Feld hinzufügen</Label>
-                  
+                <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
+                    <Label htmlFor="field-name">Feldname (technisch)</Label>
                     <Input
-                      placeholder="Feld-Name (z.B. emergencyContact)"
+                      id="field-name"
                       value={newField.name || ""}
                       onChange={(e) => setNewField(prev => ({ ...prev, name: e.target.value }))}
+                      placeholder="z.B. custom_field_1"
                     />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="field-label">Anzeigename</Label>
                     <Input
-                      placeholder="Anzeige-Label (z.B. Notfallkontakt)"
+                      id="field-label"
                       value={newField.label || ""}
                       onChange={(e) => setNewField(prev => ({ ...prev, label: e.target.value }))}
+                      placeholder="z.B. Zusätzliche Info"
                     />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="field-type">Feldtyp</Label>
                     <Select
-                      value={newField.type}
-                      onValueChange={(value: CustomField["type"]) => setNewField(prev => ({ ...prev, type: value }))}
+                      value={newField.type || "text"}
+                      onValueChange={(value) => setNewField(prev => ({ ...prev, type: value as any }))}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger id="field-type">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="text">Text</SelectItem>
-                        <SelectItem value="textarea">Textbereich</SelectItem>
-                        <SelectItem value="select">Auswahl</SelectItem>
+                        <SelectItem value="textarea">Mehrzeiliger Text</SelectItem>
                         <SelectItem value="number">Zahl</SelectItem>
                         <SelectItem value="date">Datum</SelectItem>
+                        <SelectItem value="select">Auswahl</SelectItem>
                       </SelectContent>
                     </Select>
-                    
-                    {newField.type === "select" && (
-                      <Input
-                        placeholder="Optionen (kommagetrennt)"
-                        onChange={(e) => setNewField(prev => ({ 
-                          ...prev, 
-                          options: e.target.value.split(',').map(s => s.trim()).filter(Boolean)
-                        }))}
-                      />
-                    )}
-                    
-                    <Input
-                      placeholder="Platzhalter-Text (optional)"
-                      value={newField.placeholder || ""}
-                      onChange={(e) => setNewField(prev => ({ ...prev, placeholder: e.target.value }))}
-                    />
                   </div>
                   
-                  <Button onClick={handleAddCustomField} className="w-full">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Feld hinzufügen
-                  </Button>
+                  <div className="space-y-2">
+                    <Label htmlFor="field-placeholder">Platzhalter</Label>
+                    <Input
+                      id="field-placeholder"
+                      value={newField.placeholder || ""}
+                      onChange={(e) => setNewField(prev => ({ ...prev, placeholder: e.target.value }))}
+                      placeholder="Optional"
+                    />
+                  </div>
                 </div>
+                
+                {newField.type === "select" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="field-options">Auswahloptionen (kommagetrennt)</Label>
+                    <Input
+                      id="field-options"
+                      value={newField.options?.join(", ") || ""}
+                      onChange={(e) => setNewField(prev => ({ 
+                        ...prev, 
+                        options: e.target.value.split(",").map(o => o.trim()).filter(o => o) 
+                      }))}
+                      placeholder="Option 1, Option 2, Option 3"
+                    />
+                  </div>
+                )}
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="field-required"
+                    checked={newField.required || false}
+                    onCheckedChange={(checked) => setNewField(prev => ({ ...prev, required: checked === true }))}
+                  />
+                  <label htmlFor="field-required" className="text-sm font-medium cursor-pointer">
+                    Pflichtfeld
+                  </label>
+                </div>
+                
+                <Button onClick={handleAddCustomField}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Feld hinzufügen
+                </Button>
               </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+
+              {/* Existing Fields List */}
+              <div className="space-y-4">
+                <h3 className="font-semibold">Vorhandene Felder</h3>
+                
+                {fieldsLoading ? (
+                  <p className="text-sm text-muted-foreground">Lade Felder...</p>
+                ) : customFields.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">Keine benutzerdefinierten Felder vorhanden.</p>
+                ) : (
+                  <div className="space-y-2">
+                    {customFields.map((field) => (
+                      <div key={field.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex-1">
+                          <p className="font-medium">{field.label}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {field.name} • {field.type} {field.required && "• Pflichtfeld"}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteCustomField(field.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
@@ -1376,12 +1364,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-7xl">
-      {onBack && (
-        <Button variant="ghost" size="sm" onClick={onBack} className="mb-4">
-          ← Zurück zur Übersicht
-        </Button>
-      )}
+    <div className="container mx-auto p-4 max-w-4xl">
       {content}
     </div>
   );

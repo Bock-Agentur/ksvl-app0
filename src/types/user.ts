@@ -25,6 +25,8 @@ export interface User {
   joinDate: string;
   joinedAt?: string; // For backward compatibility
   isActive: boolean;
+  dataPublicInKsvl?: boolean;
+  contactPublicInKsvl?: boolean;
 }
 
 // ===== API TYPES =====
