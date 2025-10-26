@@ -20,6 +20,7 @@ interface Message {
 interface DashboardHeaderProps {
   userName?: string;
   userImage?: string;
+  displayName: string; // Pre-loaded from parent
   onSearch?: (query: string) => void;
   showSearch?: boolean;
   currentUser?: any;
@@ -31,6 +32,7 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ 
   userName,
   userImage,
+  displayName, // Receive from parent
   onSearch,
   showSearch = true,
   currentUser
@@ -74,40 +76,6 @@ export function DashboardHeader({
     }
   }, [messages]);
 
-  const [displayName, setDisplayName] = useState<string>("");
-
-  // Load first and last name from profile
-  useEffect(() => {
-    const loadFullName = async () => {
-      if (!currentUser?.id) {
-        setDisplayName("User");
-        return;
-      }
-      
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('first_name, last_name, name')
-        .eq('id', currentUser.id)
-        .single();
-      
-      console.log('Dashboard Header - Profile Data:', profileData);
-      console.log('Dashboard Header - first_name:', profileData?.first_name);
-      console.log('Dashboard Header - last_name:', profileData?.last_name);
-      
-      const fullName = profileData?.first_name && profileData?.last_name
-        ? `${profileData.first_name} ${profileData.last_name}`
-        : profileData?.name || 
-          userName ||
-          (currentUser as any)?.user_metadata?.full_name || 
-          currentUser?.email?.split('@')[0] || 
-          "User";
-      
-      console.log('Dashboard Header - Final displayName:', fullName);
-      setDisplayName(fullName);
-    };
-
-    loadFullName();
-  }, [currentUser?.id, userName]); // Changed: Use currentUser?.id instead of currentUser
 
   // Show welcome message on mount
   useEffect(() => {

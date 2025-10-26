@@ -14,6 +14,7 @@ import { useAIWelcomeMessage } from "@/hooks/use-ai-welcome-message";
 import { useHarborChatData } from "@/hooks/use-harbor-chat-data";
 import { useProfileData } from "@/hooks/use-profile-data";
 import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
+import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { AppShell } from "@/components/app-shell";
 import { Dashboard } from "@/components/dashboard";
 import { UserManagementRefactored as UserManagement } from "@/components/user-management";
@@ -49,6 +50,38 @@ function AppContent() {
   // Load footer menu data
   const { isLoading: footerLoading } = useFooterMenuSettings();
   
+  // Load dashboard settings
+  const { isLoading: dashboardSettingsLoading } = useDashboardSettings(currentRole, false);
+  
+  // Load full user name for header (direct DB call to avoid double loading)
+  const [displayNameLoading, setDisplayNameLoading] = useState(true);
+  const [displayName, setDisplayName] = useState('');
+
+  useEffect(() => {
+    const loadDisplayName = async () => {
+      if (!currentUser?.id) {
+        setDisplayName('User');
+        setDisplayNameLoading(false);
+        return;
+      }
+      
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('first_name, last_name, name')
+        .eq('id', currentUser.id)
+        .single();
+      
+      const fullName = profileData?.first_name && profileData?.last_name
+        ? `${profileData.first_name} ${profileData.last_name}`
+        : profileData?.name || 'User';
+      
+      setDisplayName(fullName);
+      setDisplayNameLoading(false);
+    };
+    
+    loadDisplayName();
+  }, [currentUser?.id]);
+  
   // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   
@@ -65,7 +98,7 @@ function AppContent() {
     
     switch(tab) {
       case 'dashboard': 
-        return baseLoading || slotsLoading || usersLoading || harborChatLoading || aiWelcomeLoading || profileLoading;
+        return baseLoading || slotsLoading || usersLoading || harborChatLoading || aiWelcomeLoading || profileLoading || dashboardSettingsLoading || displayNameLoading;
       case 'calendar': 
         return baseLoading || slotsLoading;
       case 'users': 
@@ -130,7 +163,7 @@ function AppContent() {
   const renderContent = () => {
     switch (activeTab) {
       case "dashboard":
-        return <Dashboard onNavigate={setActiveTab} />;
+        return <Dashboard onNavigate={setActiveTab} displayName={displayName} />;
       case "calendar":
         return <CalendarView initialDate={selectedCalendarDate} />;
       case "profile":
@@ -142,7 +175,7 @@ function AppContent() {
       case "settings":
         return <Settings />;
       default:
-        return <Dashboard />;
+        return <Dashboard displayName={displayName} />;
     }
   };
 

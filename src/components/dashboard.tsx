@@ -43,9 +43,10 @@ interface DashboardStats {
 
 interface DashboardProps {
   onNavigate?: (tab: string) => void;
+  displayName: string;
 }
 
-export function Dashboard({ onNavigate }: DashboardProps = {}) {
+export function Dashboard({ onNavigate, displayName }: DashboardProps) {
   const { currentRole, currentUser } = useRole();
   const { slots, isLoading: slotsLoading } = useSlots();
   const { users, loading: usersLoading } = useUsers();
@@ -214,12 +215,22 @@ export function Dashboard({ onNavigate }: DashboardProps = {}) {
               return (
                 <div key={item.id} className={getAnimationClass(item.id)}>
                   {isSection ? (
-                    <Component 
-                      stats={stats}
-                      currentUser={currentUser}
-                      currentRole={currentRole}
-                      onNavigate={onNavigate}
-                    />
+                    item.id === 'headerCard' ? (
+                      <Component 
+                        stats={stats}
+                        currentUser={currentUser}
+                        currentRole={currentRole}
+                        onNavigate={onNavigate}
+                        displayName={displayName}
+                      />
+                    ) : (
+                      <Component 
+                        stats={stats}
+                        currentUser={currentUser}
+                        currentRole={currentRole}
+                        onNavigate={onNavigate}
+                      />
+                    )
                   ) : (
                     <Component />
                   )}

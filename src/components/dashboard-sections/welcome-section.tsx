@@ -21,7 +21,18 @@ interface WelcomeSectionProps {
 export function WelcomeSection({ stats, currentUser, currentRole }: WelcomeSectionProps) {
   const { getWelcomeMessage } = useWelcomeMessages();
   const welcomeMessage = currentRole ? getWelcomeMessage(currentRole) : "";
-  const { firstName } = useProfileData();
+  const { firstName, isLoading } = useProfileData();
+
+  if (isLoading) {
+    return (
+      <Card className="p-6 bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <div className="space-y-4">
+          <div className="h-8 w-48 bg-muted animate-pulse rounded" />
+          <div className="h-20 w-full bg-muted animate-pulse rounded" />
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="p-6 bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">

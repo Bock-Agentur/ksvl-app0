@@ -22,8 +22,8 @@ export function useProfileData() {
              currentUser?.email?.split('@')[0] || 
              'User';
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes cache
-    gcTime: 10 * 60 * 1000, // 10 minutes in cache (formerly cacheTime)
+    staleTime: 30 * 60 * 1000, // 30 minutes cache
+    gcTime: 60 * 60 * 1000, // 60 minutes in cache
     enabled: !!currentUser?.id
   });
 

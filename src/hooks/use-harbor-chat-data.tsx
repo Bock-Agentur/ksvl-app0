@@ -1,35 +1,26 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export function useHarborChatData() {
-  const [agentName, setAgentName] = useState<string>('Capitano');
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: agentName = 'Capitano', isLoading } = useQuery({
+    queryKey: ['ai-assistant-settings'],
+    queryFn: async () => {
+      const { data: settings } = await supabase
+        .from('app_settings')
+        .select('setting_value')
+        .eq('setting_key', 'aiAssistantSettings')
+        .eq('is_global', true)
+        .maybeSingle();
 
-  useEffect(() => {
-    const loadAgentName = async () => {
-      try {
-        const { data: settings } = await supabase
-          .from('app_settings')
-          .select('setting_value')
-          .eq('setting_key', 'aiAssistantSettings')
-          .eq('is_global', true)
-          .maybeSingle();
-
-        if (settings?.setting_value) {
-          const aiSettings = settings.setting_value as any;
-          const name = aiSettings.agentName || 'Capitano';
-          setAgentName(name);
-        }
-      } catch (error) {
-        console.error('Error loading agent name:', error);
-        setAgentName('Capitano'); // Fallback
-      } finally {
-        setIsLoading(false);
+      if (settings?.setting_value) {
+        const aiSettings = settings.setting_value as any;
+        return aiSettings.agentName || 'Capitano';
       }
-    };
-    
-    loadAgentName();
-  }, []);
+      return 'Capitano';
+    },
+    staleTime: 30 * 60 * 1000, // 30 minutes cache
+    gcTime: 60 * 60 * 1000, // 60 minutes in cache
+  });
 
   return { agentName, isLoading };
 }

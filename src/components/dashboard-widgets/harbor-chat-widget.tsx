@@ -24,6 +24,19 @@ export function HarborChatWidget() {
   const { toast } = useToast();
   const { currentRole } = useRole();
 
+  if (agentLoading) {
+    return (
+      <Card className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)]">
+        <CardHeader className="pt-12 pb-4 px-[15px]">
+          <div className="h-6 w-48 bg-white/20 animate-pulse rounded" />
+        </CardHeader>
+        <CardContent className="px-[15px] pb-8">
+          <div className="h-[400px] bg-white rounded-2xl animate-pulse" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Set initial message when agent name is loaded
   useEffect(() => {
     if (!agentLoading && messages.length === 0) {
