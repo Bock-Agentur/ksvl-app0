@@ -299,10 +299,13 @@ export function Auth() {
           <img 
             src={background.url} 
             alt="Login background"
-            className="fixed inset-0 w-full h-full object-cover -z-10"
-            style={{ filter: `blur(${background.mediaBlur}px)` }}
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ 
+              filter: `blur(${background.mediaBlur}px)`,
+              zIndex: 0
+            }}
           />
-          <div className="fixed inset-0 -z-10" style={overlayStyle} />
+          <div className="absolute inset-0" style={{ ...overlayStyle, zIndex: 1 }} />
         </>
       );
     }
@@ -318,22 +321,25 @@ export function Auth() {
               muted 
               loop 
               playsInline
-              className="fixed inset-0 w-full h-full object-cover -z-10"
-              style={{ filter: `blur(${background.mediaBlur}px)` }}
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ 
+                filter: `blur(${background.mediaBlur}px)`,
+                zIndex: 0
+              }}
             >
               <source src={background.url} type="video/mp4" />
             </video>
           ) : (
-            <div className="fixed inset-0 bg-gradient-to-br from-background to-muted -z-10" />
+            <div className="absolute inset-0 bg-gradient-to-br from-background to-muted" style={{ zIndex: 0 }} />
           )}
-          <div className="fixed inset-0 -z-10" style={overlayStyle} />
+          <div className="absolute inset-0" style={{ ...overlayStyle, zIndex: 1 }} />
         </>
       );
     }
     
     // For gradient type, only render overlay if opacity > 0
     if (background.type === 'gradient' && background.overlayOpacity > 0) {
-      return <div className="fixed inset-0 -z-10" style={overlayStyle} />;
+      return <div className="absolute inset-0" style={{ ...overlayStyle, zIndex: 1 }} />;
     }
     
     return null;
@@ -366,8 +372,8 @@ export function Auth() {
       {/* Countdown Layer */}
       {background.countdownEnabled && background.countdownEndDate && (
         <div 
-          className="absolute inset-0 flex items-start justify-center pointer-events-none z-0" 
-          style={{ paddingTop: `${getCountdownPosition()}%` }}
+          className="absolute inset-0 flex items-start justify-center pointer-events-none" 
+          style={{ paddingTop: `${getCountdownPosition()}%`, zIndex: 2 }}
         >
           <Countdown 
             endDate={background.countdownEndDate} 
@@ -381,9 +387,10 @@ export function Auth() {
       
       {/* Login Form */}
       <div 
-        className="w-full relative z-10"
+        className="w-full relative"
         style={{
-          maxWidth: `${getLoginBlockWidth()}px`
+          maxWidth: `${getLoginBlockWidth()}px`,
+          zIndex: 3
         }}
       >
         <form onSubmit={handleLogin} className="w-full space-y-4 mb-8 pointer-events-auto" autoComplete="on">
