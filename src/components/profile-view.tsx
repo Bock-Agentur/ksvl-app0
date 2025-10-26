@@ -204,7 +204,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         membershipStatusHistory: profile.membership_status_history || [],
         boardPositionHistory: profile.board_position_history || [],
         createdBy: profile.created_by || undefined,
-        modifiedBy: profile.modified_by || undefined
+        modifiedBy: profile.modified_by || undefined,
+        ai_info_enabled: profile.ai_info_enabled || false
       } as any;
 
       setUser(userData);
