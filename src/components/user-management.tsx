@@ -92,13 +92,35 @@ export function UserManagementRefactored() {
     joinDate: u.joinDate || '',
     joinedAt: u.joinDate || '',
     isActive: u.isActive || false,
-    // Additional fields from database
-    oesvNumber: (u as any).oesv_number || '',
-    address: (u as any).address || '',
-    berthNumber: (u as any).berth_number || '',
-    berthType: (u as any).berth_type || '',
-    birthDate: (u as any).birth_date || '',
-    entryDate: (u as any).entry_date || ''
+    
+    // Existing fields
+    oesvNumber: u.oesv_number || '',
+    address: u.address || '',
+    berthNumber: u.berth_number || '',
+    berthType: u.berth_type || '',
+    birthDate: u.birth_date || '',
+    entryDate: u.entry_date || '',
+    
+    // New fields
+    firstName: u.first_name || '',
+    lastName: u.last_name || '',
+    streetAddress: u.street_address || '',
+    postalCode: u.postal_code || '',
+    city: u.city || '',
+    membershipType: u.membership_type || '',
+    membershipStatus: u.membership_status || 'Aktiv',
+    vorstandFunktion: u.vorstand_funktion || '',
+    boatType: u.boat_type || '',
+    boatLength: u.boat_length || undefined,
+    boatWidth: u.boat_width || undefined,
+    boatColor: u.boat_color || '',
+    berthLength: u.berth_length || undefined,
+    berthWidth: u.berth_width || undefined,
+    buoyRadius: u.buoy_radius || undefined,
+    hasDinghyBerth: u.has_dinghy_berth || false,
+    beverageChipStatus: u.beverage_chip_status || 'Aktiv',
+    emergencyContactName: u.emergency_contact_name || '',
+    emergencyContactPhone: u.emergency_contact_phone || ''
   } as any));
 
   // Such- und Filter-Funktionalität mit wiederverwendbarem Hook

@@ -5,21 +5,76 @@ import { useToast } from '@/hooks/use-toast';
 export interface DatabaseUser {
   id: string;
   email: string;
-  name: string | null; // Maps to 'user' field for display
-  username: string | null; // Username for login
+  name: string | null;
+  username: string | null;
   phone: string | null;
   member_number: string | null;
-  memberNumber?: string | null; // Alias for compatibility
+  memberNumber?: string | null;
   boat_name: string | null;
-  boatName?: string | null; // Alias for compatibility
+  boatName?: string | null;
   status: string | null;
   is_test_data: boolean | null;
   is_role_user: boolean | null;
-  created_at?: string; // Add created_at field
+  created_at?: string;
   roles: string[];
-  role?: string; // Primary role for compatibility
+  role?: string;
   joinDate?: string;
   isActive?: boolean;
+  
+  // Existing profile fields
+  oesv_number?: string | null;
+  address?: string | null;
+  berth_number?: string | null;
+  berth_type?: string | null;
+  birth_date?: string | null;
+  entry_date?: string | null;
+  
+  // New fields from migration
+  first_name?: string | null;
+  last_name?: string | null;
+  street_address?: string | null;
+  postal_code?: string | null;
+  city?: string | null;
+  password_change_required?: boolean | null;
+  two_factor_method?: string | null;
+  membership_type?: string | null;
+  membership_status?: string | null;
+  board_position_start_date?: string | null;
+  board_position_end_date?: string | null;
+  boat_type?: string | null;
+  boat_length?: number | null;
+  boat_width?: number | null;
+  boat_color?: string | null;
+  berth_length?: number | null;
+  berth_width?: number | null;
+  buoy_radius?: number | null;
+  has_dinghy_berth?: boolean | null;
+  dinghy_berth_number?: string | null;
+  parking_permit_number?: string | null;
+  parking_permit_issue_date?: string | null;
+  beverage_chip_number?: string | null;
+  beverage_chip_issue_date?: string | null;
+  beverage_chip_status?: string | null;
+  vorstand_funktion?: string | null;
+  ai_info_enabled?: boolean | null;
+  data_public_in_ksvl?: boolean | null;
+  contact_public_in_ksvl?: boolean | null;
+  statute_accepted?: boolean | null;
+  privacy_accepted?: boolean | null;
+  newsletter_optin?: boolean | null;
+  emergency_contact?: string | null;
+  emergency_contact_name?: string | null;
+  emergency_contact_phone?: string | null;
+  emergency_contact_relationship?: string | null;
+  notes?: string | null;
+  document_bfa?: string | null;
+  document_insurance?: string | null;
+  document_berth_contract?: string | null;
+  document_member_photo?: string | null;
+  membership_status_history?: any;
+  board_position_history?: any;
+  created_by?: string | null;
+  modified_by?: string | null;
 }
 
 export function useUsers() {
@@ -78,12 +133,61 @@ export function useUsers() {
           role: primaryRole,
           isActive: profile.status === 'active',
           joinDate: profile.entry_date || profile.created_at,
+          
+          // Existing fields
           oesv_number: profile.oesv_number,
           address: profile.address,
           berth_number: profile.berth_number,
           berth_type: profile.berth_type,
           birth_date: profile.birth_date,
-          entry_date: profile.entry_date
+          entry_date: profile.entry_date,
+          
+          // New fields from migration
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          street_address: profile.street_address,
+          postal_code: profile.postal_code,
+          city: profile.city,
+          password_change_required: profile.password_change_required,
+          two_factor_method: profile.two_factor_method,
+          membership_type: profile.membership_type,
+          membership_status: profile.membership_status,
+          board_position_start_date: profile.board_position_start_date,
+          board_position_end_date: profile.board_position_end_date,
+          boat_type: profile.boat_type,
+          boat_length: profile.boat_length,
+          boat_width: profile.boat_width,
+          boat_color: profile.boat_color,
+          berth_length: profile.berth_length,
+          berth_width: profile.berth_width,
+          buoy_radius: profile.buoy_radius,
+          has_dinghy_berth: profile.has_dinghy_berth,
+          dinghy_berth_number: profile.dinghy_berth_number,
+          parking_permit_number: profile.parking_permit_number,
+          parking_permit_issue_date: profile.parking_permit_issue_date,
+          beverage_chip_number: profile.beverage_chip_number,
+          beverage_chip_issue_date: profile.beverage_chip_issue_date,
+          beverage_chip_status: profile.beverage_chip_status,
+          vorstand_funktion: profile.vorstand_funktion,
+          ai_info_enabled: profile.ai_info_enabled,
+          data_public_in_ksvl: profile.data_public_in_ksvl,
+          contact_public_in_ksvl: profile.contact_public_in_ksvl,
+          statute_accepted: profile.statute_accepted,
+          privacy_accepted: profile.privacy_accepted,
+          newsletter_optin: profile.newsletter_optin,
+          emergency_contact: profile.emergency_contact,
+          emergency_contact_name: profile.emergency_contact_name,
+          emergency_contact_phone: profile.emergency_contact_phone,
+          emergency_contact_relationship: profile.emergency_contact_relationship,
+          notes: profile.notes,
+          document_bfa: profile.document_bfa,
+          document_insurance: profile.document_insurance,
+          document_berth_contract: profile.document_berth_contract,
+          document_member_photo: profile.document_member_photo,
+          membership_status_history: profile.membership_status_history,
+          board_position_history: profile.board_position_history,
+          created_by: profile.created_by,
+          modified_by: profile.modified_by
         };
       });
 
