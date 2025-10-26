@@ -379,26 +379,30 @@ export function UserManagementRefactored() {
 
   return (
     <div className="p-4 max-w-7xl mx-auto space-y-6">
-      {/* Header mit Statistiken */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">Mitgliederverwaltung</h1>
-          <p className="text-muted-foreground">
-            {stats.total} Mitglieder • {stats.active} aktiv • {stats.roleCount.admin} Admins • {stats.activeRate}% Aktivitätsrate
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleExport}>
-            <Download className="w-4 h-4 mr-2" />
-            Export CSV
-          </Button>
-          <Button onClick={handleAddUser}>
-            <Plus className="w-4 h-4 mr-2" />
-            Benutzer hinzufügen
-          </Button>
-        </div>
-      </div>
+      {/* Hero Card */}
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <CardContent className="p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-bold">Mitgliederverwaltung</h1>
+              <p className="text-muted-foreground">
+                {stats.total} Mitglieder • {stats.active} aktiv • {stats.roleCount.admin} Admins • {stats.activeRate}% Aktivitätsrate
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button variant="outline" onClick={handleExport}>
+                <Download className="w-4 h-4 mr-2" />
+                Export CSV
+              </Button>
+              <Button onClick={handleAddUser}>
+                <Plus className="w-4 h-4 mr-2" />
+                Benutzer hinzufügen
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Statistiken Cards - Collapsible auf Mobile */}
       <Collapsible open={isStatsOpen} onOpenChange={setIsStatsOpen} className="sm:hidden">
@@ -410,31 +414,31 @@ export function UserManagementRefactored() {
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-2">
           <div className="grid grid-cols-2 gap-2">
-            <Card>
+            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
               <CardContent className="pt-3 pb-2">
                 <div className="text-lg font-bold text-primary">{stats.total}</div>
                 <p className="text-[10px] text-muted-foreground">Gesamt</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
               <CardContent className="pt-3 pb-2">
                 <div className="text-lg font-bold text-green-600">{stats.active}</div>
                 <p className="text-[10px] text-muted-foreground">Aktiv</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
               <CardContent className="pt-3 pb-2">
                 <div className="text-lg font-bold text-blue-600">{stats.roleCount.mitglied}</div>
                 <p className="text-[10px] text-muted-foreground">Mitglieder</p>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
               <CardContent className="pt-3 pb-2">
                 <div className="text-lg font-bold text-purple-600">{stats.roleCount.kranfuehrer}</div>
                 <p className="text-[10px] text-muted-foreground">Kranführer</p>
               </CardContent>
             </Card>
-            <Card className="col-span-2">
+            <Card className="col-span-2 bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
               <CardContent className="pt-3 pb-2">
                 <div className="text-lg font-bold text-red-600">{stats.roleCount.admin}</div>
                 <p className="text-[10px] text-muted-foreground">Admins</p>
@@ -446,31 +450,31 @@ export function UserManagementRefactored() {
 
       {/* Statistiken Cards - Normal auf Desktop */}
       <div className="hidden sm:grid grid-cols-2 sm:grid-cols-5 gap-2">
-        <Card>
+        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
           <CardContent className="pt-3 pb-2">
             <div className="text-lg font-bold text-primary">{stats.total}</div>
             <p className="text-[10px] text-muted-foreground">Gesamt</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
           <CardContent className="pt-3 pb-2">
             <div className="text-lg font-bold text-green-600">{stats.active}</div>
             <p className="text-[10px] text-muted-foreground">Aktiv</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
           <CardContent className="pt-3 pb-2">
             <div className="text-lg font-bold text-blue-600">{stats.roleCount.mitglied}</div>
             <p className="text-[10px] text-muted-foreground">Mitglieder</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
           <CardContent className="pt-3 pb-2">
              <div className="text-lg font-bold text-purple-600">{stats.roleCount.kranfuehrer}</div>
              <p className="text-[10px] text-muted-foreground">Kranführer</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
           <CardContent className="pt-3 pb-2">
             <div className="text-lg font-bold text-red-600">{stats.roleCount.admin}</div>
             <p className="text-[10px] text-muted-foreground">Admins</p>
@@ -490,7 +494,7 @@ export function UserManagementRefactored() {
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-2">
-          <Card>
+          <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
             <CardContent className="pt-4 space-y-4">
               <div className="flex flex-col gap-4">
                 <div className="flex-1">
@@ -583,7 +587,7 @@ export function UserManagementRefactored() {
       </Collapsible>
 
       {/* Such- und Filter-Bereich - Normal auf Desktop */}
-      <Card className="hidden sm:block">
+      <Card className="hidden sm:block bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -686,7 +690,7 @@ export function UserManagementRefactored() {
       {/* Benutzerliste */}
       <div className="space-y-3">
         {sortedUsers.length === 0 ? (
-          <Card>
+          <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
             <CardContent className="pt-6 text-center">
               <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground">Keine Benutzer gefunden.</p>
