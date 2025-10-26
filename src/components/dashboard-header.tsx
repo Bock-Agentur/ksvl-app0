@@ -107,7 +107,7 @@ export function DashboardHeader({
     };
 
     loadFullName();
-  }, [currentUser, userName]);
+  }, [currentUser?.id, userName]); // Changed: Use currentUser?.id instead of currentUser
 
   // Show welcome message on mount
   useEffect(() => {

@@ -76,7 +76,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   useEffect(() => {
     loadCurrentUser();
     checkAdminStatus();
-  }, [userId, roleCurrentUser]);
+  }, [userId, roleCurrentUser?.id]); // Changed: Added roleCurrentUser?.id dependency
   
   useEffect(() => {
     if (customValues) {
