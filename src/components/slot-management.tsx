@@ -42,7 +42,8 @@ export function SlotManagement() {
   const {
     settings
   } = useSlotDesign();
-  const { settings: stickyHeaderSettings } = useStickyHeaderLayout();
+  const { isPageSticky } = useStickyHeaderLayout();
+  const isStickyEnabled = isPageSticky('slotManagement');
   const [isEditing, setIsEditing] = useState(false);
   const [editingSlot, setEditingSlot] = useState<Slot | null>(null);
   const [activeFilter, setActiveFilter] = useState<"all" | "booked" | "available">("all");
@@ -273,12 +274,12 @@ export function SlotManagement() {
   };
   return <div className={cn(
     "bg-background max-w-7xl mx-auto",
-    stickyHeaderSettings.enabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
+    isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
   )}>
       {/* Fixed Top Card */}
       <div className={cn(
         "pt-4 pb-0 my-0 px-4",
-        stickyHeaderSettings.enabled ? "flex-shrink-0 relative z-10" : ""
+        isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
       )}>
         <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
           <CardHeader>
@@ -441,7 +442,7 @@ export function SlotManagement() {
       {/* Scrollable Slots Area */}
       {!isEditing && <div className={cn(
         "pb-4 pt-6 px-[16px]",
-        stickyHeaderSettings.enabled ? "flex-1 overflow-y-auto" : ""
+        isStickyEnabled ? "flex-1 overflow-y-auto" : ""
       )}>
           {/* Desktop/Tablet: Card wrapper */}
           <Card className="hidden md:block bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">

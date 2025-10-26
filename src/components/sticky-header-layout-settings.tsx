@@ -5,14 +5,30 @@ import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
 import { toast } from "sonner";
 
 export function StickyHeaderLayoutSettings() {
-  const { settings, setSettings, isLoading } = useStickyHeaderLayout();
+  const { settings, setSettings, togglePage, isLoading } = useStickyHeaderLayout();
 
   const handleToggle = (enabled: boolean) => {
-    setSettings({ enabled });
+    setSettings({ 
+      enabled,
+      pages: settings.pages 
+    });
     toast.success(
       enabled 
-        ? "Fixierte Ansicht aktiviert" 
-        : "Fixierte Ansicht deaktiviert"
+        ? "Fixierte Ansicht global aktiviert" 
+        : "Fixierte Ansicht global deaktiviert"
+    );
+  };
+
+  const handlePageToggle = (page: keyof typeof settings.pages, enabled: boolean) => {
+    const pageNames = {
+      calendar: 'Kalender',
+      slotManagement: 'Slot Management',
+      userManagement: 'Mitgliederverwaltung'
+    };
+    
+    togglePage(page, enabled);
+    toast.success(
+      `${pageNames[page]}: Fixierung ${enabled ? 'aktiviert' : 'deaktiviert'}`
     );
   };
 
@@ -36,9 +52,10 @@ export function StickyHeaderLayoutSettings() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Master-Schalter */}
         <div className="flex items-center justify-between">
           <Label htmlFor="sticky-header-enabled" className="text-base">
-            Fixierte Ansicht aktivieren
+            Fixierte Ansicht global aktivieren
           </Label>
           <Switch
             id="sticky-header-enabled"
@@ -46,30 +63,74 @@ export function StickyHeaderLayoutSettings() {
             onCheckedChange={handleToggle}
           />
         </div>
-        
+
+        {/* Pro-Seite Einstellungen (nur wenn Master aktiviert) */}
         {settings.enabled && (
-          <div className="text-sm text-muted-foreground p-4 bg-muted rounded-lg">
-            <p className="mb-2">
-              <strong>Aktiviert für:</strong>
-            </p>
-            <ul className="list-disc list-inside space-y-1">
-              <li>Kalender-Seite</li>
-              <li>Slot Management</li>
-              <li>Mitgliederverwaltung</li>
-            </ul>
-            <p className="mt-3">
-              Die Header-Card bleibt oben fixiert, während der Content darunter scrollbar ist.
-            </p>
+          <div className="space-y-4 pt-4 border-t">
+            <Label className="text-sm font-medium">
+              Fixierung pro Seite aktivieren:
+            </Label>
+            
+            {/* Kalender */}
+            <div className="flex items-center justify-between">
+              <Label htmlFor="sticky-calendar" className="text-sm font-normal">
+                📅 Kalender-Seite
+              </Label>
+              <Switch
+                id="sticky-calendar"
+                checked={settings.pages.calendar}
+                onCheckedChange={(checked) => handlePageToggle('calendar', checked)}
+              />
+            </div>
+
+            {/* Slot Management */}
+            <div className="flex items-center justify-between">
+              <Label htmlFor="sticky-slots" className="text-sm font-normal">
+                🎯 Slot Management
+              </Label>
+              <Switch
+                id="sticky-slots"
+                checked={settings.pages.slotManagement}
+                onCheckedChange={(checked) => handlePageToggle('slotManagement', checked)}
+              />
+            </div>
+
+            {/* Mitgliederverwaltung */}
+            <div className="flex items-center justify-between">
+              <Label htmlFor="sticky-users" className="text-sm font-normal">
+                👥 Mitgliederverwaltung
+              </Label>
+              <Switch
+                id="sticky-users"
+                checked={settings.pages.userManagement}
+                onCheckedChange={(checked) => handlePageToggle('userManagement', checked)}
+              />
+            </div>
           </div>
         )}
-        
-        {!settings.enabled && (
-          <div className="text-sm text-muted-foreground p-4 bg-muted rounded-lg">
+
+        {/* Info-Box */}
+        <div className="text-sm text-muted-foreground p-4 bg-muted rounded-lg">
+          {settings.enabled ? (
+            <>
+              <p className="mb-2">
+                <strong>Aktivierte Seiten:</strong>
+              </p>
+              <ul className="list-disc list-inside space-y-1">
+                {settings.pages.calendar && <li>📅 Kalender-Seite</li>}
+                {settings.pages.slotManagement && <li>🎯 Slot Management</li>}
+                {settings.pages.userManagement && <li>👥 Mitgliederverwaltung</li>}
+              </ul>
+              <p className="mt-3">
+                Die Header-Card bleibt auf den aktivierten Seiten oben fixiert.
+              </p>
+            </>
+          ) : (
             <p>
               Die Seiten nutzen das Standard-Scroll-Verhalten ohne fixierten Header.
             </p>
-          </div>
-        )}
+          )}
+        </div>
       </CardContent>
     </Card>
   );

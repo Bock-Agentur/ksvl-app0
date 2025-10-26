@@ -37,7 +37,8 @@ export function UserManagementRefactored() {
   const { users: dbUsers, loading, deleteUser: deleteDbUser, refreshUsers } = useUsers();
   const { toast } = useToast();
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
-  const { settings: stickyHeaderSettings } = useStickyHeaderLayout();
+  const { isPageSticky } = useStickyHeaderLayout();
+  const isStickyEnabled = isPageSticky('userManagement');
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'email' | 'memberNumber' | 'role'>('name');
@@ -366,12 +367,12 @@ export function UserManagementRefactored() {
   return (
     <div className={cn(
       "p-4 max-w-7xl mx-auto",
-      stickyHeaderSettings.enabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
+      isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
     )}>
       {/* Fixed Header Area */}
       <div className={cn(
         "space-y-2",
-        stickyHeaderSettings.enabled ? "flex-shrink-0 relative z-10" : ""
+        isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
       )}>
       {/* Hero Card */}
       <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
@@ -704,7 +705,7 @@ export function UserManagementRefactored() {
       {/* Scrollable Content Area */}
       <div className={cn(
         "space-y-6",
-        stickyHeaderSettings.enabled ? "flex-1 overflow-y-auto" : ""
+        isStickyEnabled ? "flex-1 overflow-y-auto" : ""
       )}>
       {/* Benutzerliste */}
       <div className="space-y-3">
