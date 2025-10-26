@@ -11,6 +11,7 @@ import { format, startOfWeek, addDays, isSameDay, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import { useSlots } from "@/hooks/use-slots";
 import { cn } from "@/lib/utils";
+import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
 interface CalendarViewProps {
   initialDate?: Date | null;
 }
@@ -24,6 +25,7 @@ export function CalendarView({
   const {
     slots
   } = useSlots();
+  const { settings: stickyHeaderSettings } = useStickyHeaderLayout();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [prefilledDateTime, setPrefilledDateTime] = useState<{
@@ -122,9 +124,15 @@ export function CalendarView({
     setCurrentWeek(today);
     setSelectedDate(today);
   };
-  return <div className="flex flex-col h-screen overflow-hidden bg-background max-w-7xl mx-auto">
+  return <div className={cn(
+    "bg-background max-w-7xl mx-auto",
+    stickyHeaderSettings.enabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
+  )}>
       {/* Sticky Navigation Card with soft transparent shadow */}
-      <div className="flex-shrink-0 pt-4 pb-0 relative z-10 my-0 p-4">
+      <div className={cn(
+        "pt-4 pb-0 my-0 p-4",
+        stickyHeaderSettings.enabled ? "flex-shrink-0 relative z-10" : ""
+      )}>
         <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle>Kalender</CardTitle>
@@ -276,7 +284,10 @@ export function CalendarView({
       </div>
 
       {/* Scrollable Calendar Content */}
-      <div className="flex-1 overflow-y-auto px-4 pb-4 pt-6">
+      <div className={cn(
+        "px-4 pb-4 pt-6",
+        stickyHeaderSettings.enabled ? "flex-1 overflow-y-auto" : ""
+      )}>
         {viewMode === "day" || viewMode === "week" ? <WeekCalendar key={selectedDate.toISOString()} onSlotEdit={handleSlotEdit} selectedDate={selectedDate} selectedDay={selectedDay} viewMode={viewMode === "day" ? "day" : "week"} /> : <MonthCalendar onDayClick={handleDayClick} onSlotCreate={handleSlotEdit} />}
       </div>
 

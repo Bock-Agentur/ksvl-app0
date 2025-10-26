@@ -15,6 +15,7 @@ import { LoginBackgroundSettings } from "@/components/login-background-settings"
 import { DesktopBackgroundSettings } from "@/components/desktop-background-settings";
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
+import { StickyHeaderLayoutSettings } from "@/components/sticky-header-layout-settings";
 import { cn } from "@/lib/utils";
 import { RoleProvider, useRole } from "@/hooks/use-role";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -38,6 +39,7 @@ import {
   ChevronRight, 
   ArrowLeft,
   Type,
+  StickyNote,
   type LucideIcon
 } from "lucide-react";
 
@@ -75,7 +77,8 @@ function SettingsContent() {
     { id: "theme", label: "Theme", description: "Hell/Dunkel-Modus", icon: Brush, component: ThemeManager, group: "design" },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
       { id: "loginpage", label: "Login-Seite", description: "Hintergrundbild anpassen", icon: Image, component: LoginBackgroundSettings, group: "design" },
-      { id: "desktopbg", label: "Desktop-Hintergrund", description: "Hintergrundbild auf Desktop", icon: Monitor, route: "/desktop-background", group: "design" }
+      { id: "desktopbg", label: "Desktop-Hintergrund", description: "Hintergrundbild auf Desktop", icon: Monitor, route: "/desktop-background", group: "design" },
+      { id: "stickyheader", label: "Fixierte Ansicht", description: "Header-Cards fixieren", icon: StickyNote, component: StickyHeaderLayoutSettings, group: "design" }
     ] : []),
     { id: "customfields", label: "Custom Fields", description: "Benutzerdefinierte Felder", icon: ListChecks, component: CustomFieldsManager, group: "advanced" },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [

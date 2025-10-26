@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Plus, Edit, Trash2, Clock, CalendarDays as Calendar, UserCheck, User, Mail, Filter, CalendarDays, X, ChevronDown, ChevronUp, XCircle } from "lucide-react";
+import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
 import { format, parse, addMinutes, parseISO, isSameDay } from "date-fns";
 import { de } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,7 @@ export function SlotManagement() {
   const {
     settings
   } = useSlotDesign();
+  const { settings: stickyHeaderSettings } = useStickyHeaderLayout();
   const [isEditing, setIsEditing] = useState(false);
   const [editingSlot, setEditingSlot] = useState<Slot | null>(null);
   const [activeFilter, setActiveFilter] = useState<"all" | "booked" | "available">("all");
@@ -269,9 +271,15 @@ export function SlotManagement() {
     booked: slots.filter(s => s.isBooked).length,
     available: slots.filter(s => !s.isBooked).length
   };
-  return <div className="flex flex-col h-screen overflow-hidden bg-background max-w-7xl mx-auto">
+  return <div className={cn(
+    "bg-background max-w-7xl mx-auto",
+    stickyHeaderSettings.enabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
+  )}>
       {/* Fixed Top Card */}
-      <div className="flex-shrink-0 pt-4 pb-0 relative z-10 my-0 px-4">
+      <div className={cn(
+        "pt-4 pb-0 my-0 px-4",
+        stickyHeaderSettings.enabled ? "flex-shrink-0 relative z-10" : ""
+      )}>
         <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
           <CardHeader>
             <CardTitle>Slot-Verwaltung</CardTitle>
@@ -431,7 +439,10 @@ export function SlotManagement() {
       </div>
 
       {/* Scrollable Slots Area */}
-      {!isEditing && <div className="flex-1 overflow-y-auto pb-4 pt-6 px-[16px]">
+      {!isEditing && <div className={cn(
+        "pb-4 pt-6 px-[16px]",
+        stickyHeaderSettings.enabled ? "flex-1 overflow-y-auto" : ""
+      )}>
           {/* Desktop/Tablet: Card wrapper */}
           <Card className="hidden md:block bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
             <CardContent className="p-4">

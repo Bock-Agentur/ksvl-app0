@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key, Eye, ChevronDown, ArrowUpDown } from "lucide-react";
+import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,6 +39,7 @@ export function UserManagementRefactored() {
   const { toast } = useToast();
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
   const { customFields } = useCustomFields();
+  const { settings: stickyHeaderSettings } = useStickyHeaderLayout();
   const [allCustomValues, setAllCustomValues] = useState<Record<string, Record<string, any>>>({});
   const [isStatsOpen, setIsStatsOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -378,7 +380,15 @@ export function UserManagementRefactored() {
   }
 
   return (
-    <div className="p-4 max-w-7xl mx-auto space-y-6">
+    <div className={cn(
+      "p-4 max-w-7xl mx-auto",
+      stickyHeaderSettings.enabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
+    )}>
+      {/* Fixed Header Area */}
+      <div className={cn(
+        "space-y-2",
+        stickyHeaderSettings.enabled ? "flex-shrink-0 relative z-10" : ""
+      )}>
       {/* Hero Card */}
       <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardContent className="p-6">
@@ -705,7 +715,13 @@ export function UserManagementRefactored() {
           </div>
         </CardContent>
       </Card>
+      </div>
 
+      {/* Scrollable Content Area */}
+      <div className={cn(
+        "space-y-6",
+        stickyHeaderSettings.enabled ? "flex-1 overflow-y-auto" : ""
+      )}>
       {/* Benutzerliste */}
       <div className="space-y-3">
         {sortedUsers.length === 0 ? (
@@ -944,6 +960,7 @@ export function UserManagementRefactored() {
           </div>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   );
 }
