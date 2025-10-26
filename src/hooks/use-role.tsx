@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { UserRole, RoleContextType, User } from "@/types";
 import { useMenuSettings } from "@/hooks/use-menu-settings";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export function RoleProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const { settings } = useMenuSettings();
   const [currentRole, setCurrentRole] = useState<UserRole>("mitglied");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -99,6 +101,13 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     // If switching back to a role the original user has, restore the original user
     if (originalUser && originalUser.roles.includes(role)) {
       setCurrentUser(originalUser);
+      // Invalidate queries to refresh data for the restored user
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0];
+          return key === 'profile' || key === 'slots' || key === 'users';
+        }
+      });
       return;
     }
     
@@ -138,6 +147,13 @@ export function RoleProvider({ children }: { children: ReactNode }) {
         isActive: roleProfile.status === 'active'
       };
       setCurrentUser(roleUser);
+      // Invalidate queries to refresh data for the role user
+      queryClient.invalidateQueries({ 
+        predicate: (query) => {
+          const key = query.queryKey[0];
+          return key === 'profile' || key === 'slots' || key === 'users';
+        }
+      });
     } else {
       // If no role user exists, keep current user but change role
       console.warn(`No role user found for ${role}`);
