@@ -37,6 +37,7 @@ function AppContent() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [contentReady, setContentReady] = useState(true);
   const [pendingTab, setPendingTab] = useState<string | null>(null);
+  const [animationKey, setAnimationKey] = useState(0);
   
   // Verarbeite URL-Parameter für Datumsnavigation
   useEffect(() => {
@@ -71,6 +72,7 @@ function AppContent() {
     setContentReady(false);
     await new Promise(resolve => setTimeout(resolve, 200)); // Fade out duration
     setPendingTab(tab);
+    setAnimationKey(prev => prev + 1);
     setActiveTabRaw(tab, true); // This triggers React to start rendering new page
   };
   
@@ -118,10 +120,13 @@ function AppContent() {
   }
 
   return (
-    <div className={cn(
-      "transition-opacity duration-200",
-      !contentReady || isTransitioning ? "opacity-0" : "opacity-100"
-    )}>
+    <div 
+      key={animationKey}
+      className={cn(
+        "transition-all duration-300 ease-out",
+        !contentReady || isTransitioning ? "opacity-0" : "opacity-100 animate-page-transition-in"
+      )}
+    >
       <AppShell
         currentRole={currentRole}
         currentUser={currentUser}
