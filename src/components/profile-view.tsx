@@ -815,26 +815,221 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         </Card>
       )}
           
-      {/* Grunddaten Card - Passwort */}
+      {/* 🔐 Zugangsdaten Card - nur für eigenes Profil oder Admin */}
+      {(!userId || isAdmin) && (
+        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              🔐 Zugangsdaten
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Benutzername */}
+              <div className="space-y-2">
+                <Label>Benutzername</Label>
+                <Input
+                  value={(user as any).username || user.email}
+                  disabled
+                  className="bg-muted"
+                />
+              </div>
+
+              {/* Passwort */}
+              <div className="space-y-2">
+                <Label>Passwort</Label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="password"
+                    value="********"
+                    disabled
+                    className="bg-muted flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowPasswordDialog(true)}
+                  >
+                    <Key className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Passwort ändern erforderlich - nur Admin */}
+              {isAdmin && (
+                <div className="space-y-2">
+                  <Label>Passwort ändern erforderlich</Label>
+                  <Select
+                    value={(editedUser as any)?.passwordChangeRequired ? 'Ja' : 'Nein'}
+                    onValueChange={(value) => {
+                      if (!isEditing || !editedUser) return;
+                      setEditedUser({
+                        ...editedUser,
+                        passwordChangeRequired: value === 'Ja'
+                      } as any);
+                    }}
+                    disabled={!isEditing}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Ja">Ja</SelectItem>
+                      <SelectItem value="Nein">Nein</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
+              {/* 2FA-Methode */}
+              <div className="space-y-2">
+                <Label>2FA-Methode</Label>
+                <Select
+                  value={(editedUser as any)?.twoFactorMethod || 'Aus'}
+                  onValueChange={(value) => {
+                    if (!isEditing || !editedUser) return;
+                    setEditedUser({
+                      ...editedUser,
+                      twoFactorMethod: value as any
+                    } as any);
+                  }}
+                  disabled={!isEditing}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Aus">Aus</SelectItem>
+                    <SelectItem value="TOTP">TOTP</SelectItem>
+                    <SelectItem value="SMS">SMS</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* 👤 Stammdaten Card */}
       <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold">Grunddaten</CardTitle>
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            👤 Stammdaten
+          </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Vorname */}
             <div className="space-y-2">
-              <Label>Passwort:</Label>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">********</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowPasswordDialog(true)}
-                className="text-sm text-primary hover:underline flex items-center gap-1"
-              >
-                <Key className="w-3 h-3" />
-                Passwort ändern
-              </button>
+              <Label>Vorname *</Label>
+              {isEditing ? (
+                <Input
+                  value={editedUser?.firstName || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, firstName: e.target.value } : null)}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">{user.firstName || '-'}</p>
+              )}
+            </div>
+
+            {/* Nachname */}
+            <div className="space-y-2">
+              <Label>Nachname *</Label>
+              {isEditing ? (
+                <Input
+                  value={editedUser?.lastName || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, lastName: e.target.value } : null)}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">{user.lastName || '-'}</p>
+              )}
+            </div>
+
+            {/* Geburtsdatum */}
+            <div className="space-y-2">
+              <Label>Geburtsdatum</Label>
+              {isEditing ? (
+                <Input
+                  type="date"
+                  value={(editedUser as any)?.birthDate || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, birthDate: e.target.value } as any : null)}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {(user as any).birthDate ? new Date((user as any).birthDate).toLocaleDateString('de-DE') : '-'}
+                </p>
+              )}
+            </div>
+
+            {/* E-Mail */}
+            <div className="space-y-2">
+              <Label>E-Mail *</Label>
+              {isEditing && isAdmin ? (
+                <Input
+                  type="email"
+                  value={editedUser?.email || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, email: e.target.value } : null)}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">{user.email}</p>
+              )}
+            </div>
+
+            {/* Telefon */}
+            <div className="space-y-2">
+              <Label>Telefon</Label>
+              {isEditing ? (
+                <Input
+                  type="tel"
+                  value={editedUser?.phone || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, phone: e.target.value } : null)}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">{user.phone || '-'}</p>
+              )}
+            </div>
+
+            {/* Straße & Hausnummer */}
+            <div className="space-y-2 md:col-span-2">
+              <Label>Straße & Hausnummer</Label>
+              {isEditing ? (
+                <Input
+                  value={editedUser?.streetAddress || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, streetAddress: e.target.value } : null)}
+                  placeholder="Musterstraße 123"
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">{user.streetAddress || '-'}</p>
+              )}
+            </div>
+
+            {/* PLZ */}
+            <div className="space-y-2">
+              <Label>PLZ</Label>
+              {isEditing ? (
+                <Input
+                  value={editedUser?.postalCode || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, postalCode: e.target.value } : null)}
+                  placeholder="1234"
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">{user.postalCode || '-'}</p>
+              )}
+            </div>
+
+            {/* Stadt */}
+            <div className="space-y-2">
+              <Label>Stadt</Label>
+              {isEditing ? (
+                <Input
+                  value={editedUser?.city || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, city: e.target.value } : null)}
+                  placeholder="Wien"
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">{user.city || '-'}</p>
+              )}
             </div>
           </div>
         </CardContent>
