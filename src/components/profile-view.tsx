@@ -1439,6 +1439,103 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           </div>
         </CardContent>
       </Card>
+
+      {/* 🚗 Parkplatz & Getränkechip Card */}
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            🚗 Parkplatz & Getränkechip
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Parkausweis Nummer */}
+            <div className="space-y-2">
+              <Label>Parkausweis Nummer</Label>
+              {isEditing ? (
+                <Input
+                  value={(editedUser as any)?.parkingPermitNumber || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, parkingPermitNumber: e.target.value } as any : null)}
+                  placeholder="P-123"
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">{(user as any).parkingPermitNumber || '-'}</p>
+              )}
+            </div>
+
+            {/* Parkausweis Ausstellungsdatum */}
+            <div className="space-y-2">
+              <Label>Parkausweis Ausstellungsdatum</Label>
+              {isEditing ? (
+                <Input
+                  type="date"
+                  value={(editedUser as any)?.parkingPermitIssueDate || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, parkingPermitIssueDate: e.target.value } as any : null)}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {(user as any).parkingPermitIssueDate ? new Date((user as any).parkingPermitIssueDate).toLocaleDateString('de-DE') : '-'}
+                </p>
+              )}
+            </div>
+
+            {/* Getränkechip Nummer */}
+            <div className="space-y-2">
+              <Label>Getränkechip Nummer</Label>
+              {isEditing ? (
+                <Input
+                  value={(editedUser as any)?.beverageChipNumber || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, beverageChipNumber: e.target.value } as any : null)}
+                  placeholder="C-456"
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">{(user as any).beverageChipNumber || '-'}</p>
+              )}
+            </div>
+
+            {/* Getränkechip Ausstellungsdatum */}
+            <div className="space-y-2">
+              <Label>Getränkechip Ausstellungsdatum</Label>
+              {isEditing ? (
+                <Input
+                  type="date"
+                  value={(editedUser as any)?.beverageChipIssueDate || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, beverageChipIssueDate: e.target.value } as any : null)}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  {(user as any).beverageChipIssueDate ? new Date((user as any).beverageChipIssueDate).toLocaleDateString('de-DE') : '-'}
+                </p>
+              )}
+            </div>
+
+            {/* Getränkechip Status */}
+            <div className="space-y-2">
+              <Label>Getränkechip Status</Label>
+              <Select
+                value={(editedUser as any)?.beverageChipStatus || 'Aktiv'}
+                onValueChange={(value) => {
+                  if (!isEditing || !editedUser) return;
+                  setEditedUser({
+                    ...editedUser,
+                    beverageChipStatus: value
+                  } as any);
+                }}
+                disabled={!isEditing}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Aktiv">Aktiv</SelectItem>
+                  <SelectItem value="Gesperrt">Gesperrt</SelectItem>
+                  <SelectItem value="Verlust">Verlust</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
           
       {/* Custom Fields Card (alte Struktur behalten für Kompatibilität) */}
       <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
