@@ -59,12 +59,14 @@ export function AppShell({
   onRoleChange,
   activeTab,
   onTabChange,
-  children
-}: AppShellProps) {
+  children,
+  showFooter = true,
+}: AppShellProps & { showFooter?: boolean }) {
   const navigate = useNavigate();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [forceUpdate, setForceUpdate] = useState(0);
   const [isFooterReady, setIsFooterReady] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
   const {
     getMenuItemsForRole,
     getDisplaySettingsForRole,
@@ -118,14 +120,22 @@ export function AppShell({
     };
   }, []);
 
-  // Trigger footer slide-up animation when data is ready
   useEffect(() => {
-    if (!footerLoading) {
-      requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      setIsInitialized(true);
+    });
+  }, []);
+  
+  useEffect(() => {
+    if (isInitialized && !footerLoading && showFooter) {
+      const timer = setTimeout(() => {
         setIsFooterReady(true);
-      });
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      setIsFooterReady(false);
     }
-  }, [footerLoading]);
+  }, [isInitialized, footerLoading, showFooter]);
   const roleLabels: Record<UserRole, string> = {
     gastmitglied: "Gastmitglied",
     mitglied: "Mitglied",
@@ -181,8 +191,10 @@ export function AppShell({
       {/* Bottom Navigation */}
       <nav className={cn(
         "fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-2 pb-safe-bottom shadow-elevated-maritime z-50",
-        "transition-transform duration-500 ease-out",
-        isFooterReady ? "translate-y-0" : "translate-y-full"
+        "transform will-change-transform",
+        isFooterReady 
+          ? "translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+          : "translate-y-full"
       )}>
         <div className="flex justify-evenly items-center max-w-md mx-auto">
             {footerItems.map((item, index) => {

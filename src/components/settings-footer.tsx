@@ -11,19 +11,26 @@ export function SettingsFooter() {
   const { currentRole, isLoading: roleLoading } = useRole();
   const { getMenuItemsForRole, getDisplaySettingsForRole, isLoading: footerLoading } = useFooterMenuSettings();
   const [isReady, setIsReady] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   const footerItems = getMenuItemsForRole(currentRole);
   const currentDisplaySettings = getDisplaySettingsForRole(currentRole);
   const showLabels = currentDisplaySettings?.showLabels ?? false;
 
-  // Trigger footer slide-up animation when data is ready
   useEffect(() => {
-    if (!footerLoading && !roleLoading) {
-      requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      setIsInitialized(true);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (isInitialized && !footerLoading && !roleLoading) {
+      const timer = setTimeout(() => {
         setIsReady(true);
-      });
+      }, 200);
+      return () => clearTimeout(timer);
     }
-  }, [footerLoading, roleLoading]);
+  }, [isInitialized, footerLoading, roleLoading]);
 
   const handleNavigate = (id: string) => {
     navigate('/');
@@ -36,8 +43,10 @@ export function SettingsFooter() {
   return (
     <nav className={cn(
       "fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-t z-50",
-      "transition-transform duration-500 ease-out",
-      isReady ? "translate-y-0" : "translate-y-full"
+      "transform will-change-transform",
+      isReady 
+        ? "translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+        : "translate-y-full"
     )}>
       <div className="flex justify-around items-center h-16 px-2">
         {footerItems.map(item => {
