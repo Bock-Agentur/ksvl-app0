@@ -220,15 +220,15 @@ export function AppShell({
                 </Button>
               </DrawerTrigger>
               
-              <DrawerContent className="max-h-[60vh]">
+              <DrawerContent className="max-h-[90vh]">
                 <DrawerHeader className="pb-2">
                   <DrawerTitle className="text-base">Menü</DrawerTitle>
                 </DrawerHeader>
                 
-                <div className="overflow-y-auto px-3 pb-3 space-y-2"
+                <div className="overflow-y-auto px-3 pb-4 space-y-3"
 >
                   {/* User Info & Assigned Roles */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <h3 className="text-xs font-medium text-muted-foreground">Zugewiesene Rollen</h3>
                     <div className="flex flex-col gap-1.5">
                       {currentUser?.roles && currentUser.roles.length > 0 ? (
@@ -257,10 +257,10 @@ export function AppShell({
                     </div>
                   </div>
 
-                  <Separator className="my-1.5" />
+                  <Separator className="my-2" />
 
                   {/* Role Switcher */}
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <h3 className="text-xs font-medium text-muted-foreground">Rolle wechseln</h3>
                     <Select value={currentRole} onValueChange={(value: UserRole) => onRoleChange(value)}>
                       <SelectTrigger className="w-full h-8 text-sm">
@@ -276,13 +276,14 @@ export function AppShell({
                     </Select>
                   </div>
 
-                  <Separator className="my-1.5" />
+                  <Separator className="my-2" />
 
                   {/* Admin Functions */}
                   {availableHeaderItems.length > 0 && (
                     <>
-                      <div className="space-y-1.5">
-                        <h3 className="text-xs font-medium text-muted-foreground">Verwaltung</h3>
+                      <Separator />
+                      <div className="space-y-3">
+                        <h3 className="text-sm font-medium text-muted-foreground">Verwaltung</h3>
                         <div className="space-y-1">
                           {availableHeaderItems.map(item => {
                             const Icon = item.icon;
@@ -303,7 +304,7 @@ export function AppShell({
                               <Button 
                                 key={item.id} 
                                 variant={isActive ? "secondary" : "ghost"} 
-                                className="w-full justify-start relative h-9" 
+                                className="w-full justify-start relative" 
                                 onClick={handleClick}
                               >
                                 <Icon className="w-4 h-4 mr-2" />
