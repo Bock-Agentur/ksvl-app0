@@ -559,7 +559,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const content = (
     <div className="space-y-6">
       {/* Hero Card */}
-      <Card className="bg-card rounded-[2rem] shadow-sm border">
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardContent className="p-6">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             {/* Left: Avatar + Name + Roles */}
@@ -605,7 +605,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
 
       {/* Rollen Card - Nur für Admins sichtbar */}
       {isAdmin && userId && (
-        <Card className="bg-card rounded-[2rem] shadow-sm border">
+        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
           <CardHeader>
             <CardTitle className="text-lg font-semibold">Rollen</CardTitle>
           </CardHeader>
@@ -669,7 +669,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       )}
           
       {/* Grunddaten Card - Passwort */}
-      <Card className="bg-card rounded-[2rem] shadow-sm border">
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">Grunddaten</CardTitle>
         </CardHeader>
@@ -694,7 +694,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       </Card>
           
       {/* Stammdaten Card */}
-      <Card className="bg-card rounded-[2rem] shadow-sm border">
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">Stammdaten</CardTitle>
         </CardHeader>
@@ -845,7 +845,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       </Card>
 
       {/* AI-Assistent & Datenschutz Card */}
-      <Card className="bg-card rounded-[2rem] shadow-sm border">
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">AI-Assistent & Datenschutz</CardTitle>
         </CardHeader>
@@ -943,7 +943,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       </Card>
           
       {/* Boot & Liegeplatz Card */}
-      <Card className="bg-card rounded-[2rem] shadow-sm border">
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">Boot & Liegeplatz</CardTitle>
         </CardHeader>
@@ -1047,7 +1047,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       </Card>
           
       {/* Parkplatz & Getränkemarke Card */}
-      <Card className="bg-card rounded-[2rem] shadow-sm border">
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">Parkplatz & Getränkemarke</CardTitle>
         </CardHeader>
@@ -1104,7 +1104,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       </Card>
           
       {/* Notfallkontakt & Notizen Card */}
-      <Card className="bg-card rounded-[2rem] shadow-sm border">
+      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
           <CardTitle className="text-lg font-semibold">Notfallkontakt & Notizen</CardTitle>
         </CardHeader>
