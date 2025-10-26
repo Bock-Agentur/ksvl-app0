@@ -76,9 +76,9 @@ export function DashboardHeader({
 
   const [displayName, setDisplayName] = useState<string>("");
 
-  // Load first name from profile
+  // Load first and last name from profile
   useEffect(() => {
-    const loadFirstName = async () => {
+    const loadFullName = async () => {
       if (!currentUser?.id) {
         setDisplayName("User");
         return;
@@ -86,21 +86,22 @@ export function DashboardHeader({
       
       const { data: profileData } = await supabase
         .from('profiles')
-        .select('first_name, name')
+        .select('first_name, last_name, name')
         .eq('id', currentUser.id)
         .single();
       
-      setDisplayName(
-        profileData?.first_name || 
-        profileData?.name?.split(' ')[0] || 
-        userName?.split(' ')[0] ||
-        (currentUser as any)?.user_metadata?.full_name?.split(' ')[0] || 
-        currentUser?.email?.split('@')[0] || 
-        "User"
-      );
+      const fullName = profileData?.first_name && profileData?.last_name
+        ? `${profileData.first_name} ${profileData.last_name}`
+        : profileData?.name || 
+          userName ||
+          (currentUser as any)?.user_metadata?.full_name || 
+          currentUser?.email?.split('@')[0] || 
+          "User";
+      
+      setDisplayName(fullName);
     };
 
-    loadFirstName();
+    loadFullName();
   }, [currentUser, userName]);
 
   // Show welcome message on mount

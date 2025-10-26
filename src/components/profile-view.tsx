@@ -143,6 +143,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         name: profile.name || '',
         firstName: profile.first_name || undefined,
         lastName: profile.last_name || undefined,
+        username: profile.username || undefined,
         email: profile.email,
         phone: profile.phone || '',
         boatName: profile.boat_name || '',
