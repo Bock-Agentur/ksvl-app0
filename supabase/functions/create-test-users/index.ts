@@ -256,13 +256,19 @@ serve(async (req) => {
         notes: `Test-Kranführer ${i}`
       });
 
-      // Add kranfuehrer role
+      // Add kranfuehrer and mitglied roles (needed for role switching)
       await supabaseAdmin
         .from('user_roles')
-        .insert({
-          user_id: authData.user.id,
-          role: 'kranfuehrer'
-        })
+        .insert([
+          {
+            user_id: authData.user.id,
+            role: 'kranfuehrer'
+          },
+          {
+            user_id: authData.user.id,
+            role: 'mitglied'
+          }
+        ])
 
       createdUsers.push({ id: authData.user.id, email, role: 'kranfuehrer', existed: false })
     }

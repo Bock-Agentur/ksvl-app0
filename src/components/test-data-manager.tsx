@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,6 +18,61 @@ export function TestDataManager() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [hideTestData, setHideTestData] = useState(false);
+  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+
+  // Load hideTestData setting
+  useEffect(() => {
+    const loadSettings = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('app_settings')
+        .select('setting_value')
+        .eq('setting_key', 'hide_test_data')
+        .eq('is_global', true)
+        .maybeSingle();
+
+      if (data?.setting_value) {
+        setHideTestData((data.setting_value as { enabled: boolean }).enabled || false);
+      }
+      setIsLoadingSettings(false);
+    };
+
+    loadSettings();
+  }, []);
+
+  // Save hideTestData setting
+  const handleHideTestDataChange = async (checked: boolean) => {
+    setHideTestData(checked);
+    
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('app_settings')
+      .upsert({
+        setting_key: 'hide_test_data',
+        setting_value: { enabled: checked },
+        is_global: true
+      });
+
+    if (error) {
+      console.error('Error saving hide_test_data setting:', error);
+      toast({
+        title: "Fehler",
+        description: "Einstellung konnte nicht gespeichert werden.",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: checked ? "Testdaten ausgeblendet" : "Testdaten eingeblendet",
+        description: checked 
+          ? "Testdaten werden in der Anwendung nicht mehr angezeigt." 
+          : "Testdaten werden wieder angezeigt."
+      });
+    }
+  };
 
   const generateTestUsers = async () => {
     setIsGenerating(true);
@@ -321,13 +376,14 @@ export function TestDataManager() {
             <div className="space-y-0.5">
               <Label htmlFor="hideTestData">Testdaten ausblenden</Label>
               <p className="text-sm text-muted-foreground">
-                Testdaten werden in der App nicht angezeigt
+                Testdaten werden in allen Listen und Übersichten ausgeblendet
               </p>
             </div>
             <Switch
               id="hideTestData"
               checked={hideTestData}
-              onCheckedChange={setHideTestData}
+              onCheckedChange={handleHideTestDataChange}
+              disabled={isLoadingSettings}
             />
           </div>
 
