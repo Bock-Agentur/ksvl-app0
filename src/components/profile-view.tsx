@@ -330,6 +330,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               name: editedUser.name,
               firstName: editedUser.firstName,
               lastName: editedUser.lastName,
+              username: (editedUser as any).username,
               phone: editedUser.phone,
               memberNumber: editedUser.memberNumber,
               boatName: editedUser.boatName,
@@ -902,14 +903,21 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Benutzername */}
+              {/* Benutzername - nur Admin kann ändern */}
               <div className="space-y-2">
                 <Label>Benutzername</Label>
-                <Input
-                  value={(user as any).username || user.email}
-                  disabled
-                  className="bg-muted"
-                />
+                {isEditing && isAdmin ? (
+                  <Input
+                    value={(editedUser as any)?.username || ""}
+                    onChange={(e) => setEditedUser(prev => prev ? { ...prev, username: e.target.value } as any : null)}
+                  />
+                ) : (
+                  <Input
+                    value={(user as any).username || user.email}
+                    disabled
+                    className="bg-muted"
+                  />
+                )}
               </div>
 
               {/* Passwort */}
@@ -997,6 +1005,19 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Mitgliedsnummer - nur Admin kann ändern */}
+            <div className="space-y-2">
+              <Label>Mitgliedsnummer</Label>
+              {isEditing && isAdmin ? (
+                <Input
+                  value={editedUser?.memberNumber || ""}
+                  onChange={(e) => setEditedUser(prev => prev ? { ...prev, memberNumber: e.target.value } : null)}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">{user.memberNumber || '-'}</p>
+              )}
+            </div>
+
             {/* Vorname */}
             <div className="space-y-2">
               <Label>Vorname *</Label>

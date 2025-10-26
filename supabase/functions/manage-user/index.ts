@@ -231,6 +231,7 @@ serve(async (req) => {
           name: userData.name,
           first_name: userData.firstName || null,
           last_name: userData.lastName || null,
+          username: userData.username || null,
           phone: userData.phone || null,
           member_number: userData.memberNumber || null,
           boat_name: userData.boatName || null,
