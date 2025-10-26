@@ -90,6 +90,10 @@ export function DashboardHeader({
         .eq('id', currentUser.id)
         .single();
       
+      console.log('Dashboard Header - Profile Data:', profileData);
+      console.log('Dashboard Header - first_name:', profileData?.first_name);
+      console.log('Dashboard Header - last_name:', profileData?.last_name);
+      
       const fullName = profileData?.first_name && profileData?.last_name
         ? `${profileData.first_name} ${profileData.last_name}`
         : profileData?.name || 
@@ -98,6 +102,7 @@ export function DashboardHeader({
           currentUser?.email?.split('@')[0] || 
           "User";
       
+      console.log('Dashboard Header - Final displayName:', fullName);
       setDisplayName(fullName);
     };
 
