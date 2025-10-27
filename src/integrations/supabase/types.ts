@@ -244,6 +244,68 @@ export type Database = {
         }
         Relationships: []
       }
+      file_metadata: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          document_type: string | null
+          file_size: number
+          file_type: string
+          filename: string
+          id: string
+          is_public: boolean | null
+          linked_user_id: string | null
+          mime_type: string
+          owner_id: string | null
+          storage_path: string
+          tags: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          document_type?: string | null
+          file_size: number
+          file_type: string
+          filename: string
+          id?: string
+          is_public?: boolean | null
+          linked_user_id?: string | null
+          mime_type: string
+          owner_id?: string | null
+          storage_path: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          document_type?: string | null
+          file_size?: number
+          file_type?: string
+          filename?: string
+          id?: string
+          is_public?: boolean | null
+          linked_user_id?: string | null
+          mime_type?: string
+          owner_id?: string | null
+          storage_path?: string
+          tags?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_metadata_linked_user_id_fkey"
+            columns: ["linked_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       menu_item_definitions: {
         Row: {
           allowed_roles: string[]
