@@ -302,9 +302,15 @@ function SettingsContent() {
               <div className="flex items-center gap-4">
                 <button
                   onClick={handleBack}
-                  className="w-10 h-10 rounded-full bg-white/20 border-2 border-white/40 flex items-center justify-center hover:bg-white/30 transition-colors"
+                  className={cn(
+                    "rounded-full bg-white flex items-center justify-center hover:bg-white/90 transition-colors shadow-md",
+                    isMobile ? "w-8 h-8" : "w-10 h-10"
+                  )}
                 >
-                  <ArrowLeft className="h-5 w-5 text-white" />
+                  <ArrowLeft className={cn(
+                    "text-foreground",
+                    isMobile ? "h-4 w-4" : "h-5 w-5"
+                  )} />
                 </button>
                 <CardTitle className={cn(
                   "font-bold flex-1 text-center text-white",
