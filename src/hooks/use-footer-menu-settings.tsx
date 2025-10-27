@@ -44,6 +44,7 @@ export const AVAILABLE_MENU_ITEMS: FooterMenuItem[] = [
   { id: "help", label: "Hilfe", icon: "HelpCircle", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
   { id: "weather", label: "Wetter", icon: "Cloud", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
   { id: "harbor", label: "Hafenstatus", icon: "Anchor", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
+  { id: "file-manager", label: "Dateien", icon: "FolderOpen", roles: ["admin", "vorstand"] },
 ];
 
 // Default footer menu configurations per role

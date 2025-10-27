@@ -41,6 +41,7 @@ import {
   ArrowLeft,
   Type,
   StickyNote,
+  FolderOpen,
   type LucideIcon
 } from "lucide-react";
 
@@ -82,6 +83,9 @@ function SettingsContent() {
       { id: "loginpage", label: "Login-Seite", description: "Hintergrundbild anpassen", icon: Image, component: LoginBackgroundSettings, group: "design" },
       { id: "desktopbg", label: "Desktop-Hintergrund", description: "Hintergrundbild auf Desktop", icon: Monitor, route: "/desktop-background", group: "design" },
       { id: "stickyheader", label: "Fixierte Ansicht", description: "Header-Cards fixieren", icon: StickyNote, component: StickyHeaderLayoutSettings, group: "design" }
+    ] : []),
+    ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
+      { id: "filemanager", label: "Dateimanager", description: "Medien und Dateien verwalten", icon: FolderOpen, route: "/file-manager", group: "advanced" }
     ] : []),
     { id: "customfields", label: "Custom Fields", description: "Benutzerdefinierte Felder", icon: ListChecks, component: CustomFieldsManager, group: "advanced" },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
