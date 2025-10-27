@@ -69,7 +69,12 @@ export function FileCard({
 
   useEffect(() => {
     const loadThumbnail = async () => {
-      if (file.file_type === 'image') {
+      // Check if it's an image by file_type OR file extension
+      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'];
+      const isImage = file.file_type === 'image' || 
+                     imageExtensions.some(ext => file.filename.toLowerCase().endsWith(ext));
+      
+      if (isImage) {
         const url = await getFileUrl(file.storage_path);
         setThumbnailUrl(url);
       }
