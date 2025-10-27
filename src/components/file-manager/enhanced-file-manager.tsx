@@ -55,6 +55,26 @@ export function EnhancedFileManager() {
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [isMigrating, setIsMigrating] = useState(false);
+  const [authDebug, setAuthDebug] = useState<{ isLoggedIn: boolean; isAdminUser: boolean; userId: string | null }>();
+
+  // Debug: Check auth status
+  useState(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const adminStatus = isAdmin();
+      setAuthDebug({
+        isLoggedIn: !!user,
+        isAdminUser: adminStatus,
+        userId: user?.id || null
+      });
+      console.log('File Manager Auth Debug:', {
+        isLoggedIn: !!user,
+        isAdminUser: adminStatus,
+        userId: user?.id,
+        filesCount: files.length
+      });
+    })();
+  });
 
   // Category tabs
   const categories = [
@@ -231,6 +251,19 @@ export function EnhancedFileManager() {
 
       {/* File Grid/List */}
       <div className="flex-1 overflow-auto p-4">
+        {/* Debug Info for Admins */}
+        {authDebug && (
+          <Alert className="mb-4 border-yellow-500/20 bg-yellow-500/5">
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-xs font-mono">
+              Login: {authDebug.isLoggedIn ? '✓' : '✗'} | 
+              Admin: {authDebug.isAdminUser ? '✓' : '✗'} | 
+              User ID: {authDebug.userId || 'null'} |
+              Dateien: {files.length}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Migration Info Banner for Admins */}
         {isAdmin() && files.length === 0 && !loading && (
           <Alert className="mb-4 border-primary/20 bg-primary/5">
