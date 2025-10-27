@@ -265,7 +265,7 @@ export function TestDataManager() {
       </Alert>
 
       {/* Test Users Generation */}
-      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+      <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
@@ -320,7 +320,7 @@ export function TestDataManager() {
       </Card>
 
       {/* Test Slots Generation */}
-      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+      <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-5 w-5" />
@@ -361,7 +361,7 @@ export function TestDataManager() {
       <Separator />
 
       {/* Test Data Management */}
-      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+      <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Trash2 className="h-5 w-5" />

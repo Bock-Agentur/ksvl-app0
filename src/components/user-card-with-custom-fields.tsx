@@ -28,7 +28,7 @@ export function UserCardWithCustomFields({
   const phone = user.phone || null;
 
   return (
-    <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 transition-colors hover:bg-muted/50">
+    <Card className="bg-white rounded-[2rem] card-shadow-soft border-0 transition-colors hover:bg-muted/50">
       <CardContent className="p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
           {/* User Info Section */}

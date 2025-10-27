@@ -115,7 +115,7 @@ export function AIChatMiniWidget() {
 
   return (
     <Card 
-      className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)]"
+      className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] card-shadow-soft-lg"
     >
       <CardHeader className="pt-8 pb-4 px-[15px]">
         <div className="flex items-center justify-between">

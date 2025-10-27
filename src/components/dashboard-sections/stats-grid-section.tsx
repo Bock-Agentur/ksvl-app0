@@ -46,7 +46,7 @@ export function StatsGridSection({ stats }: StatsGridSectionProps) {
       {statCards.map((stat, index) => {
         const Icon = stat.icon;
         return (
-          <Card key={index} className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+          <Card key={index} className="bg-white rounded-[2rem] card-shadow-soft border-0">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
               <Icon className={`h-4 w-4 ${stat.color}`} />

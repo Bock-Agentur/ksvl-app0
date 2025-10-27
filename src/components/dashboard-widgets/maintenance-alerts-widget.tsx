@@ -53,7 +53,7 @@ export function MaintenanceAlertsWidget() {
   const pendingCount = maintenanceItems.filter(item => item.status === "pending").length;
 
   return (
-    <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+    <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2 justify-between">
           <div className="flex items-center gap-2">

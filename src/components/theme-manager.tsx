@@ -355,7 +355,7 @@ export function ThemeManager() {
 
   return (
     <div className="space-y-6">
-      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+      <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
         <CardHeader>
             <div className="flex items-center gap-3">
               <Palette className="w-6 h-6" />

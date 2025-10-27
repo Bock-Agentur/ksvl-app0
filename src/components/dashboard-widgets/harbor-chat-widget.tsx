@@ -26,7 +26,7 @@ export function HarborChatWidget() {
 
   if (agentLoading) {
     return (
-      <Card className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)]">
+      <Card className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] card-shadow-soft-lg">
         <CardHeader className="pt-12 pb-4 px-[15px]">
           <div className="h-6 w-48 bg-white/20 animate-pulse rounded" />
         </CardHeader>
@@ -135,7 +135,7 @@ export function HarborChatWidget() {
 
   return (
     <Card 
-      className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)]" 
+      className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] card-shadow-soft-lg"
       id="harbor-chat-widget"
     >
       <CardHeader className="pt-12 pb-4 px-[15px]">

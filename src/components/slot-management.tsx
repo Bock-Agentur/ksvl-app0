@@ -281,7 +281,7 @@ export function SlotManagement() {
         "pt-4 pb-0 my-0 px-4",
         isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
       )}>
-        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
           <CardHeader>
             <CardTitle>Slot-Verwaltung</CardTitle>
             <CardDescription>
@@ -445,7 +445,7 @@ export function SlotManagement() {
         isStickyEnabled ? "flex-1 overflow-y-auto" : ""
       )}>
           {/* Desktop/Tablet: Card wrapper */}
-          <Card className="hidden md:block bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
+          <Card className="hidden md:block bg-white rounded-[2rem] card-shadow-soft border-0 overflow-hidden">
             <CardContent className="p-4">
               <h3 className="text-sm font-medium text-foreground border-b pb-2 mb-3">
                 {getFilterTitle()} 
