@@ -1938,7 +1938,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
 
       {/* 🗂️ Historie & Verwaltung Card - nur für Admin */}
       {isAdmin && (
-        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center gap-2">
               🗂️ Historie & Verwaltung
@@ -2047,7 +2047,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
       )}>
         {/* Hero Card wird als Header behandelt */}
-        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
           <CardContent className="p-6">
             <div className="flex items-start justify-between gap-4 mb-4">
               <div className="flex-1 space-y-2">
@@ -2110,7 +2110,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       {/* Scrollable Content */}
       <div className={cn(
         "space-y-6",
-        isStickyEnabled ? "flex-1 overflow-y-auto pt-6" : ""
+        isStickyEnabled ? "flex-1 overflow-y-auto pt-6 pb-12" : "pb-8"
       )}>
         {content}
       </div>
