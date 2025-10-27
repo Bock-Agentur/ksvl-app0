@@ -202,8 +202,24 @@ export function AppShell({
               }>;
               const Icon = IconComponent || Home; // Fallback to Home icon
               const isActive = activeTab === item.id;
+              
+              const handleClick = () => {
+                // Navigate to route-based items
+                if (item.id === 'file-manager') {
+                  navigate('/file-manager');
+                } else if (item.id === 'settings') {
+                  navigate('/settings');
+                } else if (item.id === 'header-message') {
+                  navigate('/header-message');
+                } else if (item.id === 'desktop-background') {
+                  navigate('/desktop-background');
+                } else {
+                  onTabChange(item.id);
+                }
+              };
+              
               return <Button key={`${item.id}-${index}-${forceUpdate}`} // Force re-render with key
-              variant="ghost" size="sm" onClick={() => onTabChange(item.id)} className={cn("flex flex-col items-center h-auto py-2 px-1 sm:px-3 relative transition-wave min-w-0", showLabels ? "gap-1" : "gap-0", isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted")}>
+              variant="ghost" size="sm" onClick={handleClick} className={cn("flex flex-col items-center h-auto py-2 px-1 sm:px-3 relative transition-wave min-w-0", showLabels ? "gap-1" : "gap-0", isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted")}>
                   <Icon className="h-5 w-5 flex-shrink-0" />
                   {showLabels && <span className="text-xs font-medium truncate max-w-16">{item.label}</span>}
                   {item.badge && <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 text-xs p-0 flex items-center justify-center">
