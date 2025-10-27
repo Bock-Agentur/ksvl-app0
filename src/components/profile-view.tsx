@@ -2042,70 +2042,70 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       "container mx-auto p-4 max-w-4xl",
       isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : ""
     )}>
-      {/* Sticky Header */}
-      <div className={cn(
-        isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
-      )}>
-        {/* Hero Card wird als Header behandelt */}
-        <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div className="flex-1 space-y-2">
-                <h1 className="text-xl md:text-3xl font-bold text-foreground">
-                  {user.firstName && user.lastName 
-                    ? `${user.firstName} ${user.lastName}` 
-                    : user.name}
-                </h1>
-                {user?.roles?.includes('vorstand') && (user as any).vorstandFunktion && (
-                  <p className="text-sm text-muted-foreground">
-                    {(user as any).vorstandFunktion}
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-1.5">
-                  {sortRoles(user.roles || []).map((role) => (
-                    <Badge 
-                      key={role} 
-                      className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5" 
-                      style={getRoleBadgeInlineStyle(role)}
-                    >
-                      {ROLE_LABELS[role] || roleLabels[role]}
-                    </Badge>
-                  ))}
+      {/* Sticky Header - nur im Sticky-Modus anzeigen */}
+      {isStickyEnabled && (
+        <div className="flex-shrink-0 relative z-10">
+          {/* Hero Card wird als Header behandelt */}
+          <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between gap-4 mb-4">
+                <div className="flex-1 space-y-2">
+                  <h1 className="text-xl md:text-3xl font-bold text-foreground">
+                    {user.firstName && user.lastName 
+                      ? `${user.firstName} ${user.lastName}` 
+                      : user.name}
+                  </h1>
+                  {user?.roles?.includes('vorstand') && (user as any).vorstandFunktion && (
+                    <p className="text-sm text-muted-foreground">
+                      {(user as any).vorstandFunktion}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap gap-1.5">
+                    {sortRoles(user.roles || []).map((role) => (
+                      <Badge 
+                        key={role} 
+                        className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5" 
+                        style={getRoleBadgeInlineStyle(role)}
+                      >
+                        {ROLE_LABELS[role] || roleLabels[role]}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground text-2xl md:text-3xl font-bold shrink-0">
+                  {user.name.charAt(0).toUpperCase()}
                 </div>
               </div>
 
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground text-2xl md:text-3xl font-bold shrink-0">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              {!isEditing && (
-                <>
-                  <Button 
-                    onClick={() => {
-                      setIsEditing(true);
-                      setEditedUser(user);
-                      setEditedCustomValues(customValues);
-                    }} 
-                    size="sm" 
-                    className="h-8"
-                  >
-                    <Edit className="w-3 h-3 mr-1.5" />
-                    Bearbeiten
-                  </Button>
-                  {isAdmin && (
-                    <Button variant="outline" size="sm" className="h-8" onClick={() => setIsManagingFields(true)}>
-                      <Settings className="w-3 h-3 mr-1.5" />
-                      Felder verwalten
+              <div className="flex gap-2">
+                {!isEditing && (
+                  <>
+                    <Button 
+                      onClick={() => {
+                        setIsEditing(true);
+                        setEditedUser(user);
+                        setEditedCustomValues(customValues);
+                      }} 
+                      size="sm" 
+                      className="h-8"
+                    >
+                      <Edit className="w-3 h-3 mr-1.5" />
+                      Bearbeiten
                     </Button>
-                  )}
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                    {isAdmin && (
+                      <Button variant="outline" size="sm" className="h-8" onClick={() => setIsManagingFields(true)}>
+                        <Settings className="w-3 h-3 mr-1.5" />
+                        Felder verwalten
+                      </Button>
+                    )}
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Scrollable Content */}
       <div className={cn(
