@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { FileCard } from "./file-card";
 import { FileUploadDialog } from "./file-upload-dialog";
 import { FileDetailDrawer } from "./file-detail-drawer";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { 
   Upload, 
   Grid3x3, 
@@ -17,7 +19,8 @@ import {
   Search, 
   SlidersHorizontal,
   Trash2,
-  Download
+  Download,
+  RefreshCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -49,6 +52,7 @@ export function EnhancedFileManager() {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
 
   // Category tabs
   const categories = [
@@ -68,6 +72,32 @@ export function EnhancedFileManager() {
   const handleBulkDelete = async () => {
     if (window.confirm(`${selectedFiles.length} Dateien wirklich löschen?`)) {
       await deleteMultipleFiles(selectedFiles);
+    }
+  };
+
+  const handleMigrateFiles = async () => {
+    setIsMigrating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('migrate-storage-files', {
+        body: { bucketName: 'login-media' }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast.success(
+          `Migration erfolgreich! ${data.migratedCount} Dateien migriert, ${data.skippedCount} übersprungen.`
+        );
+        // Refresh file list
+        window.location.reload();
+      } else {
+        toast.error(`Migration mit Fehlern: ${data.errors.join(', ')}`);
+      }
+    } catch (error) {
+      console.error('Migration error:', error);
+      toast.error('Migration fehlgeschlagen');
+    } finally {
+      setIsMigrating(false);
     }
   };
 
@@ -257,11 +287,24 @@ export function EnhancedFileManager() {
 
       {/* Upload Button (Desktop) */}
       {!isMobile && (
-        <div className="sticky bottom-0 p-4 bg-background border-t">
+        <div className="sticky bottom-0 p-4 bg-background border-t space-y-2">
           <Button onClick={() => setUploadDialogOpen(true)} className="w-full">
             <Upload className="h-4 w-4 mr-2" />
             Datei hochladen
           </Button>
+          
+          {/* Admin Migration Button */}
+          {isAdmin() && (
+            <Button 
+              onClick={handleMigrateFiles} 
+              variant="outline" 
+              className="w-full"
+              disabled={isMigrating}
+            >
+              <RefreshCw className={cn("h-4 w-4 mr-2", isMigrating && "animate-spin")} />
+              {isMigrating ? 'Migriere...' : 'Alte Dateien migrieren'}
+            </Button>
+          )}
         </div>
       )}
 
