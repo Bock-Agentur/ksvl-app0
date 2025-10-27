@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FileCard } from "./file-card";
 import { FileUploadDialog } from "./file-upload-dialog";
 import { FileDetailDrawer } from "./file-detail-drawer";
@@ -20,7 +21,8 @@ import {
   SlidersHorizontal,
   Trash2,
   Download,
-  RefreshCw
+  RefreshCw,
+  Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -229,6 +231,28 @@ export function EnhancedFileManager() {
 
       {/* File Grid/List */}
       <div className="flex-1 overflow-auto p-4">
+        {/* Migration Info Banner for Admins */}
+        {isAdmin() && files.length === 0 && !loading && (
+          <Alert className="mb-4 border-primary/20 bg-primary/5">
+            <Info className="h-4 w-4" />
+            <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <span className="text-sm">
+                Alte Dateien aus dem Login-Bereich migrieren? Klicken Sie auf "Alte Dateien migrieren".
+              </span>
+              <Button 
+                onClick={handleMigrateFiles} 
+                size="sm"
+                variant="default"
+                disabled={isMigrating}
+                className="shrink-0"
+              >
+                <RefreshCw className={cn("h-4 w-4 mr-2", isMigrating && "animate-spin")} />
+                {isMigrating ? 'Migriere...' : 'Jetzt migrieren'}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {loading && files.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             Lade Dateien...
