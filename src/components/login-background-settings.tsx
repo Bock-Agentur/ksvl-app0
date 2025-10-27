@@ -11,12 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { supabase } from "@/integrations/supabase/client";
-import { Upload, Trash2, Eye, Maximize2 } from "lucide-react";
+import { Upload, Trash2, Eye, Maximize2, FolderOpen } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { MediaFileManager } from "@/components/media-file-manager";
+import { FileSelectorDialog } from "@/components/file-manager/file-selector-dialog";
 import { Badge } from "@/components/ui/badge";
 
 const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
@@ -114,6 +115,7 @@ export function LoginBackgroundSettings() {
   const [isOverlayColorOpen, setIsOverlayColorOpen] = useState(false);
   const [isInputBgColorOpen, setIsInputBgColorOpen] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [fileSelectorOpen, setFileSelectorOpen] = useState(false);
 
   // Update local state when background changes from server
   useEffect(() => {
@@ -405,9 +407,10 @@ export function LoginBackgroundSettings() {
           {/* File Upload & File Manager */}
           {localSettings.type !== 'gradient' && (
             <Tabs defaultValue="upload" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="upload">Neue Datei hochladen</TabsTrigger>
-                <TabsTrigger value="manager">Gespeicherte Dateien</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="upload">Hochladen</TabsTrigger>
+                <TabsTrigger value="manager">Gespeichert</TabsTrigger>
+                <TabsTrigger value="file-manager">Dateimanager</TabsTrigger>
               </TabsList>
               
               <TabsContent value="upload" className="space-y-3 mt-4">
@@ -510,6 +513,23 @@ export function LoginBackgroundSettings() {
                         )}
                       </div>
                     )}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="file-manager" className="mt-4">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => setFileSelectorOpen(true)}
+                >
+                  <FolderOpen className="h-4 w-4 mr-2" />
+                  Aus Dateimanager auswählen
+                </Button>
+                {localSettings.filename && (
+                  <div className="mt-4 p-3 border rounded-lg bg-muted/50">
+                    <p className="text-sm font-medium">Ausgewählte Datei:</p>
+                    <p className="text-xs text-muted-foreground truncate mt-1">{localSettings.filename}</p>
                   </div>
                 )}
               </TabsContent>
@@ -1203,6 +1223,31 @@ export function LoginBackgroundSettings() {
           </div>
         </CardContent>
       </Card>
+
+      {/* File Selector Dialog */}
+      <FileSelectorDialog
+        open={fileSelectorOpen}
+        onOpenChange={setFileSelectorOpen}
+        onSelect={(file) => {
+          setLocalSettings({
+            ...localSettings,
+            type: file.file_type === 'video' ? 'video' : 'image',
+            url: file.storage_path,
+            filename: file.filename
+          });
+          setFileSelectorOpen(false);
+          toast({
+            title: "Datei ausgewählt",
+            description: `${file.filename} wurde ausgewählt. Klicke auf "Speichern" um die Änderungen zu übernehmen.`
+          });
+        }}
+        title="Login-Hintergrund auswählen"
+        description="Wählen Sie ein Bild oder Video aus dem Dateimanager"
+        filters={{
+          category: 'login_media',
+          file_type: localSettings.type === 'video' ? 'video' : 'image',
+        }}
+      />
     </div>
   );
 }
