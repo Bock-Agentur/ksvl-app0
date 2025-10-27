@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { UserRole } from "@/types/user";
 import { useFooterMenuSettings, FooterMenuItem } from "@/hooks/use-footer-menu-settings";
@@ -35,7 +36,23 @@ import {
   Eye,
   EyeOff,
   Shield,
-  Palette
+  Palette,
+  Hash,
+  Mail,
+  Phone,
+  Image,
+  Link as LinkIcon,
+  Map,
+  Briefcase,
+  ShoppingCart,
+  Heart,
+  Star,
+  Camera,
+  Music,
+  Video,
+  Book,
+  Globe,
+  Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -43,8 +60,17 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
-  DialogTrigger 
+  DialogTrigger,
+  DialogDescription,
+  DialogFooter
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 // Icon mapping für die Anzeige
 const ICON_MAP = {
@@ -63,8 +89,58 @@ const ICON_MAP = {
   Cloud,
   Anchor,
   Layers,
-  Palette
+  Palette,
+  Hash,
+  Mail,
+  Phone,
+  Image,
+  LinkIcon,
+  Map,
+  Briefcase,
+  ShoppingCart,
+  Heart,
+  Star,
+  Camera,
+  Music,
+  Video,
+  Book,
+  Globe,
+  Zap
 };
+
+// Available icons for custom menu items
+const AVAILABLE_ICONS = [
+  { name: "Home", label: "Home" },
+  { name: "Calendar", label: "Kalender" },
+  { name: "User", label: "Benutzer" },
+  { name: "Users", label: "Benutzer Gruppe" },
+  { name: "Settings", label: "Einstellungen" },
+  { name: "Bell", label: "Glocke" },
+  { name: "HelpCircle", label: "Hilfe" },
+  { name: "Cloud", label: "Cloud" },
+  { name: "Anchor", label: "Anker" },
+  { name: "Layers", label: "Ebenen" },
+  { name: "Palette", label: "Palette" },
+  { name: "Hash", label: "Hashtag" },
+  { name: "Mail", label: "E-Mail" },
+  { name: "Phone", label: "Telefon" },
+  { name: "Image", label: "Bild" },
+  { name: "LinkIcon", label: "Link" },
+  { name: "Map", label: "Karte" },
+  { name: "Briefcase", label: "Aktentasche" },
+  { name: "ShoppingCart", label: "Einkaufswagen" },
+  { name: "Heart", label: "Herz" },
+  { name: "Star", label: "Stern" },
+  { name: "Camera", label: "Kamera" },
+  { name: "Music", label: "Musik" },
+  { name: "Video", label: "Video" },
+  { name: "Book", label: "Buch" },
+  { name: "Globe", label: "Globus" },
+  { name: "Zap", label: "Blitz" },
+  { name: "MessageSquare", label: "Nachricht" },
+  { name: "FileText", label: "Datei" },
+  { name: "BarChart3", label: "Diagramm" },
+];
 
 export function FooterMenuSettings() {
   const { toast } = useToast();
@@ -77,7 +153,8 @@ export function FooterMenuSettings() {
     resetToDefaults,
     getAvailableItemsForRole,
     saveDisplaySettings,
-    getDisplaySettingsForRole
+    getDisplaySettingsForRole,
+    addCustomMenuItem
   } = useFooterMenuSettings();
 
   const { value: activeRole, setValue: setActiveRoleInDb } = useAppSettings<UserRole>(
@@ -90,6 +167,10 @@ export function FooterMenuSettings() {
     setActiveRoleInDb(role);
   };
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isCustomDialogOpen, setIsCustomDialogOpen] = useState(false);
+  const [customLabel, setCustomLabel] = useState("");
+  const [customIcon, setCustomIcon] = useState("Home");
+  const [customRoute, setCustomRoute] = useState("");
 
   // Get current role's display settings
   const currentRoleDisplaySettings = getDisplaySettingsForRole(activeRole);
@@ -153,6 +234,39 @@ export function FooterMenuSettings() {
     toast({
       title: "Einstellungen zurückgesetzt",
       description: "Alle Footer-Menü-Einstellungen wurden auf die Standardwerte zurückgesetzt."
+    });
+  };
+
+  const handleCreateCustomItem = () => {
+    if (!customLabel.trim()) {
+      toast({
+        title: "Fehler",
+        description: "Bitte geben Sie einen Label-Text ein.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const customItem: FooterMenuItem = {
+      id: `custom-${Date.now()}`,
+      label: customLabel.trim(),
+      icon: customIcon,
+      roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"],
+      route: customRoute.trim() || undefined
+    };
+
+    addCustomMenuItem(customItem);
+    handleAddItem(customItem);
+    
+    // Reset form
+    setCustomLabel("");
+    setCustomIcon("Home");
+    setCustomRoute("");
+    setIsCustomDialogOpen(false);
+    
+    toast({
+      title: "Eigener Menüpunkt erstellt",
+      description: `"${customItem.label}" wurde erstellt und hinzugefügt.`
     });
   };
 
@@ -266,17 +380,19 @@ export function FooterMenuSettings() {
                 Menüpunkte für {getRoleDisplayName(activeRole)} ({currentItems.length}/6)
               </Label>
               <div className="flex flex-col gap-2">
-                <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      disabled={currentItems.length >= 6 || unusedItems.length === 0}
-                      className="w-full"
-                    >
-                      Hinzufügen
-                    </Button>
-                  </DialogTrigger>
+                <div className="flex gap-2">
+                  <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        disabled={currentItems.length >= 6 || unusedItems.length === 0}
+                        className="flex-1"
+                      >
+                        <Plus className="w-4 h-4 mr-1" />
+                        Vorhandene
+                      </Button>
+                    </DialogTrigger>
                   <DialogContent className="max-w-md">
                     <DialogHeader>
                       <DialogTitle>Menüpunkt hinzufügen</DialogTitle>
@@ -308,6 +424,101 @@ export function FooterMenuSettings() {
                     </div>
                   </DialogContent>
                 </Dialog>
+                
+                <Dialog open={isCustomDialogOpen} onOpenChange={setIsCustomDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button 
+                      variant="default" 
+                      size="sm"
+                      disabled={currentItems.length >= 6}
+                      className="flex-1"
+                    >
+                      <Plus className="w-4 h-4 mr-1" />
+                      Eigener
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Eigenen Menüpunkt erstellen</DialogTitle>
+                      <DialogDescription>
+                        Erstellen Sie einen benutzerdefinierten Menüpunkt mit eigenem Icon und Link.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="custom-label">Label *</Label>
+                        <Input
+                          id="custom-label"
+                          placeholder="z.B. Kontakt"
+                          value={customLabel}
+                          onChange={(e) => setCustomLabel(e.target.value)}
+                          maxLength={20}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Der Text unter dem Icon (max. 20 Zeichen)
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="custom-icon">Icon</Label>
+                        <Select value={customIcon} onValueChange={setCustomIcon}>
+                          <SelectTrigger id="custom-icon">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-[300px]">
+                            {AVAILABLE_ICONS.map((icon) => {
+                              const IconComponent = ICON_MAP[icon.name as keyof typeof ICON_MAP];
+                              return (
+                                <SelectItem key={icon.name} value={icon.name}>
+                                  <div className="flex items-center gap-2">
+                                    {IconComponent && <IconComponent className="w-4 h-4" />}
+                                    <span>{icon.label}</span>
+                                  </div>
+                                </SelectItem>
+                              );
+                            })}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <Label htmlFor="custom-route">Route (optional)</Label>
+                        <Input
+                          id="custom-route"
+                          placeholder="z.B. /kontakt oder https://..."
+                          value={customRoute}
+                          onChange={(e) => setCustomRoute(e.target.value)}
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Interner Link (z.B. /kontakt) oder externe URL
+                        </p>
+                      </div>
+                      
+                      {/* Preview */}
+                      <div className="border rounded-lg p-4 bg-muted/30">
+                        <p className="text-sm font-medium mb-2">Vorschau:</p>
+                        <div className="flex items-center justify-center gap-2">
+                          <div className="flex flex-col items-center gap-1">
+                            {renderIcon(customIcon)}
+                            {customLabel && (
+                              <span className="text-xs font-medium">{customLabel}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setIsCustomDialogOpen(false)}>
+                        Abbrechen
+                      </Button>
+                      <Button onClick={handleCreateCustomItem}>
+                        <Plus className="w-4 h-4 mr-1" />
+                        Erstellen & Hinzufügen
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+                </div>
                 
                 <Button
                   variant="secondary"

@@ -7,6 +7,7 @@ export interface FooterMenuItem {
   icon: string; // Icon name from lucide-react
   roles: UserRole[];
   badge?: string;
+  route?: string; // Optional route for custom items
 }
 
 export interface FooterMenuSettings {
@@ -79,6 +80,12 @@ const DEFAULT_FOOTER_SETTINGS: FooterMenuSettings = {
 };
 
 export function useFooterMenuSettings() {
+  const { value: customItems, setValue: setCustomItems } = useAppSettings<FooterMenuItem[]>(
+    "customFooterMenuItems",
+    [],
+    true // Global
+  );
+
   const { value: settings, setValue: setSettings, isLoading: settingsLoading } = useAppSettings<FooterMenuSettings>(
     "footerMenuSettings",
     DEFAULT_FOOTER_SETTINGS,
@@ -134,7 +141,15 @@ export function useFooterMenuSettings() {
   };
 
   const getAvailableItemsForRole = (role: UserRole): FooterMenuItem[] => {
-    return AVAILABLE_MENU_ITEMS.filter(item => item.roles.includes(role));
+    const standardItems = AVAILABLE_MENU_ITEMS.filter(item => item.roles.includes(role));
+    const customItemsForRole = customItems.filter(item => item.roles.includes(role));
+    return [...standardItems, ...customItemsForRole];
+  };
+
+  const addCustomMenuItem = (item: FooterMenuItem) => {
+    setCustomItems([...customItems, item]);
+    // Notify about new item
+    window.dispatchEvent(new CustomEvent('footerSettingsChanged'));
   };
 
   return {
@@ -147,6 +162,8 @@ export function useFooterMenuSettings() {
     getAvailableItemsForRole,
     saveDisplaySettings,
     getDisplaySettingsForRole,
-    availableItems: AVAILABLE_MENU_ITEMS
+    availableItems: AVAILABLE_MENU_ITEMS,
+    addCustomMenuItem,
+    customItems
   };
 }
