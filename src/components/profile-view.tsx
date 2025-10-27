@@ -1957,26 +1957,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         </Card>
       )}
 
-      {/* Save/Cancel Buttons */}
-      {isEditing && (
-        <div className="flex gap-2 justify-end">
-          <Button
-            variant="outline"
-            onClick={() => {
-              setIsEditing(false);
-              setEditedUser(user);
-              setEditedCustomValues(customValues);
-            }}
-          >
-            <X className="w-4 h-4 mr-2" />
-            Abbrechen
-          </Button>
-          <Button onClick={handleSaveProfile}>
-            <Save className="w-4 h-4 mr-2" />
-            Speichern
-          </Button>
-        </div>
-      )}
 
       {/* Password Change Dialog */}
       <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
@@ -2079,7 +2059,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
               </div>
 
               <div className="flex gap-2">
-                {!isEditing && (
+                {!isEditing ? (
                   <>
                     <Button 
                       onClick={() => {
@@ -2099,6 +2079,26 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                         Felder verwalten
                       </Button>
                     )}
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8"
+                      onClick={() => {
+                        setIsEditing(false);
+                        setEditedUser(user);
+                        setEditedCustomValues(customValues);
+                      }}
+                    >
+                      <X className="w-3 h-3 mr-1.5" />
+                      Abbrechen
+                    </Button>
+                    <Button size="sm" className="h-8" onClick={handleSaveProfile}>
+                      <Save className="w-3 h-3 mr-1.5" />
+                      Speichern
+                    </Button>
                   </>
                 )}
               </div>
