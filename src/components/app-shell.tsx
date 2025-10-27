@@ -212,11 +212,16 @@ export function AppShell({
                 </Button>;
             })}
 
-          {/* Burger Menu */}
-          <Drawer open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+          {/* Burger Menu - Always visible for admin on the far right */}
+          {(currentRole === 'admin' || currentRole === 'vorstand') && (
+            <Drawer open={isMenuOpen} onOpenChange={setIsMenuOpen}>
               <DrawerTrigger asChild>
-                <Button variant="ghost" size="sm" className="p-2 h-auto">
-                  <Menu className="w-5 h-5" />
+                <Button variant="ghost" size="sm" className={cn(
+                  "flex flex-col items-center h-auto py-2 px-1 sm:px-3 min-w-0",
+                  showLabels ? "gap-1" : "gap-0"
+                )}>
+                  <Menu className="w-5 h-5 flex-shrink-0" />
+                  {showLabels && <span className="text-xs font-medium">Menü</span>}
                 </Button>
               </DrawerTrigger>
               
@@ -339,6 +344,7 @@ export function AppShell({
                 </div>
               </DrawerContent>
             </Drawer>
+          )}
         </div>
       </nav>
       </div>
