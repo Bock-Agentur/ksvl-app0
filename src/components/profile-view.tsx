@@ -675,7 +675,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
 
             {/* Buttons unten */}
             <div className="flex gap-2">
-              {!isEditing && (
+              {!isEditing ? (
                 <>
                   <Button 
                     onClick={() => {
@@ -826,6 +826,26 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                       </DialogContent>
                     </Dialog>
                   )}
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8"
+                    onClick={() => {
+                      setIsEditing(false);
+                      setEditedUser(user);
+                      setEditedCustomValues(customValues);
+                    }}
+                  >
+                    <X className="w-3 h-3 mr-1.5" />
+                    Abbrechen
+                  </Button>
+                  <Button size="sm" className="h-8" onClick={handleSaveProfile}>
+                    <Save className="w-3 h-3 mr-1.5" />
+                    Speichern
+                  </Button>
                 </>
               )}
             </div>
