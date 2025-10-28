@@ -177,19 +177,26 @@ export const useFileManager = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) throw new Error("Nicht angemeldet");
 
-      // Determine storage path based on category
+      // Determine bucket and storage path based on category
       const userId = session.user.id;
+      let bucket = 'documents';
       let storagePath = '';
       
-      if (validatedMetadata.category === 'user_document' && validatedMetadata.linked_user_id) {
-        storagePath = `user_documents/${validatedMetadata.linked_user_id}/${validatedMetadata.document_type || 'general'}/${file.name}`;
+      if (validatedMetadata.category === 'login_media') {
+        // Public files go to login-media bucket
+        bucket = 'login-media';
+        storagePath = file.name;
+      } else if (validatedMetadata.category === 'user_document' && validatedMetadata.linked_user_id) {
+        // User documents with linked user
+        storagePath = `${validatedMetadata.linked_user_id}/${validatedMetadata.document_type || 'general'}/${file.name}`;
       } else {
-        storagePath = `${userId}/general/${file.name}`;
+        // General documents
+        storagePath = `${userId}/${validatedMetadata.category}/${file.name}`;
       }
 
       // Upload to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('documents')
+        .from(bucket)
         .upload(storagePath, file, {
           cacheControl: '3600',
           upsert: false,
@@ -203,12 +210,16 @@ export const useFileManager = () => {
       else if (file.type === 'application/pdf') fileType = 'pdf';
       else if (file.type.startsWith('video/')) fileType = 'video';
 
-      // Create metadata entry
+      // Create metadata entry with full storage path including bucket prefix
+      const fullStoragePath = bucket === 'login-media' 
+        ? `login-media/${uploadData.path}`
+        : uploadData.path;
+
       const { data: metadataData, error: metadataError } = await supabase
         .from('file_metadata')
         .insert({
           filename: file.name,
-          storage_path: uploadData.path,
+          storage_path: fullStoragePath,
           file_type: fileType,
           mime_type: file.type,
           file_size: file.size,
@@ -218,14 +229,14 @@ export const useFileManager = () => {
           document_type: validatedMetadata.document_type || null,
           tags: validatedMetadata.tags || [],
           description: validatedMetadata.description || null,
-          is_public: validatedMetadata.is_public || false,
+          is_public: validatedMetadata.is_public || (bucket === 'login-media'),
         })
         .select()
         .single() as { data: FileMetadata | null; error: any };
 
       if (metadataError) {
         // Rollback storage upload
-        await supabase.storage.from('documents').remove([uploadData.path]);
+        await supabase.storage.from(bucket).remove([uploadData.path]);
         throw metadataError;
       }
 
@@ -364,12 +375,42 @@ export const useFileManager = () => {
 
   /**
    * Get download URL for a file
+   * Supports both public (login-media) and private (documents) buckets
    */
   const getFileUrl = async (storagePath: string): Promise<string | null> => {
     try {
+      const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+      
+      // Check if storage_path has bucket prefix
+      // For login-media files: "background-123.jpg" or "login-media/background-123.jpg"
+      // For documents: "user_id/category/file.pdf"
+      
+      let bucket = 'documents';
+      let path = storagePath;
+      
+      // If path contains bucket prefix, extract it
+      if (storagePath.includes('/')) {
+        const parts = storagePath.split('/');
+        if (parts[0] === 'login-media') {
+          bucket = 'login-media';
+          path = parts.slice(1).join('/');
+        }
+      } else {
+        // No slash = likely a migrated login-media file (just filename)
+        // Check if file exists in login-media bucket
+        bucket = 'login-media';
+        path = storagePath;
+      }
+      
+      // For public buckets, use direct public URL
+      if (bucket === 'login-media') {
+        return `${SUPABASE_URL}/storage/v1/object/public/login-media/${path}`;
+      }
+      
+      // For private buckets, use signed URL
       const { data } = await supabase.storage
-        .from('documents')
-        .createSignedUrl(storagePath, 3600); // 1 hour expiry
+        .from(bucket)
+        .createSignedUrl(path, 3600); // 1 hour expiry
 
       return data?.signedUrl || null;
     } catch (error) {

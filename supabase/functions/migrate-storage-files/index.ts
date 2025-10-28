@@ -107,12 +107,16 @@ Deno.serve(async (req) => {
           fileType = 'pdf';
         }
 
-        // Create metadata entry
+        // Create metadata entry with full storage path including bucket prefix
+        const fullStoragePath = bucketName === 'login-media' 
+          ? `login-media/${file.name}`
+          : storagePath;
+
         const { error: insertError } = await supabase
           .from('file_metadata')
           .insert({
             filename: file.name,
-            storage_path: storagePath,
+            storage_path: fullStoragePath,
             file_type: fileType,
             mime_type: mimeType,
             file_size: file.metadata?.size || 0,
