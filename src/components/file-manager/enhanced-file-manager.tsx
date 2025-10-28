@@ -4,24 +4,38 @@ import { useFilePermissions } from "@/hooks/use-file-permissions";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FileCard } from "./file-card";
 import { FileUploadDialog } from "./file-upload-dialog";
 import { FileDetailDrawer } from "./file-detail-drawer";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { 
   Upload, 
   Grid3x3, 
   List, 
   Search, 
+  SlidersHorizontal,
   Trash2,
+  Download,
+  RefreshCw,
+  Info
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Enhanced File Manager Component
+ * Mobile-first design with adaptive layouts
+ */
 export function EnhancedFileManager() {
   const isMobile = useIsMobile();
   const {
     files,
     loading,
+    uploading,
     selectedFiles,
     filters,
     searchQuery,
@@ -39,12 +53,35 @@ export function EnhancedFileManager() {
   const { isAdmin } = useFilePermissions();
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [isMigrating, setIsMigrating] = useState(false);
+  const [authDebug, setAuthDebug] = useState<{ isLoggedIn: boolean; isAdminUser: boolean; userId: string | null }>();
 
+  // Debug: Check auth status
+  useState(() => {
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      const adminStatus = isAdmin();
+      setAuthDebug({
+        isLoggedIn: !!user,
+        isAdminUser: adminStatus,
+        userId: user?.id || null
+      });
+      console.log('File Manager Auth Debug:', {
+        isLoggedIn: !!user,
+        isAdminUser: adminStatus,
+        userId: user?.id,
+        filesCount: files.length
+      });
+    })();
+  });
+
+  // Category tabs
   const categories = [
     { id: 'all', label: 'Alle', value: undefined },
     { id: 'general', label: 'Meine Dateien', value: 'general' },
     ...(isAdmin() ? [
-      { id: 'user_document', label: 'Dokumente', value: 'user_document' },
+      { id: 'user_document', label: 'Mitglieder-Dokumente', value: 'user_document' },
       { id: 'login_media', label: 'Login-Medien', value: 'login_media' },
     ] : []),
   ];
@@ -60,14 +97,40 @@ export function EnhancedFileManager() {
     }
   };
 
+  const handleMigrateFiles = async () => {
+    setIsMigrating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('migrate-storage-files', {
+        body: { bucketName: 'login-media' }
+      });
+
+      if (error) throw error;
+
+      if (data.success) {
+        toast.success(
+          `Migration erfolgreich! ${data.migratedCount} Dateien migriert, ${data.skippedCount} übersprungen.`
+        );
+        // Refresh file list
+        window.location.reload();
+      } else {
+        toast.error(`Migration mit Fehlern: ${data.errors.join(', ')}`);
+      }
+    } catch (error) {
+      console.error('Migration error:', error);
+      toast.error('Migration fehlgeschlagen');
+    } finally {
+      setIsMigrating(false);
+    }
+  };
+
   const isMultiSelectActive = selectedFiles.length > 0;
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="border-b bg-background/95 backdrop-blur">
+      {/* Sticky Header with Search */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
         <div className="p-4 space-y-3">
-          {/* Search & View Mode */}
+          {/* Search Bar */}
           <div className="flex gap-2">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -79,34 +142,60 @@ export function EnhancedFileManager() {
               />
             </div>
             
-            {!isMobile && (
-              <div className="flex gap-1 border rounded-md p-1">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setViewMode('grid')}
-                >
-                  <Grid3x3 className="h-4 w-4" />
+            {/* Filter Sheet (Mobile) / Button (Desktop) */}
+            <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <SlidersHorizontal className="h-4 w-4" />
                 </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
+              </SheetTrigger>
+              <SheetContent side={isMobile ? "bottom" : "right"} className={isMobile ? "h-[80vh]" : ""}>
+                <SheetHeader>
+                  <SheetTitle>Filter</SheetTitle>
+                </SheetHeader>
+                <div className="space-y-4 mt-4">
+                  {/* File Type Filter */}
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Dateityp</label>
+                    <div className="flex flex-wrap gap-2">
+                      {['all', 'image', 'pdf', 'video'].map((type) => (
+                        <Button
+                          key={type}
+                          variant={filters.file_type === (type === 'all' ? undefined : type) ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setFilters({ ...filters, file_type: type === 'all' ? undefined : type })}
+                        >
+                          {type === 'all' ? 'Alle' : type.toUpperCase()}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </SheetContent>
+            </Sheet>
 
-            <Button onClick={() => setUploadDialogOpen(true)}>
-              <Upload className="h-4 w-4 mr-2" />
-              Hochladen
-            </Button>
+            {/* View Toggle */}
+            <div className="hidden sm:flex gap-1 border rounded-md p-1">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setViewMode('grid')}
+              >
+                <Grid3x3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'ghost'}
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setViewMode('list')}
+              >
+                <List className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
 
-          {/* Category Tabs */}
+          {/* Category Tabs - Horizontal Scroll on Mobile */}
           <Tabs 
             value={filters.category || 'all'} 
             onValueChange={handleCategoryChange}
@@ -123,12 +212,30 @@ export function EnhancedFileManager() {
               ))}
             </TabsList>
           </Tabs>
+
+          {/* Active Filters */}
+          {(filters.file_type || searchQuery) && (
+            <div className="flex gap-2 flex-wrap">
+              {filters.file_type && (
+                <Badge variant="secondary" className="gap-1">
+                  Typ: {filters.file_type}
+                  <button onClick={() => setFilters({ ...filters, file_type: undefined })}>×</button>
+                </Badge>
+              )}
+              {searchQuery && (
+                <Badge variant="secondary" className="gap-1">
+                  Suche: {searchQuery}
+                  <button onClick={() => setSearchQuery('')}>×</button>
+                </Badge>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Multi-Select Actions */}
+      {/* Multi-Select Actions Bar */}
       {isMultiSelectActive && (
-        <div className="bg-primary text-primary-foreground p-3 flex items-center justify-between">
+        <div className="sticky top-[180px] z-10 bg-primary text-primary-foreground p-3 flex items-center justify-between shadow-lg">
           <span className="text-sm font-medium">{selectedFiles.length} ausgewählt</span>
           <div className="flex gap-2">
             <Button size="sm" variant="secondary" onClick={handleBulkDelete}>
@@ -142,8 +249,43 @@ export function EnhancedFileManager() {
         </div>
       )}
 
-      {/* File List */}
+      {/* File Grid/List */}
       <div className="flex-1 overflow-auto p-4">
+        {/* Debug Info for Admins */}
+        {authDebug && (
+          <Alert className="mb-4 border-yellow-500/20 bg-yellow-500/5">
+            <Info className="h-4 w-4" />
+            <AlertDescription className="text-xs font-mono">
+              Login: {authDebug.isLoggedIn ? '✓' : '✗'} | 
+              Admin: {authDebug.isAdminUser ? '✓' : '✗'} | 
+              User ID: {authDebug.userId || 'null'} |
+              Dateien: {files.length}
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Migration Info Banner for Admins */}
+        {isAdmin() && files.length === 0 && !loading && (
+          <Alert className="mb-4 border-primary/20 bg-primary/5">
+            <Info className="h-4 w-4" />
+            <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <span className="text-sm">
+                Alte Dateien aus dem Login-Bereich migrieren? Klicken Sie auf "Alte Dateien migrieren".
+              </span>
+              <Button 
+                onClick={handleMigrateFiles} 
+                size="sm"
+                variant="default"
+                disabled={isMigrating}
+                className="shrink-0"
+              >
+                <RefreshCw className={cn("h-4 w-4 mr-2", isMigrating && "animate-spin")} />
+                {isMigrating ? 'Migriere...' : 'Jetzt migrieren'}
+              </Button>
+            </AlertDescription>
+          </Alert>
+        )}
+
         {loading && files.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">
             Lade Dateien...
@@ -177,6 +319,7 @@ export function EnhancedFileManager() {
               ))}
             </div>
 
+            {/* Load More */}
             {hasMore && (
               <div className="text-center py-8">
                 <Button onClick={loadMore} variant="outline" disabled={loading}>
@@ -199,12 +342,36 @@ export function EnhancedFileManager() {
         </Button>
       )}
 
-      {/* Dialogs */}
+      {/* Upload Button (Desktop) */}
+      {!isMobile && (
+        <div className="sticky bottom-0 p-4 bg-background border-t space-y-2">
+          <Button onClick={() => setUploadDialogOpen(true)} className="w-full">
+            <Upload className="h-4 w-4 mr-2" />
+            Datei hochladen
+          </Button>
+          
+          {/* Admin Migration Button */}
+          {isAdmin() && (
+            <Button 
+              onClick={handleMigrateFiles} 
+              variant="outline" 
+              className="w-full"
+              disabled={isMigrating}
+            >
+              <RefreshCw className={cn("h-4 w-4 mr-2", isMigrating && "animate-spin")} />
+              {isMigrating ? 'Migriere...' : 'Alte Dateien migrieren'}
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* Upload Dialog */}
       <FileUploadDialog
         open={uploadDialogOpen}
         onOpenChange={setUploadDialogOpen}
       />
 
+      {/* File Detail Drawer */}
       <FileDetailDrawer
         fileId={selectedFileId}
         open={!!selectedFileId}

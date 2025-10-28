@@ -140,34 +140,24 @@ export function FileUploadDialog({
   };
 
   const content = (
-    <div className="space-y-4">
-      {/* File Input - Larger on mobile */}
+    <div className="space-y-6">
+      {/* File Input */}
       <div>
-        <Label htmlFor="file-upload" className="text-base font-semibold">Dateien auswählen</Label>
+        <Label htmlFor="file-upload">Dateien auswählen</Label>
         <div className="mt-2">
           <label
             htmlFor="file-upload"
             className={cn(
-              "flex flex-col items-center justify-center w-full border-2 border-dashed rounded-xl cursor-pointer",
+              "flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer",
               "bg-muted/50 hover:bg-muted transition-colors",
-              selectedFiles.length > 0 && "border-primary bg-primary/5",
-              isMobile ? "h-48 p-6" : "h-32"
+              selectedFiles.length > 0 && "border-primary"
             )}
           >
-            <Upload className={cn(
-              "text-muted-foreground mb-3",
-              isMobile ? "h-12 w-12" : "h-8 w-8"
-            )} />
-            <p className={cn(
-              "text-muted-foreground font-medium",
-              isMobile ? "text-base" : "text-sm"
-            )}>
-              {isMobile ? "Tippen zum Auswählen" : "Dateien hier ablegen oder klicken"}
+            <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+            <p className="text-sm text-muted-foreground">
+              Dateien hier ablegen oder klicken
             </p>
-            <p className={cn(
-              "text-muted-foreground mt-2",
-              isMobile ? "text-sm" : "text-xs"
-            )}>
+            <p className="text-xs text-muted-foreground mt-1">
               Max. 20MB pro Datei
             </p>
           </label>
@@ -182,46 +172,30 @@ export function FileUploadDialog({
         </div>
       </div>
 
-      {/* Selected Files - Better mobile layout */}
+      {/* Selected Files */}
       {selectedFiles.length > 0 && (
         <div className="space-y-2">
-          <Label className="text-base font-semibold">
-            Ausgewählte Dateien ({selectedFiles.length})
-          </Label>
-          <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+          <Label>Ausgewählte Dateien ({selectedFiles.length})</Label>
+          <div className="space-y-2 max-h-40 overflow-y-auto">
             {selectedFiles.map((file, index) => {
               const Icon = getFileIcon(file);
               return (
                 <div
                   key={index}
-                  className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg bg-muted border border-border",
-                    isMobile && "min-h-[56px]"
-                  )}
+                  className="flex items-center gap-2 p-2 rounded-md bg-muted"
                 >
-                  <Icon className={cn(
-                    "flex-shrink-0 text-primary",
-                    isMobile ? "h-6 w-6" : "h-5 w-5"
-                  )} />
-                  <div className="flex-1 min-w-0">
-                    <p className={cn(
-                      "truncate font-medium",
-                      isMobile ? "text-sm" : "text-sm"
-                    )}>{file.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatFileSize(file.size)}
-                    </p>
-                  </div>
+                  <Icon className="h-4 w-4 flex-shrink-0" />
+                  <span className="text-sm flex-1 truncate">{file.name}</span>
+                  <span className="text-xs text-muted-foreground flex-shrink-0">
+                    {formatFileSize(file.size)}
+                  </span>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={cn(
-                      "flex-shrink-0",
-                      isMobile ? "h-10 w-10" : "h-8 w-8"
-                    )}
+                    className="h-6 w-6"
                     onClick={() => handleRemoveFile(index)}
                   >
-                    <X className={cn(isMobile ? "h-5 w-5" : "h-4 w-4")} />
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
               );
@@ -287,56 +261,43 @@ export function FileUploadDialog({
         </div>
       )}
 
-      {/* Tags - Simplified */}
+      {/* Tags */}
       <div>
-        <Label htmlFor="tags" className="text-sm">Tags (optional)</Label>
+        <Label htmlFor="tags">Tags</Label>
         <div className="flex gap-2 mt-2">
           <Input
             id="tags"
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddTag())}
-            placeholder="Tag eingeben und Enter drücken..."
-            className={cn(isMobile && "text-base h-11")}
+            placeholder="Tag eingeben..."
           />
+          <Button type="button" variant="outline" onClick={handleAddTag}>
+            Hinzufügen
+          </Button>
         </div>
         {tags.length > 0 && (
           <div className="flex flex-wrap gap-2 mt-2">
             {tags.map((tag) => (
-              <Badge 
-                key={tag} 
-                variant="secondary" 
-                className={cn(
-                  "gap-1",
-                  isMobile && "text-sm py-1.5 px-3"
-                )}
-              >
+              <Badge key={tag} variant="secondary" className="gap-1">
                 {tag}
-                <button 
-                  onClick={() => handleRemoveTag(tag)}
-                  className={cn(isMobile && "text-lg leading-none")}
-                >
-                  ×
-                </button>
+                <button onClick={() => handleRemoveTag(tag)}>×</button>
               </Badge>
             ))}
           </div>
         )}
       </div>
 
-      {/* Description - Optimized */}
+      {/* Description */}
       <div>
-        <Label htmlFor="description" className="text-sm">Beschreibung (optional)</Label>
+        <Label htmlFor="description">Beschreibung (optional)</Label>
         <Textarea
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Beschreibung eingeben..."
-          className={cn(
-            "mt-2",
-            isMobile && "text-base min-h-[100px]"
-          )}
-          rows={isMobile ? 4 : 3}
+          className="mt-2"
+          rows={3}
           maxLength={500}
         />
         <p className="text-xs text-muted-foreground mt-1">
@@ -352,27 +313,13 @@ export function FileUploadDialog({
         </div>
       )}
 
-      {/* Actions - Mobile optimized */}
-      <div className={cn(
-        "flex gap-3",
-        isMobile ? "flex-col pt-2" : "justify-end"
-      )}>
-        <Button 
-          variant="outline" 
-          onClick={() => onOpenChange(false)} 
-          disabled={uploading}
-          className={cn(isMobile && "h-12 text-base order-2")}
-        >
+      {/* Actions */}
+      <div className="flex gap-2 justify-end">
+        <Button variant="outline" onClick={() => onOpenChange(false)} disabled={uploading}>
           Abbrechen
         </Button>
-        <Button 
-          onClick={handleUpload} 
-          disabled={selectedFiles.length === 0 || uploading}
-          className={cn(isMobile && "h-12 text-base order-1")}
-        >
-          {uploading ? 'Hochladen...' : isMobile 
-            ? 'Hochladen' 
-            : `${selectedFiles.length} Datei(en) hochladen`}
+        <Button onClick={handleUpload} disabled={selectedFiles.length === 0 || uploading}>
+          {uploading ? 'Hochladen...' : `${selectedFiles.length} Datei(en) hochladen`}
         </Button>
       </div>
     </div>
@@ -381,14 +328,14 @@ export function FileUploadDialog({
   if (isMobile) {
     return (
       <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[92vh]">
-          <DrawerHeader className="pb-4">
-            <DrawerTitle className="text-xl">Dateien hochladen</DrawerTitle>
-            <DrawerDescription className="text-base">
-              Bilder, PDFs oder Videos hochladen
+        <DrawerContent className="max-h-[90vh] overflow-y-auto">
+          <DrawerHeader>
+            <DrawerTitle>Dateien hochladen</DrawerTitle>
+            <DrawerDescription>
+              Laden Sie Bilder, PDFs oder Videos hoch
             </DrawerDescription>
           </DrawerHeader>
-          <div className="px-4 pb-6 overflow-y-auto">{content}</div>
+          <div className="p-4">{content}</div>
         </DrawerContent>
       </Drawer>
     );
