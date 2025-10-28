@@ -209,7 +209,16 @@ const Index = () => {
         if (event === 'SIGNED_OUT') {
           navigate("/auth");
         } else if (event === 'SIGNED_IN') {
-          navigate("/", { replace: true });
+          // Nach dem Login zur Startseite navigieren und Dashboard als aktiven Tab setzen
+          setTimeout(async () => {
+            await supabase
+              .from('app_settings')
+              .upsert({ 
+                setting_key: 'activeTab',
+                setting_value: 'dashboard'
+              });
+            navigate("/", { replace: true });
+          }, 0);
         }
       }
     );
