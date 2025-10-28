@@ -6,8 +6,9 @@ import { SettingsFooter } from "@/components/settings-footer";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { RoleProvider } from "@/hooks/use-role";
 
-export function FileManager() {
+function FileManagerContent() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -53,5 +54,13 @@ export function FileManager() {
       </div>
       <SettingsFooter />
     </>
+  );
+}
+
+export function FileManager() {
+  return (
+    <RoleProvider>
+      <FileManagerContent />
+    </RoleProvider>
   );
 }
