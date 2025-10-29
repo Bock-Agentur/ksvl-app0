@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { FileSelectorDialog } from "@/components/file-manager/file-selector-dialog";
 import { Badge } from "@/components/ui/badge";
+import { useFileManager } from "@/hooks/use-file-manager";
 
 const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
@@ -105,6 +106,7 @@ function CountdownPreview({ endDate, text, small, showDays, fontSize, fontWeight
 export function LoginBackgroundSettings() {
   const { background, setBackground } = useLoginBackground();
   const { toast } = useToast();
+  const { getFilePreviewUrl } = useFileManager();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   
@@ -1238,18 +1240,8 @@ export function LoginBackgroundSettings() {
         open={fileSelectorOpen}
         onOpenChange={setFileSelectorOpen}
         onSelect={async (file) => {
-          // Get preview URL using the unified system
-          const { supabase } = await import("@/integrations/supabase/client");
-          const bucket = file.category === 'login_media' ? 'login-media' : 'documents';
-          
-          let url: string | null = null;
-          if (bucket === 'login-media') {
-            const { data } = supabase.storage.from(bucket).getPublicUrl(file.storage_path);
-            url = data?.publicUrl || null;
-          } else {
-            const { data } = await supabase.storage.from(bucket).createSignedUrl(file.storage_path, 3600);
-            url = data?.signedUrl || null;
-          }
+          // Use the unified getFilePreviewUrl method
+          const url = await getFilePreviewUrl(file);
           
           if (url) {
             setLocalSettings({
@@ -1277,18 +1269,8 @@ export function LoginBackgroundSettings() {
         open={legacyMediaSelectorOpen}
         onOpenChange={setLegacyMediaSelectorOpen}
         onSelect={async (file) => {
-          // Get preview URL for legacy media
-          const { supabase } = await import("@/integrations/supabase/client");
-          const bucket = file.category === 'login_media' ? 'login-media' : 'documents';
-          
-          let url: string | null = null;
-          if (bucket === 'login-media') {
-            const { data } = supabase.storage.from(bucket).getPublicUrl(file.storage_path);
-            url = data?.publicUrl || null;
-          } else {
-            const { data } = await supabase.storage.from(bucket).createSignedUrl(file.storage_path, 3600);
-            url = data?.signedUrl || null;
-          }
+          // Use the unified getFilePreviewUrl method
+          const url = await getFilePreviewUrl(file);
           
           if (url) {
             setLocalSettings({
