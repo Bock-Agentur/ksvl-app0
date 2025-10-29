@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ConsecutiveSlotsSettings } from "@/components/consecutive-slots-settings";
@@ -16,6 +16,7 @@ import { DesktopBackgroundSettings } from "@/components/desktop-background-setti
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
 import { StickyHeaderLayoutSettings } from "@/components/sticky-header-layout-settings";
+import { PageLoader } from "@/components/common/page-loader";
 import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
 import { cn } from "@/lib/utils";
 import { RoleProvider, useRole } from "@/hooks/use-role";
@@ -59,15 +60,30 @@ type SettingSection = {
 function SettingsContent() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [isOverview, setIsOverview] = useState(true);
-  const { currentRole } = useRole();
+  const [isComponentReady, setIsComponentReady] = useState(false);
+  const { currentRole, isLoading: roleLoading } = useRole();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { background } = useLoginBackground();
-  const { settings: desktopBackgroundSettings } = useDesktopBackground();
+  const { background, isLoading: bgLoading } = useLoginBackground();
+  const { settings: desktopBackgroundSettings, isLoading: desktopBgLoading } = useDesktopBackground();
   const { isPageSticky } = useStickyHeaderLayout();
   const isStickyEnabled = isPageSticky('settings');
-
+  
   const showBackground = desktopBackgroundSettings.enabled && background;
+  const isPageLoading = roleLoading || bgLoading || desktopBgLoading;
+
+  // Wait for component to be fully rendered
+  useEffect(() => {
+    if (!isPageLoading) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsComponentReady(true);
+        });
+      });
+    } else {
+      setIsComponentReady(false);
+    }
+  }, [isPageLoading, activeSection, isOverview]);
 
   const sections: SettingSection[] = [
     { id: "dashboard", label: "Dashboard", description: "Widgets und Layout anpassen", icon: LayoutDashboard, component: DashboardSettings, group: "dashboard" },
@@ -110,23 +126,31 @@ function SettingsContent() {
     } else {
       setActiveSection(sectionId);
       setIsOverview(false);
+      setIsComponentReady(false);
     }
   };
 
   const handleBack = () => {
     setIsOverview(true);
     setActiveSection(null);
+    setIsComponentReady(false);
   };
 
   const ActiveComponent = sections.find(section => section.id === activeSection)?.component;
   const activeLabel = sections.find(section => section.id === activeSection)?.label;
+
+  // Show page loader while loading or content not ready
+  if (!isComponentReady) {
+    return <PageLoader />;
+  }
+
 
   if (isOverview) {
     return (
       <>
       <div 
         className={cn(
-          "min-h-screen pb-20 bg-background",
+          "min-h-screen pb-20 bg-background animate-fade-in",
           isMobile ? "pt-4" : "p-6"
         )}
         style={showBackground ? {
@@ -279,7 +303,7 @@ function SettingsContent() {
     <>
     <div 
       className={cn(
-        "min-h-screen pb-20 bg-background",
+        "min-h-screen pb-20 bg-background animate-fade-in",
         isMobile ? "pt-4" : "p-6",
         isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : ""
       )}
