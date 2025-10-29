@@ -199,7 +199,7 @@ export const useFileManager = () => {
 
       // Determine file type
       let fileType: 'image' | 'pdf' | 'video' | 'other' = 'other';
-      if (file.type.startsWith('image/')) fileType = 'image';
+      if (file.type.startsWith('image/') || file.type === 'image/webp') fileType = 'image';
       else if (file.type === 'application/pdf') fileType = 'pdf';
       else if (file.type.startsWith('video/')) fileType = 'video';
 
