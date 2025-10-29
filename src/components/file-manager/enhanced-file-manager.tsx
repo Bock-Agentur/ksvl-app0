@@ -200,31 +200,6 @@ export function EnhancedFileManager() {
                 </div>
               </div>
 
-              {/* View Mode */}
-              <div>
-                <Label>Ansicht</Label>
-                <div className="flex gap-2 mt-2">
-                  <Button
-                    variant={viewMode === 'grid' ? 'default' : 'outline'}
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => setViewMode('grid')}
-                  >
-                    <Grid3x3 className="h-4 w-4 mr-2" />
-                    Raster
-                  </Button>
-                  <Button
-                    variant={viewMode === 'list' ? 'default' : 'outline'}
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => setViewMode('list')}
-                  >
-                    <List className="h-4 w-4 mr-2" />
-                    Liste
-                  </Button>
-                </div>
-              </div>
-
               {/* Reset Filters */}
               {(searchQuery || filters.file_type || (filters.category && filters.category !== 'all')) && (
                 <Button 
@@ -246,42 +221,40 @@ export function EnhancedFileManager() {
       {/* Search & Filter Card - Desktop */}
       <Card className="hidden sm:block bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardContent className="pt-6 space-y-4">
-          <div className="flex gap-4">
-            {/* Search */}
-            <div className="flex-1">
-              <Label htmlFor="search-desktop">Suche</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="search-desktop"
-                  placeholder="Dateien durchsuchen..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
+          {/* View Mode Toggle - Above search like calendar */}
+          <div className="flex items-center justify-center gap-2">
+            <Button
+              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              className="flex items-center gap-2"
+            >
+              <Grid3x3 className="h-4 w-4" />
+              Rasteransicht
+            </Button>
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="flex items-center gap-2"
+            >
+              <List className="h-4 w-4" />
+              Listenansicht
+            </Button>
+          </div>
 
-            {/* View Toggle */}
-            <div className="flex items-end">
-              <div className="flex gap-1 border rounded-md p-1">
-                <Button
-                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setViewMode('grid')}
-                >
-                  <Grid3x3 className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant={viewMode === 'list' ? 'default' : 'ghost'}
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={() => setViewMode('list')}
-                >
-                  <List className="h-4 w-4" />
-                </Button>
-              </div>
+          {/* Search */}
+          <div>
+            <Label htmlFor="search-desktop">Suche</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="search-desktop"
+                placeholder="Dateien durchsuchen..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
             </div>
           </div>
 
