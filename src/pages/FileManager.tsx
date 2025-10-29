@@ -10,9 +10,9 @@ export function FileManager() {
   return (
     <>
       <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="max-w-7xl mx-auto">
-          {/* Header Card - Matching Settings Style */}
-          <div className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 m-4 md:m-8 mb-0">
+        <div className="max-w-7xl mx-auto p-4 md:p-8">
+          {/* Header */}
+          <div className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6">
             <div className="p-6 md:p-8 flex items-center gap-4">
               <Button
                 variant="ghost"
@@ -31,11 +31,9 @@ export function FileManager() {
             </div>
           </div>
 
-          {/* File Manager Content */}
-          <div className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 m-4 md:m-8 mt-4 md:mt-6 overflow-hidden">
-            <div className="h-[calc(100vh-280px)] md:h-[calc(100vh-240px)]">
-              <EnhancedFileManager />
-            </div>
+          {/* File Manager Content - Full Width */}
+          <div className="h-[calc(100vh-240px)]">
+            <EnhancedFileManager />
           </div>
         </div>
       </div>
