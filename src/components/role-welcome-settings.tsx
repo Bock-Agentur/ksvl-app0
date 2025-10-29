@@ -113,7 +113,10 @@ export function RoleWelcomeSettings() {
               "font-medium",
               isMobile ? "text-sm" : "text-base"
             )}>Rolle auswählen</Label>
-            <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
+            <div className={cn(
+              "gap-2 flex-wrap",
+              isMobile ? "grid grid-cols-5" : "flex justify-center sm:justify-start"
+            )}>
               {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
                 const Icon = getRoleIcon(role);
                 const roleLabel = getRoleDisplayName(role);
@@ -122,8 +125,8 @@ export function RoleWelcomeSettings() {
                   <Card 
                     key={role}
                     className={cn(
-                      "cursor-pointer transition-colors hover:bg-muted/50 flex-shrink-0",
-                      isMobile ? "w-[18%] min-w-[60px]" : "w-20 sm:w-24",
+                      "cursor-pointer transition-colors hover:bg-muted/50",
+                      isMobile ? "" : "w-20 sm:w-24",
                       activeRole === role 
                         ? "ring-2 ring-primary bg-primary/5" 
                         : "hover:shadow-sm"
@@ -235,7 +238,10 @@ export function RoleWelcomeSettings() {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
+          <div className={cn(
+              "gap-2 flex-wrap",
+              isMobile ? "grid grid-cols-5" : "flex justify-center sm:justify-start"
+            )}>
             {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
               const Icon = getRoleIcon(role);
               const roleLabel = getRoleDisplayName(role);
@@ -244,8 +250,8 @@ export function RoleWelcomeSettings() {
                 <Card 
                   key={role}
                   className={cn(
-                    "cursor-pointer transition-colors hover:bg-muted/50 flex-shrink-0",
-                    isMobile ? "w-[18%] min-w-[60px]" : "w-20 sm:w-24",
+                    "cursor-pointer transition-colors hover:bg-muted/50",
+                    isMobile ? "" : "w-20 sm:w-24",
                     activeRole === role 
                       ? "ring-2 ring-primary bg-primary/5" 
                       : "hover:shadow-sm"
