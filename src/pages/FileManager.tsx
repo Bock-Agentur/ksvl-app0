@@ -19,7 +19,7 @@ export function FileManager() {
         )}>
           {/* Header */}
           <div className={cn(
-            "bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0",
+            "bg-gradient-to-br from-primary via-primary to-primary/90 rounded-[2rem] shadow-[0_20px_60px_-15px_hsl(var(--primary)_/_0.4)] border-0",
             isMobile ? "mx-4 mt-4 mb-4" : "mb-6 mt-8"
           )}>
             <div className="p-6 md:p-8 flex items-center gap-4">
@@ -27,17 +27,17 @@ export function FileManager() {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate(-1)}
-                className="rounded-full bg-white shadow-md hover:shadow-lg transition-shadow border border-gray-100 h-12 w-12"
+                className="rounded-full bg-white shadow-lg hover:shadow-xl transition-all hover:scale-105 border-0 h-12 w-12"
               >
-                <ArrowLeft className="h-5 w-5 text-gray-900" />
+                <ArrowLeft className="h-5 w-5 text-primary" />
               </Button>
               <div>
                 <h1 className={cn(
-                  "font-bold tracking-tight text-gray-900",
+                  "font-bold tracking-tight text-white",
                   isMobile ? "text-2xl" : "text-3xl"
                 )}>Dateimanager</h1>
                 {!isMobile && (
-                  <p className="text-gray-600 mt-1">
+                  <p className="text-white/90 mt-1">
                     Zentrale Verwaltung für alle Dokumente und Medien
                   </p>
                 )}
