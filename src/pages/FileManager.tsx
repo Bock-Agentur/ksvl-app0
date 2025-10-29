@@ -51,14 +51,8 @@ export function FileManager() {
             </div>
           </div>
 
-          {/* File Manager Content - Full Width with better mobile spacing */}
-          <div className={cn(
-            isMobile 
-              ? "h-[calc(100vh-200px)]" 
-              : "h-[calc(100vh-240px)]"
-          )}>
-            <EnhancedFileManager />
-          </div>
+          {/* File Manager Content */}
+          <EnhancedFileManager />
         </div>
       </div>
       <SettingsFooter />
