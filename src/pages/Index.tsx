@@ -62,6 +62,7 @@ function AppContent() {
   const [contentReady, setContentReady] = useState(true);
   const [pendingTab, setPendingTab] = useState<string | null>(null);
   const [animationKey, setAnimationKey] = useState(0);
+  const [isContentRendered, setIsContentRendered] = useState(false);
   
   // Centralized loading state - determines when to show PageLoader
   const getLoadingStateForTab = (tab: string): boolean => {
@@ -102,12 +103,16 @@ function AppContent() {
     if (pendingTab && activeTab === pendingTab) {
       // Wait for data to load
       if (!isPageLoading) {
-        // Then wait for DOM to be fully rendered
+        // Then wait for DOM to be fully rendered with double requestAnimationFrame
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
-            setContentReady(true);
-            setIsTransitioning(false);
-            setPendingTab(null);
+            // Additional frame to ensure content is painted
+            requestAnimationFrame(() => {
+              setIsContentRendered(true);
+              setContentReady(true);
+              setIsTransitioning(false);
+              setPendingTab(null);
+            });
           });
         });
       }
@@ -118,6 +123,7 @@ function AppContent() {
   const setActiveTab = async (tab: string) => {
     setIsTransitioning(true);
     setContentReady(false);
+    setIsContentRendered(false);
     await new Promise(resolve => setTimeout(resolve, 200)); // Fade out duration
     setPendingTab(tab);
     setAnimationKey(prev => prev + 1);
@@ -131,6 +137,20 @@ function AppContent() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [activeTab]);
+
+  // Phase 1: Listen for navigate-to-tab events from footer
+  useEffect(() => {
+    const handleNavigateToTab = (event: CustomEvent<{ tab: string }>) => {
+      const targetTab = event.detail.tab;
+      setActiveTab(targetTab);
+    };
+    
+    window.addEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
+    
+    return () => {
+      window.removeEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
+    };
+  }, []);
 
   const renderContent = () => {
     switch (activeTab) {
@@ -158,14 +178,14 @@ function AppContent() {
 
   return (
     <>
-      {/* Show loader during page transitions when data is loading */}
-      {isPageLoading && <PageLoader />}
+      {/* Show loader during page transitions when data is loading or content not rendered */}
+      {(isPageLoading || !isContentRendered) && <PageLoader />}
       
       <div 
         key={animationKey}
         className={cn(
           "transition-all duration-300 ease-out",
-          !contentReady || isTransitioning || isPageLoading ? "opacity-0" : "opacity-100 animate-page-transition-in"
+          !contentReady || isTransitioning || isPageLoading || !isContentRendered ? "opacity-0" : "opacity-100 animate-page-transition-in"
         )}
       >
         <AppShell

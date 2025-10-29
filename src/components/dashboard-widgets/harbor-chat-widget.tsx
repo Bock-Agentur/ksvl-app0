@@ -3,11 +3,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, Send, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
 import { useHarborChatData } from "@/hooks/use-harbor-chat-data";
+import { cn } from "@/lib/utils";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -19,33 +21,37 @@ export function HarborChatWidget() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { currentRole } = useRole();
 
-  if (agentLoading) {
-    return (
-      <Card className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] card-shadow-soft-lg">
-        <CardHeader className="pt-12 pb-4 px-[15px]">
-          <div className="h-6 w-48 bg-white/20 animate-pulse rounded" />
-        </CardHeader>
-        <CardContent className="px-[15px] pb-8">
-          <div className="h-[400px] bg-white rounded-2xl animate-pulse" />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Set initial message when agent name is loaded
+  // Pre-load welcome message immediately when agent name is available
   useEffect(() => {
     if (!agentLoading && messages.length === 0) {
       setMessages([{
         role: 'assistant',
         content: `👋 Ahoi! Ich bin ${agentName}, dein KSVL-Assistent. Ich kann dir bei Kranterminen, Buchungen und Mitgliederdaten helfen. Was willst du wissen?`
       }]);
+      // Small delay for smooth fade-in
+      setTimeout(() => setIsInitializing(false), 50);
     }
   }, [agentLoading, agentName, messages.length]);
+
+  // Show skeleton while initializing
+  if (agentLoading || isInitializing) {
+    return (
+      <Card className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] card-shadow-soft-lg">
+        <CardHeader className="pt-12 pb-4 px-[15px]">
+          <Skeleton className="h-6 w-48 bg-white/20" />
+        </CardHeader>
+        <CardContent className="px-[15px] pb-8">
+          <Skeleton className="h-[400px] bg-white/10 rounded-2xl" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Auto-scroll nur wenn neue Nachrichten gesendet werden
   const scrollToBottom = () => {
@@ -135,7 +141,10 @@ export function HarborChatWidget() {
 
   return (
     <Card 
-      className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] card-shadow-soft-lg"
+      className={cn(
+        "w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] card-shadow-soft-lg",
+        "animate-fade-in"
+      )}
       id="harbor-chat-widget"
     >
       <CardHeader className="pt-12 pb-4 px-[15px]">
