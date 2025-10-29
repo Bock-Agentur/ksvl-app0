@@ -27,6 +27,14 @@ export function HarborChatWidget() {
   const { toast } = useToast();
   const { currentRole } = useRole();
 
+  // Auto-scroll function
+  const scrollToBottom = () => {
+    // Nur scrollen wenn mehr als die Welcome-Message vorhanden ist
+    if (messages.length > 1) {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  };
+
   // Pre-load welcome message immediately when agent name is available
   useEffect(() => {
     if (!agentLoading && messages.length === 0) {
@@ -38,6 +46,14 @@ export function HarborChatWidget() {
       setTimeout(() => setIsInitializing(false), 50);
     }
   }, [agentLoading, agentName, messages.length]);
+
+  // Auto-scroll on new messages
+  useEffect(() => {
+    // Nur bei neuen Nachrichten scrollen, nicht beim initialen Laden
+    if (messages.length > 1) {
+      scrollToBottom();
+    }
+  }, [messages]);
 
   // Show skeleton while initializing
   if (agentLoading || isInitializing) {
@@ -52,21 +68,6 @@ export function HarborChatWidget() {
       </Card>
     );
   }
-
-  // Auto-scroll nur wenn neue Nachrichten gesendet werden
-  const scrollToBottom = () => {
-    // Nur scrollen wenn mehr als die Welcome-Message vorhanden ist
-    if (messages.length > 1) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
-    }
-  };
-
-  useEffect(() => {
-    // Nur bei neuen Nachrichten scrollen, nicht beim initialen Laden
-    if (messages.length > 1) {
-      scrollToBottom();
-    }
-  }, [messages]);
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
