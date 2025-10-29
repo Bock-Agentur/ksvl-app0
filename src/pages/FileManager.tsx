@@ -13,14 +13,11 @@ export function FileManager() {
   return (
     <>
       <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-muted/20">
-        <div className={cn(
-          "mx-auto",
-          isMobile ? "w-full px-0" : "max-w-7xl px-4 md:px-8"
-        )}>
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className={cn(
-            "bg-gradient-to-br from-primary via-primary to-primary/90 rounded-[2rem] shadow-[0_20px_60px_-15px_hsl(var(--primary)_/_0.4)] border-0",
-            isMobile ? "mx-4 mt-4 mb-4" : "mb-6 mt-8"
+            "bg-gradient-to-br from-primary via-primary to-primary/90 rounded-[2rem] shadow-[0_20px_60px_-15px_hsl(var(--primary)_/_0.4)] border-0 mx-4",
+            isMobile ? "mt-4 mb-4" : "mb-6 mt-8"
           )}>
             <div className="p-6 md:p-8 flex items-center gap-4">
               <Button
@@ -52,7 +49,9 @@ export function FileManager() {
           </div>
 
           {/* File Manager Content */}
-          <EnhancedFileManager />
+          <div className="px-4">
+            <EnhancedFileManager />
+          </div>
         </div>
       </div>
       <SettingsFooter />
