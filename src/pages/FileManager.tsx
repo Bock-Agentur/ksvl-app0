@@ -27,9 +27,9 @@ export function FileManager() {
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate(-1)}
-                className="rounded-full bg-white shadow-lg hover:shadow-xl transition-all hover:scale-105 border-0 h-12 w-12"
+                className="rounded-full bg-white shadow-lg hover:shadow-xl transition-all hover:scale-105 border-0 h-14 w-14"
               >
-                <ArrowLeft className="h-5 w-5 text-primary" />
+                <ArrowLeft className="h-6 w-6 text-primary" />
               </Button>
               <div>
                 <h1 className={cn(
