@@ -13,12 +13,13 @@ import { useRole } from "@/hooks/use-role";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { getWidgetsForRole, getSectionsForRole, type DashboardItem } from "@/lib/dashboard-config";
 import { UserRole } from "@/types/user";
-import { RotateCcw, GripVertical, Eye, EyeOff, LayoutGrid, Columns2, Square, Smartphone, Settings as SettingsIcon, Shield, UserCircle, Wrench, Type } from "lucide-react";
+import { RotateCcw, GripVertical, Eye, EyeOff, LayoutGrid, Columns2, Square, Smartphone, Settings as SettingsIcon, Type } from "lucide-react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverEvent, DragOverlay, pointerWithin, useDroppable, rectIntersection } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { RoleCardGrid } from "@/components/common/role-card-grid";
 
 interface SortableDashboardItemProps {
   item: DashboardItem;
@@ -165,33 +166,6 @@ export function DashboardSettings() {
     isItemEnabled,
     toggleItem
   } = useDashboardSettings(targetRole, isAdmin);
-
-  // Helper functions for role display
-  const getRoleIcon = (role: UserRole) => {
-    switch (role) {
-      case "gastmitglied":
-      case "mitglied":
-        return UserCircle;
-      case "kranfuehrer":
-        return Wrench;
-      case "admin":
-      case "vorstand":
-        return Shield;
-      default:
-        return UserCircle;
-    }
-  };
-
-  const getRoleDisplayName = (role: UserRole): string => {
-    const roleNames: Record<UserRole, string> = {
-      gastmitglied: isMobile ? "Gast" : "Gastmitglied",
-      mitglied: "Mitglied",
-      kranfuehrer: "Kranführer",
-      admin: "Admin",
-      vorstand: "Vorstand",
-    };
-    return roleNames[role] || role;
-  };
 
   const availableRoles: UserRole[] = ["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"];
 
@@ -453,40 +427,10 @@ export function DashboardSettings() {
                 "font-medium",
                 isMobile ? "text-sm" : "text-base"
               )}>Rolle auswählen</Label>
-              <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
-                {availableRoles.map((role) => {
-                  const Icon = getRoleIcon(role);
-                  const roleLabel = getRoleDisplayName(role);
-                  
-                  return (
-                    <Card 
-                      key={role}
-                      className={cn(
-                        "cursor-pointer transition-colors hover:bg-muted/50",
-                        isMobile ? "w-16 sm:w-20" : "w-20 sm:w-24",
-                        targetRole === role 
-                          ? "ring-2 ring-primary bg-primary/5" 
-                          : "hover:shadow-sm"
-                      )}
-                      onClick={() => setTargetRole(role)}
-                    >
-                      <CardContent className={cn(
-                        "text-center",
-                        isMobile ? "p-2" : "p-3"
-                      )}>
-                        <Icon className={cn(
-                          "mx-auto mb-1",
-                          isMobile ? "h-5 w-5" : "h-6 w-6"
-                        )} />
-                        <p className={cn(
-                          "font-medium",
-                          isMobile ? "text-[10px]" : "text-xs"
-                        )}>{roleLabel}</p>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
+              <RoleCardGrid 
+                activeRole={targetRole}
+                onRoleSelect={setTargetRole}
+              />
             </div>
           </CardContent>
         </Card>
