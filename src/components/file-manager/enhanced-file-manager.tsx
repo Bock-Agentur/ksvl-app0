@@ -130,7 +130,7 @@ export function EnhancedFileManager() {
   const isMultiSelectActive = selectedFiles.length > 0;
 
   return (
-    <div className="flex flex-col space-y-4">
+    <div className="flex flex-col h-full space-y-4 p-4">
       {/* Search & Filter Card - Collapsible on Mobile */}
       <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen} className="sm:hidden">
         <CollapsibleTrigger asChild>
@@ -354,7 +354,7 @@ export function EnhancedFileManager() {
       )}
 
       {/* File Grid/List */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex-1 overflow-auto p-4">
         {/* Debug Info for Admins */}
         {authDebug && (
           <Alert className="mb-4 border-yellow-500/20 bg-yellow-500/5">
