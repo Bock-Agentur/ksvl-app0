@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { UserRole } from "@/types/user";
-import { MessageSquare, Smile, Save, RotateCcw, UserCircle, Shield, Wrench } from "lucide-react";
+import { MessageSquare, UserCircle, Shield, Wrench, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useWelcomeMessages } from "@/hooks/use-welcome-messages";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -80,13 +80,15 @@ export function RoleWelcomeSettings() {
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
       case "gastmitglied":
+        return User;
       case "mitglied":
         return UserCircle;
       case "kranfuehrer":
         return Wrench;
       case "admin":
-      case "vorstand":
         return Shield;
+      case "vorstand":
+        return Users;
       default:
         return UserCircle;
     }
@@ -120,8 +122,8 @@ export function RoleWelcomeSettings() {
                   <Card 
                     key={role}
                     className={cn(
-                      "cursor-pointer transition-colors hover:bg-muted/50",
-                      isMobile ? "w-16 sm:w-20" : "w-20 sm:w-24",
+                      "cursor-pointer transition-colors hover:bg-muted/50 flex-shrink-0",
+                      isMobile ? "w-[18%] min-w-[60px]" : "w-20 sm:w-24",
                       activeRole === role 
                         ? "ring-2 ring-primary bg-primary/5" 
                         : "hover:shadow-sm"
@@ -130,15 +132,15 @@ export function RoleWelcomeSettings() {
                   >
                     <CardContent className={cn(
                       "text-center",
-                      isMobile ? "p-2" : "p-3"
+                      isMobile ? "p-1.5" : "p-3"
                     )}>
                       <Icon className={cn(
                         "mx-auto mb-1",
-                        isMobile ? "h-5 w-5" : "h-6 w-6"
+                        isMobile ? "h-4 w-4" : "h-6 w-6"
                       )} />
                       <p className={cn(
-                        "font-medium",
-                        isMobile ? "text-[10px]" : "text-xs"
+                        "font-medium leading-tight",
+                        isMobile ? "text-[9px]" : "text-xs"
                       )}>{roleLabel}</p>
                     </CardContent>
                   </Card>
@@ -242,8 +244,8 @@ export function RoleWelcomeSettings() {
                 <Card 
                   key={role}
                   className={cn(
-                    "cursor-pointer transition-colors hover:bg-muted/50",
-                    isMobile ? "w-16 sm:w-20" : "w-20 sm:w-24",
+                    "cursor-pointer transition-colors hover:bg-muted/50 flex-shrink-0",
+                    isMobile ? "w-[18%] min-w-[60px]" : "w-20 sm:w-24",
                     activeRole === role 
                       ? "ring-2 ring-primary bg-primary/5" 
                       : "hover:shadow-sm"
@@ -252,15 +254,15 @@ export function RoleWelcomeSettings() {
                 >
                   <CardContent className={cn(
                     "text-center",
-                    isMobile ? "p-2" : "p-3"
+                    isMobile ? "p-1.5" : "p-3"
                   )}>
                     <Icon className={cn(
                       "mx-auto mb-1",
-                      isMobile ? "h-5 w-5" : "h-6 w-6"
+                      isMobile ? "h-4 w-4" : "h-6 w-6"
                     )} />
                     <p className={cn(
-                      "font-medium",
-                      isMobile ? "text-[10px]" : "text-xs"
+                      "font-medium leading-tight",
+                      isMobile ? "text-[9px]" : "text-xs"
                     )}>{roleLabel}</p>
                   </CardContent>
                 </Card>
