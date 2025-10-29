@@ -320,14 +320,16 @@ export function FileUploadDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[90vh] overflow-y-auto">
+      <DrawerContent className="max-h-[90vh]">
         <DrawerHeader>
           <DrawerTitle>Dateien hochladen</DrawerTitle>
           <DrawerDescription>
             Laden Sie Bilder, PDFs oder Videos hoch
           </DrawerDescription>
         </DrawerHeader>
-        {content}
+        <div className="overflow-y-auto">
+          {content}
+        </div>
       </DrawerContent>
     </Drawer>
   );

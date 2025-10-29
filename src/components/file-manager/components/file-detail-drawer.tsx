@@ -255,11 +255,13 @@ export function FileDetailDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[90vh] overflow-y-auto">
+      <DrawerContent className="max-h-[90vh]">
         <DrawerHeader>
           <DrawerTitle>Datei-Details</DrawerTitle>
         </DrawerHeader>
-        {content}
+        <div className="overflow-y-auto">
+          {content}
+        </div>
       </DrawerContent>
     </Drawer>
   );

@@ -193,12 +193,14 @@ export function FileSelectorDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="h-[90vh]">
+      <DrawerContent className="max-h-[90vh]">
         <DrawerHeader>
           <DrawerTitle>{title}</DrawerTitle>
           <DrawerDescription>{description}</DrawerDescription>
         </DrawerHeader>
-        {content}
+        <div className="overflow-y-auto flex-1">
+          {content}
+        </div>
       </DrawerContent>
     </Drawer>
   );
