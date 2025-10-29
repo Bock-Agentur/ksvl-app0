@@ -619,8 +619,13 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     }
   };
 
-  // Remove loading state - handled by PageLoader in Index
-  if (!user && !loading) {
+  // Don't render content if user is not loaded - PageLoader in Index handles loading state
+  if (!user) {
+    return null;
+  }
+
+  // Show error only if loading is done but user is still null
+  if (!loading && !user) {
     return (
       <div className="p-4 text-center">
         <p className="text-destructive">Profil konnte nicht geladen werden.</p>
