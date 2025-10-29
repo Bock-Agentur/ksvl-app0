@@ -1,18 +1,20 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { useAIAssistantSettings } from "@/hooks/use-ai-assistant-settings";
 import { TONALITY_LABELS, TONALITY_DESCRIPTIONS, RESPONSE_LENGTH_LABELS, RESPONSE_LENGTH_DESCRIPTIONS, Tonality, ResponseLength } from "@/types/ai-assistant";
 import { ROLE_LABELS } from "@/lib/role-order";
 import { UserRole } from "@/types/user";
 import { Loader2 } from "lucide-react";
+import { RoleCardGrid, ROLE_ORDER } from "@/components/common/role-card-grid";
 
 export function AIAssistantSettings() {
   const { settings, updateTonality, updateResponseLength, updateSystemPrompt, updateAgentName, isLoading } = useAIAssistantSettings();
+  const [activeRole, setActiveRole] = useState<UserRole>("admin");
 
   if (isLoading) {
     return (
@@ -21,8 +23,6 @@ export function AIAssistantSettings() {
       </div>
     );
   }
-
-  const roles: UserRole[] = ['gastmitglied', 'mitglied', 'kranfuehrer', 'vorstand', 'admin'];
 
   return (
     <div className="space-y-6">
@@ -78,48 +78,47 @@ export function AIAssistantSettings() {
             Definieren Sie, wie der Assistent mit unterschiedlichen Rollen spricht.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue={roles[0]} className="w-full">
-            <TabsList className="grid w-full grid-cols-5">
-              {roles.map(role => (
-                <TabsTrigger key={role} value={role}>
-                  {ROLE_LABELS[role] || role}
-                </TabsTrigger>
-              ))}
-            </TabsList>
-            {roles.map(role => (
-              <TabsContent key={role} value={role} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor={`tonality-${role}`}>
-                    Tonalität für {ROLE_LABELS[role] || role}
-                  </Label>
-                  <Select
-                    value={settings.tonality[role]}
-                    onValueChange={(value) => updateTonality(role, value as Tonality)}
-                  >
-                    <SelectTrigger id={`tonality-${role}`}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(TONALITY_LABELS).map(([key, label]) => (
-                        <SelectItem key={key} value={key}>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{label}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {TONALITY_DESCRIPTIONS[key as Tonality]}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-sm text-muted-foreground">
-                    {TONALITY_DESCRIPTIONS[settings.tonality[role]]}
-                  </p>
-                </div>
-              </TabsContent>
-            ))}
-          </Tabs>
+        <CardContent className="space-y-6">
+          {/* Role Selection */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium">Rolle auswählen</Label>
+            <RoleCardGrid 
+              activeRole={activeRole}
+              onRoleSelect={setActiveRole}
+            />
+          </div>
+
+          {/* Tonality Settings for Active Role */}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor={`tonality-${activeRole}`}>
+                Tonalität für {ROLE_LABELS[activeRole] || activeRole}
+              </Label>
+              <Select
+                value={settings.tonality[activeRole]}
+                onValueChange={(value) => updateTonality(activeRole, value as Tonality)}
+              >
+                <SelectTrigger id={`tonality-${activeRole}`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Object.entries(TONALITY_LABELS).map(([key, label]) => (
+                    <SelectItem key={key} value={key}>
+                      <div className="flex flex-col">
+                        <span className="font-medium">{label}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {TONALITY_DESCRIPTIONS[key as Tonality]}
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-muted-foreground">
+                {TONALITY_DESCRIPTIONS[settings.tonality[activeRole]]}
+              </p>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

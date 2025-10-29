@@ -34,7 +34,6 @@ import {
   Layers,
   Eye,
   EyeOff,
-  Shield,
   Palette
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -45,6 +44,7 @@ import {
   DialogTitle, 
   DialogTrigger 
 } from "@/components/ui/dialog";
+import { RoleCardGrid } from "@/components/common/role-card-grid";
 
 // Icon mapping für die Anzeige
 const ICON_MAP = {
@@ -166,16 +166,6 @@ export function FooterMenuSettings() {
     }
   };
 
-  const getRoleIcon = (role: UserRole) => {
-    switch (role) {
-      case "gastmitglied": return User;
-      case "mitglied": return Users;
-      case "kranfuehrer": return UserCheck;
-      case "admin": return Shield;
-      case "vorstand": return Shield;
-    }
-  };
-
   const renderIcon = (iconName: string) => {
     const IconComponent = ICON_MAP[iconName as keyof typeof ICON_MAP];
     return IconComponent ? <IconComponent className="w-4 h-4" /> : <Home className="w-4 h-4" />;
@@ -197,41 +187,17 @@ export function FooterMenuSettings() {
           {/* Role Selector */}
           <div className="space-y-3">
             <Label className="text-base font-medium">Rolle auswählen</Label>
-            <div className="flex gap-2 justify-center sm:justify-start flex-wrap">
-              {(["vorstand", "admin", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
-                const Icon = getRoleIcon(role);
-                const items = getMenuItemsForRole(role);
-                return (
-                  <Card 
-                    key={role}
-                    className={cn(
-                      "cursor-pointer transition-colors hover:bg-muted/50 w-20 sm:w-24",
-                      activeRole === role 
-                        ? "ring-2 ring-primary bg-primary/5" 
-                        : "hover:shadow-sm"
-                    )}
-                    onClick={() => {
-                      setActiveRole(role);
-                    }}
-                  >
-                    <CardContent className="p-3 text-center">
-                      <Icon className={cn(
-                        "h-6 w-6 mx-auto mb-1",
-                        activeRole === role ? "text-primary" : "text-muted-foreground"
-                      )} />
-                      <p className={cn(
-                        "font-medium text-xs",
-                        activeRole === role ? "text-primary" : "text-foreground"
-                      )}>
-                        {role === "gastmitglied" ? "Gast" : role === "mitglied" ? "Mitgl." : role === "kranfuehrer" ? "Kran" : role === "vorstand" ? "Vorst." : "Admin"}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {items.length}/8
-                      </p>
-                    </CardContent>
-                  </Card>
-                );
-              })}
+            <RoleCardGrid 
+              activeRole={activeRole}
+              onRoleSelect={(role) => {
+                setActiveRole(role);
+                setActiveRoleInDb(role);
+              }}
+            />
+            <div className="text-center pt-2">
+              <Badge variant="outline" className="text-xs">
+                {currentItems.length}/8 Menüpunkte
+              </Badge>
             </div>
           </div>
 
@@ -447,18 +413,20 @@ export function FooterMenuSettings() {
           <CardTitle className="text-lg">Übersicht</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Summary for All Roles */}
-          <div className="grid grid-cols-5 gap-2">
-            {(["vorstand", "admin", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
+          {/* Summary for All Roles using RoleCardGrid */}
+          <RoleCardGrid 
+            activeRole={null}
+            onRoleSelect={(role) => {
+              setActiveRole(role);
+              setActiveRoleInDb(role);
+            }}
+          />
+          <div className="grid grid-cols-5 gap-2 mt-4">
+            {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
               const items = getMenuItemsForRole(role);
-              const Icon = getRoleIcon(role);
               const displaySettings = getDisplaySettingsForRole(role);
               return (
-                <div key={role} className="text-center p-3 bg-muted/30 rounded-lg">
-                  <Icon className="h-5 w-5 mx-auto mb-1 text-muted-foreground" />
-                  <p className="font-medium text-xs mb-1">
-                    {role === "gastmitglied" ? "Gast" : role === "mitglied" ? "Mitgl." : role === "kranfuehrer" ? "Kran" : role === "vorstand" ? "Vorst." : "Admin"}
-                  </p>
+                <div key={role} className="text-center p-2 bg-muted/30 rounded-lg">
                   <p className="text-xs text-muted-foreground mb-1">
                     {items.length}/8
                   </p>
