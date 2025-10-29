@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { FileMetadata } from "../types/file-manager.types";
 import { useFileManager } from "@/hooks/use-file-manager";
-import { FileText, Image as ImageIcon, Video, File } from "lucide-react";
+import { FileText, Image as ImageIcon, Video, File as FileIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FilePreviewProps {
@@ -109,10 +109,10 @@ export function FilePreview({
   };
 
   // File icon
-  const FileIcon = fileType === 'image' ? ImageIcon :
-                   fileType === 'pdf' ? FileText :
-                   fileType === 'video' ? Video :
-                   File;
+  const IconComponent = fileType === 'image' ? ImageIcon :
+                        fileType === 'pdf' ? FileText :
+                        fileType === 'video' ? Video :
+                        FileIcon;
 
   return (
     <div className={cn("flex flex-col items-center", className)}>
@@ -131,7 +131,7 @@ export function FilePreview({
             loading="lazy"
           />
         ) : (
-          <FileIcon className={cn("text-muted-foreground", iconSizeClasses[size])} />
+          <IconComponent className={cn("text-muted-foreground", iconSizeClasses[size])} />
         )}
       </div>
       
