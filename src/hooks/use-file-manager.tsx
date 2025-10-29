@@ -388,25 +388,51 @@ export const useFileManager = () => {
       // Determine bucket based on category
       const bucket = file.category === 'login_media' ? 'login-media' : 'documents';
       
+      // Extract the actual file path without the bucket prefix
+      // storage_path might be "login-media/file.webp" or just "file.webp"
+      let filePath = file.storage_path;
+      if (filePath.startsWith(`${bucket}/`)) {
+        filePath = filePath.substring(bucket.length + 1);
+      }
+      
+      console.log('🖼️ Loading preview:', { 
+        bucket, 
+        originalPath: file.storage_path, 
+        cleanedPath: filePath,
+        filename: file.filename,
+        category: file.category 
+      });
+      
       // For public buckets, try public URL first
       if (bucket === 'login-media') {
         const { data } = supabase.storage
           .from(bucket)
-          .getPublicUrl(file.storage_path);
+          .getPublicUrl(filePath);
         
         if (data?.publicUrl) {
+          console.log('✅ Public URL generated:', data.publicUrl);
           return data.publicUrl;
         }
       }
       
       // For private buckets or if public URL failed, create signed URL
-      const { data } = await supabase.storage
+      const { data, error } = await supabase.storage
         .from(bucket)
-        .createSignedUrl(file.storage_path, 3600); // 1 hour expiry
+        .createSignedUrl(filePath, 3600); // 1 hour expiry
 
-      return data?.signedUrl || null;
+      if (error) {
+        console.error('❌ Error creating signed URL:', error);
+        return null;
+      }
+
+      if (data?.signedUrl) {
+        console.log('✅ Signed URL generated:', data.signedUrl);
+        return data.signedUrl;
+      }
+
+      return null;
     } catch (error) {
-      console.error('Error getting file preview URL:', error);
+      console.error('❌ Error getting file preview URL:', error);
       return null;
     }
   };
