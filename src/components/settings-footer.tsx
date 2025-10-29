@@ -115,6 +115,10 @@ export function SettingsFooter() {
       navigate('/file-manager');
       return;
     }
+    if (id === 'reports') {
+      navigate('/reports');
+      return;
+    }
     if (id === 'settings') {
       navigate('/settings');
       return;
@@ -142,6 +146,7 @@ export function SettingsFooter() {
     
     // Check route-based items
     if (itemId === 'file-manager') return currentPath === '/file-manager';
+    if (itemId === 'reports') return currentPath === '/reports';
     if (itemId === 'settings') return currentPath === '/settings';
     if (itemId === 'header-message') return currentPath === '/header-message';
     if (itemId === 'desktop-background') return currentPath === '/desktop-background';

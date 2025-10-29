@@ -207,6 +207,8 @@ export function AppShell({
                 // Navigate to route-based items
                 if (item.id === 'file-manager') {
                   navigate('/file-manager');
+                } else if (item.id === 'reports') {
+                  navigate('/reports');
                 } else if (item.id === 'settings') {
                   navigate('/settings');
                 } else if (item.id === 'header-message') {
