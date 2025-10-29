@@ -331,11 +331,11 @@ export function EnhancedFileManager() {
         )}
       </div>
 
-      {/* Upload FAB (Mobile) */}
+      {/* Upload FAB (Mobile) - Higher to avoid footer overlap */}
       {isMobile && (
         <Button
           size="lg"
-          className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-20"
+          className="fixed bottom-24 right-4 h-14 w-14 rounded-full shadow-lg z-20"
           onClick={() => setUploadDialogOpen(true)}
         >
           <Upload className="h-6 w-6" />
