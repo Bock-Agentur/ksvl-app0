@@ -39,15 +39,16 @@ function AppContent() {
   
   // ✅ Phase 1: Conditional Hook Execution (Lazy Loading)
   const shouldLoadSlots = activeTab === 'dashboard' || activeTab === 'calendar';
-  const shouldLoadUsers = activeTab === 'dashboard' || activeTab === 'users';
+  const shouldLoadUsers = activeTab === 'dashboard' || activeTab === 'users' || activeTab === 'profile';
   const shouldLoadDashboard = activeTab === 'dashboard';
+  const shouldLoadProfile = activeTab === 'profile';
 
   const { isLoading: slotsLoading } = useSlots({ enabled: shouldLoadSlots });
   const { loading: usersLoading } = useUsers({ enabled: shouldLoadUsers });
   const { isLoading: aiAssistantLoading } = useAIAssistantSettings({ enabled: shouldLoadDashboard });
   const { isLoading: aiWelcomeLoading } = useAIWelcomeMessage({ enabled: shouldLoadDashboard });
   const { agentName, isLoading: harborChatLoading } = useHarborChatData({ enabled: shouldLoadDashboard });
-  const { firstName, fullName: displayName, isLoading: profileLoading } = useProfileData({ enabled: shouldLoadDashboard });
+  const { firstName, fullName: displayName, isLoading: profileLoading } = useProfileData({ enabled: shouldLoadDashboard || shouldLoadProfile });
   const { settings: footerSettings, isLoading: footerLoading } = useFooterMenuSettings();
   const {
     settings: dashboardSettings,
@@ -76,6 +77,8 @@ function AppContent() {
         return baseLoading || slotsLoading;
       case 'users': 
         return baseLoading || usersLoading;
+      case 'profile':
+        return baseLoading || usersLoading || profileLoading;
       case 'settings':
         return baseLoading || aiAssistantLoading || aiWelcomeLoading;
       default: 

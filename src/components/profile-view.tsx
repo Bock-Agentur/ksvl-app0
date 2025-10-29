@@ -619,15 +619,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-4 text-center">
-        <p className="text-muted-foreground">Lade Profil...</p>
-      </div>
-    );
-  }
-
-  if (!user) {
+  // Remove loading state - handled by PageLoader in Index
+  if (!user && !loading) {
     return (
       <div className="p-4 text-center">
         <p className="text-destructive">Profil konnte nicht geladen werden.</p>
@@ -792,13 +785,11 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                             </Button>
                           </div>
 
-                          {/* Existing Fields List */}
-                          <div className="space-y-4">
-                            <h3 className="font-semibold">Vorhandene Felder</h3>
-                            
-                            {fieldsLoading ? (
-                              <p className="text-sm text-muted-foreground">Lade Felder...</p>
-                            ) : customFields.length === 0 ? (
+                            {/* Existing Fields List */}
+                            <div className="space-y-4">
+                              <h3 className="font-semibold">Vorhandene Felder</h3>
+                              
+                              {!fieldsLoading && customFields.length === 0 ? (
                               <p className="text-sm text-muted-foreground">Keine benutzerdefinierten Felder vorhanden.</p>
                             ) : (
                               <div className="space-y-2">
