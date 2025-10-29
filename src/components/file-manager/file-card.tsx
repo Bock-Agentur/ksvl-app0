@@ -53,6 +53,7 @@ export function FileCard({
   const [canEditFile, setCanEditFile] = useState(false);
   const [canDeleteFile, setCanDeleteFile] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [thumbnailLoading, setThumbnailLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
 
@@ -69,30 +70,50 @@ export function FileCard({
   }, [file.id, canEdit, canDelete]);
 
   useEffect(() => {
+    let isMounted = true;
+    
     const loadThumbnail = async () => {
       // Check if it's an image by file_type OR file extension
       const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'];
       const isImage = file.file_type === 'image' || 
                      imageExtensions.some(ext => file.filename.toLowerCase().endsWith(ext));
       
-      if (isImage) {
-        try {
-          // Use the new getFilePreviewUrl method which handles both buckets
-          const url = await getFilePreviewUrl(file);
+      if (!isImage) return;
+      
+      // Reset states
+      setThumbnailLoading(true);
+      setImageError(false);
+      
+      try {
+        // Use the new getFilePreviewUrl method which handles both buckets
+        const url = await getFilePreviewUrl(file);
+        
+        if (isMounted) {
           if (url) {
             setThumbnailUrl(url);
             setImageError(false);
           } else {
+            setThumbnailUrl(null);
             setImageError(true);
           }
-        } catch (error) {
-          console.error('Error loading thumbnail:', error);
+          setThumbnailLoading(false);
+        }
+      } catch (error) {
+        console.error('Error loading thumbnail:', error);
+        if (isMounted) {
+          setThumbnailUrl(null);
           setImageError(true);
+          setThumbnailLoading(false);
         }
       }
     };
+    
     loadThumbnail();
-  }, [file, getFilePreviewUrl]);
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [file.id, file.storage_path, file.category]);
 
   const handleDelete = async () => {
     if (window.confirm(`"${file.filename}" wirklich löschen?`)) {
@@ -166,12 +187,15 @@ export function FileCard({
 
         {/* Thumbnail/Icon */}
         <div className="h-14 w-14 rounded-md overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
-          {thumbnailUrl && !imageError ? (
+          {thumbnailLoading ? (
+            <div className="h-full w-full animate-pulse bg-muted-foreground/20" />
+          ) : thumbnailUrl && !imageError ? (
             <img 
               src={thumbnailUrl} 
               alt={file.filename} 
               className="h-full w-full object-cover" 
               onError={() => setImageError(true)}
+              loading="lazy"
             />
           ) : (
             <FileIcon className="h-6 w-6 text-muted-foreground" />
@@ -262,12 +286,15 @@ export function FileCard({
 
       {/* Thumbnail */}
       <div className="aspect-video bg-muted flex items-center justify-center relative">
-        {thumbnailUrl && !imageError ? (
+        {thumbnailLoading ? (
+          <div className="h-full w-full animate-pulse bg-muted-foreground/20" />
+        ) : thumbnailUrl && !imageError ? (
           <img 
             src={thumbnailUrl} 
             alt={file.filename} 
             className="h-full w-full object-cover" 
             onError={() => setImageError(true)}
+            loading="lazy"
           />
         ) : (
           <FileIcon className="h-12 w-12 text-muted-foreground" />
