@@ -470,25 +470,13 @@ export function EnhancedFileManager() {
 
       {/* Upload Button (Desktop) */}
       {!isMobile && (
-        <div className="sticky bottom-0 p-4 bg-background border-t space-y-2">
-          <Button onClick={() => setUploadDialogOpen(true)} className="w-full">
-            <Upload className="h-4 w-4 mr-2" />
-            Datei hochladen
-          </Button>
-          
-          {/* Admin Migration Button */}
-          {isAdmin() && (
-            <Button 
-              onClick={handleMigrateFiles} 
-              variant="outline" 
-              className="w-full"
-              disabled={isMigrating}
-            >
-              <RefreshCw className={cn("h-4 w-4 mr-2", isMigrating && "animate-spin")} />
-              {isMigrating ? 'Migriere...' : 'Alte Dateien migrieren'}
-            </Button>
-          )}
-        </div>
+        <Button 
+          onClick={() => setUploadDialogOpen(true)} 
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg z-20"
+          size="icon"
+        >
+          <Upload className="h-6 w-6" />
+        </Button>
       )}
 
       {/* Upload Drawer */}

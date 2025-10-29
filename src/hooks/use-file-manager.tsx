@@ -234,8 +234,10 @@ export const useFileManager = () => {
         description: "Datei erfolgreich hochgeladen",
       });
 
-      // Refresh files list
-      await fetchFiles();
+      // Add to current files list immediately for instant UI update
+      if (metadataData) {
+        setFiles(prev => [metadataData, ...prev]);
+      }
 
       return metadataData;
     } catch (error) {
