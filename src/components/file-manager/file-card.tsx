@@ -164,8 +164,8 @@ export function FileCard({
     }
   };
 
-  // Mobile/List View (Horizontal Layout)
-  if (viewMode === 'list' || isMobile) {
+  // List View (Horizontal Layout)
+  if (viewMode === 'list') {
     return (
       <div
         className={cn(
