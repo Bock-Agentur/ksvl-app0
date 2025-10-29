@@ -48,11 +48,12 @@ export function FileCard({
 }: FileCardProps) {
   const isMobile = useIsMobile();
   const { canEdit, canDelete } = useFilePermissions();
-  const { deleteFile, downloadFile, getFileUrl } = useFileManager();
+  const { deleteFile, downloadFile, getFilePreviewUrl } = useFileManager();
   
   const [canEditFile, setCanEditFile] = useState(false);
   const [canDeleteFile, setCanDeleteFile] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -75,12 +76,23 @@ export function FileCard({
                      imageExtensions.some(ext => file.filename.toLowerCase().endsWith(ext));
       
       if (isImage) {
-        const url = await getFileUrl(file.storage_path);
-        setThumbnailUrl(url);
+        try {
+          // Use the new getFilePreviewUrl method which handles both buckets
+          const url = await getFilePreviewUrl(file);
+          if (url) {
+            setThumbnailUrl(url);
+            setImageError(false);
+          } else {
+            setImageError(true);
+          }
+        } catch (error) {
+          console.error('Error loading thumbnail:', error);
+          setImageError(true);
+        }
       }
     };
     loadThumbnail();
-  }, [file, getFileUrl]);
+  }, [file, getFilePreviewUrl]);
 
   const handleDelete = async () => {
     if (window.confirm(`"${file.filename}" wirklich löschen?`)) {
@@ -154,8 +166,13 @@ export function FileCard({
 
         {/* Thumbnail/Icon */}
         <div className="h-14 w-14 rounded-md overflow-hidden bg-muted flex-shrink-0 flex items-center justify-center">
-          {thumbnailUrl ? (
-            <img src={thumbnailUrl} alt={file.filename} className="h-full w-full object-cover" />
+          {thumbnailUrl && !imageError ? (
+            <img 
+              src={thumbnailUrl} 
+              alt={file.filename} 
+              className="h-full w-full object-cover" 
+              onError={() => setImageError(true)}
+            />
           ) : (
             <FileIcon className="h-6 w-6 text-muted-foreground" />
           )}
@@ -245,8 +262,13 @@ export function FileCard({
 
       {/* Thumbnail */}
       <div className="aspect-video bg-muted flex items-center justify-center relative">
-        {thumbnailUrl ? (
-          <img src={thumbnailUrl} alt={file.filename} className="h-full w-full object-cover" />
+        {thumbnailUrl && !imageError ? (
+          <img 
+            src={thumbnailUrl} 
+            alt={file.filename} 
+            className="h-full w-full object-cover" 
+            onError={() => setImageError(true)}
+          />
         ) : (
           <FileIcon className="h-12 w-12 text-muted-foreground" />
         )}

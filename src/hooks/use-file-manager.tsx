@@ -379,6 +379,39 @@ export const useFileManager = () => {
   };
 
   /**
+   * Get preview URL for a file
+   * Handles both public buckets (login-media) and private buckets (documents)
+   * with automatic fallback logic
+   */
+  const getFilePreviewUrl = async (file: FileMetadata): Promise<string | null> => {
+    try {
+      // Determine bucket based on category
+      const bucket = file.category === 'login_media' ? 'login-media' : 'documents';
+      
+      // For public buckets, try public URL first
+      if (bucket === 'login-media') {
+        const { data } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(file.storage_path);
+        
+        if (data?.publicUrl) {
+          return data.publicUrl;
+        }
+      }
+      
+      // For private buckets or if public URL failed, create signed URL
+      const { data } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(file.storage_path, 3600); // 1 hour expiry
+
+      return data?.signedUrl || null;
+    } catch (error) {
+      console.error('Error getting file preview URL:', error);
+      return null;
+    }
+  };
+
+  /**
    * Download file
    */
   const downloadFile = async (fileId: string): Promise<void> => {
@@ -468,6 +501,7 @@ export const useFileManager = () => {
     updateFileMetadata,
     downloadFile,
     getFileUrl,
+    getFilePreviewUrl,
     toggleFileSelection,
     clearSelection,
     loadMore,

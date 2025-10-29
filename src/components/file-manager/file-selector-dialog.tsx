@@ -55,10 +55,8 @@ export function FileSelectorDialog({
     files,
     loading,
     searchQuery,
-    viewMode,
     hasMore,
     setSearchQuery,
-    setViewMode,
     setFilters,
     loadMore,
   } = useFileManager();

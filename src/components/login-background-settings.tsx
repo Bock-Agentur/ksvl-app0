@@ -16,7 +16,6 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { MediaFileManager } from "@/components/media-file-manager";
 import { FileSelectorDialog } from "@/components/file-manager/file-selector-dialog";
 import { Badge } from "@/components/ui/badge";
 
@@ -116,6 +115,7 @@ export function LoginBackgroundSettings() {
   const [isInputBgColorOpen, setIsInputBgColorOpen] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [fileSelectorOpen, setFileSelectorOpen] = useState(false);
+  const [legacyMediaSelectorOpen, setLegacyMediaSelectorOpen] = useState(false);
 
   // Update local state when background changes from server
   useEffect(() => {
@@ -469,26 +469,14 @@ export function LoginBackgroundSettings() {
               </TabsContent>
               
               <TabsContent value="manager" className="mt-4">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" className="w-full">
-                      Gespeicherte Dateien durchsuchen
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
-                    <MediaFileManager
-                      onSelect={(url, filename, type) => {
-                        setLocalSettings({
-                          ...localSettings,
-                          type,
-                          url,
-                          filename
-                        });
-                      }}
-                      selectedFilename={localSettings.filename}
-                    />
-                  </DialogContent>
-                </Dialog>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => setLegacyMediaSelectorOpen(true)}
+                >
+                  <FolderOpen className="h-4 w-4 mr-2" />
+                  Gespeicherte Dateien durchsuchen
+                </Button>
                 {localSettings.filename && (
                   <div className="mt-4 p-3 border rounded-lg bg-muted/50">
                     <p className="text-sm font-medium">Ausgewählte Datei:</p>
@@ -530,6 +518,26 @@ export function LoginBackgroundSettings() {
                   <div className="mt-4 p-3 border rounded-lg bg-muted/50">
                     <p className="text-sm font-medium">Ausgewählte Datei:</p>
                     <p className="text-xs text-muted-foreground truncate mt-1">{localSettings.filename}</p>
+                    {localSettings.url && (
+                      <div className="relative w-full h-40 rounded border overflow-hidden mt-2">
+                        {localSettings.type === 'video' ? (
+                          <video
+                            src={localSettings.url}
+                            className="w-full h-full object-cover"
+                            muted
+                            loop
+                            playsInline
+                            autoPlay
+                          />
+                        ) : (
+                          <img
+                            src={localSettings.url}
+                            alt="Vorschau"
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
               </TabsContent>
@@ -1225,24 +1233,79 @@ export function LoginBackgroundSettings() {
       </Card>
 
       {/* File Selector Dialog */}
+      {/* File Selector Dialogs */}
       <FileSelectorDialog
         open={fileSelectorOpen}
         onOpenChange={setFileSelectorOpen}
-        onSelect={(file) => {
-          setLocalSettings({
-            ...localSettings,
-            type: file.file_type === 'video' ? 'video' : 'image',
-            url: file.storage_path,
-            filename: file.filename
-          });
-          setFileSelectorOpen(false);
-          toast({
-            title: "Datei ausgewählt",
-            description: `${file.filename} wurde ausgewählt. Klicke auf "Speichern" um die Änderungen zu übernehmen.`
-          });
+        onSelect={async (file) => {
+          // Get preview URL using the unified system
+          const { supabase } = await import("@/integrations/supabase/client");
+          const bucket = file.category === 'login_media' ? 'login-media' : 'documents';
+          
+          let url: string | null = null;
+          if (bucket === 'login-media') {
+            const { data } = supabase.storage.from(bucket).getPublicUrl(file.storage_path);
+            url = data?.publicUrl || null;
+          } else {
+            const { data } = await supabase.storage.from(bucket).createSignedUrl(file.storage_path, 3600);
+            url = data?.signedUrl || null;
+          }
+          
+          if (url) {
+            setLocalSettings({
+              ...localSettings,
+              type: file.file_type === 'video' ? 'video' : 'image',
+              url,
+              filename: file.filename
+            });
+            setFileSelectorOpen(false);
+            toast({
+              title: "Datei ausgewählt",
+              description: `${file.filename} wurde ausgewählt. Klicke auf "Speichern" um die Änderungen zu übernehmen.`
+            });
+          }
         }}
         title="Login-Hintergrund auswählen"
         description="Wählen Sie ein Bild oder Video aus dem Dateimanager"
+        filters={{
+          category: 'login_media',
+          file_type: localSettings.type === 'video' ? 'video' : 'image',
+        }}
+      />
+      
+      <FileSelectorDialog
+        open={legacyMediaSelectorOpen}
+        onOpenChange={setLegacyMediaSelectorOpen}
+        onSelect={async (file) => {
+          // Get preview URL for legacy media
+          const { supabase } = await import("@/integrations/supabase/client");
+          const bucket = file.category === 'login_media' ? 'login-media' : 'documents';
+          
+          let url: string | null = null;
+          if (bucket === 'login-media') {
+            const { data } = supabase.storage.from(bucket).getPublicUrl(file.storage_path);
+            url = data?.publicUrl || null;
+          } else {
+            const { data } = await supabase.storage.from(bucket).createSignedUrl(file.storage_path, 3600);
+            url = data?.signedUrl || null;
+          }
+          
+          if (url) {
+            setLocalSettings({
+              ...localSettings,
+              type: file.file_type === 'video' ? 'video' : 'image',
+              url,
+              filename: file.filename
+            });
+            setLegacyMediaSelectorOpen(false);
+            toast({
+              title: "Datei ausgewählt",
+              description: `${file.filename} wurde ausgewählt. Klicke auf "Speichern" um die Änderungen zu übernehmen.`
+            });
+          }
+        }}
+        title="Gespeicherte Dateien durchsuchen"
+        description="Wähle eine Datei aus dem Dateimanager"
         filters={{
           category: 'login_media',
           file_type: localSettings.type === 'video' ? 'video' : 'image',
