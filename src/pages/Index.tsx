@@ -100,6 +100,7 @@ function AppContent() {
   
   // Phase 2 & 3: Wait for data loading, then for DOM render
   useEffect(() => {
+    // Handle both tab transitions AND initial page load
     if (pendingTab && activeTab === pendingTab) {
       // Wait for data to load
       if (!isPageLoading) {
@@ -116,8 +117,18 @@ function AppContent() {
           });
         });
       }
+    } else if (!pendingTab && !isPageLoading && !isContentRendered) {
+      // Initial page load (after login) - no pendingTab set
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setIsContentRendered(true);
+            setContentReady(true);
+          });
+        });
+      });
     }
-  }, [activeTab, pendingTab, isPageLoading]);
+  }, [activeTab, pendingTab, isPageLoading, isContentRendered]);
   
   // Phase 1: Fade out and trigger tab switch
   const setActiveTab = async (tab: string) => {
