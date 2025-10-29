@@ -62,7 +62,7 @@ export function FileDetailDrawer({
   }, [fileId, files]);
 
   const loadFileUrl = async (file: FileMetadata) => {
-    const url = await getFileUrl(file.storage_path);
+    const url = await getFileUrl(file.storage_path, file.category);
     setFileUrl(url);
   };
 

@@ -367,11 +367,34 @@ export const useFileManager = () => {
   /**
    * Get download URL for a file
    */
-  const getFileUrl = async (storagePath: string): Promise<string | null> => {
+  const getFileUrl = async (storagePath: string, category?: string): Promise<string | null> => {
     try {
+      // Determine bucket based on category or path
+      const bucket = category === 'login_media' || storagePath.includes('login-media') 
+        ? 'login-media' 
+        : 'documents';
+      
+      // Clean the path
+      let filePath = storagePath;
+      if (filePath.startsWith(`${bucket}/`)) {
+        filePath = filePath.substring(bucket.length + 1);
+      }
+
+      // For public bucket, use public URL
+      if (bucket === 'login-media') {
+        const { data } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(filePath);
+        
+        if (data?.publicUrl) {
+          return data.publicUrl;
+        }
+      }
+
+      // For private buckets, create signed URL
       const { data } = await supabase.storage
-        .from('documents')
-        .createSignedUrl(storagePath, 3600); // 1 hour expiry
+        .from(bucket)
+        .createSignedUrl(filePath, 3600);
 
       return data?.signedUrl || null;
     } catch (error) {
@@ -447,7 +470,7 @@ export const useFileManager = () => {
       const file = files.find(f => f.id === fileId);
       if (!file) return;
 
-      const url = await getFileUrl(file.storage_path);
+      const url = await getFileUrl(file.storage_path, file.category);
       if (!url) throw new Error("URL konnte nicht generiert werden");
 
       // Create download link
