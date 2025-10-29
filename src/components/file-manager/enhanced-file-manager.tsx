@@ -4,7 +4,10 @@ import { useFilePermissions } from "@/hooks/use-file-permissions";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -22,7 +25,8 @@ import {
   Trash2,
   Download,
   RefreshCw,
-  Info
+  Info,
+  ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -53,7 +57,7 @@ export function EnhancedFileManager() {
   const { isAdmin } = useFilePermissions();
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
-  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isMigrating, setIsMigrating] = useState(false);
   const [authDebug, setAuthDebug] = useState<{ isLoggedIn: boolean; isAdminUser: boolean; userId: string | null }>();
 
@@ -126,92 +130,194 @@ export function EnhancedFileManager() {
   const isMultiSelectActive = selectedFiles.length > 0;
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Sticky Header with Search */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="p-4 space-y-3">
-          {/* Search Bar */}
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Dateien durchsuchen..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
+    <div className="flex flex-col h-full space-y-4 p-4">
+      {/* Search & Filter Card - Collapsible on Mobile */}
+      <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen} className="sm:hidden">
+        <CollapsibleTrigger asChild>
+          <Button 
+            variant="outline" 
+            className="w-full flex items-center justify-between bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 hover:bg-white/90 px-6 py-4 h-auto"
+          >
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4" />
+              <span className="font-semibold text-sm">Suche & Filter</span>
             </div>
-            
-            {/* Filter Sheet (Mobile) / Button (Desktop) */}
-            <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <SlidersHorizontal className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side={isMobile ? "bottom" : "right"} className={isMobile ? "h-[80vh]" : ""}>
-                <SheetHeader>
-                  <SheetTitle>Filter</SheetTitle>
-                </SheetHeader>
-                <div className="space-y-4 mt-4">
-                  {/* File Type Filter */}
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Dateityp</label>
-                    <div className="flex flex-wrap gap-2">
-                      {['all', 'image', 'pdf', 'video'].map((type) => (
-                        <Button
-                          key={type}
-                          variant={filters.file_type === (type === 'all' ? undefined : type) ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setFilters({ ...filters, file_type: type === 'all' ? undefined : type })}
-                        >
-                          {type === 'all' ? 'Alle' : type.toUpperCase()}
-                        </Button>
-                      ))}
-                    </div>
-                  </div>
+            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-2">
+          <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+            <CardContent className="pt-4 space-y-4">
+              {/* Search */}
+              <div>
+                <Label htmlFor="search-mobile">Suche</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="search-mobile"
+                    placeholder="Dateien durchsuchen..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
-              </SheetContent>
-            </Sheet>
+              </div>
+
+              {/* Category Filter */}
+              <div>
+                <Label>Kategorie</Label>
+                <Select 
+                  value={filters.category || 'all'} 
+                  onValueChange={(value) => setFilters({ ...filters, category: value === 'all' ? undefined : value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* File Type Filter */}
+              <div>
+                <Label>Dateityp</Label>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  {['all', 'image', 'pdf', 'video'].map((type) => (
+                    <Button
+                      key={type}
+                      variant={filters.file_type === (type === 'all' ? undefined : type) ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setFilters({ ...filters, file_type: type === 'all' ? undefined : type })}
+                    >
+                      {type === 'all' ? 'Alle' : type.toUpperCase()}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* View Mode */}
+              <div>
+                <Label>Ansicht</Label>
+                <div className="flex gap-2 mt-2">
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'outline'}
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setViewMode('grid')}
+                  >
+                    <Grid3x3 className="h-4 w-4 mr-2" />
+                    Raster
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setViewMode('list')}
+                  >
+                    <List className="h-4 w-4 mr-2" />
+                    Liste
+                  </Button>
+                </div>
+              </div>
+
+              {/* Reset Filters */}
+              {(searchQuery || filters.file_type || (filters.category && filters.category !== 'all')) && (
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setSearchQuery('');
+                    setFilters({ category: undefined, file_type: undefined });
+                  }} 
+                  className="w-full"
+                >
+                  Filter zurücksetzen
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        </CollapsibleContent>
+      </Collapsible>
+
+      {/* Search & Filter Card - Desktop */}
+      <Card className="hidden sm:block bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <CardContent className="pt-6 space-y-4">
+          <div className="flex gap-4">
+            {/* Search */}
+            <div className="flex-1">
+              <Label htmlFor="search-desktop">Suche</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="search-desktop"
+                  placeholder="Dateien durchsuchen..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+            </div>
 
             {/* View Toggle */}
-            <div className="hidden sm:flex gap-1 border rounded-md p-1">
-              <Button
-                variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setViewMode('grid')}
-              >
-                <Grid3x3 className="h-4 w-4" />
-              </Button>
-              <Button
-                variant={viewMode === 'list' ? 'default' : 'ghost'}
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setViewMode('list')}
-              >
-                <List className="h-4 w-4" />
-              </Button>
+            <div className="flex items-end">
+              <div className="flex gap-1 border rounded-md p-1">
+                <Button
+                  variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setViewMode('grid')}
+                >
+                  <Grid3x3 className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant={viewMode === 'list' ? 'default' : 'ghost'}
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={() => setViewMode('list')}
+                >
+                  <List className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </div>
 
-          {/* Category Tabs - Horizontal Scroll on Mobile */}
-          <Tabs 
-            value={filters.category || 'all'} 
-            onValueChange={handleCategoryChange}
-            className="w-full"
-          >
-            <TabsList className={cn(
-              "w-full justify-start",
-              isMobile && "overflow-x-auto flex-nowrap"
-            )}>
-              {categories.map((cat) => (
-                <TabsTrigger key={cat.id} value={cat.id} className="flex-shrink-0">
-                  {cat.label}
-                </TabsTrigger>
+          {/* Category Tabs */}
+          <div>
+            <Tabs 
+              value={filters.category || 'all'} 
+              onValueChange={handleCategoryChange}
+              className="w-full"
+            >
+              <TabsList className="w-full justify-start">
+                {categories.map((cat) => (
+                  <TabsTrigger key={cat.id} value={cat.id}>
+                    {cat.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
+          </div>
+
+          {/* File Type Filter */}
+          <div>
+            <Label>Dateityp</Label>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {['all', 'image', 'pdf', 'video'].map((type) => (
+                <Button
+                  key={type}
+                  variant={filters.file_type === (type === 'all' ? undefined : type) ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setFilters({ ...filters, file_type: type === 'all' ? undefined : type })}
+                >
+                  {type === 'all' ? 'Alle' : type.toUpperCase()}
+                </Button>
               ))}
-            </TabsList>
-          </Tabs>
+            </div>
+          </div>
 
           {/* Active Filters */}
           {(filters.file_type || searchQuery) && (
@@ -230,8 +336,8 @@ export function EnhancedFileManager() {
               )}
             </div>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Multi-Select Actions Bar */}
       {isMultiSelectActive && (
