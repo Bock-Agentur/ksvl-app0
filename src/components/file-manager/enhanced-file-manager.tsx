@@ -200,6 +200,31 @@ export function EnhancedFileManager() {
                 </div>
               </div>
 
+              {/* View Mode */}
+              <div>
+                <Label>Ansicht</Label>
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="flex items-center gap-2 flex-1"
+                  >
+                    <Grid3x3 className="h-4 w-4" />
+                    Rasteransicht
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="flex items-center gap-2 flex-1"
+                  >
+                    <List className="h-4 w-4" />
+                    Listenansicht
+                  </Button>
+                </div>
+              </div>
+
               {/* Reset Filters */}
               {(searchQuery || filters.file_type || (filters.category && filters.category !== 'all')) && (
                 <Button 
