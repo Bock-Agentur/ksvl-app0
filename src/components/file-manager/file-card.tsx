@@ -55,7 +55,7 @@ export function FileCard({
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [thumbnailLoading, setThumbnailLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
-  const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+  // Removed long-press - multi-select now controlled by toggle button
 
   useEffect(() => {
     const checkPermissions = async () => {
@@ -125,21 +125,7 @@ export function FileCard({
     downloadFile(file.id);
   };
 
-  // Long press for multi-select on mobile
-  const handleTouchStart = () => {
-    if (!isMobile) return;
-    const timer = setTimeout(() => {
-      onSelect();
-    }, 500);
-    setLongPressTimer(timer);
-  };
-
-  const handleTouchEnd = () => {
-    if (longPressTimer) {
-      clearTimeout(longPressTimer);
-      setLongPressTimer(null);
-    }
-  };
+  // Long-press removed - multi-select now via explicit toggle button
 
   // File type icon
   const FileIcon = file.file_type === 'image' ? ImageIcon :
@@ -173,8 +159,6 @@ export function FileCard({
           isSelected && "ring-2 ring-primary bg-accent"
         )}
         onClick={() => multiSelectActive ? onSelect() : onView()}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
       >
         {/* Checkbox (Multi-Select Mode) */}
         {multiSelectActive && (

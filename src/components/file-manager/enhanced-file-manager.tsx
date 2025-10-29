@@ -12,8 +12,8 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FileCard } from "./file-card";
-import { FileUploadDialog } from "./file-upload-dialog";
-import { FileDetailDrawer } from "./file-detail-drawer";
+import { FileUploadDrawer } from "./components/file-upload-drawer";
+import { FileDetailDrawer } from "./components/file-detail-drawer";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
@@ -26,7 +26,8 @@ import {
   Download,
   RefreshCw,
   Info,
-  ChevronDown
+  ChevronDown,
+  CheckSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -60,6 +61,7 @@ export function EnhancedFileManager() {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isMigrating, setIsMigrating] = useState(false);
   const [authDebug, setAuthDebug] = useState<{ isLoggedIn: boolean; isAdminUser: boolean; userId: string | null }>();
+  const [multiSelectMode, setMultiSelectMode] = useState(false);
 
   // Debug: Check auth status
   useState(() => {
@@ -127,7 +129,14 @@ export function EnhancedFileManager() {
     }
   };
 
-  const isMultiSelectActive = selectedFiles.length > 0;
+  const toggleMultiSelectMode = () => {
+    setMultiSelectMode(!multiSelectMode);
+    if (multiSelectMode) {
+      clearSelection();
+    }
+  };
+
+  const isMultiSelectActive = multiSelectMode && selectedFiles.length > 0;
 
   return (
     <div className="space-y-4">
@@ -246,25 +255,38 @@ export function EnhancedFileManager() {
       {/* Search & Filter Card - Desktop */}
       <Card className="hidden sm:block bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardContent className="pt-6 space-y-4">
-          {/* View Mode Toggle - Above search like calendar */}
-          <div className="flex items-center justify-center gap-2">
+          {/* View Mode Toggle & Multi-Select Toggle */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Button
+                variant={viewMode === 'grid' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('grid')}
+                className="flex items-center gap-2"
+              >
+                <Grid3x3 className="h-4 w-4" />
+                Rasteransicht
+              </Button>
+              <Button
+                variant={viewMode === 'list' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setViewMode('list')}
+                className="flex items-center gap-2"
+              >
+                <List className="h-4 w-4" />
+                Listenansicht
+              </Button>
+            </div>
+            
+            {/* Multi-Select Toggle */}
             <Button
-              variant={viewMode === 'grid' ? 'default' : 'outline'}
+              variant={multiSelectMode ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setViewMode('grid')}
+              onClick={toggleMultiSelectMode}
               className="flex items-center gap-2"
             >
-              <Grid3x3 className="h-4 w-4" />
-              Rasteransicht
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setViewMode('list')}
-              className="flex items-center gap-2"
-            >
-              <List className="h-4 w-4" />
-              Listenansicht
+              <CheckSquare className="h-4 w-4" />
+              {multiSelectMode ? 'Fertig' : 'Auswählen'}
             </Button>
           </div>
 
@@ -418,7 +440,7 @@ export function EnhancedFileManager() {
                   isSelected={selectedFiles.includes(file.id)}
                   onSelect={() => toggleFileSelection(file.id)}
                   onView={() => setSelectedFileId(file.id)}
-                  multiSelectActive={isMultiSelectActive}
+                  multiSelectActive={multiSelectMode}
                 />
               ))}
             </div>
@@ -469,8 +491,8 @@ export function EnhancedFileManager() {
         </div>
       )}
 
-      {/* Upload Dialog */}
-      <FileUploadDialog
+      {/* Upload Drawer */}
+      <FileUploadDrawer
         open={uploadDialogOpen}
         onOpenChange={setUploadDialogOpen}
       />

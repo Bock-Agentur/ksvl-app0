@@ -1,6 +1,16 @@
-// File Manager Components
+// File Manager Module - Central Export
 export { EnhancedFileManager } from './enhanced-file-manager';
 export { FileCard } from './file-card';
-export { FileUploadDialog } from './file-upload-dialog';
-export { FileDetailDrawer } from './file-detail-drawer';
-export { FileSelectorDialog } from './file-selector-dialog';
+
+// New Drawer Components
+export { FileUploadDrawer } from './components/file-upload-drawer';
+export { FileDetailDrawer } from './components/file-detail-drawer';
+export { FileSelectorDrawer } from './components/file-selector-drawer';
+export { FilePreview } from './components/file-preview';
+
+// Types
+export type * from './types/file-manager.types';
+
+// Legacy exports for backwards compatibility
+export { FileUploadDrawer as FileUploadDialog } from './components/file-upload-drawer';
+export { FileSelectorDrawer as FileSelectorDialog } from './components/file-selector-drawer';
