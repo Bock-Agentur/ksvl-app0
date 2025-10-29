@@ -111,24 +111,46 @@ export function MenuSettings() {
   return (
     <div className="space-y-6">
       <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Drawer-Menü Einstellungen</span>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleForceRefresh}>
+        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
+          <CardTitle className={cn(
+            "flex flex-col gap-3",
+            !isMobile && "flex-row items-center justify-between"
+          )}>
+            <span className={isMobile ? "text-lg" : ""}>Drawer-Menü Einstellungen</span>
+            <div className={cn(
+              "flex gap-2",
+              isMobile && "flex-col"
+            )}>
+              <Button 
+                variant="outline" 
+                size={isMobile ? "default" : "sm"} 
+                onClick={handleForceRefresh}
+                className="w-full sm:w-auto"
+              >
                 Icons aktualisieren
               </Button>
-              <Button variant="outline" size="sm" onClick={handleReset}>
+              <Button 
+                variant="outline" 
+                size={isMobile ? "default" : "sm"} 
+                onClick={handleReset}
+                className="w-full sm:w-auto"
+              >
                 <RotateCcw className="h-4 w-4 mr-2" />
                 Zurücksetzen
               </Button>
             </div>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className={cn(
+          "space-y-6",
+          isMobile && "px-4 pb-4"
+        )}>
           {/* Info Banner */}
-          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-            <p className="text-sm text-blue-900 dark:text-blue-100">
+          <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+            <p className={cn(
+              "text-blue-900 dark:text-blue-100",
+              isMobile ? "text-xs" : "text-sm"
+            )}>
               <strong>Hinweis:</strong> Diese Einstellungen betreffen das Drawer-Menü, das über das Burger-Symbol im Footer (nur für Admins) geöffnet wird.
             </p>
           </div>
@@ -136,13 +158,19 @@ export function MenuSettings() {
           {/* Standard-Rolle Einstellung */}
           <div className="space-y-3">
             <div>
-              <h3 className="font-medium mb-2">Standard-Rolle beim Öffnen des Drawer-Menüs</h3>
-              <p className="text-sm text-muted-foreground mb-3">
+              <h3 className={cn(
+                "font-medium mb-2",
+                isMobile ? "text-sm" : ""
+              )}>Standard-Rolle beim Öffnen des Drawer-Menüs</h3>
+              <p className={cn(
+                "text-muted-foreground mb-3",
+                isMobile ? "text-xs" : "text-sm"
+              )}>
                 Wählen Sie die Rolle, für die die Drawer-Menüpunkte standardmäßig angezeigt werden sollen.
               </p>
             </div>
             <Select value={settings.defaultRole} onValueChange={handleRoleChange}>
-              <SelectTrigger className="w-full max-w-xs">
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="Standard-Rolle wählen" />
               </SelectTrigger>
               <SelectContent>
@@ -156,9 +184,18 @@ export function MenuSettings() {
           {/* Menüreihenfolge */}
           <div className="space-y-3">
             <div>
-              <h3 className="font-medium mb-2">Drawer-Menü Reihenfolge</h3>
-              <p className="text-sm text-muted-foreground mb-3">
-                Ziehen Sie die Menüpunkte per Drag & Drop, um ihre Reihenfolge im Drawer zu ändern.
+              <h3 className={cn(
+                "font-medium mb-2",
+                isMobile ? "text-sm" : ""
+              )}>Drawer-Menü Reihenfolge</h3>
+              <p className={cn(
+                "text-muted-foreground mb-3",
+                isMobile ? "text-xs" : "text-sm"
+              )}>
+                {isMobile 
+                  ? "Halten und ziehen Sie Menüpunkte, um die Reihenfolge zu ändern."
+                  : "Ziehen Sie die Menüpunkte per Drag & Drop, um ihre Reihenfolge im Drawer zu ändern."
+                }
               </p>
             </div>
             
@@ -172,59 +209,73 @@ export function MenuSettings() {
                   onDragLeave={handleDragLeave}
                   onDrop={(e) => handleDrop(e, item)}
                   className={cn(
-                    "flex items-center gap-3 p-3 border rounded-lg cursor-move transition-colors",
+                    "flex items-center gap-2 p-3 border rounded-lg cursor-move transition-colors",
                     "hover:bg-muted/50",
                     draggedOver === item.id && "bg-primary/10 border-primary",
-                    draggedItem?.id === item.id && "opacity-50"
+                    draggedItem?.id === item.id && "opacity-50",
+                    isMobile && "p-2 gap-1.5"
                   )}
                 >
-                  <GripVertical className="h-4 w-4 text-muted-foreground" />
-                  <div className="flex-1 flex items-center gap-3">
-                    <span className="font-medium">{getDisplayLabel(item.label)}</span>
+                  <GripVertical className={cn(
+                    "text-muted-foreground flex-shrink-0",
+                    isMobile ? "h-3.5 w-3.5" : "h-4 w-4"
+                  )} />
+                  <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+                    <span className={cn(
+                      "font-medium",
+                      isMobile ? "text-sm" : ""
+                    )}>{getDisplayLabel(item.label)}</span>
                     {item.badge && (
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge variant="secondary" className="text-xs flex-shrink-0">
                         {item.badge}
                       </Badge>
                     )}
-                    <div className="flex gap-1">
-                      {item.roles.map(role => (
-                        <Badge key={role} variant="outline" className="text-xs">
-                          {getRoleDisplayName(role)}
-                        </Badge>
-                      ))}
-                    </div>
+                    {!isMobile && (
+                      <div className="flex gap-1 flex-wrap">
+                        {item.roles.map(role => (
+                          <Badge key={role} variant="outline" className="text-xs">
+                            {getRoleDisplayName(role)}
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                  <span className="text-sm text-muted-foreground">#{index + 1}</span>
+                  <span className={cn(
+                    "text-muted-foreground flex-shrink-0",
+                    isMobile ? "text-xs" : "text-sm"
+                  )}>#{index + 1}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Live Vorschau */}
-          <div className="space-y-3">
-            <h3 className="font-medium">Live-Vorschau der Menüreihenfolge</h3>
-            <div className="p-4 bg-muted/30 rounded-lg">
-              <div className="space-y-2">
-                {orderedItems.map((item, index) => (
-                  <div
-                    key={item.id}
-                    className="flex items-center gap-2 px-3 py-2 bg-background border rounded-md"
-                  >
-                    <span className="text-xs text-muted-foreground">{index + 1}.</span>
-                    <span className="text-sm">{item.label}</span>
-                    {item.badge && (
-                      <Badge variant="secondary" className="text-xs">
-                        {item.badge}
-                      </Badge>
-                    )}
-                  </div>
-                ))}
+          {!isMobile && (
+            <div className="space-y-3">
+              <h3 className="font-medium">Live-Vorschau der Menüreihenfolge</h3>
+              <div className="p-4 bg-muted/30 rounded-lg">
+                <div className="space-y-2">
+                  {orderedItems.map((item, index) => (
+                    <div
+                      key={item.id}
+                      className="flex items-center gap-2 px-3 py-2 bg-background border rounded-md"
+                    >
+                      <span className="text-xs text-muted-foreground">{index + 1}.</span>
+                      <span className="text-sm">{item.label}</span>
+                      {item.badge && (
+                        <Badge variant="secondary" className="text-xs">
+                          {item.badge}
+                        </Badge>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-muted-foreground mt-3">
+                  So wird das Menü im Drawer angezeigt (von oben nach unten).
+                </p>
               </div>
-              <p className="text-xs text-muted-foreground mt-3">
-                So wird das Menü im Drawer angezeigt (von oben nach unten).
-              </p>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     </div>
