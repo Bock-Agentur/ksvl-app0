@@ -158,7 +158,13 @@ export function FileCard({
           "flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer",
           isSelected && "ring-2 ring-primary bg-accent"
         )}
-        onClick={() => multiSelectActive ? onSelect() : onView()}
+        onClick={(e) => {
+          if (multiSelectActive) {
+            onSelect();
+          } else {
+            onView();
+          }
+        }}
       >
         {/* Checkbox (Multi-Select Mode) */}
         {multiSelectActive && (
@@ -246,7 +252,13 @@ export function FileCard({
         "group relative rounded-lg border bg-card overflow-hidden hover:shadow-lg transition-all cursor-pointer",
         isSelected && "ring-2 ring-primary"
       )}
-      onClick={() => multiSelectActive ? onSelect() : onView()}
+      onClick={(e) => {
+        if (multiSelectActive) {
+          onSelect();
+        } else {
+          onView();
+        }
+      }}
     >
       {/* Checkbox (Top Left) */}
       {multiSelectActive && (
