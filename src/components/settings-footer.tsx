@@ -110,36 +110,45 @@ export function SettingsFooter() {
   };
 
   const handleNavigate = (id: string) => {
-    // Handle route-based items
+    // Handle route-based items first
     if (id === 'file-manager') {
       navigate('/file-manager');
-    } else if (id === 'settings') {
-      navigate('/settings');
-    } else if (id === 'header-message') {
-      navigate('/header-message');
-    } else if (id === 'desktop-background') {
-      navigate('/desktop-background');
-    } else {
-      // Navigate to dashboard and switch tab
-      navigate('/');
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: { tab: id } }));
-      }, 100);
+      return;
     }
+    if (id === 'settings') {
+      navigate('/settings');
+      return;
+    }
+    if (id === 'header-message') {
+      navigate('/header-message');
+      return;
+    }
+    if (id === 'desktop-background') {
+      navigate('/desktop-background');
+      return;
+    }
+    
+    // For all other items, navigate to dashboard first
+    navigate('/');
+    // Then dispatch tab change event
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: { tab: id } }));
+    }, 100);
   };
 
-  // Determine active state based on current route and tab
+  // Determine active state based on current route
   const isItemActive = (itemId: string) => {
     const currentPath = location.pathname;
     
     // Check route-based items
-    if (itemId === 'file-manager' && currentPath === '/file-manager') return true;
-    if (itemId === 'settings' && currentPath === '/settings') return true;
-    if (itemId === 'header-message' && currentPath === '/header-message') return true;
-    if (itemId === 'desktop-background' && currentPath === '/desktop-background') return true;
+    if (itemId === 'file-manager') return currentPath === '/file-manager';
+    if (itemId === 'settings') return currentPath === '/settings';
+    if (itemId === 'header-message') return currentPath === '/header-message';
+    if (itemId === 'desktop-background') return currentPath === '/desktop-background';
     
-    // For dashboard items, we can't determine active tab from here
-    // This would require additional state management
+    // For dashboard items, check if we're on the main page
+    if (currentPath === '/') return itemId === 'dashboard';
+    
     return false;
   };
 
@@ -266,18 +275,22 @@ export function SettingsFooter() {
                           const isActive = isItemActive(item.id);
                           
                           const handleClick = () => {
+                            setIsMenuOpen(false);
+                            
+                            // Use the same navigation logic
                             if (item.id === 'file-manager') {
                               navigate('/file-manager');
-                              setIsMenuOpen(false);
                             } else if (item.id === 'settings') {
                               navigate('/settings');
-                              setIsMenuOpen(false);
+                            } else if (item.id === 'header-message') {
+                              navigate('/header-message');
+                            } else if (item.id === 'desktop-background') {
+                              navigate('/desktop-background');
                             } else {
                               navigate('/');
                               setTimeout(() => {
                                 window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: { tab: item.id } }));
                               }, 100);
-                              setIsMenuOpen(false);
                             }
                           };
                           

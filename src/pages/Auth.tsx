@@ -267,7 +267,7 @@ export function Auth() {
         description: "Sie werden weitergeleitet...",
       });
 
-      // Sofort zur Startseite navigieren
+      // Immer zum Dashboard (Startseite) navigieren nach Login
       navigate("/", { replace: true });
     } catch (error: any) {
       if (error instanceof z.ZodError) {
