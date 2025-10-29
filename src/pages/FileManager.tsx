@@ -1,43 +1,18 @@
-import { useState, useEffect } from "react";
 import { EnhancedFileManager } from "@/components/file-manager/enhanced-file-manager";
-import { PageLoader } from "@/components/common/page-loader";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SettingsFooter } from "@/components/settings-footer";
-import { useFileManager } from "@/hooks/use-file-manager";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 export function FileManager() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { loading } = useFileManager();
-  const [isComponentReady, setIsComponentReady] = useState(false);
-
-  // Wait for files to load and component to render
-  useEffect(() => {
-    if (!loading) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsComponentReady(true);
-        });
-      });
-    } else {
-      setIsComponentReady(false);
-    }
-  }, [loading]);
-
-  // Show page loader while loading or content not ready
-  if (!isComponentReady) {
-    return <PageLoader />;
-  }
 
   return (
     <>
-      <div className={cn(
-        "min-h-screen pb-20 bg-gradient-to-br from-background via-background to-muted/20 animate-fade-in"
-      )}>
+      <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-muted/20">
         <div className={cn(
           "mx-auto",
           isMobile ? "w-full px-0" : "max-w-7xl px-4 md:px-8"

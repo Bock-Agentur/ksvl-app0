@@ -362,7 +362,9 @@ export function UserManagementRefactored() {
     downloadCSV(csvContent, `benutzer-${new Date().toISOString().split('T')[0]}.csv`);
   };
 
-  // Remove loading state - handled by PageLoader in Index
+  if (loading) {
+    return <div className="p-4">Lädt Benutzer...</div>;
+  }
 
   // Show user profile view if selected
   if (selectedUserId) {
