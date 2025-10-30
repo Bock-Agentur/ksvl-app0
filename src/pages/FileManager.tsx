@@ -4,14 +4,16 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SettingsFooter } from "@/components/settings-footer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useRole } from "@/hooks/use-role";
 import { cn } from "@/lib/utils";
 
 export function FileManager() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+  const { currentRole } = useRole(); // Force re-render on role change
 
   return (
-    <>
+    <div key={currentRole}> {/* Force re-render when role changes */}
       <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-muted/20">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
@@ -55,6 +57,6 @@ export function FileManager() {
         </div>
       </div>
       <SettingsFooter />
-    </>
+    </div>
   );
 }
