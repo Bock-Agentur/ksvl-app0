@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFileManager } from "@/hooks/use-file-manager";
 import { useFilePermissions } from "@/hooks/use-file-permissions";
+import { useRole } from "@/hooks/use-role";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,7 @@ export function EnhancedFileManager() {
   } = useFileManager();
 
   const { isAdmin } = useFilePermissions();
+  const { currentRole } = useRole();
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [selectedFileId, setSelectedFileId] = useState<string | null>(null);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -63,30 +65,30 @@ export function EnhancedFileManager() {
   const [authDebug, setAuthDebug] = useState<{ isLoggedIn: boolean; isAdminUser: boolean; userId: string | null }>();
   const [multiSelectMode, setMultiSelectMode] = useState(false);
 
-  // Debug: Check auth status
-  useState(() => {
+  // Debug: Check auth status (reactive to role changes)
+  useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      const adminStatus = isAdmin();
       setAuthDebug({
         isLoggedIn: !!user,
-        isAdminUser: adminStatus,
+        isAdminUser: isAdmin,
         userId: user?.id || null
       });
       console.log('File Manager Auth Debug:', {
         isLoggedIn: !!user,
-        isAdminUser: adminStatus,
+        isAdminUser: isAdmin,
         userId: user?.id,
+        currentRole,
         filesCount: files.length
       });
     })();
-  });
+  }, [isAdmin, currentRole, files.length]);
 
-  // Category tabs
+  // Category tabs - reactive to role changes
   const categories = [
     { id: 'all', label: 'Alle', value: undefined },
     { id: 'general', label: 'Meine Dateien', value: 'general' },
-    ...(isAdmin() ? [
+    ...(isAdmin ? [
       { id: 'user_document', label: 'Mitglieder-Dokumente', value: 'user_document' },
       { id: 'login_media', label: 'Login-Medien', value: 'login_media' },
     ] : []),
@@ -391,7 +393,7 @@ export function EnhancedFileManager() {
         )}
 
         {/* Migration Info Banner for Admins */}
-        {isAdmin() && files.length === 0 && !loading && (
+        {isAdmin && files.length === 0 && !loading && (
           <Alert className="mb-4 border-primary/20 bg-primary/5">
             <Info className="h-4 w-4" />
             <AlertDescription className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

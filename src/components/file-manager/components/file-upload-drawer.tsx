@@ -80,7 +80,7 @@ export function FileUploadDrawer({
   const handleUpload = async () => {
     if (selectedFiles.length === 0) return;
 
-    if (category === 'user_document' && !linkedUserId && isAdmin()) {
+    if (category === 'user_document' && !linkedUserId && isAdmin) {
       alert('Bitte wählen Sie ein Mitglied aus');
       return;
     }
@@ -206,7 +206,7 @@ export function FileUploadDrawer({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="general">Allgemein</SelectItem>
-            {isAdmin() && (
+            {isAdmin && (
               <>
                 <SelectItem value="user_document">Mitglieder-Dokument</SelectItem>
                 <SelectItem value="login_media">Login-Medium</SelectItem>
@@ -236,7 +236,7 @@ export function FileUploadDrawer({
       )}
 
       {/* Linked User (if admin and user_document) */}
-      {isAdmin() && category === 'user_document' && (
+      {isAdmin && category === 'user_document' && (
         <div>
           <Label htmlFor="linked-user">Verknüpftes Mitglied</Label>
           <Select value={linkedUserId} onValueChange={setLinkedUserId}>

@@ -7,7 +7,9 @@ import { supabase } from "@/integrations/supabase/client";
  * Mobile-optimized with lightweight logic
  */
 export const useFilePermissions = () => {
-  const { currentUser } = useRole();
+  const { currentUser, currentRole } = useRole();
+  
+  // Make isAdmin reactive to role changes
   const isAdmin = currentUser?.roles.includes('admin') || false;
 
   /**
@@ -133,18 +135,11 @@ export const useFilePermissions = () => {
     }
   };
 
-  /**
-   * Check if current user is admin
-   */
-  const checkIsAdmin = (): boolean => {
-    return isAdmin;
-  };
-
   return {
     canUpload,
     canView,
     canEdit,
     canDelete,
-    isAdmin: checkIsAdmin,
+    isAdmin, // Return the reactive boolean value directly, not a function
   };
 };
