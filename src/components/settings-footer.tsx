@@ -172,7 +172,7 @@ export function SettingsFooter() {
           
           return (
             <Button
-              key={`${item.id}-${index}-${forceUpdate}`}
+              key={`${item.id}-${index}-${currentRole}-${forceUpdate}`}
               variant="ghost"
               size="sm"
               onClick={() => handleNavigate(item.id)}
