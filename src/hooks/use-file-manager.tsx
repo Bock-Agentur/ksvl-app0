@@ -417,8 +417,7 @@ export const useFileManager = () => {
    */
   const getFilePreviewUrl = async (file: FileMetadata): Promise<string | null> => {
     try {
-      // Determine bucket - check actual storage path first, then category
-      // This handles incorrectly uploaded files where category doesn't match bucket
+      // Determine bucket - check actual storage path first
       let bucket = 'documents';
       let filePath = file.storage_path;
       
@@ -429,9 +428,14 @@ export const useFileManager = () => {
       } else if (filePath.startsWith('documents/')) {
         bucket = 'documents';
         filePath = filePath.substring('documents/'.length);
+      }
+      // If no bucket prefix in path, determine by category
+      // BUT: check if path contains user ID (documents bucket pattern)
+      else if (filePath.includes('/general/') || filePath.match(/^[0-9a-f-]{36}\//)) {
+        // This is a documents bucket file (has user ID path structure)
+        bucket = 'documents';
       } else if (file.category === 'login_media') {
-        // If category is login_media but path doesn't have prefix,
-        // check if file exists in login-media bucket first, otherwise try documents
+        // Only use login-media bucket if category matches AND no user path structure
         bucket = 'login-media';
       }
       
@@ -462,18 +466,16 @@ export const useFileManager = () => {
         if (error) {
           console.error('❌ Error creating signed URL:', error);
           
-          // If this is a login_media category file that failed in documents bucket,
-          // try the other bucket as fallback
+          // If this failed and category is login_media, try login-media bucket as fallback
           if (file.category === 'login_media') {
-            console.log('🔄 Trying fallback bucket: documents');
-            const fallbackBucket = 'documents';
-            const { data: fallbackData } = await supabase.storage
-              .from(fallbackBucket)
-              .createSignedUrl(filePath, 3600);
+            console.log('🔄 Trying fallback bucket: login-media');
+            const { data: fallbackData } = supabase.storage
+              .from('login-media')
+              .getPublicUrl(filePath);
             
-            if (fallbackData?.signedUrl) {
-              console.log('✅ Fallback signed URL generated:', fallbackData.signedUrl);
-              return fallbackData.signedUrl;
+            if (fallbackData?.publicUrl) {
+              console.log('✅ Fallback public URL generated:', fallbackData.publicUrl);
+              return fallbackData.publicUrl;
             }
           }
           
