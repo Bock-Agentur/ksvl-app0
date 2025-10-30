@@ -177,19 +177,26 @@ export const useFileManager = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) throw new Error("Nicht angemeldet");
 
-      // Determine storage path based on category
+      // Determine storage bucket and path based on category
       const userId = session.user.id;
       let storagePath = '';
+      let bucket = 'documents';
       
-      if (validatedMetadata.category === 'user_document' && validatedMetadata.linked_user_id) {
+      if (validatedMetadata.category === 'login_media') {
+        // Login media goes to login-media bucket with simple filename
+        bucket = 'login-media';
+        storagePath = `${file.name.replace(/\s/g, '-')}-${Date.now()}.${file.name.split('.').pop()}`;
+      } else if (validatedMetadata.category === 'user_document' && validatedMetadata.linked_user_id) {
         storagePath = `user_documents/${validatedMetadata.linked_user_id}/${validatedMetadata.document_type || 'general'}/${file.name}`;
       } else {
         storagePath = `${userId}/general/${file.name}`;
       }
 
+      console.log('📤 Uploading file:', { bucket, storagePath, category: validatedMetadata.category });
+
       // Upload to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('documents')
+        .from(bucket)
         .upload(storagePath, file, {
           cacheControl: '3600',
           upsert: false,
@@ -225,7 +232,7 @@ export const useFileManager = () => {
 
       if (metadataError) {
         // Rollback storage upload
-        await supabase.storage.from('documents').remove([uploadData.path]);
+        await supabase.storage.from(bucket).remove([uploadData.path]);
         throw metadataError;
       }
 
@@ -410,14 +417,22 @@ export const useFileManager = () => {
    */
   const getFilePreviewUrl = async (file: FileMetadata): Promise<string | null> => {
     try {
-      // Determine bucket based on category
-      const bucket = file.category === 'login_media' ? 'login-media' : 'documents';
-      
-      // Extract the actual file path without the bucket prefix
-      // storage_path might be "login-media/file.webp" or just "file.webp"
+      // Determine bucket - check actual storage path first, then category
+      // This handles incorrectly uploaded files where category doesn't match bucket
+      let bucket = 'documents';
       let filePath = file.storage_path;
-      if (filePath.startsWith(`${bucket}/`)) {
-        filePath = filePath.substring(bucket.length + 1);
+      
+      // Check if path starts with bucket name
+      if (filePath.startsWith('login-media/')) {
+        bucket = 'login-media';
+        filePath = filePath.substring('login-media/'.length);
+      } else if (filePath.startsWith('documents/')) {
+        bucket = 'documents';
+        filePath = filePath.substring('documents/'.length);
+      } else if (file.category === 'login_media') {
+        // If category is login_media but path doesn't have prefix,
+        // check if file exists in login-media bucket first, otherwise try documents
+        bucket = 'login-media';
       }
       
       console.log('🖼️ Loading preview:', { 
@@ -428,7 +443,7 @@ export const useFileManager = () => {
         category: file.category 
       });
       
-      // For public buckets, try public URL first
+      // Try to get URL from determined bucket
       if (bucket === 'login-media') {
         const { data } = supabase.storage
           .from(bucket)
@@ -438,21 +453,37 @@ export const useFileManager = () => {
           console.log('✅ Public URL generated:', data.publicUrl);
           return data.publicUrl;
         }
-      }
-      
-      // For private buckets or if public URL failed, create signed URL
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .createSignedUrl(filePath, 3600); // 1 hour expiry
+      } else {
+        // For documents bucket, create signed URL
+        const { data, error } = await supabase.storage
+          .from(bucket)
+          .createSignedUrl(filePath, 3600);
 
-      if (error) {
-        console.error('❌ Error creating signed URL:', error);
-        return null;
-      }
+        if (error) {
+          console.error('❌ Error creating signed URL:', error);
+          
+          // If this is a login_media category file that failed in documents bucket,
+          // try the other bucket as fallback
+          if (file.category === 'login_media') {
+            console.log('🔄 Trying fallback bucket: documents');
+            const fallbackBucket = 'documents';
+            const { data: fallbackData } = await supabase.storage
+              .from(fallbackBucket)
+              .createSignedUrl(filePath, 3600);
+            
+            if (fallbackData?.signedUrl) {
+              console.log('✅ Fallback signed URL generated:', fallbackData.signedUrl);
+              return fallbackData.signedUrl;
+            }
+          }
+          
+          return null;
+        }
 
-      if (data?.signedUrl) {
-        console.log('✅ Signed URL generated:', data.signedUrl);
-        return data.signedUrl;
+        if (data?.signedUrl) {
+          console.log('✅ Signed URL generated:', data.signedUrl);
+          return data.signedUrl;
+        }
       }
 
       return null;
