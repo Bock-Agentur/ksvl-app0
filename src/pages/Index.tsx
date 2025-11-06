@@ -233,23 +233,31 @@ const Index = () => {
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (event === 'SIGNED_OUT') {
           navigate("/auth");
         } else if (event === 'SIGNED_IN') {
-          // Nach dem Login zur Startseite navigieren und Dashboard als aktiven Tab setzen
-          setTimeout(async () => {
+          // Nach dem Login zwingend Dashboard laden
+          const userId = session?.user?.id;
+          if (userId) {
             await supabase
               .from('app_settings')
-              .upsert({ 
+              .delete()
+              .eq('user_id', userId)
+              .eq('setting_key', 'activeTab');
+            
+            await supabase
+              .from('app_settings')
+              .insert({ 
+                user_id: userId,
                 setting_key: 'activeTab',
                 setting_value: 'dashboard'
               });
-            navigate("/", { replace: true });
-          }, 0);
+          }
+          navigate("/", { replace: true });
         }
       }
     );
