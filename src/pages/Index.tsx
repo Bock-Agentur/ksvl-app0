@@ -233,7 +233,7 @@ const Index = () => {
 
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
@@ -243,19 +243,21 @@ const Index = () => {
           // Nach dem Login zwingend Dashboard laden
           const userId = session?.user?.id;
           if (userId) {
-            await supabase
-              .from('app_settings')
-              .delete()
-              .eq('user_id', userId)
-              .eq('setting_key', 'activeTab');
-            
-            await supabase
-              .from('app_settings')
-              .insert({ 
-                user_id: userId,
-                setting_key: 'activeTab',
-                setting_value: 'dashboard'
-              });
+            setTimeout(async () => {
+              await supabase
+                .from('app_settings')
+                .delete()
+                .eq('user_id', userId)
+                .eq('setting_key', 'activeTab');
+              
+              await supabase
+                .from('app_settings')
+                .insert({ 
+                  user_id: userId,
+                  setting_key: 'activeTab',
+                  setting_value: 'dashboard'
+                });
+            }, 0);
           }
           navigate("/", { replace: true });
         }
