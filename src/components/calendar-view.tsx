@@ -12,9 +12,12 @@ import { de } from "date-fns/locale";
 import { useSlots } from "@/hooks/use-slots";
 import { cn } from "@/lib/utils";
 import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
+import { useIsMobile } from "@/hooks/use-mobile";
+
 interface CalendarViewProps {
   initialDate?: Date | null;
 }
+
 export function CalendarView({
   initialDate
 }: CalendarViewProps) {
@@ -27,6 +30,7 @@ export function CalendarView({
   } = useSlots();
   const { isPageSticky } = useStickyHeaderLayout();
   const isStickyEnabled = isPageSticky('calendar');
+  const isMobile = useIsMobile();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
   const [prefilledDateTime, setPrefilledDateTime] = useState<{
@@ -63,6 +67,7 @@ export function CalendarView({
       setViewMode("day");
     }
   }, [initialDate]);
+  
   const handleSlotEdit = (slot?: Slot, dateTime?: {
     date: string;
     time: string;
@@ -76,6 +81,7 @@ export function CalendarView({
     setIsDialogOpen(true);
     console.log('📱 Dialog opened, state updated');
   };
+  
   const handleDialogClose = (navigateToDate?: Date) => {
     console.log('🔄 Dialog closing, navigate to date:', navigateToDate);
     setIsDialogOpen(false);
@@ -89,6 +95,7 @@ export function CalendarView({
       setViewMode("day"); // Wechsle zur Tagesansicht um den neuen Slot zu sehen
     }
   };
+  
   const handleDayClick = (date: Date) => {
     setSelectedDate(date);
     setViewMode("week");
@@ -97,6 +104,7 @@ export function CalendarView({
   // FIXED: Multi-Role System - Admin, Vorstand und Kranführer können Slots verwalten
   const canManageSlots = currentUser?.roles?.includes("kranfuehrer") || currentUser?.roles?.includes("admin") || currentUser?.roles?.includes("vorstand") || currentRole === "kranfuehrer" || currentRole === "admin" || currentRole === "vorstand";
   const canBookSlots = currentUser?.roles?.includes("mitglied") || currentUser?.roles?.includes("kranfuehrer") || currentUser?.roles?.includes("admin") || currentUser?.roles?.includes("vorstand") || currentRole === "mitglied" || currentRole === "kranfuehrer" || currentRole === "admin" || currentRole === "vorstand";
+  
   console.log('🔐 CALENDAR VIEW PERMISSIONS:', {
     currentUser: currentUser?.name,
     currentRole,
@@ -104,6 +112,7 @@ export function CalendarView({
     canManageSlots,
     canBookSlots
   });
+  
   const handlePreviousWeek = () => {
     setCurrentWeek(prevWeek => {
       const newWeek = new Date(prevWeek);
@@ -112,6 +121,7 @@ export function CalendarView({
       return newWeek;
     });
   };
+  
   const handleNextWeek = () => {
     setCurrentWeek(prevWeek => {
       const newWeek = new Date(prevWeek);
@@ -120,179 +130,232 @@ export function CalendarView({
       return newWeek;
     });
   };
+  
   const handleToday = () => {
     const today = new Date();
     setCurrentWeek(today);
     setSelectedDate(today);
   };
-  return <div className={cn(
-    "bg-background max-w-7xl mx-auto",
-    isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
-  )}>
+
+  return (
+    <div className={cn(
+      "bg-background max-w-7xl mx-auto",
+      isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
+    )}>
       {/* Sticky Navigation Card with soft transparent shadow */}
       <div className={cn(
         "pt-4 pb-0 my-0 p-4",
         isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
       )}>
         <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
-        <CardHeader>
-          <CardTitle>Kalender</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* View Toggle - Responsive */}
-          <div className="flex items-center justify-center gap-2">
-            {/* Mobile: Only Day and Month */}
-            <div className="flex items-center gap-2 lg:hidden">
-              <Button variant={viewMode === "day" ? "default" : "outline"} size="sm" onClick={() => setViewMode("day")} className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Tagesansicht
-              </Button>
-              {/* Show Week button on tablet (md) but not mobile (sm) */}
-              <Button variant={viewMode === "week" ? "default" : "outline"} size="sm" onClick={() => setViewMode("week")} className="hidden sm:flex items-center gap-2 lg:hidden">
-                <Calendar className="w-4 h-4" />
-                Wochenansicht
-              </Button>
-              <Button variant={viewMode === "month" ? "default" : "outline"} size="sm" onClick={() => setViewMode("month")} className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4" />
-                Monatsansicht
-              </Button>
+          <CardHeader>
+            <CardTitle>Kalender</CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              {/* Week Navigation */}
+              <div className="flex items-center gap-1">
+                <Button 
+                  variant="outline" 
+                  size={isMobile ? "icon" : "sm"}
+                  onClick={handlePreviousWeek} 
+                  title="Vorherige Woche"
+                  className="h-9"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handleToday} 
+                  className="h-9 px-3"
+                >
+                  {isMobile ? <Home className="h-4 w-4" /> : "Heute"}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size={isMobile ? "icon" : "sm"}
+                  onClick={handleNextWeek} 
+                  title="Nächste Woche"
+                  className="h-9"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* View Toggle Buttons */}
+              <div className="flex gap-1">
+                <Button 
+                  variant={viewMode === "day" ? "default" : "outline"} 
+                  size={isMobile ? "icon" : "sm"}
+                  onClick={() => setViewMode("day")}
+                  title="Tagesansicht"
+                  className="h-9"
+                >
+                  <Calendar className="h-4 w-4" />
+                  {!isMobile && <span className="ml-1">Tag</span>}
+                </Button>
+                <Button 
+                  variant={viewMode === "week" ? "default" : "outline"} 
+                  size={isMobile ? "icon" : "sm"}
+                  onClick={() => setViewMode("week")}
+                  title="Wochenansicht"
+                  className="h-9"
+                >
+                  <CalendarDays className="h-4 w-4" />
+                  {!isMobile && <span className="ml-1">Woche</span>}
+                </Button>
+                <Button 
+                  variant={viewMode === "month" ? "default" : "outline"} 
+                  size={isMobile ? "icon" : "sm"}
+                  onClick={() => setViewMode("month")}
+                  title="Monatsansicht"
+                  className="h-9"
+                >
+                  <Home className="h-4 w-4" />
+                  {!isMobile && <span className="ml-1">Monat</span>}
+                </Button>
+              </div>
+
+              {/* Add Slot Button - Only for authorized users */}
+              {canManageSlots && (
+                <Button 
+                  onClick={() => handleSlotEdit()} 
+                  size={isMobile ? "icon" : "sm"}
+                  title="Slot erstellen"
+                  className="h-9"
+                >
+                  <Plus className="h-4 w-4" />
+                  {!isMobile && <span className="ml-1">Erstellen</span>}
+                </Button>
+              )}
             </div>
-
-            {/* Desktop: All three buttons */}
-            <div className="hidden lg:flex items-center gap-2">
-              <Button variant={viewMode === "day" ? "default" : "outline"} size="sm" onClick={() => setViewMode("day")} className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Tagesansicht
-              </Button>
-              <Button variant={viewMode === "week" ? "default" : "outline"} size="sm" onClick={() => setViewMode("week")} className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Wochenansicht
-              </Button>
-              <Button variant={viewMode === "month" ? "default" : "outline"} size="sm" onClick={() => setViewMode("month")} className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4" />
-                Monatsansicht
-              </Button>
-            </div>
-          </div>
-
-          {/* Week Navigation & Actions - Only for week/day views */}
-          {(viewMode === "day" || viewMode === "week") && <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-2">
-                <Button variant="outline" size="icon" onClick={handlePreviousWeek} className="flex-shrink-0">
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                <div className="text-sm font-medium min-w-[140px] text-center">
-                  KW {format(currentWeek, "w", {
-                  locale: de
-                })} · {format(currentWeek, "yyyy", {
-                  locale: de
-                })}
-                </div>
-                <Button variant="outline" size="icon" onClick={handleNextWeek} className="flex-shrink-0">
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button onClick={handleToday} size="sm" variant="outline" className="w-full sm:w-auto">
-                  <Home className="w-4 h-4 mr-2" />
-                  Heute
-                </Button>
-                {canManageSlots && <Button onClick={() => handleSlotEdit(undefined, {
-                date: format(viewMode === "day" ? selectedDate : new Date(), 'yyyy-MM-dd'),
-                time: "08:00"
-              })} size="sm" className="w-full sm:w-auto">
-                    <Plus className="w-4 h-4 mr-2" />
-                    <span className="hidden sm:inline">Neuer Slot</span>
-                    <span className="sm:hidden">Slot</span>
-                  </Button>}
-              </div>
-            </div>}
-
-          {/* Mobile Day Selector - Only for week/day views */}
-          {(viewMode === "day" || viewMode === "week") && <div className="md:hidden">
-              <div className="grid grid-cols-7 gap-1 w-full">
-                {weekDays.map((day, index) => {
-                // Check if this day has slots
-                const daySlots = weekSlots.filter(slot => {
-                  const slotDate = parseISO(slot.date);
-                  return isSameDay(day, slotDate);
-                });
-                const hasSlots = daySlots.length > 0;
-                return <div key={index} className="relative">
-                      <Button variant={isSameDay(day, selectedDay) ? "default" : "outline"} size="sm" onClick={() => {
-                    setSelectedDay(day);
-                    setSelectedDate(day);
-                  }} className="text-xs px-1 py-2 h-auto flex-col w-full">
-                        <div className="text-center">
-                          <div className="text-xs">
-                            {format(day, "EEE", {
-                          locale: de
-                        })}
-                          </div>
-                          <div className="font-semibold">
-                            {format(day, "dd")}
-                          </div>
-                        </div>
-                      </Button>
-                      
-                      {/* Day indicator below button */}
-                      <div className="flex justify-center mt-1">
-                        <div className={cn("w-2 h-2 rounded-full border transition-colors", hasSlots ? "bg-pink-500 border-pink-500" : "bg-white border-gray-300")} />
-                      </div>
-                    </div>;
-              })}
-              </div>
-            </div>}
-
-          {/* Desktop Day Selector - Only for day view */}
-          {viewMode === "day" && <div className="hidden md:flex justify-center">
-              <div className="grid grid-cols-7 gap-1 px-2 sm:px-4 w-full max-w-2xl">
-                {weekDays.map((day, index) => {
-                // Check if this day has slots
-                const daySlots = weekSlots.filter(slot => {
-                  const slotDate = parseISO(slot.date);
-                  return isSameDay(day, slotDate);
-                });
-                const hasSlots = daySlots.length > 0;
-                return <div key={index} className="relative">
-                      <Button variant={isSameDay(day, selectedDay) ? "default" : "outline"} size="sm" onClick={() => {
-                    setSelectedDay(day);
-                    setSelectedDate(day);
-                  }} className="text-xs px-1 py-2 h-auto flex-col w-full">
-                        <div className="text-center">
-                          <div className="text-xs">
-                            {format(day, "EEE", {
-                          locale: de
-                        })}
-                          </div>
-                          <div className="font-semibold">
-                            {format(day, "dd")}
-                          </div>
-                        </div>
-                      </Button>
-                      
-                      {/* Day indicator below button */}
-                      <div className="flex justify-center mt-1">
-                        <div className={cn("w-2 h-2 rounded-full border transition-colors", hasSlots ? "bg-pink-500 border-pink-500" : "bg-white border-gray-300")} />
-                      </div>
-                    </div>;
-              })}
-              </div>
-            </div>}
-        </CardContent>
+          </CardContent>
         </Card>
       </div>
 
-      {/* Scrollable Calendar Content */}
+      {/* Mobile Day Selector - Only for week/day views */}
+      {(viewMode === "day" || viewMode === "week") && (
+        <div className="md:hidden px-4">
+          <div className="grid grid-cols-7 gap-1 w-full">
+            {weekDays.map((day, index) => {
+              // Check if this day has slots
+              const daySlots = weekSlots.filter(slot => {
+                const slotDate = parseISO(slot.date);
+                return isSameDay(day, slotDate);
+              });
+              const hasSlots = daySlots.length > 0;
+              return (
+                <div key={index} className="relative">
+                  <Button 
+                    variant={isSameDay(day, selectedDay) ? "default" : "outline"} 
+                    size="sm" 
+                    onClick={() => {
+                      setSelectedDay(day);
+                      setSelectedDate(day);
+                    }} 
+                    className="text-xs px-1 py-2 h-auto flex-col w-full"
+                  >
+                    <div className="text-center">
+                      <div className="text-xs">
+                        {format(day, "EEE", { locale: de })}
+                      </div>
+                      <div className="font-semibold">
+                        {format(day, "dd")}
+                      </div>
+                    </div>
+                  </Button>
+                  
+                  {/* Day indicator below button */}
+                  <div className="flex justify-center mt-1">
+                    <div className={cn(
+                      "w-2 h-2 rounded-full border transition-colors", 
+                      hasSlots ? "bg-pink-500 border-pink-500" : "bg-white border-gray-300"
+                    )} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Desktop Day Selector - Only for day view */}
+      {viewMode === "day" && (
+        <div className="hidden md:block px-4">
+          <div className="grid grid-cols-7 gap-2">
+            {weekDays.map((day, index) => {
+              // Check if this day has slots
+              const daySlots = weekSlots.filter(slot => {
+                const slotDate = parseISO(slot.date);
+                return isSameDay(day, slotDate);
+              });
+              const hasSlots = daySlots.length > 0;
+              const isSelectedDay = isSameDay(day, selectedDay);
+              return (
+                <Button 
+                  key={index} 
+                  variant={isSelectedDay ? "default" : "outline"} 
+                  size="sm" 
+                  onClick={() => {
+                    setSelectedDay(day);
+                    setSelectedDate(day);
+                  }} 
+                  className="relative flex flex-col h-auto py-3"
+                >
+                  <div className="text-xs mb-1">
+                    {format(day, "EEE", { locale: de })}
+                  </div>
+                  <div className="text-base font-semibold">
+                    {format(day, "dd")}
+                  </div>
+                  
+                  {/* Day indicator */}
+                  {hasSlots && (
+                    <div className="absolute bottom-1 left-1/2 -translate-x-1/2">
+                      <div className={cn(
+                        "w-2 h-2 rounded-full", 
+                        isSelectedDay ? "bg-primary-foreground" : "bg-pink-500"
+                      )} />
+                    </div>
+                  )}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Calendar Content */}
       <div className={cn(
-        "px-4 pb-4 pt-6",
-        isStickyEnabled ? "flex-1 overflow-y-auto" : ""
+        "px-4",
+        isStickyEnabled ? "flex-1 overflow-y-auto overflow-x-hidden pb-6" : ""
       )}>
-        {viewMode === "day" || viewMode === "week" ? <WeekCalendar key={selectedDate.toISOString()} onSlotEdit={handleSlotEdit} selectedDate={selectedDate} selectedDay={selectedDay} viewMode={viewMode === "day" ? "day" : "week"} /> : <MonthCalendar onDayClick={handleDayClick} onSlotCreate={handleSlotEdit} />}
+        {(viewMode === "day" || viewMode === "week") && (
+          <WeekCalendar 
+            selectedDate={selectedDate} 
+            onSlotEdit={handleSlotEdit} 
+            viewMode={viewMode} 
+            selectedDay={selectedDay} 
+          />
+        )}
+        {viewMode === "month" && (
+          <MonthCalendar 
+            onDayClick={handleDayClick}
+          />
+        )}
       </div>
 
       {/* Slot Form Dialog */}
-      <SlotFormDialog open={isDialogOpen} onOpenChange={setIsDialogOpen} slot={selectedSlot} prefilledDateTime={prefilledDateTime} onClose={handleDialogClose} />
-    </div>;
+      <SlotFormDialog 
+        open={isDialogOpen} 
+        onOpenChange={(open) => {
+          if (!open) handleDialogClose();
+        }}
+        onClose={handleDialogClose}
+        slot={selectedSlot} 
+        prefilledDateTime={prefilledDateTime} 
+      />
+    </div>
+  );
 }
