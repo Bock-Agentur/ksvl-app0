@@ -26,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { useDesktopBackground } from "@/hooks/use-desktop-background";
 import { SettingsFooter } from "@/components/settings-footer";
+import { toast } from "sonner";
 import { 
   LayoutDashboard, 
   MessageSquare, 
@@ -71,6 +72,23 @@ function SettingsContent() {
   
   const showBackground = desktopBackgroundSettings.enabled && background;
   const isPageLoading = roleLoading || bgLoading || desktopBgLoading;
+
+  // KRITISCH: Nur Admins und Vorstand haben Zugriff auf Settings
+  const isAdmin = currentRole === "admin" || currentRole === "vorstand";
+  
+  useEffect(() => {
+    if (!roleLoading && !isAdmin) {
+      toast.error("Zugriff verweigert", {
+        description: "Sie haben keine Berechtigung, auf die Einstellungen zuzugreifen."
+      });
+      navigate("/");
+    }
+  }, [isAdmin, roleLoading, navigate]);
+  
+  // Zeige nichts an, während wir prüfen oder wenn kein Zugriff
+  if (roleLoading || !isAdmin) {
+    return <PageLoader />;
+  }
 
   // Wait for component to be fully rendered
   useEffect(() => {

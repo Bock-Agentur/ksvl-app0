@@ -30,9 +30,9 @@ const DEFAULT_SETTINGS: MenuSettings = {
 
 export function useMenuSettings() {
   const { value: settings, setValue } = useAppSettings<MenuSettings>(
-    "marina-menu-settings",
+    "marina-menu-settings-template",
     DEFAULT_SETTINGS,
-    true // Global setting for all users
+    false // Datenbank-Speicherung
   );
 
   // Auto-update: Nur neue Items hinzufügen, ohne Toast

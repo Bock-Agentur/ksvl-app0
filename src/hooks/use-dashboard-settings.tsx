@@ -7,22 +7,16 @@ import { useAppSettings } from "./use-app-settings";
 import { DashboardSettings, DEFAULT_DASHBOARD_SETTINGS } from "@/lib/dashboard-config";
 import { UserRole } from "@/types/user";
 
-export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = false, options?: { enabled?: boolean }) {
+export function useDashboardSettings(userRole: UserRole, options?: { enabled?: boolean }) {
   const enabled = options?.enabled ?? true;
   
-  // For admins configuring other roles, use a different storage key pattern
-  const getStorageKey = (role: UserRole) => {
-    if (isAdmin && role !== userRole) {
-      return `dashboard-settings-template-${role}`; // Admin templates for other roles
-    }
-    return `dashboard-settings-${role}`; // Regular user settings
-  };
-
-  const storageKey = getStorageKey(userRole);
+  // Alle Benutzer laden Templates - nur Admins können diese bearbeiten (via Route Protection)
+  const storageKey = `dashboard-settings-template-${userRole}`;
+  
   const { value: rawSettings, setValue, isLoading } = useAppSettings<DashboardSettings>(
     storageKey,
     DEFAULT_DASHBOARD_SETTINGS,
-    false,
+    false, // Datenbank-Speicherung
     { enabled }
   );
 
