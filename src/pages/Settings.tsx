@@ -75,20 +75,6 @@ function SettingsContent() {
 
   // KRITISCH: Nur Admins und Vorstand haben Zugriff auf Settings
   const isAdmin = currentRole === "admin" || currentRole === "vorstand";
-  
-  useEffect(() => {
-    if (!roleLoading && !isAdmin) {
-      toast.error("Zugriff verweigert", {
-        description: "Sie haben keine Berechtigung, auf die Einstellungen zuzugreifen."
-      });
-      navigate("/");
-    }
-  }, [isAdmin, roleLoading, navigate]);
-  
-  // Zeige nichts an, während wir prüfen oder wenn kein Zugriff
-  if (roleLoading || !isAdmin) {
-    return <PageLoader />;
-  }
 
   // Wait for component to be fully rendered
   useEffect(() => {
@@ -102,6 +88,21 @@ function SettingsContent() {
       setIsComponentReady(false);
     }
   }, [isPageLoading, activeSection, isOverview]);
+  
+  // Access control - redirect if not authorized
+  useEffect(() => {
+    if (!roleLoading && !isAdmin) {
+      toast.error("Zugriff verweigert", {
+        description: "Sie haben keine Berechtigung, auf die Einstellungen zuzugreifen."
+      });
+      navigate("/");
+    }
+  }, [isAdmin, roleLoading, navigate]);
+  
+  // Zeige Loader während der Prüfung oder wenn kein Zugriff
+  if (roleLoading || !isAdmin) {
+    return <PageLoader />;
+  }
 
   const sections: SettingSection[] = [
     { id: "dashboard", label: "Dashboard", description: "Widgets und Layout anpassen", icon: LayoutDashboard, component: DashboardSettings, group: "dashboard" },
