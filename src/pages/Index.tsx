@@ -48,11 +48,11 @@ function AppContent() {
   const { isLoading: aiWelcomeLoading } = useAIWelcomeMessage({ enabled: shouldLoadDashboard });
   const { agentName, isLoading: harborChatLoading } = useHarborChatData({ enabled: shouldLoadDashboard });
   const { firstName, fullName: displayName, isLoading: profileLoading } = useProfileData({ enabled: shouldLoadDashboard });
-  const { settings: footerSettings, isLoading: footerLoading } = useFooterMenuSettings();
+  const { isLoading: footerLoading } = useFooterMenuSettings(currentRole);
   const {
     settings: dashboardSettings,
     isLoading: dashboardSettingsLoading,
-  } = useDashboardSettings(currentRole, false, { enabled: shouldLoadDashboard });
+  } = useDashboardSettings(currentRole, { enabled: shouldLoadDashboard });
   
   // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);

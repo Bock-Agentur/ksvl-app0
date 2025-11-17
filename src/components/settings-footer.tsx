@@ -33,7 +33,7 @@ export function SettingsFooter() {
   const navigate = useNavigate();
   const location = useLocation();
   const { currentRole, currentUser, setRole, isLoading: roleLoading } = useRole();
-  const { getMenuItemsForRole, getDisplaySettingsForRole, isLoading: footerLoading } = useFooterMenuSettings();
+  const { getMenuItemsForRole, getDisplaySettingsForRole, isLoading: footerLoading } = useFooterMenuSettings(currentRole);
   const { getOrderedHeaderItems } = useMenuSettings();
   const [isReady, setIsReady] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);

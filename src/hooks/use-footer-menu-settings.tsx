@@ -79,58 +79,48 @@ const DEFAULT_FOOTER_SETTINGS: FooterMenuSettings = {
   ]
 };
 
-export function useFooterMenuSettings() {
-  const { value: settings, setValue: setSettings, isLoading: settingsLoading } = useAppSettings<FooterMenuSettings>(
-    "footerMenuSettings",
+export function useFooterMenuSettings(userRole: UserRole) {
+  // Alle Benutzer laden Templates - nur Admins können diese bearbeiten (via Route Protection)
+  const storageKey = `footer-menu-template-${userRole}`;
+  const displayStorageKey = `footer-menu-display-template-${userRole}`;
+  
+  const { value: settings, setValue: setSettings, isLoading } = useAppSettings<FooterMenuSettings>(
+    storageKey,
     DEFAULT_FOOTER_SETTINGS,
-    true // Global
+    false // Datenbank-Speicherung
   );
 
-  const { value: displaySettings, setValue: setDisplaySettings, isLoading: displayLoading } = useAppSettings<FooterDisplaySettings>(
-    "footerDisplaySettings",
+  const { value: displaySettings, setValue: setDisplaySettings } = useAppSettings<FooterDisplaySettings>(
+    displayStorageKey,
     DEFAULT_DISPLAY_SETTINGS,
-    true // Global
+    false // Datenbank-Speicherung
   );
-
-  const isLoading = settingsLoading || displayLoading;
 
   const saveSettings = (newSettings: FooterMenuSettings) => {
     setSettings(newSettings);
-    // Notify other components immediately
     window.dispatchEvent(new CustomEvent('footerSettingsChanged'));
   };
 
-  const saveDisplaySettings = (role: UserRole, showLabels: boolean) => {
-    const updatedSettings = {
-      ...displaySettings,
-      [role]: { showLabels }
-    };
-    
-    setDisplaySettings(updatedSettings);
-    // Notify other components immediately
-    window.dispatchEvent(new CustomEvent('footerSettingsChanged'));
-  };
-
-  const getDisplaySettingsForRole = (role: UserRole) => {
-    return displaySettings[role] || DEFAULT_DISPLAY_SETTINGS[role] || { showLabels: false };
+  const saveDisplaySettings = (role: UserRole, settings: { showLabels: boolean }) => {
+    const updated = { ...displaySettings, [role]: settings };
+    setDisplaySettings(updated);
   };
 
   const getMenuItemsForRole = (role: UserRole): FooterMenuItem[] => {
-    return settings[role] || DEFAULT_FOOTER_SETTINGS[role] || [];
+    return (settings && settings[role]) || DEFAULT_FOOTER_SETTINGS[role] || [];
+  };
+
+  const getDisplaySettingsForRole = (role: UserRole) => {
+    return (displaySettings && displaySettings[role]) || DEFAULT_DISPLAY_SETTINGS[role] || { showLabels: false };
   };
 
   const updateRoleMenuItems = (role: UserRole, items: FooterMenuItem[]) => {
-    const newSettings = {
-      ...settings,
-      [role]: items.slice(0, 8) // Max 8 items
-    };
-    saveSettings(newSettings);
+    saveSettings({ ...settings, [role]: items });
   };
 
   const resetToDefaults = () => {
     setSettings(DEFAULT_FOOTER_SETTINGS);
     setDisplaySettings(DEFAULT_DISPLAY_SETTINGS);
-    // Notify about reset immediately
     window.dispatchEvent(new CustomEvent('footerSettingsChanged'));
   };
 
@@ -139,15 +129,15 @@ export function useFooterMenuSettings() {
   };
 
   return {
-    settings,
-    displaySettings,
+    settings: settings || DEFAULT_FOOTER_SETTINGS,
+    displaySettings: displaySettings || DEFAULT_DISPLAY_SETTINGS,
     isLoading,
+    saveSettings,
+    saveDisplaySettings,
     getMenuItemsForRole,
+    getDisplaySettingsForRole,
     updateRoleMenuItems,
     resetToDefaults,
-    getAvailableItemsForRole,
-    saveDisplaySettings,
-    getDisplaySettingsForRole,
-    availableItems: AVAILABLE_MENU_ITEMS
+    getAvailableItemsForRole
   };
 }

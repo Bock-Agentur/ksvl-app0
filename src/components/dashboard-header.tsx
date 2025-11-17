@@ -38,7 +38,7 @@ export function DashboardHeader({
   currentUser
 }: DashboardHeaderProps) {
   const { currentRole } = useRole();
-  const { settings } = useDashboardSettings(currentRole, false);
+  const { settings } = useDashboardSettings(currentRole, { enabled: false });
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');

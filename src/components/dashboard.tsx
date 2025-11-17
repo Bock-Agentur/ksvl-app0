@@ -51,7 +51,7 @@ export function Dashboard({ onNavigate, displayName }: DashboardProps) {
   const { slots, isLoading: slotsLoading } = useSlots();
   const { users, loading: usersLoading } = useUsers();
   const isMobileOrTablet = useIsMobile();
-  const dashboardSettingsHook = useDashboardSettings(currentRole, false);
+  const dashboardSettingsHook = useDashboardSettings(currentRole, { enabled: false });
   const settings = dashboardSettingsHook.settings;
   const { getAnimationClass, isAnimationEnabled } = useDashboardAnimations();
   
