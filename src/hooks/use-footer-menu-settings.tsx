@@ -87,13 +87,13 @@ export function useFooterMenuSettings(userRole: UserRole) {
   const { value: settings, setValue: setSettings, isLoading } = useAppSettings<FooterMenuSettings>(
     storageKey,
     DEFAULT_FOOTER_SETTINGS,
-    false // Datenbank-Speicherung
+    true // Globale Template-Speicherung
   );
 
   const { value: displaySettings, setValue: setDisplaySettings } = useAppSettings<FooterDisplaySettings>(
     displayStorageKey,
     DEFAULT_DISPLAY_SETTINGS,
-    false // Datenbank-Speicherung
+    true // Globale Template-Speicherung
   );
 
   const saveSettings = (newSettings: FooterMenuSettings) => {

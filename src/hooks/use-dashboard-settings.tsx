@@ -16,7 +16,7 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
   const { value: rawSettings, setValue, isLoading } = useAppSettings<DashboardSettings>(
     storageKey,
     DEFAULT_DASHBOARD_SETTINGS,
-    false, // Datenbank-Speicherung
+    true, // Globale Template-Speicherung
     { enabled }
   );
 
