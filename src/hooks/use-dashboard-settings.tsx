@@ -10,28 +10,45 @@ import { UserRole } from "@/types/user";
 export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = false, options?: { enabled?: boolean }) {
   const enabled = options?.enabled ?? true;
   
-  // For admins configuring other roles, use a different storage key pattern
+  // Determine storage key based on context
   const getStorageKey = (role: UserRole) => {
-    if (isAdmin && role !== userRole) {
-      return `dashboard-settings-template-${role}`; // Admin templates for other roles
+    if (isAdmin) {
+      // Admins always work with templates
+      return `dashboard-settings-template-${role}`;
     }
     return `dashboard-settings-${role}`; // Regular user settings
   };
 
   const storageKey = getStorageKey(userRole);
+  const templateKey = `dashboard-settings-template-${userRole}`;
+  
+  // Load user settings
   const { value: rawSettings, setValue, isLoading } = useAppSettings<DashboardSettings>(
     storageKey,
     DEFAULT_DASHBOARD_SETTINGS,
     false,
     { enabled }
   );
+  
+  // Load template settings as fallback (only for non-admins)
+  const { value: templateSettings } = useAppSettings<DashboardSettings>(
+    templateKey,
+    DEFAULT_DASHBOARD_SETTINGS,
+    false,
+    { enabled: enabled && !isAdmin }
+  );
+  
+  // Merge: Use user settings if they exist, otherwise use template settings
+  const mergedSettings = !isAdmin && templateSettings && Object.keys(rawSettings).length === Object.keys(DEFAULT_DASHBOARD_SETTINGS).length
+    ? templateSettings
+    : rawSettings;
 
   // Migration: Ensure headerCard is in enabledSections
   const settings = {
-    ...rawSettings,
-    enabledSections: rawSettings.enabledSections?.includes('headerCard') 
-      ? rawSettings.enabledSections 
-      : ['headerCard', ...(rawSettings.enabledSections || [])]
+    ...mergedSettings,
+    enabledSections: mergedSettings.enabledSections?.includes('headerCard') 
+      ? mergedSettings.enabledSections 
+      : ['headerCard', ...(mergedSettings.enabledSections || [])]
   };
 
   // Save settings to database
