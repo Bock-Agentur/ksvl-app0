@@ -33,40 +33,36 @@ export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = fals
     { enabled: enabled && !isAdmin }
   );
   
-  // For non-admins: Use template settings if user has no custom settings
-  const hasCustomSettings = rawSettings.enabledWidgets?.length !== DEFAULT_DASHBOARD_SETTINGS.enabledWidgets?.length ||
-                            rawSettings.enabledSections?.length !== DEFAULT_DASHBOARD_SETTINGS.enabledSections?.length;
-  
-  const mergedSettings = !isAdmin && !hasCustomSettings && templateSettings 
-    ? templateSettings 
-    : rawSettings;
+  // For non-admins: Use template settings from the role
+  // Only use rawSettings if they differ from defaults (meaning user has made custom changes)
+  const settings = !isAdmin && templateSettings ? templateSettings : rawSettings;
 
   // Migration: Ensure headerCard is in enabledSections
-  const settings = {
-    ...mergedSettings,
-    enabledSections: mergedSettings.enabledSections?.includes('headerCard') 
-      ? mergedSettings.enabledSections 
-      : ['headerCard', ...(mergedSettings.enabledSections || [])]
+  const finalSettings = {
+    ...settings,
+    enabledSections: settings.enabledSections?.includes('headerCard') 
+      ? settings.enabledSections 
+      : ['headerCard', ...(settings.enabledSections || [])]
   };
 
   // Save settings to database
   const saveSettings = (newSettings: Partial<DashboardSettings>) => {
-    const updatedSettings = { ...settings, ...newSettings };
+    const updatedSettings = { ...finalSettings, ...newSettings };
     setValue(updatedSettings);
   };
 
   const toggleWidget = (widgetId: string) => {
-    const enabledWidgets = settings.enabledWidgets.includes(widgetId)
-      ? settings.enabledWidgets.filter(id => id !== widgetId)
-      : [...settings.enabledWidgets, widgetId];
+    const enabledWidgets = finalSettings.enabledWidgets.includes(widgetId)
+      ? finalSettings.enabledWidgets.filter(id => id !== widgetId)
+      : [...finalSettings.enabledWidgets, widgetId];
     
     saveSettings({ enabledWidgets });
   };
 
   const updateWidgetSettings = (widgetId: string, widgetSettings: any) => {
     const newWidgetSettings = {
-      ...settings.widgetSettings,
-      [widgetId]: { ...settings.widgetSettings[widgetId], ...widgetSettings }
+      ...finalSettings.widgetSettings,
+      [widgetId]: { ...finalSettings.widgetSettings[widgetId], ...widgetSettings }
     };
     
     saveSettings({ widgetSettings: newWidgetSettings });
@@ -77,7 +73,7 @@ export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = fals
   };
 
   const toggleSection = (sectionKey: 'showWelcomeSection' | 'showStatsGrid' | 'showQuickActions' | 'showActivityFeed') => {
-    saveSettings({ [sectionKey]: !settings[sectionKey] });
+    saveSettings({ [sectionKey]: !finalSettings[sectionKey] });
   };
 
   const toggleItem = (itemId: string) => {
@@ -85,14 +81,14 @@ export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = fals
     const isSectionId = ['headerCard', 'welcomeSection', 'statsGrid', 'quickActions', 'activityFeed'].includes(itemId);
     
     if (isSectionId) {
-      const enabledSections = settings.enabledSections?.includes(itemId)
-        ? settings.enabledSections.filter(id => id !== itemId)
-        : [...(settings.enabledSections || []), itemId];
+      const enabledSections = finalSettings.enabledSections?.includes(itemId)
+        ? finalSettings.enabledSections.filter(id => id !== itemId)
+        : [...(finalSettings.enabledSections || []), itemId];
       saveSettings({ enabledSections });
     } else {
-      const enabledWidgets = settings.enabledWidgets.includes(itemId)
-        ? settings.enabledWidgets.filter(id => id !== itemId)
-        : [...settings.enabledWidgets, itemId];
+      const enabledWidgets = finalSettings.enabledWidgets.includes(itemId)
+        ? finalSettings.enabledWidgets.filter(id => id !== itemId)
+        : [...finalSettings.enabledWidgets, itemId];
       saveSettings({ enabledWidgets });
     }
   };
@@ -100,16 +96,16 @@ export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = fals
   const isItemEnabled = (itemId: string): boolean => {
     const isSectionId = ['headerCard', 'welcomeSection', 'statsGrid', 'quickActions', 'activityFeed'].includes(itemId);
     return isSectionId 
-      ? (settings.enabledSections?.includes(itemId) ?? false)
-      : settings.enabledWidgets.includes(itemId);
+      ? (finalSettings.enabledSections?.includes(itemId) ?? false)
+      : finalSettings.enabledWidgets.includes(itemId);
   };
 
   const isWidgetEnabled = (widgetId: string): boolean => {
-    return settings.enabledWidgets.includes(widgetId);
+    return finalSettings.enabledWidgets.includes(widgetId);
   };
 
   return {
-    settings,
+    settings: finalSettings,
     isLoading,
     saveSettings,
     toggleWidget,
