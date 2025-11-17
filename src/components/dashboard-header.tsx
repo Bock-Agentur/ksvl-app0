@@ -1,4 +1,4 @@
-import { Bell, Send, Loader2, ChevronDown, ChevronUp, Bot } from "lucide-react";
+import { Bell, Send, Loader2, ChevronDown, ChevronUp, Bot, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -179,14 +179,29 @@ export function DashboardHeader({
           </div>
         </div>
         
-        {/* Notification Bell */}
-        <Button 
-          variant="ghost"
-          size="icon"
-          className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors text-white"
-        >
-          <Bell className="w-5 h-5" />
-        </Button>
+        <div className="flex items-center gap-2">
+          {/* Notification Bell */}
+          <Button 
+            variant="ghost"
+            size="icon"
+            className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors text-white"
+          >
+            <Bell className="w-5 h-5" />
+          </Button>
+
+          {/* Logout Button */}
+          <Button 
+            variant="ghost"
+            size="icon"
+            onClick={async () => {
+              await supabase.auth.signOut();
+              window.location.href = '/auth';
+            }}
+            className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-colors text-white"
+          >
+            <LogOut className="w-5 h-5" />
+          </Button>
+        </div>
       </div>
 
       {/* Weiße fette Headline */}
