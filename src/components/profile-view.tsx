@@ -271,8 +271,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({
+          action: 'update',
           userId: targetUserId,
-          newPassword: newPassword
+          password: newPassword
         })
       });
 
