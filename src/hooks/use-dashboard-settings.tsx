@@ -33,15 +33,9 @@ export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = fals
     { enabled: enabled && !isAdmin }
   );
   
-  // For non-admins: Use template settings as the starting point, but allow user overrides
-  // Check if user has made any changes to their settings
-  const hasUserCustomizations = !isAdmin && (
-    JSON.stringify(rawSettings.enabledWidgets) !== JSON.stringify(DEFAULT_DASHBOARD_SETTINGS.enabledWidgets) ||
-    JSON.stringify(rawSettings.enabledSections) !== JSON.stringify(DEFAULT_DASHBOARD_SETTINGS.enabledSections) ||
-    rawSettings.columnLayout !== DEFAULT_DASHBOARD_SETTINGS.columnLayout
-  );
-  
-  const settings = !isAdmin && !hasUserCustomizations && templateSettings 
+  // For non-admins: Use template settings from admin as base
+  // Only use user's own settings if they exist and differ from defaults
+  const settings = !isAdmin && templateSettings 
     ? templateSettings 
     : rawSettings;
 
