@@ -152,12 +152,15 @@ function DroppableColumn({ column, items, isEnabled, onToggle, columnLayout, isO
 
 export function DashboardSettings() {
   const { currentRole, currentUser, setRole } = useRole();
-  const isAdmin = currentUser?.roles?.includes("admin") || currentRole === "admin";
   const [targetRole, setTargetRole] = useState<UserRole>(currentRole);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"desktop" | "mobile">("desktop");
   const isMobile = useIsMobile();
+  
+  // KRITISCH: isAdmin muss konsistent sein mit Dashboard.tsx
+  // Admin kann Template-Settings für die gewählte targetRole bearbeiten
+  const isEditingAsAdmin = currentRole === "admin" || currentRole === "vorstand";
   
   const { 
     settings, 
@@ -165,7 +168,7 @@ export function DashboardSettings() {
     resetToDefaults, 
     isItemEnabled,
     toggleItem
-  } = useDashboardSettings(targetRole, isAdmin);
+  } = useDashboardSettings(targetRole, isEditingAsAdmin);
 
   const availableRoles: UserRole[] = ["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"];
 
@@ -408,7 +411,7 @@ export function DashboardSettings() {
         </CardHeader>
       </Card>
 
-      {isAdmin && (
+      {isEditingAsAdmin && (
         <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
           <CardHeader className={isMobile ? "px-4 py-3" : ""}>
             <CardTitle className={isMobile ? "text-base" : ""}>Rollenauswahl</CardTitle>
