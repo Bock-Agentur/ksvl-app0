@@ -11,7 +11,7 @@ export type AnimationState = "hidden" | "animating" | "visible";
 
 export function useDashboardAnimations() {
   const { currentRole } = useRole();
-  const { settings } = useDashboardSettings(currentRole, { enabled: false });
+  const { settings } = useDashboardSettings(currentRole);
   const [animationStates, setAnimationStates] = useState<Record<string, AnimationState>>({});
   const [isInitialized, setIsInitialized] = useState(false);
 
