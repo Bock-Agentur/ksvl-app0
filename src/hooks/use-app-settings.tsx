@@ -45,7 +45,11 @@ export function useAppSettings<T = any>(
 
       if (isGlobal) {
         query = query.eq('is_global', true);
-      } else if (user) {
+      } else {
+        // For user-specific settings, require a user to be logged in
+        if (!user) {
+          throw new Error('User must be logged in for user-specific settings');
+        }
         query = query.eq('user_id', user.id);
       }
 
