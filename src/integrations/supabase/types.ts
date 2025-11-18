@@ -285,6 +285,7 @@ export type Database = {
       file_metadata: {
         Row: {
           ai_searchable: boolean | null
+          allowed_roles: string[] | null
           category: string
           created_at: string
           description: string | null
@@ -306,6 +307,7 @@ export type Database = {
         }
         Insert: {
           ai_searchable?: boolean | null
+          allowed_roles?: string[] | null
           category: string
           created_at?: string
           description?: string | null
@@ -327,6 +329,7 @@ export type Database = {
         }
         Update: {
           ai_searchable?: boolean | null
+          allowed_roles?: string[] | null
           category?: string
           created_at?: string
           description?: string | null
@@ -843,6 +846,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_file: { Args: { storage_path: string }; Returns: boolean }
       get_email_for_login: { Args: { username_input: string }; Returns: string }
       has_role: {
         Args: {
