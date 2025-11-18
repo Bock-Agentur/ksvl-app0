@@ -20,7 +20,10 @@ import {
   Trash2,
   Save,
   X,
+  Shield,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 import { FilePreview } from "./file-preview";
 import { FileDetailDrawerProps, FileMetadata } from "../types/file-manager.types";
 
@@ -41,6 +44,7 @@ export function FileDetailDrawer({
   const [isEditing, setIsEditing] = useState(false);
   const [editedDescription, setEditedDescription] = useState('');
   const [editedTags, setEditedTags] = useState<string[]>([]);
+  const [allowedRoles, setAllowedRoles] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [loadingUrl, setLoadingUrl] = useState(false);
@@ -54,6 +58,7 @@ export function FileDetailDrawer({
       if (foundFile) {
         setEditedDescription(foundFile.description || '');
         setEditedTags([...foundFile.tags]);
+        setAllowedRoles(foundFile.allowed_roles || []);
         loadFileUrl(foundFile);
         checkPermissions(fileId);
       }
@@ -90,6 +95,7 @@ export function FileDetailDrawer({
     await updateFileMetadata(file.id, {
       description: editedDescription || null,
       tags: editedTags,
+      allowed_roles: allowedRoles,
     });
     setIsEditing(false);
   };
@@ -247,6 +253,49 @@ export function FileDetailDrawer({
           </div>
         )}
       </div>
+
+      {/* Rollenbasierte Zugriffskontrolle - Nur für Admins */}
+      {canEditFile && !isEditing && (
+        <div className="space-y-3">
+          <Label className="text-sm font-medium">Zugriff für Rollen</Label>
+          <div className="space-y-2">
+            {[
+              { value: 'mitglied', label: 'Mitglieder' },
+              { value: 'kranfuehrer', label: 'Kranführer' },
+              { value: 'vorstand', label: 'Vorstand' },
+              { value: 'admin', label: 'Administratoren' },
+            ].map((role) => (
+              <div key={role.value} className="flex items-center gap-2">
+                <Checkbox
+                  id={`role-${role.value}`}
+                  checked={allowedRoles.includes(role.value)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setAllowedRoles([...allowedRoles, role.value]);
+                    } else {
+                      setAllowedRoles(allowedRoles.filter(r => r !== role.value));
+                    }
+                  }}
+                />
+                <Label htmlFor={`role-${role.value}`} className="cursor-pointer font-normal">
+                  {role.label}
+                </Label>
+              </div>
+            ))}
+          </div>
+          {(allowedRoles.length !== (file?.allowed_roles || []).length || 
+           !allowedRoles.every(r => file?.allowed_roles?.includes(r))) && (
+            <Button 
+              size="sm" 
+              onClick={handleSave}
+              className="w-full"
+            >
+              <Save className="mr-2 h-4 w-4" />
+              Rollenrechte speichern
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* Edit Actions */}
       {isEditing && (
