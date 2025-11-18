@@ -198,11 +198,74 @@ const permissionCache = useRef<Map<string, {
 4. **Benachrichtigungen:** User über neue Zugriffe informieren
 5. **Erweiterte Rollen:** Custom-Rollen definieren
 
-### Geplante Features
-- [ ] Audit-Log-Tabelle mit Trigger
-- [ ] Admin-Übersichtsseite für alle Berechtigungen
-- [ ] Tooltip mit Rollen-Details statt nur Anzahl
+### Implementierte Features (Phase 6)
+- [x] FileCard Tooltips mit spezifischen Rollennamen
+- [x] Admin-Berechtigungsübersicht unter `/file-permissions`
+- [x] Erweiterte Test-Szenarien in Dokumentation
+- [ ] Audit-Log-Tabelle mit Trigger (geplant für Phase 7)
+
+### Geplante Features (Phase 7)
+- [ ] Audit-Log-Tabelle `file_permission_history` mit Trigger
+- [ ] History-Tab in FileDetailDrawer
 - [ ] Export/Import von Berechtigungen
+- [ ] Zeitbasierte Zugriffe mit Ablaufdatum
+
+## Testing-Checkliste
+
+### Szenario 1: Einzelberechtigungs-Zuweisung
+1. Als Admin einloggen
+2. Datei hochladen
+3. FileDetailDrawer öffnen
+4. Rolle "mitglied" zuweisen
+5. Als Mitglied einloggen → Datei sichtbar
+6. Als Kranführer einloggen → Datei NICHT sichtbar
+
+**Erwartetes Ergebnis:** Nur Benutzer mit zugewiesener Rolle können die Datei sehen.
+
+### Szenario 2: Bulk-Berechtigungen
+1. Als Admin einloggen
+2. Mehrere Dateien auswählen (Multi-Select)
+3. Bulk-Berechtigungen öffnen
+4. Rollen "mitglied" + "vorstand" zuweisen
+5. Als Mitglied einloggen → Alle Dateien sichtbar
+6. Als Vorstand einloggen → Alle Dateien sichtbar
+
+**Erwartetes Ergebnis:** Bulk-Änderung funktioniert für mehrere Dateien gleichzeitig.
+
+### Szenario 3: Storage-URL-Schutz
+1. Als Admin Datei hochladen mit Rolle "admin"
+2. Storage-URL aus Netzwerk-Tab kopieren
+3. In neuem Inkognito-Tab als normales Mitglied einloggen
+4. Direkten Zugriff auf Storage-URL versuchen
+5. **Erwartung:** 403 Forbidden oder kein Zugriff
+
+**Erwartetes Ergebnis:** RLS verhindert direkten Storage-Zugriff ohne Berechtigung.
+
+### Szenario 4: Tooltip-Anzeige
+1. Als Admin Datei hochladen
+2. Rollen "mitglied" und "kranfuehrer" zuweisen
+3. FileCard im Grid- und List-View anzeigen
+4. Mit Maus über Shield-Badge hovern
+5. **Erwartung:** Tooltip zeigt "Zugriff für: Mitglied, Kranführer"
+
+**Erwartetes Ergebnis:** Tooltip zeigt spezifische Rollennamen, nicht nur Anzahl.
+
+### Szenario 5: Permissions-Übersicht
+1. Als Admin zu `/file-permissions` navigieren
+2. Filter nach Kategorie "user_document" testen
+3. Filter nach Rolle "vorstand" testen
+4. Sortierung nach Dateiname testen
+5. Such-Filter mit Dateinamen testen
+
+**Erwartetes Ergebnis:** Alle Filter funktionieren korrekt und Tabelle zeigt gefilterte Ergebnisse.
+
+### Szenario 6: Öffentliche Dateien
+1. Als Admin Datei hochladen
+2. "Öffentlich" aktivieren (is_public = true)
+3. Als nicht-eingeloggter Benutzer zugreifen
+4. **Erwartung:** Datei ist sichtbar und downloadbar
+
+**Erwartetes Ergebnis:** Öffentliche Dateien sind für alle zugänglich.
 
 ## Troubleshooting
 
@@ -223,6 +286,12 @@ const permissionCache = useRef<Map<string, {
 1. Console-Logs für Fehlerdetails prüfen
 2. Einzelne Updates testen
 3. Berechtigungen für Update prüfen
+
+### Problem: Tooltip wird nicht angezeigt
+**Lösung:**
+1. Prüfen ob TooltipProvider importiert ist
+2. Badge muss `cursor-help` Klasse haben
+3. Browser-Cache leeren und neu laden
 
 ## Technische Details
 
