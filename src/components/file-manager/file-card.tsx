@@ -21,6 +21,7 @@ import {
   Image as ImageIcon,
   Video,
   File,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
@@ -212,11 +213,17 @@ export function FileCard({
               </Badge>
             )}
           </div>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
             <span className="text-xs text-muted-foreground">{formatSize(file.file_size)}</span>
             <Badge variant="secondary" className={cn("text-xs h-5", getCategoryColor(file.category))}>
               {file.category}
             </Badge>
+            {file.allowed_roles && file.allowed_roles.length > 0 && (
+              <Badge variant="secondary" className="text-xs h-5 gap-1">
+                <Shield className="h-3 w-3" />
+                {file.allowed_roles.length}
+              </Badge>
+            )}
             {file.tags.length > 0 && (
               <span className="text-xs text-muted-foreground">{file.tags.length} Tags</span>
             )}
@@ -332,24 +339,30 @@ export function FileCard({
       {/* Info */}
       <div className="p-3">
         <p className="font-medium truncate text-sm mb-1">{file.filename}</p>
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
           <span>{formatSize(file.file_size)}</span>
           <span>{new Date(file.created_at).toLocaleDateString()}</span>
         </div>
-        {file.tags.length > 0 && (
-          <div className="flex gap-1 mt-2 flex-wrap">
-            {file.tags.slice(0, 3).map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs h-5">
-                {tag}
-              </Badge>
-            ))}
-            {file.tags.length > 3 && (
-              <Badge variant="outline" className="text-xs h-5">
-                +{file.tags.length - 3}
-              </Badge>
-            )}
-          </div>
-        )}
+        
+        {/* Badges */}
+        <div className="flex gap-1 flex-wrap">
+          {file.allowed_roles && file.allowed_roles.length > 0 && (
+            <Badge variant="secondary" className="text-xs h-5 gap-1">
+              <Shield className="h-3 w-3" />
+              {file.allowed_roles.length}
+            </Badge>
+          )}
+          {file.tags.slice(0, 3).map((tag) => (
+            <Badge key={tag} variant="outline" className="text-xs h-5">
+              {tag}
+            </Badge>
+          ))}
+          {file.tags.length > 3 && (
+            <Badge variant="outline" className="text-xs h-5">
+              +{file.tags.length - 3}
+            </Badge>
+          )}
+        </div>
       </div>
     </div>
   );

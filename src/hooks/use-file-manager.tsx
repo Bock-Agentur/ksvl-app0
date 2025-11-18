@@ -18,6 +18,7 @@ export interface FileMetadata {
   tags: string[];
   description: string | null;
   is_public: boolean;
+  allowed_roles: string[] | null;
   created_at: string;
   updated_at: string;
   ai_searchable?: boolean;
@@ -345,7 +346,7 @@ export const useFileManager = () => {
    */
   const updateFileMetadata = async (
     fileId: string,
-    updates: Partial<Pick<FileMetadata, 'description' | 'tags' | 'is_public'>>
+    updates: Partial<Pick<FileMetadata, 'description' | 'tags' | 'is_public' | 'allowed_roles'>>
   ): Promise<boolean> => {
     try {
       const { error } = await supabase
