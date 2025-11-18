@@ -15,6 +15,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { FileCard } from "./file-card";
 import { FileUploadDrawer } from "./components/file-upload-drawer";
 import { FileDetailDrawer } from "./components/file-detail-drawer";
+import { BulkPermissionsDialog } from "./components/bulk-permissions-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
@@ -28,7 +29,8 @@ import {
   RefreshCw,
   Info,
   ChevronDown,
-  CheckSquare
+  CheckSquare,
+  Shield
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -64,6 +66,7 @@ export function EnhancedFileManager() {
   const [isMigrating, setIsMigrating] = useState(false);
   const [authDebug, setAuthDebug] = useState<{ isLoggedIn: boolean; isAdminUser: boolean; userId: string | null }>();
   const [multiSelectMode, setMultiSelectMode] = useState(false);
+  const [bulkPermissionsOpen, setBulkPermissionsOpen] = useState(false);
 
   // Debug: Check auth status (reactive to role changes)
   useEffect(() => {
@@ -102,6 +105,31 @@ export function EnhancedFileManager() {
   const handleBulkDelete = async () => {
     if (window.confirm(`${selectedFiles.length} Dateien wirklich löschen?`)) {
       await deleteMultipleFiles(selectedFiles);
+    }
+  };
+
+  const handleBulkPermissions = async (roles: string[]) => {
+    try {
+      const updates = selectedFiles.map(fileId => 
+        supabase
+          .from('file_metadata')
+          .update({ allowed_roles: roles.length > 0 ? roles : null })
+          .eq('id', fileId)
+      );
+
+      const results = await Promise.all(updates);
+      const errors = results.filter(r => r.error);
+
+      if (errors.length > 0) {
+        toast.error(`Fehler beim Aktualisieren von ${errors.length} Datei(en)`);
+      } else {
+        toast.success(`Berechtigungen für ${selectedFiles.length} Datei(en) aktualisiert`);
+        clearSelection();
+        setMultiSelectMode(false);
+      }
+    } catch (error) {
+      console.error('Bulk permissions error:', error);
+      toast.error('Fehler beim Aktualisieren der Berechtigungen');
     }
   };
 
@@ -366,6 +394,12 @@ export function EnhancedFileManager() {
         <div className="sticky top-[180px] z-10 bg-primary text-primary-foreground p-3 flex items-center justify-between shadow-lg">
           <span className="text-sm font-medium">{selectedFiles.length} ausgewählt</span>
           <div className="flex gap-2">
+            {isAdmin && (
+              <Button size="sm" variant="secondary" onClick={() => setBulkPermissionsOpen(true)}>
+                <Shield className="h-4 w-4 mr-1" />
+                Berechtigungen
+              </Button>
+            )}
             <Button size="sm" variant="secondary" onClick={handleBulkDelete}>
               <Trash2 className="h-4 w-4 mr-1" />
               Löschen
@@ -492,6 +526,14 @@ export function EnhancedFileManager() {
         fileId={selectedFileId}
         open={!!selectedFileId}
         onOpenChange={(open) => !open && setSelectedFileId(null)}
+      />
+
+      {/* Bulk Permissions Dialog */}
+      <BulkPermissionsDialog
+        open={bulkPermissionsOpen}
+        onOpenChange={setBulkPermissionsOpen}
+        selectedCount={selectedFiles.length}
+        onApply={handleBulkPermissions}
       />
     </div>
   );
