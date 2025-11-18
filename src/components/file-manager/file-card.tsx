@@ -194,7 +194,24 @@ export function FileCard({
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <p className="font-medium truncate text-sm">{file.filename}</p>
+          <div className="flex items-start gap-2">
+            <p className="font-medium truncate text-sm flex-1">{file.filename}</p>
+            {file.ai_searchable && file.indexing_status === 'indexed' && (
+              <Badge variant="secondary" className="text-xs shrink-0 bg-green-500/10 text-green-600 dark:text-green-400">
+                AI
+              </Badge>
+            )}
+            {file.ai_searchable && file.indexing_status === 'indexing' && (
+              <Badge variant="secondary" className="text-xs shrink-0 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
+                ⏳
+              </Badge>
+            )}
+            {file.ai_searchable && file.indexing_status === 'failed' && (
+              <Badge variant="secondary" className="text-xs shrink-0 bg-red-500/10 text-red-600 dark:text-red-400">
+                ⚠
+              </Badge>
+            )}
+          </div>
           <div className="flex items-center gap-2 mt-1">
             <span className="text-xs text-muted-foreground">{formatSize(file.file_size)}</span>
             <Badge variant="secondary" className={cn("text-xs h-5", getCategoryColor(file.category))}>
