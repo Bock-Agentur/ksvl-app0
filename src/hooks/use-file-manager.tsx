@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { z } from "zod";
@@ -75,6 +75,9 @@ export const useFileManager = () => {
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const ITEMS_PER_PAGE = 20;
+  
+  // Cache for preview URLs
+  const previewUrlCache = useRef<Map<string, string>>(new Map());
 
   /**
    * Fetch files with filters and pagination
@@ -418,10 +421,17 @@ export const useFileManager = () => {
   /**
    * Get preview URL for a file
    * Handles both public buckets (login-media) and private buckets (documents)
-   * with automatic fallback logic
+   * with automatic fallback logic and caching
    */
   const getFilePreviewUrl = async (file: FileMetadata): Promise<string | null> => {
     try {
+      // Check cache first
+      if (previewUrlCache.current.has(file.id)) {
+        const cachedUrl = previewUrlCache.current.get(file.id)!;
+        console.log('💾 Using cached preview URL for:', file.filename);
+        return cachedUrl;
+      }
+
       // Determine bucket - check actual storage path first
       let bucket = 'documents';
       let filePath = file.storage_path;
@@ -452,6 +462,8 @@ export const useFileManager = () => {
         category: file.category 
       });
       
+      let resultUrl: string | null = null;
+
       // Try to get URL from determined bucket
       if (bucket === 'login-media') {
         const { data } = supabase.storage
@@ -460,7 +472,7 @@ export const useFileManager = () => {
         
         if (data?.publicUrl) {
           console.log('✅ Public URL generated:', data.publicUrl);
-          return data.publicUrl;
+          resultUrl = data.publicUrl;
         }
       } else {
         // For documents bucket, create signed URL
@@ -480,20 +492,21 @@ export const useFileManager = () => {
             
             if (fallbackData?.publicUrl) {
               console.log('✅ Fallback public URL generated:', fallbackData.publicUrl);
-              return fallbackData.publicUrl;
+              resultUrl = fallbackData.publicUrl;
             }
           }
-          
-          return null;
-        }
-
-        if (data?.signedUrl) {
+        } else if (data?.signedUrl) {
           console.log('✅ Signed URL generated:', data.signedUrl);
-          return data.signedUrl;
+          resultUrl = data.signedUrl;
         }
       }
 
-      return null;
+      // Cache the result
+      if (resultUrl) {
+        previewUrlCache.current.set(file.id, resultUrl);
+      }
+
+      return resultUrl;
     } catch (error) {
       console.error('❌ Error getting file preview URL:', error);
       return null;

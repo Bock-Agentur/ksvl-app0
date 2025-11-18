@@ -139,22 +139,6 @@ export function FileDetailDrawer({
           <div className="w-full h-96 flex items-center justify-center">
             <div className="h-full w-full animate-pulse bg-muted-foreground/20" />
           </div>
-        ) : file.file_type === 'image' ? (
-          fileUrl ? (
-            <img 
-              src={fileUrl} 
-              alt={file.filename} 
-              className="w-full h-auto max-h-96 object-contain"
-              onError={(e) => {
-                console.error('Image load error for:', fileUrl);
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          ) : (
-            <div className="flex justify-center py-12">
-              <FilePreview file={file} size="large" showFileName={false} />
-            </div>
-          )
         ) : file.file_type === 'pdf' && fileUrl ? (
           <iframe src={fileUrl} className="w-full h-96" title={file.filename} />
         ) : file.file_type === 'video' && fileUrl ? (
