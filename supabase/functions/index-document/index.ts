@@ -21,6 +21,30 @@ function chunkText(text: string, chunkSize: number = 500, overlap: number = 100)
   return chunks;
 }
 
+// Simple embedding generation using text hashing
+// This is a workaround since Lovable AI doesn't provide embedding models
+// For production, consider using a dedicated embedding service
+function generateSimpleEmbedding(text: string): number[] {
+  const dimension = 384; // Standard embedding dimension
+  const embedding = new Array(dimension).fill(0);
+  
+  // Create a deterministic but distributed embedding based on text content
+  const words = text.toLowerCase().split(/\s+/);
+  
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
+    for (let j = 0; j < word.length; j++) {
+      const charCode = word.charCodeAt(j);
+      const index = (charCode * (j + 1) * (i + 1)) % dimension;
+      embedding[index] += Math.sin(charCode * (j + 1)) * Math.cos(i + 1);
+    }
+  }
+  
+  // Normalize the embedding
+  const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
+  return embedding.map(val => magnitude > 0 ? val / magnitude : 0);
+}
+
 // Extract text from different file types
 async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<string> {
   const decoder = new TextDecoder('utf-8');
