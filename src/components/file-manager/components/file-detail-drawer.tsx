@@ -34,8 +34,8 @@ export function FileDetailDrawer({
   onOpenChange,
 }: FileDetailDrawerProps) {
   const isMobile = useIsMobile();
-  const { files, deleteFile, downloadFile, updateFileMetadata, getFileUrl } = useFileManager();
-  const { canEdit, canDelete } = useFilePermissions();
+  const { files, deleteFile, downloadFile, updateFileMetadata, getFileUrl, toggleAISearchable, indexDocument } = useFileManager();
+  const { canEdit, canDelete, isAdmin } = useFilePermissions();
 
   const [file, setFile] = useState<FileMetadata | null>(null);
   const [isEditing, setIsEditing] = useState(false);
