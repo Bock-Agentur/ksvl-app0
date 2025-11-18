@@ -21,6 +21,8 @@ import {
   Save,
   X,
   Shield,
+  Brain,
+  RefreshCw,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -50,6 +52,7 @@ export function FileDetailDrawer({
   const [loadingUrl, setLoadingUrl] = useState(false);
   const [canEditFile, setCanEditFile] = useState(false);
   const [canDeleteFile, setCanDeleteFile] = useState(false);
+  const [isIndexing, setIsIndexing] = useState(false);
 
   useEffect(() => {
     if (fileId) {
@@ -122,6 +125,39 @@ export function FileDetailDrawer({
 
   const handleRemoveTag = (tag: string) => {
     setEditedTags(editedTags.filter((t) => t !== tag));
+  };
+
+  const handleToggleAISearchable = async (checked: boolean) => {
+    if (!file) return;
+    
+    try {
+      await toggleAISearchable(file.id, checked);
+      
+      // Wenn aktiviert, automatisch indexieren
+      if (checked) {
+        await handleIndexDocument();
+      }
+      
+      toast.success(checked ? 'AI-Durchsuchbarkeit aktiviert' : 'AI-Durchsuchbarkeit deaktiviert');
+    } catch (error) {
+      console.error('Error toggling AI searchable:', error);
+      toast.error('Fehler beim Ändern der AI-Durchsuchbarkeit');
+    }
+  };
+
+  const handleIndexDocument = async () => {
+    if (!file) return;
+    
+    setIsIndexing(true);
+    try {
+      await indexDocument(file.id);
+      toast.success('Indexierung gestartet');
+    } catch (error) {
+      console.error('Error indexing document:', error);
+      toast.error('Fehler beim Indexieren');
+    } finally {
+      setIsIndexing(false);
+    }
   };
 
   const formatSize = (bytes: number) => {
@@ -277,6 +313,81 @@ export function FileDetailDrawer({
               <Save className="mr-2 h-4 w-4" />
               Rollenrechte speichern
             </Button>
+          )}
+        </div>
+      )}
+
+      {/* AI-Durchsuchbarkeit - Nur für Admins */}
+      {isAdmin && (
+        <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-muted">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Brain className="h-4 w-4 text-primary" />
+              <Label htmlFor="ai-searchable" className="font-medium">
+                AI-durchsuchbar
+              </Label>
+            </div>
+            <Checkbox
+              id="ai-searchable"
+              checked={file.ai_searchable || false}
+              onCheckedChange={handleToggleAISearchable}
+              disabled={isIndexing}
+            />
+          </div>
+          
+          <p className="text-xs text-muted-foreground">
+            Dokument für semantische Suche im Harbor Chat verfügbar machen
+          </p>
+          
+          {/* Indexierungs-Status */}
+          {file.ai_searchable && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Status:</span>
+                {file.indexing_status === 'not_indexed' && (
+                  <Badge variant="secondary" className="text-xs">
+                    Nicht indexiert
+                  </Badge>
+                )}
+                {file.indexing_status === 'indexing' && (
+                  <Badge variant="secondary" className="text-xs bg-yellow-500/10 text-yellow-600">
+                    <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                    Wird indexiert...
+                  </Badge>
+                )}
+                {file.indexing_status === 'indexed' && (
+                  <Badge variant="secondary" className="text-xs bg-green-500/10 text-green-600">
+                    ✓ Indexiert
+                  </Badge>
+                )}
+                {file.indexing_status === 'failed' && (
+                  <Badge variant="destructive" className="text-xs">
+                    ⚠ Fehler
+                  </Badge>
+                )}
+              </div>
+              
+              {/* Indexierungs-Button */}
+              {(file.indexing_status === 'not_indexed' || file.indexing_status === 'failed') && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleIndexDocument}
+                  disabled={isIndexing}
+                  className="w-full"
+                >
+                  <RefreshCw className={`h-3 w-3 mr-2 ${isIndexing ? 'animate-spin' : ''}`} />
+                  {isIndexing ? 'Indexiere...' : 'Jetzt indexieren'}
+                </Button>
+              )}
+              
+              {/* Letzte Indexierung */}
+              {file.indexed_at && file.indexing_status === 'indexed' && (
+                <p className="text-xs text-muted-foreground">
+                  Indexiert am: {new Date(file.indexed_at).toLocaleString('de-DE')}
+                </p>
+              )}
+            </div>
           )}
         </div>
       )}
