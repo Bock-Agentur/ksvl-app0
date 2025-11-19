@@ -21,7 +21,7 @@ function chunkText(text: string, chunkSize: number = 500, overlap: number = 100)
   return chunks;
 }
 
-// Generate embeddings using OpenAI text-embedding-3-small
+// Generate embeddings using OpenAI text-embedding-3-small with 768 dimensions (matching pgvector)
 async function generateEmbedding(text: string, apiKey: string): Promise<number[]> {
   const response = await fetch('https://api.openai.com/v1/embeddings', {
     method: 'POST',
@@ -32,6 +32,7 @@ async function generateEmbedding(text: string, apiKey: string): Promise<number[]
     body: JSON.stringify({
       model: 'text-embedding-3-small',
       input: text,
+      dimensions: 768  // CRITICAL: Match the pgvector dimension size
     })
   });
 
@@ -45,7 +46,7 @@ async function generateEmbedding(text: string, apiKey: string): Promise<number[]
   return data.data[0].embedding;
 }
 
-// Extract text from different file types - Using a simple approach for PDF
+// Extract text from PDF using a minimal approach
 async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<string> {
   try {
     // Only PDF is supported for now
@@ -55,32 +56,38 @@ async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<s
     
     console.log(`Parsing PDF document (${fileBuffer.byteLength} bytes)`);
     
-    // Use pdfjs-serverless which is designed for serverless environments
-    const { getDocument } = await import('https://esm.sh/pdfjs-serverless@0.3.2');
-    
-    // Load the PDF document
+    // Convert ArrayBuffer to base64 for external API
     const uint8Array = new Uint8Array(fileBuffer);
-    const loadingTask = getDocument({ data: uint8Array });
-    const pdfDoc = await loadingTask.promise;
+    const base64 = btoa(String.fromCharCode(...uint8Array));
     
-    const numPages = pdfDoc.numPages;
-    console.log(`PDF has ${numPages} pages`);
+    // Use Lovable AI Document Parser (supports PDF text extraction)
+    const parseResponse = await fetch('https://ai.gateway.lovable.dev/v1/documents/parse', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`
+      },
+      body: JSON.stringify({
+        document: base64,
+        mimeType: mimeType
+      })
+    });
     
-    // Extract text from all pages
-    let fullText = '';
-    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-      const page = await pdfDoc.getPage(pageNum);
-      const textContent = await page.getTextContent();
-      const pageText = textContent.items.map((item: any) => item.str).join(' ');
-      fullText += pageText + '\n';
+    if (!parseResponse.ok) {
+      const errorText = await parseResponse.text();
+      console.error('Document parse API error:', parseResponse.status, errorText);
+      throw new Error(`Document parsing failed: ${parseResponse.status}`);
     }
     
-    if (!fullText || fullText.trim().length === 0) {
+    const parseResult = await parseResponse.json();
+    const text = parseResult.text || parseResult.content || '';
+    
+    if (!text || text.trim().length === 0) {
       throw new Error('PDF contains no extractable text (might be a scanned document)');
     }
     
-    console.log(`PDF parsed successfully: ${numPages} pages, ${fullText.length} characters extracted`);
-    return fullText;
+    console.log(`PDF parsed successfully: ${text.length} characters extracted`);
+    return text;
     
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
