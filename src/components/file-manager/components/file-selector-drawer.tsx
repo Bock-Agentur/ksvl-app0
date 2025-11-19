@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useFileManager } from "@/hooks/use-file-manager";
 import { useIsMobile } from "@/hooks/use-mobile";
 import {
@@ -43,15 +43,21 @@ export function FileSelectorDrawer({
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [localViewMode, setLocalViewMode] = useState<'grid' | 'list'>('grid');
 
-  // Apply filters
-  useState(() => {
-    if (filters) {
+  // Apply filters when drawer opens
+  useEffect(() => {
+    if (open && filters) {
       setFilters({
         category: filters.category,
         file_type: filters.file_type,
       });
     }
-  });
+    // Cleanup: Reset filters when drawer closes
+    return () => {
+      if (!open) {
+        setFilters({ category: undefined });
+      }
+    };
+  }, [open, filters, setFilters]);
 
   // Filter by allowed mime types if specified
   const filteredFiles = filters?.allowedMimeTypes

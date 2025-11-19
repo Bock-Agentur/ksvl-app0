@@ -154,7 +154,7 @@ export const useFileManager = () => {
     } finally {
       setLoading(false);
     }
-  }, [filters, searchQuery, sortBy, sortOrder, page, toast]);
+  }, [filters, searchQuery, sortBy, sortOrder, toast]);
 
   /**
    * Upload single file
@@ -579,7 +579,7 @@ export const useFileManager = () => {
   // Initial load
   useEffect(() => {
     fetchFiles();
-  }, [filters, searchQuery, sortBy, sortOrder]);
+  }, [fetchFiles]);
 
   return {
     // State
