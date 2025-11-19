@@ -12,6 +12,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Eye,
   Download,
   Edit,
@@ -21,8 +27,10 @@ import {
   Image as ImageIcon,
   Video,
   File,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ROLE_LABELS } from "@/lib/role-order";
 import { useState, useEffect } from "react";
 
 interface FileCardProps {
@@ -150,6 +158,20 @@ export function FileCard({
     }
   };
 
+  // Tooltip content for role access
+  const getRoleTooltipContent = () => {
+    if (file.is_public) {
+      return "Öffentlich - Für alle sichtbar";
+    }
+    if (file.allowed_roles && file.allowed_roles.length > 0) {
+      const roleNames = file.allowed_roles
+        .map(role => ROLE_LABELS[role] || role)
+        .join(', ');
+      return `Zugriff für: ${roleNames}`;
+    }
+    return "Privat - Nur für Besitzer";
+  };
+
   // List View (Horizontal Layout)
   if (viewMode === 'list') {
     return (
@@ -194,12 +216,44 @@ export function FileCard({
 
         {/* Info */}
         <div className="flex-1 min-w-0">
-          <p className="font-medium truncate text-sm">{file.filename}</p>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-start gap-2">
+            <p className="font-medium truncate text-sm flex-1">{file.filename}</p>
+            {file.ai_searchable && file.indexing_status === 'indexed' && (
+              <Badge variant="secondary" className="text-xs shrink-0 bg-green-500/10 text-green-600 dark:text-green-400">
+                AI
+              </Badge>
+            )}
+            {file.ai_searchable && file.indexing_status === 'indexing' && (
+              <Badge variant="secondary" className="text-xs shrink-0 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400">
+                ⏳
+              </Badge>
+            )}
+            {file.ai_searchable && file.indexing_status === 'failed' && (
+              <Badge variant="secondary" className="text-xs shrink-0 bg-red-500/10 text-red-600 dark:text-red-400">
+                ⚠
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
             <span className="text-xs text-muted-foreground">{formatSize(file.file_size)}</span>
             <Badge variant="secondary" className={cn("text-xs h-5", getCategoryColor(file.category))}>
               {file.category}
             </Badge>
+            {((file.allowed_roles && file.allowed_roles.length > 0) || file.is_public) && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Badge variant="secondary" className="text-xs h-5 gap-1 cursor-help">
+                      <Shield className="h-3 w-3" />
+                      {file.is_public ? 'Öffentlich' : file.allowed_roles?.length}
+                    </Badge>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs">{getRoleTooltipContent()}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
             {file.tags.length > 0 && (
               <span className="text-xs text-muted-foreground">{file.tags.length} Tags</span>
             )}
@@ -315,24 +369,39 @@ export function FileCard({
       {/* Info */}
       <div className="p-3">
         <p className="font-medium truncate text-sm mb-1">{file.filename}</p>
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center justify-between text-xs text-muted-foreground mb-2">
           <span>{formatSize(file.file_size)}</span>
           <span>{new Date(file.created_at).toLocaleDateString()}</span>
         </div>
-        {file.tags.length > 0 && (
-          <div className="flex gap-1 mt-2 flex-wrap">
-            {file.tags.slice(0, 3).map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs h-5">
-                {tag}
-              </Badge>
-            ))}
-            {file.tags.length > 3 && (
-              <Badge variant="outline" className="text-xs h-5">
-                +{file.tags.length - 3}
-              </Badge>
-            )}
-          </div>
-        )}
+        
+        {/* Badges */}
+        <div className="flex gap-1 flex-wrap">
+          {((file.allowed_roles && file.allowed_roles.length > 0) || file.is_public) && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Badge variant="secondary" className="text-xs h-5 gap-1 cursor-help">
+                    <Shield className="h-3 w-3" />
+                    {file.is_public ? 'Öffentlich' : file.allowed_roles?.length}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">{getRoleTooltipContent()}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {file.tags.slice(0, 3).map((tag) => (
+            <Badge key={tag} variant="outline" className="text-xs h-5">
+              {tag}
+            </Badge>
+          ))}
+          {file.tags.length > 3 && (
+            <Badge variant="outline" className="text-xs h-5">
+              +{file.tags.length - 3}
+            </Badge>
+          )}
+        </div>
       </div>
     </div>
   );

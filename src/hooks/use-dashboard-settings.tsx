@@ -7,21 +7,16 @@ import { useAppSettings } from "./use-app-settings";
 import { DashboardSettings, DEFAULT_DASHBOARD_SETTINGS } from "@/lib/dashboard-config";
 import { UserRole } from "@/types/user";
 
-export function useDashboardSettings(userRole: UserRole, isAdmin: boolean = false, options?: { enabled?: boolean }) {
+export function useDashboardSettings(userRole: UserRole, options?: { enabled?: boolean }) {
   const enabled = options?.enabled ?? true;
   
-  // Determine storage key based on context
-  const storageKey = isAdmin 
-    ? `dashboard-settings-template-${userRole}` 
-    : `dashboard-settings-${userRole}`;
+  // Alle Benutzer laden Templates - nur Admins können diese bearbeiten (via Route Protection)
+  const storageKey = `dashboard-settings-template-${userRole}`;
   
-  const templateKey = `dashboard-settings-template-${userRole}`;
-  
-  // Always call both hooks to maintain consistent hook count
   const { value: rawSettings, setValue, isLoading } = useAppSettings<DashboardSettings>(
     storageKey,
     DEFAULT_DASHBOARD_SETTINGS,
-    false,
+    true, // Globale Template-Speicherung
     { enabled }
   );
   

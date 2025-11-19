@@ -158,17 +158,14 @@ export function DashboardSettings() {
   const [activeTab, setActiveTab] = useState<"desktop" | "mobile">("desktop");
   const isMobile = useIsMobile();
   
-  // KRITISCH: isAdmin muss konsistent sein mit Dashboard.tsx
-  // Admin kann Template-Settings für die gewählte targetRole bearbeiten
-  const isEditingAsAdmin = currentRole === "admin" || currentRole === "vorstand";
-  
+  // Admin bearbeitet Templates für die gewählte Rolle (Route ist bereits geschützt)
   const { 
     settings, 
     saveSettings, 
     resetToDefaults, 
     isItemEnabled,
     toggleItem
-  } = useDashboardSettings(targetRole, isEditingAsAdmin);
+  } = useDashboardSettings(targetRole);
 
   const availableRoles: UserRole[] = ["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"];
 
@@ -411,33 +408,31 @@ export function DashboardSettings() {
         </CardHeader>
       </Card>
 
-      {isEditingAsAdmin && (
-        <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
-          <CardHeader className={isMobile ? "px-4 py-3" : ""}>
-            <CardTitle className={isMobile ? "text-base" : ""}>Rollenauswahl</CardTitle>
-            {!isMobile && (
-              <CardDescription>
-                Konfigurieren Sie das Dashboard für verschiedene Benutzerrollen
-              </CardDescription>
-            )}
-          </CardHeader>
-          <CardContent className={cn(
-            "space-y-4",
-            isMobile && "px-4 pb-4"
-          )}>
-            <div className="space-y-3">
-              <Label className={cn(
-                "font-medium",
-                isMobile ? "text-sm" : "text-base"
-              )}>Rolle auswählen</Label>
-              <RoleCardGrid 
-                activeRole={targetRole}
-                onRoleSelect={setTargetRole}
-              />
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
+        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
+          <CardTitle className={isMobile ? "text-base" : ""}>Rollenauswahl</CardTitle>
+          {!isMobile && (
+            <CardDescription>
+              Konfigurieren Sie das Dashboard für verschiedene Benutzerrollen
+            </CardDescription>
+          )}
+        </CardHeader>
+        <CardContent className={cn(
+          "space-y-4",
+          isMobile && "px-4 pb-4"
+        )}>
+          <div className="space-y-3">
+            <Label className={cn(
+              "font-medium",
+              isMobile ? "text-sm" : "text-base"
+            )}>Rolle auswählen</Label>
+            <RoleCardGrid 
+              activeRole={targetRole}
+              onRoleSelect={setTargetRole}
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
         <CardHeader className={isMobile ? "px-4 py-3" : ""}>

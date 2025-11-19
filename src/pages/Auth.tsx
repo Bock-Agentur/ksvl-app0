@@ -162,6 +162,7 @@ export function Auth() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { background, isLoading } = useLoginBackground();
@@ -288,6 +289,64 @@ export function Auth() {
     }
   };
 
+  const handleResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const emailSchema = z.string().trim().email().max(255);
+      const usernameSchema = z.string().trim().min(2).max(50)
+        .regex(/^[a-zA-Z0-9_\-äöüÄÖÜß]+$/, 'Nur Buchstaben, Zahlen, Bindestrich und Unterstrich erlaubt');
+
+      let resetEmail = email.trim();
+
+      if (!email.includes('@')) {
+        const validatedUsername = usernameSchema.parse(email);
+        
+        const { data, error } = await supabase.rpc('get_email_for_login', {
+          username_input: validatedUsername
+        });
+        
+        if (error || !data) {
+          throw new Error('Benutzername nicht gefunden');
+        }
+        
+        resetEmail = data;
+      } else {
+        resetEmail = emailSchema.parse(email);
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "E-Mail gesendet",
+        description: "Bitte überprüfe dein E-Mail-Postfach und folge den Anweisungen zum Zurücksetzen deines Passworts.",
+      });
+      
+      setShowResetPassword(false);
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Eingabefehler",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Fehler",
+          description: error.message || "Fehler beim Zurücksetzen des Passworts",
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderBackground = () => {
     const overlayStyle = {
       backgroundColor: `${background.overlayColor}${Math.round((background.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
@@ -397,7 +456,7 @@ export function Auth() {
           zIndex: 3
         }}
       >
-        <form onSubmit={handleLogin} className="w-full space-y-4 mb-8 pointer-events-auto" autoComplete="on">
+        <form onSubmit={showResetPassword ? handleResetPassword : handleLogin} className="w-full space-y-4 mb-8 pointer-events-auto" autoComplete="on">
           {/* Email Input with Glass Effect */}
           <div 
             className="relative overflow-hidden transition-all duration-300 h-12"
@@ -425,51 +484,61 @@ export function Auth() {
             </div>
           </div>
 
-          {/* Password Input with Glass Effect */}
-          <div 
-            className="relative overflow-hidden transition-all duration-300 h-12"
-            style={{ 
-              borderRadius: `${cardBorderRadius}px`,
-              backgroundColor: `${background.inputBgColor}${Math.round(background.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
-            }}
-          >
-            <div className="relative flex items-center gap-3 px-4 h-full">
-              <svg className="w-5 h-5 flex-shrink-0" style={{ color: 'rgba(0, 0, 0, 0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Passwort"
-                style={{ color: '#000000' }}
-                className="flex-1 bg-transparent border-none outline-none placeholder:text-black/50"
-              />
+          {/* Password Input with Glass Effect - nur bei Login anzeigen */}
+          {!showResetPassword && (
+            <div 
+              className="relative overflow-hidden transition-all duration-300 h-12"
+              style={{ 
+                borderRadius: `${cardBorderRadius}px`,
+                backgroundColor: `${background.inputBgColor}${Math.round(background.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
+              }}
+            >
+              <div className="relative flex items-center gap-3 px-4 h-full">
+                <svg className="w-5 h-5 flex-shrink-0" style={{ color: 'rgba(0, 0, 0, 0.5)' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  placeholder="Passwort"
+                  style={{ color: '#000000' }}
+                  className="flex-1 bg-transparent border-none outline-none placeholder:text-black/50"
+                />
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Sign In Button */}
+          {/* Submit Button */}
           <Button 
             type="submit" 
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg transition-all duration-300 h-12"
             disabled={loading}
             style={{ borderRadius: `${cardBorderRadius}px` }}
           >
-            {loading ? "Wird geladen..." : "Anmelden"}
+            {loading ? "Wird geladen..." : showResetPassword ? "Passwort zurücksetzen" : "Anmelden"}
           </Button>
         </form>
         {/* Bottom Links */}
         <div className="flex items-center justify-center gap-4 text-sm">
-          <button className="text-white hover:text-white/80 transition-colors font-medium">
+          <button 
+            type="button"
+            onClick={() => setShowResetPassword(false)}
+            className="text-white hover:text-white/80 transition-colors font-medium"
+          >
             Registrieren
           </button>
           <div className="h-4 w-px bg-white/30" />
-          <button className="text-white hover:text-white/80 transition-colors">
-            Passwort vergessen?
+          <button 
+            type="button"
+            onClick={() => setShowResetPassword(!showResetPassword)}
+            className="text-white hover:text-white/80 transition-colors"
+          >
+            {showResetPassword ? "Zurück zum Login" : "Passwort vergessen?"}
           </button>
         </div>
       </div>

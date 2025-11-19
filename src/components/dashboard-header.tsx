@@ -38,7 +38,7 @@ export function DashboardHeader({
   currentUser
 }: DashboardHeaderProps) {
   const { currentRole } = useRole();
-  const { settings } = useDashboardSettings(currentRole, false);
+  const { settings } = useDashboardSettings(currentRole);
   const { toast } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
@@ -160,6 +160,11 @@ export function DashboardHeader({
     }
   };
 
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/auth';
+  };
+
   return (
     <div className="bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white pt-12 pb-8 px-[15px] rounded-[2rem] card-shadow-soft">
       {/* Header mit Profilbild, Name und Glocke */}
@@ -179,8 +184,8 @@ export function DashboardHeader({
           </div>
         </div>
         
+        {/* Notification Bell & Logout */}
         <div className="flex items-center gap-2">
-          {/* Notification Bell */}
           <Button 
             variant="ghost"
             size="icon"

@@ -67,8 +67,11 @@ const ICON_MAP = {
 };
 
 export function FooterMenuSettings() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [activeRole, setActiveRole] = useState<UserRole>("admin");
   const { toast } = useToast();
   const isMobile = useIsMobile();
+
   const {
     settings,
     displaySettings,
@@ -78,17 +81,7 @@ export function FooterMenuSettings() {
     getAvailableItemsForRole,
     saveDisplaySettings,
     getDisplaySettingsForRole
-  } = useFooterMenuSettings();
-
-  const { value: activeRole, setValue: setActiveRoleInDb } = useAppSettings<UserRole>(
-    "footerMenuActiveRole",
-    "admin",
-    false
-  );
-
-  const setActiveRole = (role: UserRole) => {
-    setActiveRoleInDb(role);
-  };
+  } = useFooterMenuSettings(activeRole);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
   // Get current role's display settings
@@ -141,7 +134,7 @@ export function FooterMenuSettings() {
   };
 
   const handleToggleLabels = (showLabels: boolean) => {
-    saveDisplaySettings(activeRole, showLabels);
+    saveDisplaySettings(activeRole, { showLabels });
     toast({
       title: showLabels ? "Text-Labels aktiviert" : "Text-Labels deaktiviert",
       description: `Labels für ${getRoleDisplayName(activeRole)} werden ${showLabels ? "angezeigt" : "ausgeblendet"}.`
@@ -191,7 +184,6 @@ export function FooterMenuSettings() {
               activeRole={activeRole}
               onRoleSelect={(role) => {
                 setActiveRole(role);
-                setActiveRoleInDb(role);
               }}
             />
             <div className="text-center pt-2">
@@ -418,7 +410,6 @@ export function FooterMenuSettings() {
             activeRole={null}
             onRoleSelect={(role) => {
               setActiveRole(role);
-              setActiveRoleInDb(role);
             }}
           />
           <div className="grid grid-cols-5 gap-2 mt-4">

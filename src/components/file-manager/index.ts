@@ -7,6 +7,7 @@ export { FileUploadDrawer } from './components/file-upload-drawer';
 export { FileDetailDrawer } from './components/file-detail-drawer';
 export { FileSelectorDrawer } from './components/file-selector-drawer';
 export { FilePreview } from './components/file-preview';
+export { BulkPermissionsDialog } from './components/bulk-permissions-dialog';
 
 // Types
 export type * from './types/file-manager.types';

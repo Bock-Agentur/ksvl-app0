@@ -20,7 +20,12 @@ import {
   Trash2,
   Save,
   X,
+  Shield,
+  Brain,
+  RefreshCw,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
 import { FilePreview } from "./file-preview";
 import { FileDetailDrawerProps, FileMetadata } from "../types/file-manager.types";
 
@@ -34,18 +39,20 @@ export function FileDetailDrawer({
   onOpenChange,
 }: FileDetailDrawerProps) {
   const isMobile = useIsMobile();
-  const { files, deleteFile, downloadFile, updateFileMetadata, getFileUrl } = useFileManager();
-  const { canEdit, canDelete } = useFilePermissions();
+  const { files, deleteFile, downloadFile, updateFileMetadata, getFileUrl, toggleAISearchable, indexDocument } = useFileManager();
+  const { canEdit, canDelete, isAdmin } = useFilePermissions();
 
   const [file, setFile] = useState<FileMetadata | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedDescription, setEditedDescription] = useState('');
   const [editedTags, setEditedTags] = useState<string[]>([]);
+  const [allowedRoles, setAllowedRoles] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState('');
   const [fileUrl, setFileUrl] = useState<string | null>(null);
   const [loadingUrl, setLoadingUrl] = useState(false);
   const [canEditFile, setCanEditFile] = useState(false);
   const [canDeleteFile, setCanDeleteFile] = useState(false);
+  const [isIndexing, setIsIndexing] = useState(false);
 
   useEffect(() => {
     if (fileId) {
@@ -54,6 +61,7 @@ export function FileDetailDrawer({
       if (foundFile) {
         setEditedDescription(foundFile.description || '');
         setEditedTags([...foundFile.tags]);
+        setAllowedRoles(foundFile.allowed_roles || []);
         loadFileUrl(foundFile);
         checkPermissions(fileId);
       }
@@ -90,6 +98,7 @@ export function FileDetailDrawer({
     await updateFileMetadata(file.id, {
       description: editedDescription || null,
       tags: editedTags,
+      allowed_roles: allowedRoles,
     });
     setIsEditing(false);
   };
@@ -118,6 +127,39 @@ export function FileDetailDrawer({
     setEditedTags(editedTags.filter((t) => t !== tag));
   };
 
+  const handleToggleAISearchable = async (checked: boolean) => {
+    if (!file) return;
+    
+    try {
+      await toggleAISearchable(file.id, checked);
+      
+      // Wenn aktiviert, automatisch indexieren
+      if (checked) {
+        await handleIndexDocument();
+      }
+      
+      toast.success(checked ? 'AI-Durchsuchbarkeit aktiviert' : 'AI-Durchsuchbarkeit deaktiviert');
+    } catch (error) {
+      console.error('Error toggling AI searchable:', error);
+      toast.error('Fehler beim Ändern der AI-Durchsuchbarkeit');
+    }
+  };
+
+  const handleIndexDocument = async () => {
+    if (!file) return;
+    
+    setIsIndexing(true);
+    try {
+      await indexDocument(file.id);
+      toast.success('Indexierung gestartet');
+    } catch (error) {
+      console.error('Error indexing document:', error);
+      toast.error('Fehler beim Indexieren');
+    } finally {
+      setIsIndexing(false);
+    }
+  };
+
   const formatSize = (bytes: number) => {
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
@@ -133,22 +175,6 @@ export function FileDetailDrawer({
           <div className="w-full h-96 flex items-center justify-center">
             <div className="h-full w-full animate-pulse bg-muted-foreground/20" />
           </div>
-        ) : file.file_type === 'image' ? (
-          fileUrl ? (
-            <img 
-              src={fileUrl} 
-              alt={file.filename} 
-              className="w-full h-auto max-h-96 object-contain"
-              onError={(e) => {
-                console.error('Image load error for:', fileUrl);
-                e.currentTarget.style.display = 'none';
-              }}
-            />
-          ) : (
-            <div className="flex justify-center py-12">
-              <FilePreview file={file} size="large" showFileName={false} />
-            </div>
-          )
         ) : file.file_type === 'pdf' && fileUrl ? (
           <iframe src={fileUrl} className="w-full h-96" title={file.filename} />
         ) : file.file_type === 'video' && fileUrl ? (
@@ -247,6 +273,124 @@ export function FileDetailDrawer({
           </div>
         )}
       </div>
+
+      {/* Rollenbasierte Zugriffskontrolle - Nur für Admins */}
+      {canEditFile && !isEditing && (
+        <div className="space-y-3">
+          <Label className="text-sm font-medium">Zugriff für Rollen</Label>
+          <div className="space-y-2">
+            {[
+              { value: 'mitglied', label: 'Mitglieder' },
+              { value: 'kranfuehrer', label: 'Kranführer' },
+              { value: 'vorstand', label: 'Vorstand' },
+              { value: 'admin', label: 'Administratoren' },
+            ].map((role) => (
+              <div key={role.value} className="flex items-center gap-2">
+                <Checkbox
+                  id={`role-${role.value}`}
+                  checked={allowedRoles.includes(role.value)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setAllowedRoles([...allowedRoles, role.value]);
+                    } else {
+                      setAllowedRoles(allowedRoles.filter(r => r !== role.value));
+                    }
+                  }}
+                />
+                <Label htmlFor={`role-${role.value}`} className="cursor-pointer font-normal">
+                  {role.label}
+                </Label>
+              </div>
+            ))}
+          </div>
+          {(allowedRoles.length !== (file?.allowed_roles || []).length || 
+           !allowedRoles.every(r => file?.allowed_roles?.includes(r))) && (
+            <Button 
+              size="sm" 
+              onClick={handleSave}
+              className="w-full"
+            >
+              <Save className="mr-2 h-4 w-4" />
+              Rollenrechte speichern
+            </Button>
+          )}
+        </div>
+      )}
+
+      {/* AI-Durchsuchbarkeit - Nur für Admins */}
+      {isAdmin && (
+        <div className="space-y-3 p-4 bg-muted/30 rounded-lg border border-muted">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Brain className="h-4 w-4 text-primary" />
+              <Label htmlFor="ai-searchable" className="font-medium">
+                AI-durchsuchbar
+              </Label>
+            </div>
+            <Checkbox
+              id="ai-searchable"
+              checked={file.ai_searchable || false}
+              onCheckedChange={handleToggleAISearchable}
+              disabled={isIndexing}
+            />
+          </div>
+          
+          <p className="text-xs text-muted-foreground">
+            Dokument für semantische Suche im Harbor Chat verfügbar machen
+          </p>
+          
+          {/* Indexierungs-Status */}
+          {file.ai_searchable && (
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground">Status:</span>
+                {file.indexing_status === 'not_indexed' && (
+                  <Badge variant="secondary" className="text-xs">
+                    Nicht indexiert
+                  </Badge>
+                )}
+                {file.indexing_status === 'indexing' && (
+                  <Badge variant="secondary" className="text-xs bg-yellow-500/10 text-yellow-600">
+                    <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                    Wird indexiert...
+                  </Badge>
+                )}
+                {file.indexing_status === 'indexed' && (
+                  <Badge variant="secondary" className="text-xs bg-green-500/10 text-green-600">
+                    ✓ Indexiert
+                  </Badge>
+                )}
+                {file.indexing_status === 'failed' && (
+                  <Badge variant="destructive" className="text-xs">
+                    ⚠ Fehler
+                  </Badge>
+                )}
+              </div>
+              
+              {/* Indexierungs-Button */}
+              {(file.indexing_status === 'not_indexed' || file.indexing_status === 'failed') && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleIndexDocument}
+                  disabled={isIndexing}
+                  className="w-full"
+                >
+                  <RefreshCw className={`h-3 w-3 mr-2 ${isIndexing ? 'animate-spin' : ''}`} />
+                  {isIndexing ? 'Indexiere...' : 'Jetzt indexieren'}
+                </Button>
+              )}
+              
+              {/* Letzte Indexierung */}
+              {file.indexed_at && file.indexing_status === 'indexed' && (
+                <p className="text-xs text-muted-foreground">
+                  Indexiert am: {new Date(file.indexed_at).toLocaleString('de-DE')}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Edit Actions */}
       {isEditing && (

@@ -43,7 +43,7 @@ serve(async (req) => {
       throw new Error('Unauthorized - Admin access required');
     }
 
-    const { userId, password, action } = await req.json();
+    const { userId, password, action, email, name } = await req.json();
 
     if (action === 'update') {
       // Update user password
@@ -60,7 +60,6 @@ serve(async (req) => {
       );
     } else if (action === 'create') {
       // This is called during user creation
-      const { email, name } = await req.json();
       
       const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
         email,

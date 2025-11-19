@@ -71,7 +71,7 @@ export function AppShell({
     getMenuItemsForRole,
     getDisplaySettingsForRole,
     isLoading: footerLoading
-  } = useFooterMenuSettings();
+  } = useFooterMenuSettings(currentRole);
   const {
     getOrderedHeaderItems
   } = useMenuSettings();

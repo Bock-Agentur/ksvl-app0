@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { FileMetadata } from "../types/file-manager.types";
 import { useFileManager } from "@/hooks/use-file-manager";
-import { FileText, Image as ImageIcon, Video, File as FileIcon } from "lucide-react";
+import { FileText, Image as ImageIcon, Video, File as FileIcon, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface FilePreviewProps {
   file: File | FileMetadata;
@@ -31,7 +32,7 @@ export function FilePreview({
   // Check if it's a File object or FileMetadata
   const isFileObject = file instanceof File;
   
-  // Get file type
+  // Get file type and check for HEIC
   const getFileType = (): 'image' | 'pdf' | 'video' | 'other' => {
     if (isFileObject) {
       const f = file as File;
@@ -45,6 +46,8 @@ export function FilePreview({
 
   const fileType = getFileType();
   const filename = isFileObject ? (file as File).name : (file as FileMetadata).filename;
+  const mimeType = isFileObject ? (file as File).type : (file as FileMetadata).mime_type;
+  const isHEIC = mimeType === 'image/heic' || mimeType === 'image/heif' || filename.toLowerCase().endsWith('.heic') || filename.toLowerCase().endsWith('.heif');
 
   useEffect(() => {
     let isMounted = true;
@@ -116,13 +119,23 @@ export function FilePreview({
 
   return (
     <div className={cn("flex flex-col items-center", className)}>
+      {/* HEIC Warning */}
+      {isHEIC && size !== 'small' && (
+        <Alert variant="default" className="mb-3">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription className="text-xs">
+            HEIC-Bilder werden im Browser nicht unterstützt. Bitte in JPG/PNG konvertieren.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className={cn(
         "rounded-md overflow-hidden bg-muted flex items-center justify-center",
         sizeClasses[size]
       )}>
         {loading ? (
           <div className="h-full w-full animate-pulse bg-muted-foreground/20" />
-        ) : previewUrl && !error && fileType === 'image' ? (
+        ) : previewUrl && !error && fileType === 'image' && !isHEIC ? (
           <img 
             src={previewUrl} 
             alt={filename} 
