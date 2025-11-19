@@ -16,7 +16,6 @@ import { DesktopBackgroundSettings } from "@/components/desktop-background-setti
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
 import { StickyHeaderLayoutSettings } from "@/components/sticky-header-layout-settings";
-import { MondaySettings } from "@/components/monday-settings";
 import { PageLoader } from "@/components/common/page-loader";
 import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
 import { cn } from "@/lib/utils";
@@ -46,7 +45,6 @@ import {
   Type,
   StickyNote,
   FolderOpen,
-  Calendar,
   type LucideIcon
 } from "lucide-react";
 
@@ -134,8 +132,7 @@ function SettingsContent() {
     ] : []),
     { id: "customfields", label: "Custom Fields", description: "Benutzerdefinierte Felder", icon: ListChecks, component: CustomFieldsManager, group: "advanced" },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
-      { id: "aiassistant", label: "AI-Assistent", description: "KI-Einstellungen", icon: Bot, component: AIAssistantSettings, group: "advanced" },
-      { id: "monday", label: "Monday.com", description: "Monday.com Integration", icon: Calendar, component: MondaySettings, group: "advanced" }
+      { id: "aiassistant", label: "AI-Assistent", description: "KI-Einstellungen", icon: Bot, component: AIAssistantSettings, group: "advanced" }
     ] : []),
     { id: "system", label: "System", description: "Systemeinstellungen", icon: SettingsIcon, component: ConsecutiveSlotsSettings, group: "advanced" },
     { id: "testdata", label: "Testdaten", description: "Testdaten verwalten", icon: Database, component: TestDataManager, group: "advanced" },

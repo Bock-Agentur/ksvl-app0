@@ -75,7 +75,6 @@ export interface DatabaseUser {
   board_position_history?: any;
   created_by?: string | null;
   modified_by?: string | null;
-  monday_item_id?: string | null;
 }
 
 export function useUsers(options?: { enabled?: boolean }) {
@@ -194,8 +193,7 @@ export function useUsers(options?: { enabled?: boolean }) {
           membership_status_history: profile.membership_status_history,
           board_position_history: profile.board_position_history,
           created_by: profile.created_by,
-          modified_by: profile.modified_by,
-          monday_item_id: profile.monday_item_id
+          modified_by: profile.modified_by
         };
       });
 

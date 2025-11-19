@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
-import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings, Key, RefreshCw } from "lucide-react";
+import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings, Key } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,7 +54,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [isSyncing, setIsSyncing] = useState(false);
   const { toast } = useToast();
   const { currentUser: roleCurrentUser, currentRole: roleCurrentRole } = useRole();
   
@@ -67,7 +66,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
   const { isPageSticky } = useStickyHeaderLayout();
   const isStickyEnabled = isPageSticky('profile');
-  const isMondaySynced = !!user?.mondayItemId;
 
   // New custom field form
   const [newField, setNewField] = useState<Partial<CustomField>>({
@@ -77,34 +75,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     required: false,
     placeholder: ""
   });
-
-  const handleMondaySync = async () => {
-    setIsSyncing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('sync-monday', {
-        body: { action: 'sync' }
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Synchronisierung erfolgreich",
-        description: data?.message || "Daten von Monday.com wurden synchronisiert",
-      });
-
-      // Reload user data
-      await loadCurrentUser();
-    } catch (error) {
-      console.error('Monday sync error:', error);
-      toast({
-        title: "Synchronisierung fehlgeschlagen",
-        description: error instanceof Error ? error.message : "Ein Fehler ist aufgetreten",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSyncing(false);
-    }
-  };
 
   useEffect(() => {
     loadCurrentUser();
@@ -1055,42 +1025,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       {/* 👤 Stammdaten Card */}
       <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-lg font-semibold flex items-center gap-2">
-                👤 Stammdaten
-              </CardTitle>
-              {isMondaySynced ? (
-                <Badge variant="outline" className="flex items-center gap-1.5 bg-green-50 text-green-700 border-green-200">
-                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" opacity="0.3"/>
-                    <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Synchronisiert
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="flex items-center gap-1.5 bg-muted text-muted-foreground">
-                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" opacity="0.3"/>
-                    <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                  Nicht synchronisiert
-                </Badge>
-              )}
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleMondaySync}
-              disabled={isSyncing}
-              className="ml-auto"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${isSyncing ? 'animate-spin' : ''}`} />
-              {isSyncing ? 'Synchronisiere...' : 'Jetzt synchronisieren'}
-            </Button>
-          </div>
+          <CardTitle className="text-lg font-semibold flex items-center gap-2">
+            👤 Stammdaten
+          </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1114,13 +1051,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Input
                   value={editedUser?.firstName || ""}
                   onChange={(e) => setEditedUser(prev => prev ? { ...prev, firstName: e.target.value } : null)}
-                  disabled={!!user.mondayItemId}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">{user.firstName || '-'}</p>
-              )}
-              {user.mondayItemId && isEditing && (
-                <p className="text-xs text-muted-foreground">Wird von Monday.com verwaltet</p>
               )}
             </div>
 
@@ -1131,13 +1064,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Input
                   value={editedUser?.lastName || ""}
                   onChange={(e) => setEditedUser(prev => prev ? { ...prev, lastName: e.target.value } : null)}
-                  disabled={!!user.mondayItemId}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">{user.lastName || '-'}</p>
-              )}
-              {user.mondayItemId && isEditing && (
-                <p className="text-xs text-muted-foreground">Wird von Monday.com verwaltet</p>
               )}
             </div>
 
@@ -1179,13 +1108,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                   type="tel"
                   value={editedUser?.phone || ""}
                   onChange={(e) => setEditedUser(prev => prev ? { ...prev, phone: e.target.value } : null)}
-                  disabled={!!user.mondayItemId}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">{user.phone || '-'}</p>
-              )}
-              {user.mondayItemId && isEditing && (
-                <p className="text-xs text-muted-foreground">Wird von Monday.com verwaltet</p>
               )}
             </div>
 
@@ -1211,13 +1136,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                   value={editedUser?.postalCode || ""}
                   onChange={(e) => setEditedUser(prev => prev ? { ...prev, postalCode: e.target.value } : null)}
                   placeholder="1234"
-                  disabled={!!user.mondayItemId}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">{user.postalCode || '-'}</p>
-              )}
-              {user.mondayItemId && isEditing && (
-                <p className="text-xs text-muted-foreground">Wird von Monday.com verwaltet</p>
               )}
             </div>
 
@@ -1229,13 +1150,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                   value={editedUser?.city || ""}
                   onChange={(e) => setEditedUser(prev => prev ? { ...prev, city: e.target.value } : null)}
                   placeholder="Wien"
-                  disabled={!!user.mondayItemId}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">{user.city || '-'}</p>
-              )}
-              {user.mondayItemId && isEditing && (
-                <p className="text-xs text-muted-foreground">Wird von Monday.com verwaltet</p>
               )}
             </div>
           </div>

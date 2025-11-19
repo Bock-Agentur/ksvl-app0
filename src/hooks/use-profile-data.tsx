@@ -13,7 +13,7 @@ export function useProfileData(options?: { enabled?: boolean }) {
       
       const { data } = await supabase
         .from('profiles')
-        .select('first_name, last_name, name, email, monday_item_id')
+        .select('first_name, last_name, name, email')
         .eq('id', currentUser.id)
         .single();
       
@@ -26,7 +26,6 @@ export function useProfileData(options?: { enabled?: boolean }) {
           ? `${data.first_name} ${data.last_name}`
           : data.name || 'User',
         email: data.email,
-        mondayItemId: data.monday_item_id,
       };
     },
     staleTime: 30 * 60 * 1000, // 30 minutes cache - profiles don't change often
@@ -39,7 +38,6 @@ export function useProfileData(options?: { enabled?: boolean }) {
     lastName: data?.lastName || '',
     fullName: data?.fullName || '',
     email: data?.email || '',
-    mondayItemId: data?.mondayItemId,
     isLoading 
   };
 }
