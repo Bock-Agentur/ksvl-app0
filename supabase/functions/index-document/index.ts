@@ -45,19 +45,54 @@ async function generateEmbedding(text: string, apiKey: string): Promise<number[]
   return data.data[0].embedding;
 }
 
-// Extract text from different file types
+// Extract text from different file types with proper parsing
 async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<string> {
-  const decoder = new TextDecoder('utf-8');
+  const uint8Array = new Uint8Array(fileBuffer);
   
-  // For now, we only support plain text extraction
-  // PDF and DOCX would require additional libraries
+  // Plain Text
   if (mimeType === 'text/plain') {
-    return decoder.decode(fileBuffer);
+    return new TextDecoder('utf-8').decode(fileBuffer);
   }
   
-  // For PDF/DOCX, we'll return a placeholder
-  // In production, you'd use libraries like pdf-parse or mammoth
-  return decoder.decode(fileBuffer);
+  // PDF Parsing
+  if (mimeType === 'application/pdf') {
+    try {
+      const pdfParse = await import('https://esm.sh/pdf-parse@1.1.1');
+      const data = await pdfParse.default(uint8Array);
+      
+      if (!data.text || data.text.trim().length === 0) {
+        throw new Error('PDF contains no extractable text');
+      }
+      
+      console.log(`PDF extracted: ${data.numpages} pages, ${data.text.length} chars`);
+      return data.text;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error('PDF parsing error:', error);
+      throw new Error(`Failed to parse PDF: ${errorMsg}`);
+    }
+  }
+  
+  // DOCX Parsing
+  if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    try {
+      const mammoth = await import('https://esm.sh/mammoth@1.8.0');
+      const result = await mammoth.extractRawText({ arrayBuffer: fileBuffer });
+      
+      if (!result.value || result.value.trim().length === 0) {
+        throw new Error('DOCX contains no extractable text');
+      }
+      
+      console.log(`DOCX extracted: ${result.value.length} chars`);
+      return result.value;
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+      console.error('DOCX parsing error:', error);
+      throw new Error(`Failed to parse DOCX: ${errorMsg}`);
+    }
+  }
+  
+  throw new Error(`Unsupported file type: ${mimeType}. Supported: text/plain, PDF, DOCX`);
 }
 
 serve(async (req) => {
