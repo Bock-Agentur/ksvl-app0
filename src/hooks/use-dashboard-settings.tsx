@@ -13,7 +13,7 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
   // Alle Benutzer laden Templates - nur Admins können diese bearbeiten (via Route Protection)
   const storageKey = `dashboard-settings-template-${userRole}`;
   
-  const { value: settings, setValue, isLoading } = useAppSettings<DashboardSettings>(
+  const { value: rawSettings, setValue, isLoading } = useAppSettings<DashboardSettings>(
     storageKey,
     DEFAULT_DASHBOARD_SETTINGS,
     true, // Globale Template-Speicherung
@@ -21,31 +21,31 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
   );
 
   // Migration: Ensure headerCard is in enabledSections
-  const finalSettings = {
-    ...settings,
-    enabledSections: settings.enabledSections?.includes('headerCard') 
-      ? settings.enabledSections 
-      : ['headerCard', ...(settings.enabledSections || [])]
+  const settings = {
+    ...rawSettings,
+    enabledSections: rawSettings.enabledSections?.includes('headerCard') 
+      ? rawSettings.enabledSections 
+      : ['headerCard', ...(rawSettings.enabledSections || [])]
   };
 
   // Save settings to database
   const saveSettings = (newSettings: Partial<DashboardSettings>) => {
-    const updatedSettings = { ...finalSettings, ...newSettings };
+    const updatedSettings = { ...settings, ...newSettings };
     setValue(updatedSettings);
   };
 
   const toggleWidget = (widgetId: string) => {
-    const enabledWidgets = finalSettings.enabledWidgets.includes(widgetId)
-      ? finalSettings.enabledWidgets.filter(id => id !== widgetId)
-      : [...finalSettings.enabledWidgets, widgetId];
+    const enabledWidgets = settings.enabledWidgets.includes(widgetId)
+      ? settings.enabledWidgets.filter(id => id !== widgetId)
+      : [...settings.enabledWidgets, widgetId];
     
     saveSettings({ enabledWidgets });
   };
 
   const updateWidgetSettings = (widgetId: string, widgetSettings: any) => {
     const newWidgetSettings = {
-      ...finalSettings.widgetSettings,
-      [widgetId]: { ...finalSettings.widgetSettings[widgetId], ...widgetSettings }
+      ...settings.widgetSettings,
+      [widgetId]: { ...settings.widgetSettings[widgetId], ...widgetSettings }
     };
     
     saveSettings({ widgetSettings: newWidgetSettings });
@@ -56,7 +56,7 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
   };
 
   const toggleSection = (sectionKey: 'showWelcomeSection' | 'showStatsGrid' | 'showQuickActions' | 'showActivityFeed') => {
-    saveSettings({ [sectionKey]: !finalSettings[sectionKey] });
+    saveSettings({ [sectionKey]: !settings[sectionKey] });
   };
 
   const toggleItem = (itemId: string) => {
@@ -64,14 +64,14 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
     const isSectionId = ['headerCard', 'welcomeSection', 'statsGrid', 'quickActions', 'activityFeed'].includes(itemId);
     
     if (isSectionId) {
-      const enabledSections = finalSettings.enabledSections?.includes(itemId)
-        ? finalSettings.enabledSections.filter(id => id !== itemId)
-        : [...(finalSettings.enabledSections || []), itemId];
+      const enabledSections = settings.enabledSections?.includes(itemId)
+        ? settings.enabledSections.filter(id => id !== itemId)
+        : [...(settings.enabledSections || []), itemId];
       saveSettings({ enabledSections });
     } else {
-      const enabledWidgets = finalSettings.enabledWidgets.includes(itemId)
-        ? finalSettings.enabledWidgets.filter(id => id !== itemId)
-        : [...finalSettings.enabledWidgets, itemId];
+      const enabledWidgets = settings.enabledWidgets.includes(itemId)
+        ? settings.enabledWidgets.filter(id => id !== itemId)
+        : [...settings.enabledWidgets, itemId];
       saveSettings({ enabledWidgets });
     }
   };
@@ -79,16 +79,16 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
   const isItemEnabled = (itemId: string): boolean => {
     const isSectionId = ['headerCard', 'welcomeSection', 'statsGrid', 'quickActions', 'activityFeed'].includes(itemId);
     return isSectionId 
-      ? (finalSettings.enabledSections?.includes(itemId) ?? false)
-      : finalSettings.enabledWidgets.includes(itemId);
+      ? (settings.enabledSections?.includes(itemId) ?? false)
+      : settings.enabledWidgets.includes(itemId);
   };
 
   const isWidgetEnabled = (widgetId: string): boolean => {
-    return finalSettings.enabledWidgets.includes(widgetId);
+    return settings.enabledWidgets.includes(widgetId);
   };
 
   return {
-    settings: finalSettings,
+    settings,
     isLoading,
     saveSettings,
     toggleWidget,
