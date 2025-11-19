@@ -45,7 +45,7 @@ async function generateEmbedding(text: string, apiKey: string): Promise<number[]
   return data.data[0].embedding;
 }
 
-// Extract text from different file types using pdf-parse (Deno-compatible)
+// Extract text from different file types using unpdf (Deno/Edge Function compatible)
 async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<string> {
   try {
     // Only PDF is supported for now
@@ -55,20 +55,20 @@ async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<s
     
     console.log(`Parsing PDF document (${fileBuffer.byteLength} bytes)`);
     
-    // Import pdf-parse from esm.sh for Deno
-    const pdfParse = (await import('https://esm.sh/pdf-parse@1.1.1')).default;
+    // Import unpdf which is compatible with Deno Edge Functions
+    const { extractText: extractPDFText, getDocumentProxy } = await import('https://esm.sh/unpdf@0.12.0');
     
-    // Convert ArrayBuffer to Buffer for pdf-parse
+    // Convert ArrayBuffer to Uint8Array
     const buffer = new Uint8Array(fileBuffer);
     
-    // Parse the PDF
-    const data = await pdfParse(buffer);
+    // Extract text from PDF
+    const data = await extractPDFText(buffer, { mergePages: true });
     
     if (!data.text || data.text.trim().length === 0) {
       throw new Error('PDF contains no extractable text (might be a scanned document)');
     }
     
-    console.log(`PDF parsed successfully: ${data.numpages} pages, ${data.text.length} characters extracted`);
+    console.log(`PDF parsed successfully: ${data.totalPages} pages, ${data.text.length} characters extracted`);
     return data.text;
     
   } catch (error) {
