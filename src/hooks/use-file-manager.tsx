@@ -64,7 +64,7 @@ export const useFileManager = () => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
-  const [filters, setFilters] = useState<FileFilters>({});
+  const [filters, setFilters] = useState<FileFilters>({ category: undefined }); // Start with all files
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');

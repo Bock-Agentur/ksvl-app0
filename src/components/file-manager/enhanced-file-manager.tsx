@@ -207,17 +207,23 @@ export function EnhancedFileManager() {
                 <Label>Kategorie</Label>
                 <Select 
                   value={filters.category || 'all'} 
-                  onValueChange={(value) => setFilters({ ...filters, category: value === 'all' ? undefined : value })}
+                  onValueChange={(value) => {
+                    console.log('Category changed to:', value);
+                    setFilters({ ...filters, category: value === 'all' ? undefined : value });
+                  }}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.label}
-                      </SelectItem>
-                    ))}
+                    <SelectItem value="all">Alle</SelectItem>
+                    <SelectItem value="general">Meine Dateien</SelectItem>
+                    {isAdmin && (
+                      <>
+                        <SelectItem value="user_document">Mitglieder-Dokumente</SelectItem>
+                        <SelectItem value="login_media">Login-Medien</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
               </div>
@@ -339,15 +345,21 @@ export function EnhancedFileManager() {
           <div>
             <Tabs 
               value={filters.category || 'all'} 
-              onValueChange={handleCategoryChange}
+              onValueChange={(value) => {
+                console.log('Category tab changed to:', value);
+                setFilters({ ...filters, category: value === 'all' ? undefined : value });
+              }}
               className="w-full"
             >
               <TabsList className="w-full justify-start">
-                {categories.map((cat) => (
-                  <TabsTrigger key={cat.id} value={cat.id}>
-                    {cat.label}
-                  </TabsTrigger>
-                ))}
+                <TabsTrigger value="all">Alle</TabsTrigger>
+                <TabsTrigger value="general">Meine Dateien</TabsTrigger>
+                {isAdmin && (
+                  <>
+                    <TabsTrigger value="user_document">Mitglieder-Dokumente</TabsTrigger>
+                    <TabsTrigger value="login_media">Login-Medien</TabsTrigger>
+                  </>
+                )}
               </TabsList>
             </Tabs>
           </div>
