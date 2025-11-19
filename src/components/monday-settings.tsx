@@ -59,18 +59,24 @@ export function MondaySettings() {
         updated_at: new Date().toISOString()
       };
 
+      console.log('Saving monday_settings:', settingsData);
+
       if (settings?.id) {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('monday_settings')
           .update(settingsData)
-          .eq('id', settings.id);
+          .eq('id', settings.id)
+          .select();
 
+        console.log('Update result:', { data, error });
         if (error) throw error;
       } else {
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('monday_settings')
-          .insert(settingsData);
+          .insert(settingsData)
+          .select();
 
+        console.log('Insert result:', { data, error });
         if (error) throw error;
       }
 
@@ -78,7 +84,7 @@ export function MondaySettings() {
       await loadSettings();
     } catch (error) {
       console.error('Error saving settings:', error);
-      toast.error("Fehler beim Speichern der Einstellungen");
+      toast.error(`Fehler beim Speichern: ${error instanceof Error ? error.message : 'Unbekannter Fehler'}`);
     } finally {
       setLoading(false);
     }
