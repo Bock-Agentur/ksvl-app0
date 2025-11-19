@@ -15,10 +15,6 @@ export interface FileMetadata {
   description: string | null;
   is_public: boolean;
   allowed_roles: string[] | null;
-  ai_searchable?: boolean;
-  text_content?: string | null;
-  indexed_at?: string | null;
-  indexing_status?: 'not_indexed' | 'indexing' | 'indexed' | 'failed';
   created_at: string;
   updated_at: string;
 }

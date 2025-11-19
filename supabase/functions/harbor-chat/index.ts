@@ -263,66 +263,6 @@ VERGANGENE STATISTIK:
 - Auslastung: ${pastSlots.length ? Math.round((pastBookedSlots.length / pastSlots.length) * 100) : 0}%
 ` : '';
 
-    // ===== PHASE 3: DOCUMENT SEARCH INTEGRATION =====
-    // Create embedding for user query to search relevant documents
-    let documentContext = '';
-    const userQuery = messages[messages.length - 1]?.content || '';
-    
-    if (userQuery && userQuery.length > 10) {
-      try {
-        console.log('Creating query embedding for document search...');
-        
-        const embeddingResponse = await fetch('https://ai.gateway.lovable.dev/v1/embeddings', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'google/gemini-embedding-001',
-            input: userQuery
-          })
-        });
-
-        if (embeddingResponse.ok) {
-          const embeddingData = await embeddingResponse.json();
-          const queryEmbedding = embeddingData.data[0].embedding;
-          
-          console.log('Query embedding created, searching documents...');
-          
-          // Search for relevant document chunks using vector similarity
-          const { data: relevantChunks, error: searchError } = await supabase.rpc('match_documents', {
-            query_embedding: queryEmbedding,
-            match_threshold: 0.70,
-            match_count: 5
-          });
-
-          if (!searchError && relevantChunks && relevantChunks.length > 0) {
-            console.log(`Found ${relevantChunks.length} relevant document chunks`);
-            
-            documentContext = `\n\n=== VERFÜGBARE DOKUMENTE ===\n\n`;
-            documentContext += `Du hast Zugriff auf folgende Dokumente und deren Inhalte:\n\n`;
-            
-            relevantChunks.forEach((chunk: any, idx: number) => {
-              documentContext += `[Dokument ${idx + 1}: ${chunk.filename}]\n`;
-              documentContext += `${chunk.content_chunk}\n\n`;
-            });
-            
-            documentContext += `=== ENDE DOKUMENTE ===\n\n`;
-            documentContext += `WICHTIG: Nutze diese Dokumenteninhalte, um präzise Antworten zu geben. Wenn du Informationen aus einem Dokument verwendest, erwähne den Dokumentnamen.`;
-          } else {
-            console.log('No relevant documents found or search error:', searchError);
-          }
-        } else {
-          console.log('Embedding API error:', embeddingResponse.status);
-        }
-      } catch (embeddingError) {
-        console.error('Document search error:', embeddingError);
-        // Continue without document context if there's an error
-      }
-    }
-
-
     const membersInfo = publicMembers && publicMembers.length > 0 ? `
 
 ÖFFENTLICHE MITGLIEDERDATEN (${publicMembers.length} Mitglieder):
@@ -492,7 +432,7 @@ Für andere Vereinsangelegenheiten (Events, Finanzen, Regattaergebnisse, Hafenin
 
 ${customPrompt ? `\nZUSÄTZLICHE ANWEISUNGEN:\n${customPrompt}` : ''}
 
-${documentContext}
+
 
 Ahoi und viel Spaß beim Segeln! 🚤⚓`;
 

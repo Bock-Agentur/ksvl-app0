@@ -568,91 +568,6 @@ export const useFileManager = () => {
   };
 
   /**
-   * Toggle AI searchable status for a document
-   */
-  const toggleAISearchable = async (fileId: string, aiSearchable: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('file_metadata')
-        .update({ 
-          ai_searchable: aiSearchable,
-          indexing_status: aiSearchable ? 'not_indexed' : 'not_indexed'
-        })
-        .eq('id', fileId);
-      
-      if (error) throw error;
-      
-      toast({
-        title: aiSearchable ? "Für AI-Suche freigegeben" : "AI-Suche deaktiviert",
-        description: aiSearchable 
-          ? "Dokument kann jetzt indexiert werden" 
-          : "Dokument wird nicht mehr durchsucht",
-      });
-      
-      // Refresh files to show updated status
-      fetchFiles();
-    } catch (error) {
-      console.error('Error toggling AI searchable:', error);
-      toast({
-        title: "Fehler",
-        description: "Status konnte nicht geändert werden",
-        variant: "destructive",
-      });
-    }
-  };
-
-  /**
-   * Index a document for AI search
-   */
-  const indexDocument = async (fileId: string) => {
-    try {
-      // Update status to 'indexing' immediately for UI feedback
-      await supabase
-        .from('file_metadata')
-        .update({ indexing_status: 'indexing' })
-        .eq('id', fileId);
-      
-      // Refresh UI to show indexing status
-      fetchFiles();
-      
-      toast({
-        title: "Indexierung gestartet",
-        description: "Das Dokument wird für die AI-Suche vorbereitet...",
-      });
-      
-      // Call edge function to index document
-      const { data, error } = await supabase.functions.invoke('index-document', {
-        body: { fileId }
-      });
-      
-      if (error) throw error;
-      
-      toast({
-        title: "Erfolgreich indexiert",
-        description: data?.message || "Dokument steht jetzt für AI-Suche zur Verfügung",
-      });
-      
-      // Refresh files to show indexed status
-      fetchFiles();
-    } catch (error) {
-      console.error('Indexing failed:', error);
-      toast({
-        title: "Indexierung fehlgeschlagen",
-        description: error instanceof Error ? error.message : "Ein unbekannter Fehler ist aufgetreten",
-        variant: "destructive",
-      });
-      
-      // Update status to 'failed'
-      await supabase
-        .from('file_metadata')
-        .update({ indexing_status: 'failed' })
-        .eq('id', fileId);
-      
-      fetchFiles();
-    }
-  };
-
-  /**
    * Load more files (infinite scroll)
    */
   const loadMore = () => {
@@ -692,8 +607,6 @@ export const useFileManager = () => {
     toggleFileSelection,
     clearSelection,
     loadMore,
-    toggleAISearchable,
-    indexDocument,
 
     // Setters
     setFilters,
