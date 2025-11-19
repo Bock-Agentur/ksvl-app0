@@ -86,10 +86,13 @@ function AppContent() {
           setIsPageReady(true);
         });
       });
-    } else {
-      setIsPageReady(false);
     }
-  }, [isCurrentTabLoading, roleLoading, settingsLoading, currentUser, activeTab]);
+  }, [isCurrentTabLoading, roleLoading, settingsLoading, currentUser]);
+  
+  // Reset page ready when tab changes
+  useEffect(() => {
+    setIsPageReady(false);
+  }, [activeTab]);
   
   // Verarbeite URL-Parameter für Datumsnavigation
   useEffect(() => {
