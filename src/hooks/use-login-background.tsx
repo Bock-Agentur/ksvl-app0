@@ -29,6 +29,10 @@ export interface LoginBackground {
   countdownVerticalPositionDesktop: number;
   countdownVerticalPositionTablet: number;
   countdownVerticalPositionMobile: number;
+  logoEnabled: boolean;
+  logoUrl: string | null;
+  logoFilename: string | null;
+  logoWidth: number;
 }
 
 const DEFAULT_BACKGROUND: LoginBackground = {
@@ -58,7 +62,11 @@ const DEFAULT_BACKGROUND: LoginBackground = {
   countdownFontWeight: 100,
   countdownVerticalPositionDesktop: 35,
   countdownVerticalPositionTablet: 35,
-  countdownVerticalPositionMobile: 35
+  countdownVerticalPositionMobile: 35,
+  logoEnabled: false,
+  logoUrl: null,
+  logoFilename: null,
+  logoWidth: 200
 };
 
 export function useLoginBackground() {

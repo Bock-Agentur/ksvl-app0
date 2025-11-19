@@ -460,6 +460,18 @@ export function Auth() {
           zIndex: 3
         }}
       >
+        {/* Logo */}
+        {background.logoEnabled && background.logoUrl && (
+          <div className="flex justify-center mb-6 pointer-events-auto">
+            <img 
+              src={background.logoUrl} 
+              alt="Logo" 
+              style={{ width: `${background.logoWidth || 200}px` }}
+              className="max-w-full h-auto"
+            />
+          </div>
+        )}
+
         <form onSubmit={showResetPassword ? handleResetPassword : handleLogin} className="w-full space-y-4 mb-8 pointer-events-auto" autoComplete="on">
           {/* Email Input with Glass Effect */}
           <div 
