@@ -230,13 +230,16 @@ async function getMitgliedsdaten(apiToken: string, boardId?: string) {
       boards (limit: 50) {
         id
         name
+        columns {
+          id
+          title
+        }
         items_page {
           items {
             id
             name
             column_values {
               id
-              title
               text
             }
           }
@@ -301,14 +304,24 @@ async function getMitgliedsdaten(apiToken: string, boardId?: string) {
     "eMail"
   ];
 
+  // Create a map of column IDs to titles
+  const columnMap = new Map();
+  if (board.columns) {
+    board.columns.forEach((col: any) => {
+      columnMap.set(col.id, col.title);
+    });
+  }
+  console.log('Column mapping:', Object.fromEntries(columnMap));
+
   // Extract data
   const items = board.items_page?.items || [];
   const result = items.map((item: any) => {
     const row: any = { id: item.id };
 
     item.column_values.forEach((col: any) => {
-      if (allowedColumns.includes(col.title)) {
-        row[col.title] = col.text || "";
+      const columnTitle = columnMap.get(col.id);
+      if (columnTitle && allowedColumns.includes(columnTitle)) {
+        row[columnTitle] = col.text || "";
       }
     });
 
