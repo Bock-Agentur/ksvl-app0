@@ -255,10 +255,25 @@ async function getMitgliedsdaten(apiToken: string, boardId?: string) {
   });
 
   if (!response.ok) {
-    throw new Error(`Monday.com API error: ${response.statusText}`);
+    const errorText = await response.text();
+    console.error('Monday.com API HTTP error:', { status: response.status, statusText: response.statusText, body: errorText });
+    throw new Error(`Monday.com API error: ${response.status} ${response.statusText}`);
   }
 
   const data = await response.json();
+  console.log('Monday.com API response:', JSON.stringify(data, null, 2));
+
+  // Check for GraphQL errors
+  if (data.errors) {
+    console.error('Monday.com GraphQL errors:', data.errors);
+    throw new Error(`Monday.com GraphQL error: ${JSON.stringify(data.errors)}`);
+  }
+
+  // Check if data structure is valid
+  if (!data.data || !data.data.boards) {
+    console.error('Invalid Monday.com response structure:', data);
+    throw new Error('Invalid response from Monday.com API - missing data.boards');
+  }
 
   // Find the board by name or use provided boardId
   let board;
