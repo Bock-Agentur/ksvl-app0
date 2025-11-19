@@ -19,33 +19,67 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
     true, // Globale Template-Speicherung
     { enabled }
   );
+  
+  // Load template settings as fallback (always call hook, but only enable for non-admins)
+  const { value: templateSettings } = useAppSettings<DashboardSettings>(
+    templateKey,
+    DEFAULT_DASHBOARD_SETTINGS,
+    false,
+    { enabled: enabled && !isAdmin }
+  );
+  
+  // For non-admins: Start with template settings, but allow user overrides
+  // If user has made any customizations, those take priority
+  let settings: DashboardSettings;
+
+  if (isAdmin) {
+    // Admins edit templates directly
+    settings = rawSettings;
+  } else {
+    // Non-admins: Check if they have custom settings
+    const hasCustomSettings = rawSettings && (
+      (rawSettings.enabledWidgets && rawSettings.enabledWidgets.length > 0) || 
+      (rawSettings.enabledSections && rawSettings.enabledSections.length > 0)
+    );
+    
+    if (hasCustomSettings) {
+      // User has made customizations - use their settings
+      settings = rawSettings;
+    } else if (templateSettings) {
+      // No customizations yet - use admin template
+      settings = templateSettings;
+    } else {
+      // No template exists - use defaults
+      settings = DEFAULT_DASHBOARD_SETTINGS;
+    }
+  }
 
   // Migration: Ensure headerCard is in enabledSections
-  const settings = {
-    ...rawSettings,
-    enabledSections: rawSettings.enabledSections?.includes('headerCard') 
-      ? rawSettings.enabledSections 
-      : ['headerCard', ...(rawSettings.enabledSections || [])]
+  const finalSettings = {
+    ...settings,
+    enabledSections: settings.enabledSections?.includes('headerCard') 
+      ? settings.enabledSections 
+      : ['headerCard', ...(settings.enabledSections || [])]
   };
 
   // Save settings to database
   const saveSettings = (newSettings: Partial<DashboardSettings>) => {
-    const updatedSettings = { ...settings, ...newSettings };
+    const updatedSettings = { ...finalSettings, ...newSettings };
     setValue(updatedSettings);
   };
 
   const toggleWidget = (widgetId: string) => {
-    const enabledWidgets = settings.enabledWidgets.includes(widgetId)
-      ? settings.enabledWidgets.filter(id => id !== widgetId)
-      : [...settings.enabledWidgets, widgetId];
+    const enabledWidgets = finalSettings.enabledWidgets.includes(widgetId)
+      ? finalSettings.enabledWidgets.filter(id => id !== widgetId)
+      : [...finalSettings.enabledWidgets, widgetId];
     
     saveSettings({ enabledWidgets });
   };
 
   const updateWidgetSettings = (widgetId: string, widgetSettings: any) => {
     const newWidgetSettings = {
-      ...settings.widgetSettings,
-      [widgetId]: { ...settings.widgetSettings[widgetId], ...widgetSettings }
+      ...finalSettings.widgetSettings,
+      [widgetId]: { ...finalSettings.widgetSettings[widgetId], ...widgetSettings }
     };
     
     saveSettings({ widgetSettings: newWidgetSettings });
@@ -56,7 +90,7 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
   };
 
   const toggleSection = (sectionKey: 'showWelcomeSection' | 'showStatsGrid' | 'showQuickActions' | 'showActivityFeed') => {
-    saveSettings({ [sectionKey]: !settings[sectionKey] });
+    saveSettings({ [sectionKey]: !finalSettings[sectionKey] });
   };
 
   const toggleItem = (itemId: string) => {
@@ -64,14 +98,14 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
     const isSectionId = ['headerCard', 'welcomeSection', 'statsGrid', 'quickActions', 'activityFeed'].includes(itemId);
     
     if (isSectionId) {
-      const enabledSections = settings.enabledSections?.includes(itemId)
-        ? settings.enabledSections.filter(id => id !== itemId)
-        : [...(settings.enabledSections || []), itemId];
+      const enabledSections = finalSettings.enabledSections?.includes(itemId)
+        ? finalSettings.enabledSections.filter(id => id !== itemId)
+        : [...(finalSettings.enabledSections || []), itemId];
       saveSettings({ enabledSections });
     } else {
-      const enabledWidgets = settings.enabledWidgets.includes(itemId)
-        ? settings.enabledWidgets.filter(id => id !== itemId)
-        : [...settings.enabledWidgets, itemId];
+      const enabledWidgets = finalSettings.enabledWidgets.includes(itemId)
+        ? finalSettings.enabledWidgets.filter(id => id !== itemId)
+        : [...finalSettings.enabledWidgets, itemId];
       saveSettings({ enabledWidgets });
     }
   };
@@ -79,16 +113,16 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
   const isItemEnabled = (itemId: string): boolean => {
     const isSectionId = ['headerCard', 'welcomeSection', 'statsGrid', 'quickActions', 'activityFeed'].includes(itemId);
     return isSectionId 
-      ? (settings.enabledSections?.includes(itemId) ?? false)
-      : settings.enabledWidgets.includes(itemId);
+      ? (finalSettings.enabledSections?.includes(itemId) ?? false)
+      : finalSettings.enabledWidgets.includes(itemId);
   };
 
   const isWidgetEnabled = (widgetId: string): boolean => {
-    return settings.enabledWidgets.includes(widgetId);
+    return finalSettings.enabledWidgets.includes(widgetId);
   };
 
   return {
-    settings,
+    settings: finalSettings,
     isLoading,
     saveSettings,
     toggleWidget,
