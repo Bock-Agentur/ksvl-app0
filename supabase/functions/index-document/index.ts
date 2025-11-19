@@ -45,75 +45,50 @@ async function generateEmbedding(text: string, apiKey: string): Promise<number[]
   return data.data[0].embedding;
 }
 
-// Extract text from different file types with Deno-compatible parsing
+// Extract text from different file types using Lovable AI Document Parser
 async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<string> {
-  // Plain Text
-  if (mimeType === 'text/plain') {
-    return new TextDecoder('utf-8').decode(fileBuffer);
-  }
-  
-  // PDF Parsing using pdfjs-dist (Deno-compatible)
-  if (mimeType === 'application/pdf') {
-    try {
-      // Import pdfjs-dist via CDN for Deno compatibility
-      const pdfjsLib = await import('https://esm.sh/pdfjs-dist@4.0.379/legacy/build/pdf.mjs');
-      
-      // Load PDF document
-      const loadingTask = pdfjsLib.getDocument({
-        data: new Uint8Array(fileBuffer),
-        useSystemFonts: true,
-        disableFontFace: true,
-      });
-      
-      const pdf = await loadingTask.promise;
-      console.log(`PDF loaded: ${pdf.numPages} pages`);
-      
-      let fullText = '';
-      
-      // Extract text from each page
-      for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items
-          .map((item: any) => item.str)
-          .join(' ');
-        fullText += pageText + '\n\n';
-      }
-      
-      if (!fullText.trim()) {
-        throw new Error('PDF contains no extractable text (might be scanned image)');
-      }
-      
-      console.log(`PDF extracted: ${pdf.numPages} pages, ${fullText.length} chars`);
-      return fullText;
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      console.error('PDF parsing error:', error);
-      throw new Error(`Failed to parse PDF: ${errorMsg}`);
+  try {
+    // Convert ArrayBuffer to base64
+    const bytes = new Uint8Array(fileBuffer);
+    const binary = Array.from(bytes).map(byte => String.fromCharCode(byte)).join('');
+    const base64File = btoa(binary);
+    
+    console.log(`Parsing document with Lovable AI (${mimeType}, ${fileBuffer.byteLength} bytes)`);
+    
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/documents/parse', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        file: base64File,
+        mimeType: mimeType,
+        enableOcr: true, // Enable OCR for scanned PDFs
+      }),
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Document parsing failed: ${response.status} ${errorText}`);
     }
-  }
-  
-  // DOCX Parsing using mammoth (Deno-compatible)
-  if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-    try {
-      const mammoth = await import('https://esm.sh/mammoth@1.8.0');
-      const result = await mammoth.extractRawText({ arrayBuffer: fileBuffer });
-      
-      if (!result.value || result.value.trim().length === 0) {
-        throw new Error('DOCX contains no extractable text');
-      }
-      
-      console.log(`DOCX extracted: ${result.value.length} chars`);
-      return result.value;
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-      console.error('DOCX parsing error:', error);
-      throw new Error(`Failed to parse DOCX: ${errorMsg}`);
+    
+    const data = await response.json();
+    
+    if (!data.text || data.text.trim().length === 0) {
+      throw new Error('Document contains no extractable text');
     }
+    
+    console.log(`Document parsed successfully: ${data.text.length} characters extracted`);
+    return data.text;
+    
+  } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+    console.error('Document parsing error:', error);
+    throw new Error(`Failed to parse document: ${errorMsg}`);
   }
-  
-  throw new Error(`Unsupported file type: ${mimeType}. Supported: text/plain, PDF, DOCX`);
 }
+
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
