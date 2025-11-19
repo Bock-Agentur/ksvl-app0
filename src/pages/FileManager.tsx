@@ -16,8 +16,9 @@ export function FileManager() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { currentRole } = useRole();
-  const { getMenuItemsForRole, isLoading: footerLoading } = useFooterMenuSettings(currentRole);
+  const { getMenuItemsForRole, getDisplaySettingsForRole, isLoading: footerLoading } = useFooterMenuSettings(currentRole);
   const footerMenuItems = getMenuItemsForRole(currentRole);
+  const { showLabels } = getDisplaySettingsForRole(currentRole);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleNavigate = (itemId: string) => {
@@ -101,12 +102,13 @@ export function FileManager() {
                   size="sm"
                   onClick={() => handleNavigate(item.id)}
                   className={cn(
-                    "flex flex-col items-center h-auto py-2 px-1 sm:px-3 relative transition-wave min-w-0 gap-1",
+                    "flex flex-col items-center h-auto py-2 px-1 sm:px-3 relative transition-wave min-w-0",
+                    showLabels ? "gap-1" : "gap-0",
                     isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"
                   )}
                 >
                   <Icon className="h-5 w-5 flex-shrink-0" />
-                  <span className="text-xs font-medium truncate max-w-16">{item.label}</span>
+                  {showLabels && <span className="text-xs font-medium truncate max-w-16">{item.label}</span>}
                   {item.badge && (
                     <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 text-xs p-0 flex items-center justify-center">
                       {item.badge}
@@ -120,9 +122,12 @@ export function FileManager() {
             {(currentRole === 'admin' || currentRole === 'vorstand') && (
               <Drawer open={isMenuOpen} onOpenChange={setIsMenuOpen}>
                 <DrawerTrigger asChild>
-                  <Button variant="ghost" size="sm" className="flex flex-col items-center h-auto py-2 px-1 sm:px-3 min-w-0 gap-1">
+                  <Button variant="ghost" size="sm" className={cn(
+                    "flex flex-col items-center h-auto py-2 px-1 sm:px-3 min-w-0",
+                    showLabels ? "gap-1" : "gap-0"
+                  )}>
                     <Menu className="w-5 h-5 flex-shrink-0" />
-                    <span className="text-xs font-medium">Menü</span>
+                    {showLabels && <span className="text-xs font-medium">Menü</span>}
                   </Button>
                 </DrawerTrigger>
                 
