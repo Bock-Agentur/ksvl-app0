@@ -1326,7 +1326,7 @@ export function LoginBackgroundSettings() {
                       <Button
                         type="button"
                         variant="outline"
-                        onClick={() => setShowFileSelector(true)}
+                        onClick={() => setLogoSelectorOpen(true)}
                         className="w-full"
                       >
                         <FolderOpen className="w-4 h-4 mr-2" />
@@ -1510,18 +1510,26 @@ export function LoginBackgroundSettings() {
       />
 
       <FileSelectorDialog
-        isOpen={showFileSelector}
-        onClose={() => setShowFileSelector(false)}
-        onSelect={(file) => {
-          setLocalSettings({
-            ...localSettings,
-            logoUrl: file.url,
-            logoFilename: file.filename
-          });
-          setShowFileSelector(false);
+        open={logoSelectorOpen}
+        onOpenChange={setLogoSelectorOpen}
+        onSelect={async (file) => {
+          const url = await getFilePreviewUrl(file);
+          
+          if (url) {
+            setLocalSettings({
+              ...localSettings,
+              logoUrl: url,
+              logoFilename: file.filename
+            });
+          }
+          setLogoSelectorOpen(false);
         }}
-        category="login-backgrounds"
-        fileType="image"
+        title="Logo auswählen"
+        description="Wähle ein Logo aus dem Dateimanager"
+        filters={{
+          category: 'login_media',
+          file_type: 'image',
+        }}
       />
     </div>
   );
