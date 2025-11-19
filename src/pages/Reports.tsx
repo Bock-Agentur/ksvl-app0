@@ -13,13 +13,18 @@ export function Reports() {
   const [isPageReady, setIsPageReady] = useState(false);
 
   useEffect(() => {
-    if (!roleLoading) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsPageReady(true);
-        });
-      });
+    // Reset immediately when loading starts
+    if (roleLoading) {
+      setIsPageReady(false);
+      return;
     }
+
+    // Set page ready after loading completes
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsPageReady(true);
+      });
+    });
   }, [roleLoading]);
 
   if (!isPageReady) {

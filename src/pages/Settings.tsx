@@ -75,13 +75,18 @@ function SettingsContent() {
 
   // Wait for component to be fully rendered
   useEffect(() => {
-    if (!isPageLoading) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsComponentReady(true);
-        });
-      });
+    // Reset immediately when loading starts
+    if (isPageLoading) {
+      setIsComponentReady(false);
+      return;
     }
+
+    // Set page ready after loading completes
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsComponentReady(true);
+      });
+    });
   }, [isPageLoading]);
   
   // Access control - redirect if not authorized
@@ -98,6 +103,11 @@ function SettingsContent() {
   
   // Show loader until ready
   if (!isComponentReady) {
+    return <PageLoader />;
+  }
+
+  // Redirect non-admin users before rendering content
+  if (!roleLoading && !isAdmin) {
     return <PageLoader />;
   }
 
