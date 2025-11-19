@@ -13,46 +13,12 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
   // Alle Benutzer laden Templates - nur Admins können diese bearbeiten (via Route Protection)
   const storageKey = `dashboard-settings-template-${userRole}`;
   
-  const { value: rawSettings, setValue, isLoading } = useAppSettings<DashboardSettings>(
+  const { value: settings, setValue, isLoading } = useAppSettings<DashboardSettings>(
     storageKey,
     DEFAULT_DASHBOARD_SETTINGS,
     true, // Globale Template-Speicherung
     { enabled }
   );
-  
-  // Load template settings as fallback (always call hook, but only enable for non-admins)
-  const { value: templateSettings } = useAppSettings<DashboardSettings>(
-    templateKey,
-    DEFAULT_DASHBOARD_SETTINGS,
-    false,
-    { enabled: enabled && !isAdmin }
-  );
-  
-  // For non-admins: Start with template settings, but allow user overrides
-  // If user has made any customizations, those take priority
-  let settings: DashboardSettings;
-
-  if (isAdmin) {
-    // Admins edit templates directly
-    settings = rawSettings;
-  } else {
-    // Non-admins: Check if they have custom settings
-    const hasCustomSettings = rawSettings && (
-      (rawSettings.enabledWidgets && rawSettings.enabledWidgets.length > 0) || 
-      (rawSettings.enabledSections && rawSettings.enabledSections.length > 0)
-    );
-    
-    if (hasCustomSettings) {
-      // User has made customizations - use their settings
-      settings = rawSettings;
-    } else if (templateSettings) {
-      // No customizations yet - use admin template
-      settings = templateSettings;
-    } else {
-      // No template exists - use defaults
-      settings = DEFAULT_DASHBOARD_SETTINGS;
-    }
-  }
 
   // Migration: Ensure headerCard is in enabledSections
   const finalSettings = {
