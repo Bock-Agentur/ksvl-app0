@@ -46,7 +46,7 @@ async function generateEmbedding(text: string, apiKey: string): Promise<number[]
   return data.data[0].embedding;
 }
 
-// Extract text from PDF using a minimal approach
+// Extract text from PDF - using chunked base64 conversion
 async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<string> {
   try {
     // Only PDF is supported for now
@@ -56,34 +56,57 @@ async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<s
     
     console.log(`Parsing PDF document (${fileBuffer.byteLength} bytes)`);
     
-    // Convert ArrayBuffer to base64 for external API
+    // Convert ArrayBuffer to base64 in chunks to avoid stack overflow
     const uint8Array = new Uint8Array(fileBuffer);
-    const base64 = btoa(String.fromCharCode(...uint8Array));
+    let base64 = '';
+    const chunkSize = 8192;
+    for (let i = 0; i < uint8Array.length; i += chunkSize) {
+      const chunk = uint8Array.slice(i, i + chunkSize);
+      base64 += btoa(String.fromCharCode.apply(null, Array.from(chunk)));
+    }
     
-    // Use Lovable AI Document Parser (supports PDF text extraction)
-    const parseResponse = await fetch('https://ai.gateway.lovable.dev/v1/documents/parse', {
+    console.log('Converted to base64, calling document parser...');
+    
+    // Use Lovable AI to parse document
+    const parseResponse = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`
       },
       body: JSON.stringify({
-        document: base64,
-        mimeType: mimeType
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: 'Extract all text content from this PDF document. Return only the extracted text, no explanations.'
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:application/pdf;base64,${base64}`
+                }
+              }
+            ]
+          }
+        ]
       })
     });
     
     if (!parseResponse.ok) {
       const errorText = await parseResponse.text();
-      console.error('Document parse API error:', parseResponse.status, errorText);
-      throw new Error(`Document parsing failed: ${parseResponse.status}`);
+      console.error('AI parse error:', parseResponse.status, errorText);
+      throw new Error(`AI parsing failed: ${parseResponse.status}`);
     }
     
-    const parseResult = await parseResponse.json();
-    const text = parseResult.text || parseResult.content || '';
+    const result = await parseResponse.json();
+    const text = result.choices?.[0]?.message?.content || '';
     
     if (!text || text.trim().length === 0) {
-      throw new Error('PDF contains no extractable text (might be a scanned document)');
+      throw new Error('PDF contains no extractable text');
     }
     
     console.log(`PDF parsed successfully: ${text.length} characters extracted`);
