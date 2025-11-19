@@ -66,43 +66,63 @@ serve(async (req) => {
 
     for (const item of boardData) {
       try {
-        // Map Monday.com columns to profile fields
+        // Skip items without email
+        if (!item.eMail) {
+          console.log(`Skipping item ${item.id}: No email address`);
+          continue;
+        }
+
+        // Map Monday.com columns to profile fields - replace ALL data
         const profileData = {
+          email: item.eMail,
           first_name: item.Vorname || null,
           last_name: item.Nachname || null,
           postal_code: item.PLZ || null,
           city: item.ORT || null,
           phone: item.Telefon || null,
-          email: item.eMail || null,
+          name: `${item.Vorname || ''} ${item.Nachname || ''}`.trim() || item.eMail,
           monday_item_id: item.id,
           updated_at: new Date().toISOString()
         };
 
-        // Try to find existing profile by monday_item_id or email
+        // Find existing profile by email (case-insensitive)
         const { data: existingProfile } = await supabase
           .from('profiles')
           .select('id')
-          .or(`monday_item_id.eq.${item.id},email.eq.${profileData.email}`)
-          .single();
+          .ilike('email', profileData.email)
+          .maybeSingle();
 
         if (existingProfile) {
-          // Update existing profile
+          // REPLACE existing profile data completely with Monday.com data
           const { error: updateError } = await supabase
             .from('profiles')
             .update(profileData)
             .eq('id', existingProfile.id);
 
           if (updateError) throw updateError;
-        } else if (profileData.email) {
-          // Create new profile only if email exists
+          console.log(`Updated profile for ${profileData.email}`);
+        } else {
+          // Create new profile with Monday.com data
           const { error: insertError } = await supabase
             .from('profiles')
-            .insert({
-              ...profileData,
-              name: `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim()
-            });
+            .insert(profileData);
 
-          if (insertError) throw insertError;
+          if (insertError) {
+            // If insert fails due to duplicate, try update
+            if (insertError.code === '23505') {
+              const { error: retryError } = await supabase
+                .from('profiles')
+                .update(profileData)
+                .ilike('email', profileData.email);
+              
+              if (retryError) throw retryError;
+              console.log(`Updated profile for ${profileData.email} (retry)`);
+            } else {
+              throw insertError;
+            }
+          } else {
+            console.log(`Created new profile for ${profileData.email}`);
+          }
         }
 
         syncedCount++;
@@ -111,6 +131,7 @@ serve(async (req) => {
         errorCount++;
         errors.push({
           item_id: item.id,
+          email: item.eMail || 'unknown',
           error: itemError instanceof Error ? itemError.message : 'Unknown error'
         });
       }

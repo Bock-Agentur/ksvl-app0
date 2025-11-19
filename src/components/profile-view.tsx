@@ -1025,9 +1025,21 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       {/* 👤 Stammdaten Card */}
       <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            👤 Stammdaten
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-semibold flex items-center gap-2">
+              👤 Stammdaten
+            </CardTitle>
+            {user.mondayItemId && (
+              <Badge variant="outline" className="flex items-center gap-1.5">
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="currentColor" opacity="0.3"/>
+                  <path d="M2 17L12 22L22 17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 12L12 17L22 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Monday.com synchronisiert
+              </Badge>
+            )}
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1051,9 +1063,13 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Input
                   value={editedUser?.firstName || ""}
                   onChange={(e) => setEditedUser(prev => prev ? { ...prev, firstName: e.target.value } : null)}
+                  disabled={!!user.mondayItemId}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">{user.firstName || '-'}</p>
+              )}
+              {user.mondayItemId && isEditing && (
+                <p className="text-xs text-muted-foreground">Wird von Monday.com verwaltet</p>
               )}
             </div>
 
@@ -1064,9 +1080,13 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <Input
                   value={editedUser?.lastName || ""}
                   onChange={(e) => setEditedUser(prev => prev ? { ...prev, lastName: e.target.value } : null)}
+                  disabled={!!user.mondayItemId}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">{user.lastName || '-'}</p>
+              )}
+              {user.mondayItemId && isEditing && (
+                <p className="text-xs text-muted-foreground">Wird von Monday.com verwaltet</p>
               )}
             </div>
 
@@ -1108,9 +1128,13 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                   type="tel"
                   value={editedUser?.phone || ""}
                   onChange={(e) => setEditedUser(prev => prev ? { ...prev, phone: e.target.value } : null)}
+                  disabled={!!user.mondayItemId}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">{user.phone || '-'}</p>
+              )}
+              {user.mondayItemId && isEditing && (
+                <p className="text-xs text-muted-foreground">Wird von Monday.com verwaltet</p>
               )}
             </div>
 
@@ -1136,9 +1160,13 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                   value={editedUser?.postalCode || ""}
                   onChange={(e) => setEditedUser(prev => prev ? { ...prev, postalCode: e.target.value } : null)}
                   placeholder="1234"
+                  disabled={!!user.mondayItemId}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">{user.postalCode || '-'}</p>
+              )}
+              {user.mondayItemId && isEditing && (
+                <p className="text-xs text-muted-foreground">Wird von Monday.com verwaltet</p>
               )}
             </div>
 
@@ -1150,9 +1178,13 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                   value={editedUser?.city || ""}
                   onChange={(e) => setEditedUser(prev => prev ? { ...prev, city: e.target.value } : null)}
                   placeholder="Wien"
+                  disabled={!!user.mondayItemId}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">{user.city || '-'}</p>
+              )}
+              {user.mondayItemId && isEditing && (
+                <p className="text-xs text-muted-foreground">Wird von Monday.com verwaltet</p>
               )}
             </div>
           </div>
