@@ -356,7 +356,7 @@ export function Auth() {
       return (
         <>
           <img 
-            src={background.url} 
+            src={background.url}
             alt="Login background"
             className="absolute w-full h-full object-cover"
             style={{ 
@@ -366,7 +366,9 @@ export function Auth() {
               zIndex: 0
             }}
           />
-          <div className="absolute inset-0" style={{ ...overlayStyle, zIndex: 1 }} />
+          {background.overlayOpacity > 0 && (
+            <div className="absolute inset-0" style={{ ...overlayStyle, zIndex: 1 }} />
+          )}
         </>
       );
     }
@@ -395,7 +397,9 @@ export function Auth() {
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-background to-muted" style={{ zIndex: 0 }} />
           )}
-          <div className="absolute inset-0" style={{ ...overlayStyle, zIndex: 1 }} />
+          {background.overlayOpacity > 0 && (
+            <div className="absolute inset-0" style={{ ...overlayStyle, zIndex: 1 }} />
+          )}
         </>
       );
     }
