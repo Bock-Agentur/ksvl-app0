@@ -56,17 +56,10 @@ function AppContent() {
   
   // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
-  
-  // 3-Phase transition system: fade-out → loader → fade-in + slide-up
-  const [isTransitioning, setIsTransitioning] = useState(false);
-  const [contentReady, setContentReady] = useState(true);
-  const [pendingTab, setPendingTab] = useState<string | null>(null);
-  const [animationKey, setAnimationKey] = useState(0);
-  const [isContentRendered, setIsContentRendered] = useState(false);
+  const [isPageReady, setIsPageReady] = useState(false);
   
   // Centralized loading state - determines when to show PageLoader
   const getLoadingStateForTab = (tab: string): boolean => {
-    // Footer must always be loaded on every tab
     const baseLoading = footerLoading;
     
     switch(tab) {
@@ -83,7 +76,20 @@ function AppContent() {
     }
   };
   
-  const isPageLoading = roleLoading || settingsLoading || !currentUser || getLoadingStateForTab(activeTab);
+  const isCurrentTabLoading = getLoadingStateForTab(activeTab);
+  
+  // Wait for all data to load, then render content smoothly
+  useEffect(() => {
+    if (!isCurrentTabLoading && !roleLoading && !settingsLoading && currentUser) {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsPageReady(true);
+        });
+      });
+    } else {
+      setIsPageReady(false);
+    }
+  }, [isCurrentTabLoading, roleLoading, settingsLoading, currentUser, activeTab]);
   
   // Verarbeite URL-Parameter für Datumsnavigation
   useEffect(() => {
@@ -98,47 +104,10 @@ function AppContent() {
     }
   }, [searchParams, setSearchParams, setActiveTabRaw]);
   
-  // Phase 2 & 3: Wait for data loading, then for DOM render
-  useEffect(() => {
-    // Handle both tab transitions AND initial page load
-    if (pendingTab && activeTab === pendingTab) {
-      // Wait for data to load
-      if (!isPageLoading) {
-        // Then wait for DOM to be fully rendered with double requestAnimationFrame
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            // Additional frame to ensure content is painted
-            requestAnimationFrame(() => {
-              setIsContentRendered(true);
-              setContentReady(true);
-              setIsTransitioning(false);
-              setPendingTab(null);
-            });
-          });
-        });
-      }
-    } else if (!pendingTab && !isPageLoading && !isContentRendered) {
-      // Initial page load (after login) - no pendingTab set
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            setIsContentRendered(true);
-            setContentReady(true);
-          });
-        });
-      });
-    }
-  }, [activeTab, pendingTab, isPageLoading, isContentRendered]);
-  
-  // Phase 1: Fade out and trigger tab switch
+  // Tab-Wechsel Logik
   const setActiveTab = async (tab: string) => {
-    setIsTransitioning(true);
-    setContentReady(false);
-    setIsContentRendered(false);
-    await new Promise(resolve => setTimeout(resolve, 200)); // Fade out duration
-    setPendingTab(tab);
-    setAnimationKey(prev => prev + 1);
-    setActiveTabRaw(tab, true); // This triggers React to start rendering new page
+    setIsPageReady(false); // Trigger loader
+    setActiveTabRaw(tab, true);
   };
   
   // Initialize slot design system
@@ -149,7 +118,7 @@ function AppContent() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [activeTab]);
 
-  // Phase 1: Listen for navigate-to-tab events from footer
+  // Listen for navigate-to-tab events from footer
   useEffect(() => {
     const handleNavigateToTab = (event: CustomEvent<{ tab: string }>) => {
       const targetTab = event.detail.tab;
@@ -182,34 +151,23 @@ function AppContent() {
     }
   };
 
-  // Show loader during initial load or when no user
-  if (roleLoading || settingsLoading || !currentUser) {
+  // Show loader until page is ready
+  if (!isPageReady) {
     return <PageLoader />;
   }
 
   return (
-    <>
-      {/* Show loader during page transitions when data is loading or content not rendered */}
-      {(isPageLoading || !isContentRendered) && <PageLoader />}
-      
-      <div 
-        key={animationKey}
-        className={cn(
-          "transition-all duration-300 ease-out",
-          !contentReady || isTransitioning || isPageLoading || !isContentRendered ? "opacity-0" : "opacity-100 animate-page-transition-in"
-        )}
-      >
-        <AppShell
-          currentRole={currentRole}
-          currentUser={currentUser}
-          onRoleChange={setRole}
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        >
-          {renderContent()}
-        </AppShell>
+    <AppShell
+      currentRole={currentRole}
+      currentUser={currentUser}
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      onRoleChange={setRole}
+    >
+      <div className="animate-fade-in">
+        {renderContent()}
       </div>
-    </>
+    </AppShell>
   );
 }
 
