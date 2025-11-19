@@ -30,8 +30,6 @@ function DesktopBackgroundContent() {
           setIsPageReady(true);
         });
       });
-    } else {
-      setIsPageReady(false);
     }
   }, [isPageLoading]);
 

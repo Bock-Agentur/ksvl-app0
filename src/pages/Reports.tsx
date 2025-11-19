@@ -19,8 +19,6 @@ export function Reports() {
           setIsPageReady(true);
         });
       });
-    } else {
-      setIsPageReady(false);
     }
   }, [roleLoading]);
 

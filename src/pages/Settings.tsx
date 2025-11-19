@@ -81,8 +81,6 @@ function SettingsContent() {
           setIsComponentReady(true);
         });
       });
-    } else {
-      setIsComponentReady(false);
     }
   }, [isPageLoading]);
   

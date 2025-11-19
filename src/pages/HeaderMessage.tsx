@@ -30,8 +30,6 @@ function HeaderMessageContent() {
           setIsPageReady(true);
         });
       });
-    } else {
-      setIsPageReady(false);
     }
   }, [isPageLoading]);
 

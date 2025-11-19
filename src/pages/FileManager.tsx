@@ -32,8 +32,6 @@ export function FileManager() {
           setIsPageReady(true);
         });
       });
-    } else {
-      setIsPageReady(false);
     }
   }, [isPageLoading]);
 
