@@ -244,8 +244,48 @@ export type Database = {
         }
         Relationships: []
       }
+      document_embeddings: {
+        Row: {
+          chunk_index: number
+          content_chunk: string
+          created_at: string | null
+          embedding: string | null
+          file_id: string
+          id: string
+          metadata: Json | null
+        }
+        Insert: {
+          chunk_index: number
+          content_chunk: string
+          created_at?: string | null
+          embedding?: string | null
+          file_id: string
+          id?: string
+          metadata?: Json | null
+        }
+        Update: {
+          chunk_index?: number
+          content_chunk?: string
+          created_at?: string | null
+          embedding?: string | null
+          file_id?: string
+          id?: string
+          metadata?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_embeddings_file_id_fkey"
+            columns: ["file_id"]
+            isOneToOne: false
+            referencedRelation: "file_metadata"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       file_metadata: {
         Row: {
+          ai_searchable: boolean | null
+          allowed_roles: string[] | null
           category: string
           created_at: string
           description: string | null
@@ -254,15 +294,20 @@ export type Database = {
           file_type: string
           filename: string
           id: string
+          indexed_at: string | null
+          indexing_status: string | null
           is_public: boolean | null
           linked_user_id: string | null
           mime_type: string
           owner_id: string | null
           storage_path: string
           tags: string[] | null
+          text_content: string | null
           updated_at: string
         }
         Insert: {
+          ai_searchable?: boolean | null
+          allowed_roles?: string[] | null
           category: string
           created_at?: string
           description?: string | null
@@ -271,15 +316,20 @@ export type Database = {
           file_type: string
           filename: string
           id?: string
+          indexed_at?: string | null
+          indexing_status?: string | null
           is_public?: boolean | null
           linked_user_id?: string | null
           mime_type: string
           owner_id?: string | null
           storage_path: string
           tags?: string[] | null
+          text_content?: string | null
           updated_at?: string
         }
         Update: {
+          ai_searchable?: boolean | null
+          allowed_roles?: string[] | null
           category?: string
           created_at?: string
           description?: string | null
@@ -288,12 +338,15 @@ export type Database = {
           file_type?: string
           filename?: string
           id?: string
+          indexed_at?: string | null
+          indexing_status?: string | null
           is_public?: boolean | null
           linked_user_id?: string | null
           mime_type?: string
           owner_id?: string | null
           storage_path?: string
           tags?: string[] | null
+          text_content?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -793,6 +846,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_file: { Args: { storage_path: string }; Returns: boolean }
       get_email_for_login: { Args: { username_input: string }; Returns: string }
       has_role: {
         Args: {
@@ -802,6 +856,21 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
+      match_documents: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          chunk_index: number
+          content_chunk: string
+          file_id: string
+          filename: string
+          metadata: Json
+          similarity: number
+        }[]
+      }
     }
     Enums: {
       app_role:
