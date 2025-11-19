@@ -118,6 +118,7 @@ export function LoginBackgroundSettings() {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [fileSelectorOpen, setFileSelectorOpen] = useState(false);
   const [legacyMediaSelectorOpen, setLegacyMediaSelectorOpen] = useState(false);
+  const [logoSelectorOpen, setLogoSelectorOpen] = useState(false);
 
   // Update local state when background changes from server
   useEffect(() => {
@@ -1151,6 +1152,18 @@ export function LoginBackgroundSettings() {
                       maxWidth: `${localSettings.loginBlockWidthMobile || 340}px`
                     }}
                   >
+                    {/* Logo Preview */}
+                    {localSettings.logoEnabled && localSettings.logoUrl && (
+                      <div className="flex justify-center mb-6">
+                        <img 
+                          src={localSettings.logoUrl} 
+                          alt="Logo" 
+                          style={{ width: `${localSettings.logoWidth || 200}px` }}
+                          className="max-w-full h-auto"
+                        />
+                      </div>
+                    )}
+                    
                     <div 
                       className="flex items-center gap-2 px-3 text-xs"
                       style={{
@@ -1194,6 +1207,186 @@ export function LoginBackgroundSettings() {
             </div>
           )}
 
+          {/* Logo Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="w-5 h-5" />
+                Logo-Einstellungen
+              </CardTitle>
+              <CardDescription>
+                Fügen Sie ein Logo über den Eingabefeldern hinzu
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="logo-enabled">Logo anzeigen</Label>
+                <Switch
+                  id="logo-enabled"
+                  checked={localSettings.logoEnabled}
+                  onCheckedChange={(checked) => 
+                    setLocalSettings({ ...localSettings, logoEnabled: checked })
+                  }
+                />
+              </div>
+
+              {localSettings.logoEnabled && (
+                <>
+                  <Tabs defaultValue="upload" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="upload">Hochladen</TabsTrigger>
+                      <TabsTrigger value="manager">Gespeichert</TabsTrigger>
+                      <TabsTrigger value="file-manager">Dateimanager</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="upload" className="space-y-3 mt-4">
+                      <Label htmlFor="logo-upload">Logo hochladen</Label>
+                      <div className="flex gap-2 items-start">
+                        <Input
+                          key={localSettings.logoFilename || 'empty-logo'}
+                          id="logo-upload"
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/svg+xml"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+
+                            if (file.size > MAX_IMAGE_SIZE) {
+                              toast({
+                                title: "Datei zu groß",
+                                description: `Maximale Dateigröße: ${MAX_IMAGE_SIZE / 1024 / 1024}MB`,
+                                variant: "destructive"
+                              });
+                              return;
+                            }
+
+                            try {
+                              setUploading(true);
+                              const timestamp = Date.now();
+                              const fileExtension = file.name.split('.').pop();
+                              const fileName = `login-logo-${timestamp}.${fileExtension}`;
+                              const filePath = `login-backgrounds/${fileName}`;
+
+                              const { error: uploadError } = await supabase.storage
+                                .from('public-files')
+                                .upload(filePath, file, {
+                                  cacheControl: '3600',
+                                  upsert: false
+                                });
+
+                              if (uploadError) throw uploadError;
+
+                              const { data } = supabase.storage
+                                .from('public-files')
+                                .getPublicUrl(filePath);
+
+                              setLocalSettings({
+                                ...localSettings,
+                                logoUrl: data.publicUrl,
+                                logoFilename: fileName
+                              });
+
+                              toast({
+                                title: "Logo hochgeladen",
+                                description: "Logo wurde erfolgreich gespeichert"
+                              });
+                            } catch (error) {
+                              console.error('Error uploading logo:', error);
+                              toast({
+                                title: "Fehler beim Hochladen",
+                                description: error instanceof Error ? error.message : "Unbekannter Fehler",
+                                variant: "destructive"
+                              });
+                            } finally {
+                              setUploading(false);
+                            }
+                          }}
+                          disabled={uploading}
+                          className="flex-1"
+                        />
+                        {localSettings.logoUrl && (
+                          <div className="relative w-20 h-20 rounded border overflow-hidden flex-shrink-0">
+                            <img
+                              src={localSettings.logoUrl}
+                              alt="Logo Vorschau"
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="manager" className="space-y-3 mt-4">
+                      <Label>Gespeicherte Logos</Label>
+                      <p className="text-sm text-muted-foreground">Keine Logos gespeichert</p>
+                    </TabsContent>
+
+                    <TabsContent value="file-manager" className="space-y-3 mt-4">
+                      <Label>Aus Dateimanager wählen</Label>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setShowFileSelector(true)}
+                        className="w-full"
+                      >
+                        <FolderOpen className="w-4 h-4 mr-2" />
+                        Datei wählen
+                      </Button>
+                    </TabsContent>
+                  </Tabs>
+
+                  <div className="space-y-2">
+                    <Label>Logo-Breite: {localSettings.logoWidth || 200}px</Label>
+                    <Slider
+                      value={[localSettings.logoWidth || 200]}
+                      onValueChange={([value]) => 
+                        setLocalSettings({ ...localSettings, logoWidth: value })
+                      }
+                      min={80}
+                      max={400}
+                      step={10}
+                    />
+                  </div>
+
+                  {localSettings.logoFilename && (
+                    <div className="flex items-center justify-between text-xs text-muted-foreground bg-muted/50 p-2 rounded">
+                      <span className="truncate">{localSettings.logoFilename}</span>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-6 w-6 flex-shrink-0">
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Logo entfernen?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Das Logo wird nur aus den Einstellungen entfernt. Die Datei bleibt im Dateimanager erhalten.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => {
+                                setLocalSettings({
+                                  ...localSettings,
+                                  logoUrl: null,
+                                  logoFilename: null
+                                });
+                              }}
+                            >
+                              Entfernen
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Action Buttons */}
           <div className="pt-4 border-t space-y-3">
             <Button 
@@ -1234,7 +1427,29 @@ export function LoginBackgroundSettings() {
         </CardContent>
       </Card>
 
-      {/* File Selector Dialog */}
+      <FileSelectorDialog
+        open={logoSelectorOpen}
+        onOpenChange={setLogoSelectorOpen}
+        onSelect={async (file) => {
+          const url = await getFilePreviewUrl(file);
+          
+          if (url) {
+            setLocalSettings({
+              ...localSettings,
+              logoUrl: url,
+              logoFilename: file.filename
+            });
+            setLogoSelectorOpen(false);
+          }
+        }}
+        title="Logo auswählen"
+        description="Wählen Sie ein Logo aus dem Dateimanager"
+        filters={{
+          category: 'login_media',
+          file_type: 'image',
+        }}
+      />
+
       {/* File Selector Dialogs */}
       <FileSelectorDialog
         open={fileSelectorOpen}
@@ -1292,6 +1507,21 @@ export function LoginBackgroundSettings() {
           category: 'login_media',
           file_type: localSettings.type === 'video' ? 'video' : 'image',
         }}
+      />
+
+      <FileSelectorDialog
+        isOpen={showFileSelector}
+        onClose={() => setShowFileSelector(false)}
+        onSelect={(file) => {
+          setLocalSettings({
+            ...localSettings,
+            logoUrl: file.url,
+            logoFilename: file.filename
+          });
+          setShowFileSelector(false);
+        }}
+        category="login-backgrounds"
+        fileType="image"
       />
     </div>
   );
