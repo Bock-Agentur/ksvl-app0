@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { PageLoader } from "@/components/common/page-loader";
 import { z } from "zod";
 
 function Countdown({ endDate, text, showDays, fontSize, fontWeight }: { endDate: string; text: string; showDays?: boolean; fontSize?: number; fontWeight?: number }) {
@@ -167,14 +168,26 @@ export function Auth() {
   const { toast } = useToast();
   const { background, isLoading } = useLoginBackground();
   const isMobile = useIsMobile();
+  const [isPageReady, setIsPageReady] = useState(false);
 
-  // Force re-render when background changes
-  const [, forceUpdate] = useState({});
+  // Wait for background to load before showing page
   useEffect(() => {
-    if (!isLoading) {
-      forceUpdate({});
+    if (isLoading) {
+      setIsPageReady(false);
+      return;
     }
-  }, [background, isLoading]);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsPageReady(true);
+      });
+    });
+  }, [isLoading]);
+
+  // Show loader while background is loading
+  if (!isPageReady) {
+    return <PageLoader />;
+  }
 
   // Determine countdown position based on screen size
   const getCountdownPosition = () => {
