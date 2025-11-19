@@ -24,13 +24,18 @@ function HeaderMessageContent() {
   const isPageLoading = roleLoading || bgLoading || desktopBgLoading;
 
   useEffect(() => {
-    if (!isPageLoading) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsPageReady(true);
-        });
-      });
+    // Reset immediately when loading starts
+    if (isPageLoading) {
+      setIsPageReady(false);
+      return;
     }
+
+    // Set page ready after loading completes
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsPageReady(true);
+      });
+    });
   }, [isPageLoading]);
 
   if (!isPageReady) {

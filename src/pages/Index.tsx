@@ -69,6 +69,8 @@ function AppContent() {
         return baseLoading || slotsLoading;
       case 'users': 
         return baseLoading || usersLoading;
+      case 'slots':
+        return baseLoading || slotsLoading;
       case 'settings':
         return baseLoading || aiAssistantLoading || aiWelcomeLoading;
       default: 
@@ -78,21 +80,21 @@ function AppContent() {
   
   const isCurrentTabLoading = getLoadingStateForTab(activeTab);
   
-  // Wait for all data to load, then render content smoothly
+  // Track when page is ready to show (prevent flash of content)
   useEffect(() => {
-    if (!isCurrentTabLoading && !roleLoading && !settingsLoading && currentUser) {
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsPageReady(true);
-        });
-      });
+    // Reset page ready immediately when tab changes or loading starts
+    if (isCurrentTabLoading || roleLoading || settingsLoading || !currentUser) {
+      setIsPageReady(false);
+      return;
     }
-  }, [isCurrentTabLoading, roleLoading, settingsLoading, currentUser]);
-  
-  // Reset page ready when tab changes
-  useEffect(() => {
-    setIsPageReady(false);
-  }, [activeTab]);
+
+    // Set page ready after loading completes
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setIsPageReady(true);
+      });
+    });
+  }, [isCurrentTabLoading, roleLoading, settingsLoading, currentUser, activeTab]);
   
   // Verarbeite URL-Parameter für Datumsnavigation
   useEffect(() => {
