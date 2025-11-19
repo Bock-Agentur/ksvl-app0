@@ -472,7 +472,7 @@ export function Auth() {
           </div>
         )}
 
-        <form onSubmit={showResetPassword ? handleResetPassword : handleLogin} className="w-full space-y-4 mb-8 pointer-events-auto" autoComplete="on">
+        <form onSubmit={showResetPassword ? handleResetPassword : handleLogin} className="w-full space-y-4 mb-8 pointer-events-auto" autoComplete="off">
           {/* Email Input with Glass Effect */}
           <div 
             className="relative overflow-hidden transition-all duration-300 h-12"
@@ -489,7 +489,7 @@ export function Auth() {
                 id="email"
                 name="email"
                 type="text"
-                autoComplete="username"
+                autoComplete="off"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -517,7 +517,7 @@ export function Auth() {
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="off"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
