@@ -45,7 +45,7 @@ async function generateEmbedding(text: string, apiKey: string): Promise<number[]
   return data.data[0].embedding;
 }
 
-// Extract text from different file types using unpdf with explicit PDF.js import
+// Extract text from different file types using unpdf
 async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<string> {
   try {
     // Only PDF is supported for now
@@ -55,16 +55,18 @@ async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<s
     
     console.log(`Parsing PDF document (${fileBuffer.byteLength} bytes)`);
     
-    // Explicitly import pdfjs-dist first to make it available for unpdf
-    const pdfjsLib = await import('https://esm.sh/pdfjs-dist@4.0.379/build/pdf.mjs');
+    // Import unpdf and configure
+    const { configureUnPDF, extractText: extractPDFText } = await import('https://esm.sh/unpdf@0.12.0');
     
-    // Import unpdf which will use the pdfjs-dist we just loaded
-    const { extractText: extractPDFText } = await import('https://esm.sh/unpdf@0.12.0');
+    // Configure PDF.js before using extraction
+    await configureUnPDF({
+      pdfjs: () => import('https://esm.sh/pdfjs-dist@4.0.379')
+    });
     
     // Convert ArrayBuffer to Uint8Array
     const buffer = new Uint8Array(fileBuffer);
     
-    // Extract text from PDF with pdfjs available
+    // Extract text from PDF
     const data = await extractPDFText(buffer, { mergePages: true });
     
     if (!data.text || data.text.trim().length === 0) {
