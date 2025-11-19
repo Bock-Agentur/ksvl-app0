@@ -45,7 +45,7 @@ async function generateEmbedding(text: string, apiKey: string): Promise<number[]
   return data.data[0].embedding;
 }
 
-// Extract text from different file types using unpdf
+// Extract text from different file types - Using a simple approach for PDF
 async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<string> {
   try {
     // Only PDF is supported for now
@@ -55,26 +55,32 @@ async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<s
     
     console.log(`Parsing PDF document (${fileBuffer.byteLength} bytes)`);
     
-    // Import unpdf and configure
-    const { configureUnPDF, extractText: extractPDFText } = await import('https://esm.sh/unpdf@0.12.0');
+    // Use pdfjs-serverless which is designed for serverless environments
+    const { getDocument } = await import('https://esm.sh/pdfjs-serverless@0.3.2');
     
-    // Configure PDF.js before using extraction
-    await configureUnPDF({
-      pdfjs: () => import('https://esm.sh/pdfjs-dist@4.0.379')
-    });
+    // Load the PDF document
+    const uint8Array = new Uint8Array(fileBuffer);
+    const loadingTask = getDocument({ data: uint8Array });
+    const pdfDoc = await loadingTask.promise;
     
-    // Convert ArrayBuffer to Uint8Array
-    const buffer = new Uint8Array(fileBuffer);
+    const numPages = pdfDoc.numPages;
+    console.log(`PDF has ${numPages} pages`);
     
-    // Extract text from PDF
-    const data = await extractPDFText(buffer, { mergePages: true });
+    // Extract text from all pages
+    let fullText = '';
+    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+      const page = await pdfDoc.getPage(pageNum);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items.map((item: any) => item.str).join(' ');
+      fullText += pageText + '\n';
+    }
     
-    if (!data.text || data.text.trim().length === 0) {
+    if (!fullText || fullText.trim().length === 0) {
       throw new Error('PDF contains no extractable text (might be a scanned document)');
     }
     
-    console.log(`PDF parsed successfully: ${data.totalPages} pages, ${data.text.length} characters extracted`);
-    return data.text;
+    console.log(`PDF parsed successfully: ${numPages} pages, ${fullText.length} characters extracted`);
+    return fullText;
     
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : 'Unknown error';
