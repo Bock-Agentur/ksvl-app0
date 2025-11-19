@@ -31,17 +31,42 @@ serve(async (req) => {
     const { action } = await req.json();
     const startTime = new Date().toISOString();
 
-    // Check if Monday.com sync is enabled
+    console.log('Sync request received:', { action, timestamp: startTime });
+
+    // Check if Monday.com settings exist
     const { data: settings } = await supabase
       .from('monday_settings')
       .select('*')
       .single();
 
-    if (!settings?.auto_sync_enabled) {
+    if (!settings) {
+      console.error('Monday.com settings not found');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Monday.com settings not configured. Please configure in Settings.',
+          synced: false
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
+    console.log('Settings loaded:', { 
+      board_id: settings.board_id, 
+      auto_sync_enabled: settings.auto_sync_enabled,
+      api_key_set: settings.api_key_set 
+    });
+
+    // Only check auto_sync for automatic syncs, not manual ones
+    if (action !== 'sync' && !settings.auto_sync_enabled) {
+      console.log('Auto-sync is disabled, skipping automatic sync');
       return new Response(
         JSON.stringify({ 
           success: true, 
-          message: 'Monday.com sync not enabled',
+          message: 'Auto-sync is disabled',
           synced: false
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -51,10 +76,12 @@ serve(async (req) => {
     console.log('Starting Monday.com sync...');
 
     // Fetch data from Monday.com
+    console.log('Calling Monday.com API...', { board_id: settings.board_id });
     const boardData = await getMitgliedsdaten(mondayApiKey, settings.board_id);
     
     if (!boardData || boardData.length === 0) {
-      throw new Error('No data retrieved from Monday.com');
+      console.error('No data retrieved from Monday.com');
+      throw new Error('No data retrieved from Monday.com. Check board ID and API key.');
     }
 
     console.log(`Retrieved ${boardData.length} items from Monday.com`);
@@ -71,6 +98,8 @@ serve(async (req) => {
           console.log(`Skipping item ${item.id}: No email address`);
           continue;
         }
+
+        console.log(`Processing item ${item.id}:`, { email: item.eMail, name: `${item.Vorname} ${item.Nachname}` });
 
         // Map Monday.com columns to profile fields - replace ALL data
         const profileData = {
@@ -94,15 +123,17 @@ serve(async (req) => {
 
         if (existingProfile) {
           // REPLACE existing profile data completely with Monday.com data
+          console.log(`Updating existing profile ${existingProfile.id} for ${profileData.email}`);
           const { error: updateError } = await supabase
             .from('profiles')
             .update(profileData)
             .eq('id', existingProfile.id);
 
           if (updateError) throw updateError;
-          console.log(`Updated profile for ${profileData.email}`);
+          console.log(`✅ Updated profile for ${profileData.email}`);
         } else {
           // Create new profile with Monday.com data
+          console.log(`Creating new profile for ${profileData.email}`);
           const { error: insertError } = await supabase
             .from('profiles')
             .insert(profileData);
@@ -110,18 +141,19 @@ serve(async (req) => {
           if (insertError) {
             // If insert fails due to duplicate, try update
             if (insertError.code === '23505') {
+              console.log(`Duplicate detected, retrying as update for ${profileData.email}`);
               const { error: retryError } = await supabase
                 .from('profiles')
                 .update(profileData)
                 .ilike('email', profileData.email);
               
               if (retryError) throw retryError;
-              console.log(`Updated profile for ${profileData.email} (retry)`);
+              console.log(`✅ Updated profile for ${profileData.email} (retry)`);
             } else {
               throw insertError;
             }
           } else {
-            console.log(`Created new profile for ${profileData.email}`);
+            console.log(`✅ Created new profile for ${profileData.email}`);
           }
         }
 
