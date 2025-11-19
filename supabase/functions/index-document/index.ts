@@ -21,28 +21,28 @@ function chunkText(text: string, chunkSize: number = 500, overlap: number = 100)
   return chunks;
 }
 
-// Simple embedding generation using text hashing
-// This is a workaround since Lovable AI doesn't provide embedding models
-// For production, consider using a dedicated embedding service
-function generateSimpleEmbedding(text: string): number[] {
-  const dimension = 384; // Standard embedding dimension
-  const embedding = new Array(dimension).fill(0);
-  
-  // Create a deterministic but distributed embedding based on text content
-  const words = text.toLowerCase().split(/\s+/);
-  
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i];
-    for (let j = 0; j < word.length; j++) {
-      const charCode = word.charCodeAt(j);
-      const index = (charCode * (j + 1) * (i + 1)) % dimension;
-      embedding[index] += Math.sin(charCode * (j + 1)) * Math.cos(i + 1);
-    }
+// Generate embeddings using OpenAI text-embedding-3-small
+async function generateEmbedding(text: string, apiKey: string): Promise<number[]> {
+  const response = await fetch('https://api.openai.com/v1/embeddings', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'text-embedding-3-small',
+      input: text,
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('OpenAI Embedding API error:', response.status, errorText);
+    throw new Error(`OpenAI Embedding API error: ${response.status}`);
   }
-  
-  // Normalize the embedding
-  const magnitude = Math.sqrt(embedding.reduce((sum, val) => sum + val * val, 0));
-  return embedding.map(val => magnitude > 0 ? val / magnitude : 0);
+
+  const data = await response.json();
+  return data.data[0].embedding;
 }
 
 // Extract text from different file types
@@ -71,7 +71,11 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const lovableApiKey = Deno.env.get('LOVABLE_API_KEY')!;
+    const openaiApiKey = Deno.env.get('OPENAI_API_KEY')!;
+
+    if (!openaiApiKey) {
+      throw new Error('OPENAI_API_KEY not configured');
+    }
 
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
@@ -127,30 +131,11 @@ serve(async (req) => {
       .delete()
       .eq('file_id', fileId);
 
-    // Create embeddings for each chunk
+    // Create embeddings for each chunk using OpenAI
     for (let i = 0; i < chunks.length; i++) {
       console.log(`Processing chunk ${i + 1}/${chunks.length}`);
       
-      const embeddingResponse = await fetch('https://ai.gateway.lovable.dev/v1/embeddings', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${lovableApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'google/gemini-embedding-001',
-          input: chunks[i]
-        })
-      });
-
-      if (!embeddingResponse.ok) {
-        const errorText = await embeddingResponse.text();
-        console.error('Embedding API error:', embeddingResponse.status, errorText);
-        throw new Error(`Embedding API error: ${embeddingResponse.status}`);
-      }
-
-      const embeddingData = await embeddingResponse.json();
-      const embedding = embeddingData.data[0].embedding;
+      const embedding = await generateEmbedding(chunks[i], openaiApiKey);
 
       // Store embedding
       const { error: insertError } = await supabase
