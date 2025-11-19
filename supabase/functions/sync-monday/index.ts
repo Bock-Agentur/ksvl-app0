@@ -60,6 +60,22 @@ serve(async (req) => {
       api_key_set: settings.api_key_set 
     });
 
+    // Check if board_id is configured
+    if (!settings.board_id) {
+      console.error('Board-ID not configured in monday_settings');
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: 'Board-ID nicht konfiguriert. Bitte in Monday.com Settings eintragen.',
+          synced: false
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        }
+      );
+    }
+
     // Only check auto_sync for automatic syncs, not manual ones
     if (action !== 'sync' && !settings.auto_sync_enabled) {
       console.log('Auto-sync is disabled, skipping automatic sync');
@@ -222,22 +238,27 @@ serve(async (req) => {
 });
 
 // Function to fetch Mitgliedsdaten from Monday.com
-async function getMitgliedsdaten(apiToken: string, boardId?: string) {
-  const url = "https://api.monday.com/v2";
-  
+async function getMitgliedsdaten(apiToken: string, boardId: string) {
   const query = `
     query {
-      boards (limit: 50) {
+      boards (ids: [${boardId}]) {
         id
         name
+        groups {
+          id
+          title
+        }
         columns {
           id
           title
         }
-        items_page {
+        items_page (limit: 500) {
           items {
             id
             name
+            group {
+              id
+            }
             column_values {
               id
               text
@@ -248,50 +269,58 @@ async function getMitgliedsdaten(apiToken: string, boardId?: string) {
     }
   `;
 
-  const response = await fetch(url, {
-    method: "POST",
+  console.log('Monday.com API request:', { boardId });
+
+  const response = await fetch('https://api.monday.com/v2', {
+    method: 'POST',
     headers: {
-      "Authorization": apiToken,
-      "Content-Type": "application/json"
+      'Content-Type': 'application/json',
+      'Authorization': apiToken,
+      'API-Version': '2024-10'
     },
     body: JSON.stringify({ query })
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('Monday.com API HTTP error:', { status: response.status, statusText: response.statusText, body: errorText });
-    throw new Error(`Monday.com API error: ${response.status} ${response.statusText}`);
+    console.error('Monday.com API HTTP error:', {
+      status: response.status,
+      statusText: response.statusText,
+      body: errorText
+    });
+    throw new Error(`Monday.com API HTTP error: ${response.status} ${response.statusText}`);
   }
 
-  const data = await response.json();
-  console.log('Monday.com API response:', JSON.stringify(data, null, 2));
+  const apiResponse = await response.json();
+  console.log('Monday.com API response:', JSON.stringify(apiResponse, null, 2));
 
-  // Check for GraphQL errors
-  if (data.errors) {
-    console.error('Monday.com GraphQL errors:', data.errors);
-    throw new Error(`Monday.com GraphQL error: ${JSON.stringify(data.errors)}`);
+  if (apiResponse.errors) {
+    console.error('Monday.com GraphQL errors:', apiResponse.errors);
+    throw new Error(`Monday.com GraphQL error: ${JSON.stringify(apiResponse.errors)}`);
   }
 
-  // Check if data structure is valid
-  if (!data.data || !data.data.boards) {
-    console.error('Invalid Monday.com response structure:', data);
-    throw new Error('Invalid response from Monday.com API - missing data.boards');
+  if (!apiResponse.data || !apiResponse.data.boards || apiResponse.data.boards.length === 0) {
+    console.error('Board not found or unexpected response structure:', apiResponse);
+    throw new Error(`Board mit ID '${boardId}' nicht gefunden. Bitte Board-ID überprüfen.`);
   }
 
-  // Find the board by name or use provided boardId
-  let board;
-  if (boardId) {
-    board = data.data.boards.find((b: any) => b.id === boardId);
+  const board = apiResponse.data.boards[0];
+  console.log('Board found:', { id: board.id, name: board.name });
+
+  // Log available groups
+  if (board.groups) {
+    console.log('Available groups:', board.groups.map((g: any) => ({ id: g.id, title: g.title })));
   }
-  
-  if (!board) {
-    board = data.data.boards.find(
-      (b: any) => b.name === "APP_SYNC_Mitgliedsdaten"
+
+  // Find "Stammdaten" group
+  const stammdatenGroup = board.groups?.find((g: any) => g.title === "Stammdaten");
+  if (!stammdatenGroup) {
+    console.warn('Group "Stammdaten" not found. Available groups:', 
+      board.groups?.map((g: any) => g.title) || []
     );
-  }
-
-  if (!board) {
-    throw new Error("Board 'APP_SYNC_Mitgliedsdaten' nicht gefunden.");
+    console.log('Processing all items without group filter');
+  } else {
+    console.log('Found "Stammdaten" group:', { id: stammdatenGroup.id, title: stammdatenGroup.title });
   }
 
   // Define allowed columns
@@ -313,8 +342,17 @@ async function getMitgliedsdaten(apiToken: string, boardId?: string) {
   }
   console.log('Column mapping:', Object.fromEntries(columnMap));
 
-  // Extract data
-  const items = board.items_page?.items || [];
+  // Extract and filter items
+  let items = board.items_page?.items || [];
+  console.log(`Total items in board: ${items.length}`);
+
+  // Filter by "Stammdaten" group if found
+  if (stammdatenGroup) {
+    const beforeFilter = items.length;
+    items = items.filter((item: any) => item.group?.id === stammdatenGroup.id);
+    console.log(`Filtered items from "Stammdaten" group: ${items.length} (before: ${beforeFilter})`);
+  }
+
   const result = items.map((item: any) => {
     const row: any = { id: item.id };
 
@@ -328,5 +366,6 @@ async function getMitgliedsdaten(apiToken: string, boardId?: string) {
     return row;
   });
 
+  console.log(`Extracted ${result.length} items from Monday.com`);
   return result;
 }
