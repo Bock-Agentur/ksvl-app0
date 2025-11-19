@@ -163,6 +163,8 @@ export function Auth() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const [emailReadOnly, setEmailReadOnly] = useState(true);
+  const [passwordReadOnly, setPasswordReadOnly] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { background, isLoading } = useLoginBackground();
@@ -515,15 +517,20 @@ export function Auth() {
                 </svg>
                 <input
                   id="password"
-                  name="password"
+                  name="usr-cred"
                   type="password"
-                  autoComplete="off"
+                  autoComplete="new-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  onFocus={() => setPasswordReadOnly(false)}
+                  readOnly={passwordReadOnly}
                   required
                   placeholder="Passwort"
+                  data-lpignore="true"
+                  data-1p-ignore="true"
+                  data-form-type="other"
                   style={{ color: '#000000' }}
-                  className="flex-1 bg-transparent border-none outline-none placeholder:text-black/50"
+                  className="flex-1 bg-transparent border-none outline-none placeholder:text-black/50 no-webkit-autofill"
                 />
               </div>
             </div>
