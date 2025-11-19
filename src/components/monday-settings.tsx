@@ -89,7 +89,7 @@ export function MondaySettings() {
       setSyncing(true);
       
       const { data, error } = await supabase.functions.invoke('sync-monday', {
-        body: { action: 'manual_sync' }
+        body: { action: 'sync' }
       });
 
       if (error) throw error;
@@ -126,87 +126,119 @@ export function MondaySettings() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5" />
-                Monday.com Integration
-              </CardTitle>
-              <CardDescription>
-                Synchronisiere Mitgliedsdaten mit Monday.com
-              </CardDescription>
+            <div className="flex items-center gap-2">
+              <Database className="h-5 w-5" />
+              <CardTitle>Monday.com Integration</CardTitle>
             </div>
             {lastSyncAt && (
-              <Badge variant="outline" className="flex items-center gap-2">
+              <Badge variant="outline" className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
-                Letzte Sync: {new Date(lastSyncAt).toLocaleString('de-DE')}
+                Letzter Sync: {new Date(lastSyncAt).toLocaleString('de-DE')}
               </Badge>
             )}
           </div>
+          <CardDescription>
+            Synchronisiere Mitgliedsdaten mit Monday.com
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          {!boardId && (
+            <Alert>
+              <AlertDescription>
+                ⚠️ Board-ID fehlt. Bitte konfigurieren Sie die Board-ID, um die Synchronisierung zu ermöglichen.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <Alert>
             <AlertDescription>
-              Die Integration verwendet den Board "APP_SYNC_Mitgliedsdaten" und synchronisiert folgende Felder:
-              Vorname, Nachname, PLZ, ORT, Telefon, eMail
+              <strong>Synchronisierte Felder:</strong> Nachname, Vorname, PLZ, ORT, Telefon, eMail
+              <br />
+              <strong>Ziel-Board:</strong> APP_SYNC_Mitgliedsdaten
+              <br />
+              <strong>Hinweis:</strong> Lokale Stammdaten werden komplett mit Monday.com Daten überschrieben (One-Way-Sync)
             </AlertDescription>
           </Alert>
 
-          <Separator />
-
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="board-id">Board-ID (optional)</Label>
+              <Label htmlFor="boardId">Board ID</Label>
               <Input
-                id="board-id"
-                placeholder="Leer lassen für automatische Erkennung"
+                id="boardId"
                 value={boardId}
                 onChange={(e) => setBoardId(e.target.value)}
+                placeholder="z.B. 1234567890"
               />
               <p className="text-sm text-muted-foreground">
-                Wenn leer, wird nach dem Board-Namen "APP_SYNC_Mitgliedsdaten" gesucht
+                Die ID des Monday.com Boards (optional - wenn leer, wird nach Board-Name gesucht)
               </p>
             </div>
 
-            <div className="flex items-center justify-between space-x-2">
-              <div className="space-y-0.5">
-                <Label htmlFor="auto-sync">Automatische Synchronisierung</Label>
+            <Separator />
+
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label htmlFor="autoSync">Automatische Synchronisierung</Label>
                 <p className="text-sm text-muted-foreground">
-                  Aktiviere automatische Synchronisierung bei Änderungen
+                  Periodische automatische Synchronisierung aktivieren
                 </p>
               </div>
               <Switch
-                id="auto-sync"
+                id="autoSync"
                 checked={autoSyncEnabled}
                 onCheckedChange={setAutoSyncEnabled}
               />
             </div>
+
+            {!autoSyncEnabled && (
+              <Alert>
+                <AlertDescription>
+                  ℹ️ Auto-Sync ist deaktiviert. Sie können weiterhin manuelle Synchronisierungen durchführen.
+                </AlertDescription>
+              </Alert>
+            )}
           </div>
 
           <Separator />
 
           <div className="flex gap-3">
-            <Button onClick={saveSettings} disabled={loading}>
-              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Einstellungen speichern
-            </Button>
-            
-            <Button 
-              onClick={triggerSync} 
-              disabled={syncing || !autoSyncEnabled}
-              variant="outline"
+            <Button
+              onClick={saveSettings}
+              disabled={loading}
             >
-              {syncing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {!syncing && <RefreshCw className="mr-2 h-4 w-4" />}
-              Jetzt synchronisieren
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Wird gespeichert...
+                </>
+              ) : (
+                'Einstellungen speichern'
+              )}
+            </Button>
+
+            <Button
+              variant="outline"
+              onClick={triggerSync}
+              disabled={syncing || !boardId}
+            >
+              {syncing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Synchronisiere...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Jetzt synchronisieren
+                </>
+              )}
             </Button>
           </div>
 
-          {!autoSyncEnabled && (
-            <Alert>
-              <AlertDescription>
-                Automatische Synchronisierung ist deaktiviert. Aktiviere sie, um Daten zu synchronisieren.
-              </AlertDescription>
-            </Alert>
+          {!boardId && (
+            <p className="text-sm text-muted-foreground">
+              ⚠️ Bitte speichern Sie zuerst eine Board-ID, um die manuelle Synchronisierung zu aktivieren.
+            </p>
           )}
         </CardContent>
       </Card>
