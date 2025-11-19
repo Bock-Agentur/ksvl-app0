@@ -45,27 +45,47 @@ async function generateEmbedding(text: string, apiKey: string): Promise<number[]
   return data.data[0].embedding;
 }
 
-// Extract text from different file types with proper parsing
+// Extract text from different file types with Deno-compatible parsing
 async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<string> {
-  const uint8Array = new Uint8Array(fileBuffer);
-  
   // Plain Text
   if (mimeType === 'text/plain') {
     return new TextDecoder('utf-8').decode(fileBuffer);
   }
   
-  // PDF Parsing
+  // PDF Parsing using pdfjs-dist (Deno-compatible)
   if (mimeType === 'application/pdf') {
     try {
-      const pdfParse = await import('https://esm.sh/pdf-parse@1.1.1');
-      const data = await pdfParse.default(uint8Array);
+      // Import pdfjs-dist via CDN for Deno compatibility
+      const pdfjsLib = await import('https://esm.sh/pdfjs-dist@4.0.379/legacy/build/pdf.mjs');
       
-      if (!data.text || data.text.trim().length === 0) {
-        throw new Error('PDF contains no extractable text');
+      // Load PDF document
+      const loadingTask = pdfjsLib.getDocument({
+        data: new Uint8Array(fileBuffer),
+        useSystemFonts: true,
+        disableFontFace: true,
+      });
+      
+      const pdf = await loadingTask.promise;
+      console.log(`PDF loaded: ${pdf.numPages} pages`);
+      
+      let fullText = '';
+      
+      // Extract text from each page
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items
+          .map((item: any) => item.str)
+          .join(' ');
+        fullText += pageText + '\n\n';
       }
       
-      console.log(`PDF extracted: ${data.numpages} pages, ${data.text.length} chars`);
-      return data.text;
+      if (!fullText.trim()) {
+        throw new Error('PDF contains no extractable text (might be scanned image)');
+      }
+      
+      console.log(`PDF extracted: ${pdf.numPages} pages, ${fullText.length} chars`);
+      return fullText;
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : 'Unknown error';
       console.error('PDF parsing error:', error);
@@ -73,7 +93,7 @@ async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<s
     }
   }
   
-  // DOCX Parsing
+  // DOCX Parsing using mammoth (Deno-compatible)
   if (mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
     try {
       const mammoth = await import('https://esm.sh/mammoth@1.8.0');
