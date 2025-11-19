@@ -23,7 +23,13 @@ serve(async (req) => {
       }
     );
 
-    const { userId, action } = await req.json();
+    const mondayApiKey = Deno.env.get('MONDAY_API_KEY');
+    if (!mondayApiKey) {
+      throw new Error('MONDAY_API_KEY not configured');
+    }
+
+    const { action } = await req.json();
+    const startTime = new Date().toISOString();
 
     // Check if Monday.com sync is enabled
     const { data: settings } = await supabase
@@ -42,29 +48,106 @@ serve(async (req) => {
       );
     }
 
-    // Log sync attempt
+    console.log('Starting Monday.com sync...');
+
+    // Fetch data from Monday.com
+    const boardData = await getMitgliedsdaten(mondayApiKey, settings.board_id);
+    
+    if (!boardData || boardData.length === 0) {
+      throw new Error('No data retrieved from Monday.com');
+    }
+
+    console.log(`Retrieved ${boardData.length} items from Monday.com`);
+
+    // Sync data to profiles table
+    let syncedCount = 0;
+    let errorCount = 0;
+    const errors = [];
+
+    for (const item of boardData) {
+      try {
+        // Map Monday.com columns to profile fields
+        const profileData = {
+          first_name: item.Vorname || null,
+          last_name: item.Nachname || null,
+          postal_code: item.PLZ || null,
+          city: item.ORT || null,
+          phone: item.Telefon || null,
+          email: item.eMail || null,
+          monday_item_id: item.id,
+          updated_at: new Date().toISOString()
+        };
+
+        // Try to find existing profile by monday_item_id or email
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('id')
+          .or(`monday_item_id.eq.${item.id},email.eq.${profileData.email}`)
+          .single();
+
+        if (existingProfile) {
+          // Update existing profile
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update(profileData)
+            .eq('id', existingProfile.id);
+
+          if (updateError) throw updateError;
+        } else if (profileData.email) {
+          // Create new profile only if email exists
+          const { error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              ...profileData,
+              name: `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim()
+            });
+
+          if (insertError) throw insertError;
+        }
+
+        syncedCount++;
+      } catch (itemError) {
+        console.error(`Error syncing item ${item.id}:`, itemError);
+        errorCount++;
+        errors.push({
+          item_id: item.id,
+          error: itemError instanceof Error ? itemError.message : 'Unknown error'
+        });
+      }
+    }
+
+    // Update last sync time
+    await supabase
+      .from('monday_settings')
+      .update({ last_sync_at: new Date().toISOString() })
+      .eq('id', settings.id);
+
+    // Log sync result
     await supabase
       .from('monday_sync_logs')
       .insert({
         sync_type: 'manual',
-        direction: 'app_to_monday',
-        user_id: userId,
+        direction: 'monday_to_app',
+        board_id: settings.board_id,
         action: action || 'sync',
-        success: true,
-        started_at: new Date().toISOString(),
+        success: errorCount === 0,
+        error_details: errorCount > 0 ? { errors } : null,
+        started_at: startTime,
         completed_at: new Date().toISOString()
       });
 
-    // TODO: Implement Monday.com API calls here
-    // This is a skeleton for future implementation
-    console.log('Monday.com sync would happen here for user:', userId);
-    console.log('Settings:', settings);
+    console.log(`Sync completed: ${syncedCount} synced, ${errorCount} errors`);
 
     return new Response(
       JSON.stringify({ 
-        success: true, 
-        message: 'Sync prepared (Monday.com integration pending)',
-        synced: false
+        success: true,
+        message: `Sync completed: ${syncedCount} items synced${errorCount > 0 ? `, ${errorCount} errors` : ''}`,
+        synced: true,
+        stats: {
+          total: boardData.length,
+          synced: syncedCount,
+          errors: errorCount
+        }
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -84,3 +167,85 @@ serve(async (req) => {
     );
   }
 });
+
+// Function to fetch Mitgliedsdaten from Monday.com
+async function getMitgliedsdaten(apiToken: string, boardId?: string) {
+  const url = "https://api.monday.com/v2";
+  
+  const query = `
+    query {
+      boards (limit: 50) {
+        id
+        name
+        items_page {
+          items {
+            id
+            name
+            column_values {
+              id
+              title
+              text
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Authorization": apiToken,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ query })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Monday.com API error: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+
+  // Find the board by name or use provided boardId
+  let board;
+  if (boardId) {
+    board = data.data.boards.find((b: any) => b.id === boardId);
+  }
+  
+  if (!board) {
+    board = data.data.boards.find(
+      (b: any) => b.name === "APP_SYNC_Mitgliedsdaten"
+    );
+  }
+
+  if (!board) {
+    throw new Error("Board 'APP_SYNC_Mitgliedsdaten' nicht gefunden.");
+  }
+
+  // Define allowed columns
+  const allowedColumns = [
+    "Nachname",
+    "Vorname",
+    "PLZ",
+    "ORT",
+    "Telefon",
+    "eMail"
+  ];
+
+  // Extract data
+  const items = board.items_page?.items || [];
+  const result = items.map((item: any) => {
+    const row: any = { id: item.id };
+
+    item.column_values.forEach((col: any) => {
+      if (allowedColumns.includes(col.title)) {
+        row[col.title] = col.text || "";
+      }
+    });
+
+    return row;
+  });
+
+  return result;
+}
