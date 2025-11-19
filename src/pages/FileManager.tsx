@@ -10,39 +10,16 @@ import { Badge } from "@/components/ui/badge";
 import { Home, Users, Calendar, FileText, Settings, Menu } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { useState, useEffect } from "react";
-import { PageLoader } from "@/components/common/page-loader";
+import { useState } from "react";
 
 export function FileManager() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { currentRole, isLoading: roleLoading } = useRole();
+  const { currentRole } = useRole();
   const { getMenuItemsForRole, getDisplaySettingsForRole, isLoading: footerLoading } = useFooterMenuSettings(currentRole);
   const footerMenuItems = getMenuItemsForRole(currentRole);
   const { showLabels } = getDisplaySettingsForRole(currentRole);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isPageReady, setIsPageReady] = useState(false);
-
-  const isPageLoading = roleLoading || footerLoading;
-
-  useEffect(() => {
-    // Reset immediately when loading starts
-    if (isPageLoading) {
-      setIsPageReady(false);
-      return;
-    }
-
-    // Set page ready after loading completes
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setIsPageReady(true);
-      });
-    });
-  }, [isPageLoading]);
-
-  if (!isPageReady) {
-    return <PageLoader />;
-  }
 
   const handleNavigate = (itemId: string) => {
     if (itemId === 'file-manager') {
@@ -63,7 +40,7 @@ export function FileManager() {
   };
 
   return (
-    <div key={currentRole} className="animate-fade-in">
+    <div key={currentRole}>
       <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-muted/20">
         <div className="max-w-7xl mx-auto">
           {/* Header */}

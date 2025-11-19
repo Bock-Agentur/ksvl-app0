@@ -3,50 +3,26 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { DesktopBackgroundSettings } from "@/components/desktop-background-settings";
-import { RoleProvider, useRole } from "@/hooks/use-role";
+import { RoleProvider } from "@/hooks/use-role";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { useDesktopBackground } from "@/hooks/use-desktop-background";
 import { SettingsFooter } from "@/components/settings-footer";
-import { useState, useEffect } from "react";
-import { PageLoader } from "@/components/common/page-loader";
 
 function DesktopBackgroundContent() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { isLoading: roleLoading } = useRole();
-  const { background, isLoading: bgLoading } = useLoginBackground();
-  const { settings: desktopBackgroundSettings, isLoading: desktopBgLoading } = useDesktopBackground();
-  const [isPageReady, setIsPageReady] = useState(false);
+  const { background } = useLoginBackground();
+  const { settings: desktopBackgroundSettings } = useDesktopBackground();
 
   const showBackground = desktopBackgroundSettings.enabled && background;
-  const isPageLoading = roleLoading || bgLoading || desktopBgLoading;
-
-  useEffect(() => {
-    // Reset immediately when loading starts
-    if (isPageLoading) {
-      setIsPageReady(false);
-      return;
-    }
-
-    // Set page ready after loading completes
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setIsPageReady(true);
-      });
-    });
-  }, [isPageLoading]);
-
-  if (!isPageReady) {
-    return <PageLoader />;
-  }
 
   return (
     <>
     <div 
       className={cn(
-        "min-h-screen pb-20 bg-background animate-fade-in",
+        "min-h-screen pb-20 bg-background",
         isMobile ? "pt-4" : "p-6"
       )}
       style={showBackground ? {
