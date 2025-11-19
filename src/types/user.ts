@@ -81,6 +81,9 @@ export interface User {
   }>;
   createdBy?: string;
   modifiedBy?: string;
+  
+  // Monday.com Integration
+  mondayItemId?: string; // Monday.com Item-ID für Synchronisierung
 }
 
 // ===== API TYPES =====
