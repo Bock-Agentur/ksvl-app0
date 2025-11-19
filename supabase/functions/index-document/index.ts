@@ -45,41 +45,30 @@ async function generateEmbedding(text: string, apiKey: string): Promise<number[]
   return data.data[0].embedding;
 }
 
-// Extract text from different file types using Lovable AI Document Parser
+// Extract text from different file types using pdf-parse (Deno-compatible)
 async function extractText(fileBuffer: ArrayBuffer, mimeType: string): Promise<string> {
   try {
-    // Convert ArrayBuffer to base64
-    const bytes = new Uint8Array(fileBuffer);
-    const binary = Array.from(bytes).map(byte => String.fromCharCode(byte)).join('');
-    const base64File = btoa(binary);
-    
-    console.log(`Parsing document with Lovable AI (${mimeType}, ${fileBuffer.byteLength} bytes)`);
-    
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/documents/parse', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('LOVABLE_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        file: base64File,
-        mimeType: mimeType,
-        enableOcr: true, // Enable OCR for scanned PDFs
-      }),
-    });
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Document parsing failed: ${response.status} ${errorText}`);
+    // Only PDF is supported for now
+    if (mimeType !== 'application/pdf') {
+      throw new Error(`Unsupported file type: ${mimeType}. Currently only PDF is supported.`);
     }
     
-    const data = await response.json();
+    console.log(`Parsing PDF document (${fileBuffer.byteLength} bytes)`);
+    
+    // Import pdf-parse from esm.sh for Deno
+    const pdfParse = (await import('https://esm.sh/pdf-parse@1.1.1')).default;
+    
+    // Convert ArrayBuffer to Buffer for pdf-parse
+    const buffer = new Uint8Array(fileBuffer);
+    
+    // Parse the PDF
+    const data = await pdfParse(buffer);
     
     if (!data.text || data.text.trim().length === 0) {
-      throw new Error('Document contains no extractable text');
+      throw new Error('PDF contains no extractable text (might be a scanned document)');
     }
     
-    console.log(`Document parsed successfully: ${data.text.length} characters extracted`);
+    console.log(`PDF parsed successfully: ${data.numpages} pages, ${data.text.length} characters extracted`);
     return data.text;
     
   } catch (error) {
