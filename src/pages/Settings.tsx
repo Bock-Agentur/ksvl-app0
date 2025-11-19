@@ -73,9 +73,6 @@ function SettingsContent() {
   const showBackground = desktopBackgroundSettings.enabled && background;
   const isPageLoading = roleLoading || bgLoading || desktopBgLoading;
 
-  // KRITISCH: Nur Admins und Vorstand haben Zugriff auf Settings
-  const isAdmin = currentRole === "admin" || currentRole === "vorstand";
-
   // Wait for component to be fully rendered
   useEffect(() => {
     if (!isPageLoading) {
@@ -87,9 +84,11 @@ function SettingsContent() {
     } else {
       setIsComponentReady(false);
     }
-  }, [isPageLoading, activeSection, isOverview]);
+  }, [isPageLoading]);
   
   // Access control - redirect if not authorized
+  const isAdmin = currentRole === "admin" || currentRole === "vorstand";
+  
   useEffect(() => {
     if (!roleLoading && !isAdmin) {
       toast.error("Zugriff verweigert", {
@@ -99,8 +98,8 @@ function SettingsContent() {
     }
   }, [isAdmin, roleLoading, navigate]);
   
-  // Zeige Loader während der Prüfung oder wenn kein Zugriff
-  if (roleLoading || !isAdmin) {
+  // Show loader until ready
+  if (!isComponentReady) {
     return <PageLoader />;
   }
 
