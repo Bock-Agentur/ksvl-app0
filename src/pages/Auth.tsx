@@ -439,7 +439,8 @@ export function Auth() {
     return null;
   };
 
-  const cardOpacity = background.type !== 'gradient' && background.url 
+  const hasMedia = background.storagePath || background.url;
+  const cardOpacity = background.type !== 'gradient' && hasMedia
     ? background.cardOpacity 
     : 95;
   
@@ -447,12 +448,14 @@ export function Auth() {
   const cardBorderRadius = background.cardBorderRadius || 8;
 
   // Show gradient background during loading
-  const effectiveBackground = isLoading ? { ...background, type: 'gradient' as const, url: null } : background;
+  const effectiveBackground = isLoading ? { ...background, type: 'gradient' as const, storagePath: null } : background;
+
+  const effectiveHasMedia = effectiveBackground.storagePath || effectiveBackground.url;
 
   return (
     <div 
       className={`min-h-screen flex flex-col items-center p-4 relative ${
-        effectiveBackground.type === 'gradient' && !effectiveBackground.url 
+        effectiveBackground.type === 'gradient' && !effectiveHasMedia
           ? 'bg-gradient-to-br from-background to-muted' 
           : ''
       }`}
