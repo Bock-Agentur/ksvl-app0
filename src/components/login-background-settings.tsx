@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { useLoginBackground } from "@/hooks/use-login-background";
+import { useLoginBackground, type LoginBackground } from "@/hooks/use-login-background";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, Trash2, Eye, Maximize2, FolderOpen } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -103,6 +103,24 @@ function CountdownPreview({ endDate, text, small, showDays, fontSize, fontWeight
   );
 }
 
+// Helper: Generate preview URL from storagePath or url
+const getPreviewUrl = (settings: LoginBackground): string | null => {
+  // If url exists (for preview during upload), use it
+  if (settings.url) {
+    return settings.url;
+  }
+  
+  // If storagePath and bucket exist, generate URL
+  if (settings.storagePath && settings.bucket) {
+    const { data } = supabase.storage
+      .from(settings.bucket)
+      .getPublicUrl(settings.storagePath);
+    return data.publicUrl;
+  }
+  
+  return null;
+};
+
 export function LoginBackgroundSettings() {
   const { background, setBackground } = useLoginBackground();
   const { toast } = useToast();
@@ -182,13 +200,14 @@ export function LoginBackgroundSettings() {
 
       if (uploadError) throw uploadError;
 
-      // Update local settings with storage path (keep URL for preview)
+      // Update local settings with bucket and storage path
       const { data: urlData } = supabase.storage.from('documents').getPublicUrl(data.path);
       const newSettings = {
         ...localSettings,
         type: (isVideo ? 'video' : 'image') as 'video' | 'image',
+        bucket: 'documents' as const,
         storagePath: data.path,
-        url: urlData.publicUrl, // Keep URL for local preview
+        url: urlData.publicUrl, // Temporary for preview
         filename: fileName
       };
       setLocalSettings(newSettings);
@@ -427,11 +446,11 @@ export function LoginBackgroundSettings() {
                     disabled={uploading}
                     className="flex-1"
                   />
-                  {localSettings.url && (
+                  {getPreviewUrl(localSettings) && (
                     <div className="relative w-20 h-20 rounded border overflow-hidden flex-shrink-0">
                       {localSettings.type === 'video' ? (
                         <video
-                          src={localSettings.url}
+                          src={getPreviewUrl(localSettings)!}
                           className="w-full h-full object-cover"
                           muted
                           loop
@@ -439,7 +458,7 @@ export function LoginBackgroundSettings() {
                         />
                       ) : (
                         <img
-                          src={localSettings.url}
+                          src={getPreviewUrl(localSettings)!}
                           alt="Vorschau"
                           className="w-full h-full object-cover"
                         />
@@ -481,11 +500,11 @@ export function LoginBackgroundSettings() {
                   <div className="mt-4 p-3 border rounded-lg bg-muted/50">
                     <p className="text-sm font-medium">Ausgewählte Datei:</p>
                     <p className="text-xs text-muted-foreground truncate mt-1">{localSettings.filename}</p>
-                    {localSettings.url && (
+                    {getPreviewUrl(localSettings) && (
                       <div className="relative w-full h-40 rounded border overflow-hidden mt-2">
                         {localSettings.type === 'video' ? (
                           <video
-                            src={localSettings.url}
+                            src={getPreviewUrl(localSettings)!}
                             className="w-full h-full object-cover"
                             muted
                             loop
@@ -494,7 +513,7 @@ export function LoginBackgroundSettings() {
                           />
                         ) : (
                           <img
-                            src={localSettings.url}
+                            src={getPreviewUrl(localSettings)!}
                             alt="Vorschau"
                             className="w-full h-full object-cover"
                           />
@@ -518,11 +537,11 @@ export function LoginBackgroundSettings() {
                   <div className="mt-4 p-3 border rounded-lg bg-muted/50">
                     <p className="text-sm font-medium">Ausgewählte Datei:</p>
                     <p className="text-xs text-muted-foreground truncate mt-1">{localSettings.filename}</p>
-                    {localSettings.url && (
+                    {getPreviewUrl(localSettings) && (
                       <div className="relative w-full h-40 rounded border overflow-hidden mt-2">
                         {localSettings.type === 'video' ? (
                           <video
-                            src={localSettings.url}
+                            src={getPreviewUrl(localSettings)!}
                             className="w-full h-full object-cover"
                             muted
                             loop
@@ -531,7 +550,7 @@ export function LoginBackgroundSettings() {
                           />
                         ) : (
                           <img
-                            src={localSettings.url}
+                            src={getPreviewUrl(localSettings)!}
                             alt="Vorschau"
                             className="w-full h-full object-cover"
                           />
@@ -545,7 +564,7 @@ export function LoginBackgroundSettings() {
           )}
 
           {/* Video on Mobile Option */}
-          {localSettings.type === 'video' && localSettings.url && (
+          {localSettings.type === 'video' && getPreviewUrl(localSettings) && (
             <div className="space-y-3 p-4 border rounded-lg bg-muted/50">
               <div className="flex items-center space-x-2">
                 <Checkbox
@@ -564,7 +583,7 @@ export function LoginBackgroundSettings() {
           )}
 
           {/* Media Blur Slider */}
-          {localSettings.url && (
+          {getPreviewUrl(localSettings) && (
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <Label>Hintergrund-Weichzeichnung</Label>
@@ -586,7 +605,7 @@ export function LoginBackgroundSettings() {
           )}
 
           {/* Overlay Color Picker */}
-          {localSettings.url && (
+          {getPreviewUrl(localSettings) && (
             <div className="space-y-3">
               <Label>Overlay-Farbe</Label>
               <Popover open={isOverlayColorOpen} onOpenChange={setIsOverlayColorOpen}>
@@ -617,7 +636,7 @@ export function LoginBackgroundSettings() {
           )}
 
           {/* Overlay Opacity Slider */}
-          {localSettings.url && (
+          {getPreviewUrl(localSettings) && (
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <Label>Overlay-Transparenz</Label>
@@ -977,7 +996,7 @@ export function LoginBackgroundSettings() {
           </div>
 
           {/* Preview */}
-          {localSettings.url && (
+          {getPreviewUrl(localSettings) && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label>Vorschau</Label>
@@ -992,7 +1011,7 @@ export function LoginBackgroundSettings() {
                     <div className="relative w-full h-full rounded-lg overflow-hidden">
                       {localSettings.type === 'video' ? (
                         <video
-                          src={localSettings.url}
+                        src={getPreviewUrl(localSettings)!}
                           className="w-full h-full object-cover"
                           autoPlay
                           muted
@@ -1002,7 +1021,7 @@ export function LoginBackgroundSettings() {
                         />
                       ) : (
                         <img
-                          src={localSettings.url}
+                        src={getPreviewUrl(localSettings)!}
                           alt="Background preview"
                           className="w-full h-full object-cover"
                           style={{ filter: `blur(${localSettings.mediaBlur}px)` }}
@@ -1238,14 +1257,18 @@ export function LoginBackgroundSettings() {
         open={fileSelectorOpen}
         onOpenChange={setFileSelectorOpen}
         onSelect={(file) => {
-          // Determine bucket from storage_path
-          const bucket = file.storage_path.startsWith('login-media/') ? 'login-media' : 'documents';
+          // Determine bucket from category
+          const bucket = file.category === 'login_media' ? 'login-media' : 'documents';
+          
+          // Generate preview URL
           const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(file.storage_path);
+          
           setLocalSettings({
             ...localSettings,
             type: file.file_type === 'video' ? 'video' : 'image',
+            bucket: bucket as 'documents' | 'login-media',
             storagePath: file.storage_path,
-            url: urlData.publicUrl, // Keep URL for local preview
+            url: urlData.publicUrl, // Temporary for preview
             filename: file.filename
           });
           setFileSelectorOpen(false);
@@ -1266,14 +1289,18 @@ export function LoginBackgroundSettings() {
         open={legacyMediaSelectorOpen}
         onOpenChange={setLegacyMediaSelectorOpen}
         onSelect={(file) => {
-          // Determine bucket from storage_path
-          const bucket = file.storage_path.startsWith('login-media/') ? 'login-media' : 'documents';
+          // Determine bucket from category
+          const bucket = file.category === 'login_media' ? 'login-media' : 'documents';
+          
+          // Generate preview URL
           const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(file.storage_path);
+          
           setLocalSettings({
             ...localSettings,
             type: file.file_type === 'video' ? 'video' : 'image',
+            bucket: bucket as 'documents' | 'login-media',
             storagePath: file.storage_path,
-            url: urlData.publicUrl, // Keep URL for local preview
+            url: urlData.publicUrl, // Temporary for preview
             filename: file.filename
           });
           setLegacyMediaSelectorOpen(false);
