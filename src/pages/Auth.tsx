@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { useLoginBackground } from "@/hooks/use-login-background";
+import { useLoginBackground, LoginBackground } from "@/hooks/use-login-background";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { z } from "zod";
 
@@ -167,6 +167,28 @@ export function Auth() {
   const { toast } = useToast();
   const { background, isLoading } = useLoginBackground();
   const isMobile = useIsMobile();
+
+  const getMediaUrl = (background: LoginBackground): string | null => {
+    // Fallback for old data with stored URL
+    if (!background.storagePath && background.url) {
+      return background.url;
+    }
+    
+    if (!background.storagePath) {
+      return null;
+    }
+    
+    // Generate URL from storage path
+    const bucket = background.storagePath.startsWith('login-media/') 
+      ? 'login-media' 
+      : 'documents';
+    
+    const { data } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(background.storagePath);
+    
+    return data.publicUrl;
+  };
 
   // Force re-render when background changes
   const [, forceUpdate] = useState({});
@@ -352,33 +374,38 @@ export function Auth() {
       backgroundColor: `${background.overlayColor}${Math.round((background.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
     };
 
-    if (background.type === 'image' && background.url) {
-      return (
-        <>
-          <img 
-            src={background.url}
-            alt="Login background"
-            className="absolute w-full h-full object-cover"
-            style={{ 
-              filter: `blur(${background.mediaBlur}px)`,
-              transform: 'scale(1.1)',
-              inset: '-5%',
-              zIndex: 0
-            }}
-          />
-          {background.overlayOpacity > 0 && (
-            <div className="absolute inset-0" style={{ ...overlayStyle, zIndex: 1 }} />
-          )}
-        </>
-      );
+    if (background.type === 'image') {
+      const mediaUrl = getMediaUrl(background);
+      
+      if (mediaUrl) {
+        return (
+          <>
+            <img 
+              src={mediaUrl}
+              alt="Login background"
+              className="absolute w-full h-full object-cover"
+              style={{ 
+                filter: `blur(${background.mediaBlur}px)`,
+                transform: 'scale(1.1)',
+                inset: '-5%',
+                zIndex: 0
+              }}
+            />
+            {background.overlayOpacity > 0 && (
+              <div className="absolute inset-0" style={{ ...overlayStyle, zIndex: 1 }} />
+            )}
+          </>
+        );
+      }
     }
     
-    if (background.type === 'video' && background.url) {
+    if (background.type === 'video') {
+      const mediaUrl = getMediaUrl(background);
       const shouldShowVideo = !isMobile || background.videoOnMobile;
       
       return (
         <>
-          {shouldShowVideo ? (
+          {shouldShowVideo && mediaUrl ? (
             <video 
               autoPlay 
               muted 
@@ -392,7 +419,7 @@ export function Auth() {
                 zIndex: 0
               }}
             >
-              <source src={background.url} type="video/mp4" />
+              <source src={mediaUrl} type="video/mp4" />
             </video>
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-background to-muted" style={{ zIndex: 0 }} />
