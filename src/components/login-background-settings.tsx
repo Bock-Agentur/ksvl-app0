@@ -173,8 +173,8 @@ export function LoginBackgroundSettings() {
       const fileExt = file.name.split('.').pop();
       const fileName = `background-${Date.now()}.${fileExt}`;
       
-      const { error: uploadError } = await supabase.storage
-        .from('login-media')
+      const { data, error: uploadError } = await supabase.storage
+        .from('documents')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false
@@ -182,16 +182,12 @@ export function LoginBackgroundSettings() {
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('login-media')
-        .getPublicUrl(fileName);
-
-      // Update local settings and save to database
+      // Update local settings with storage path
       const newSettings = {
         ...localSettings,
         type: (isVideo ? 'video' : 'image') as 'video' | 'image',
-        url: publicUrl,
+        storagePath: data.path,
+        url: null,
         filename: fileName
       };
       setLocalSettings(newSettings);
@@ -1239,23 +1235,19 @@ export function LoginBackgroundSettings() {
       <FileSelectorDialog
         open={fileSelectorOpen}
         onOpenChange={setFileSelectorOpen}
-        onSelect={async (file) => {
-          // Use the unified getFilePreviewUrl method
-          const url = await getFilePreviewUrl(file);
-          
-          if (url) {
-            setLocalSettings({
-              ...localSettings,
-              type: file.file_type === 'video' ? 'video' : 'image',
-              url,
-              filename: file.filename
-            });
-            setFileSelectorOpen(false);
-            toast({
-              title: "Datei ausgewählt",
-              description: `${file.filename} wurde ausgewählt. Klicke auf "Speichern" um die Änderungen zu übernehmen.`
-            });
-          }
+        onSelect={(file) => {
+          setLocalSettings({
+            ...localSettings,
+            type: file.file_type === 'video' ? 'video' : 'image',
+            storagePath: file.storage_path,
+            url: null,
+            filename: file.filename
+          });
+          setFileSelectorOpen(false);
+          toast({
+            title: "Datei ausgewählt",
+            description: `${file.filename} wurde ausgewählt. Klicke auf "Speichern" um die Änderungen zu übernehmen.`
+          });
         }}
         title="Login-Hintergrund auswählen"
         description="Wählen Sie ein Bild oder Video aus dem Dateimanager"
@@ -1268,23 +1260,19 @@ export function LoginBackgroundSettings() {
       <FileSelectorDialog
         open={legacyMediaSelectorOpen}
         onOpenChange={setLegacyMediaSelectorOpen}
-        onSelect={async (file) => {
-          // Use the unified getFilePreviewUrl method
-          const url = await getFilePreviewUrl(file);
-          
-          if (url) {
-            setLocalSettings({
-              ...localSettings,
-              type: file.file_type === 'video' ? 'video' : 'image',
-              url,
-              filename: file.filename
-            });
-            setLegacyMediaSelectorOpen(false);
-            toast({
-              title: "Datei ausgewählt",
-              description: `${file.filename} wurde ausgewählt. Klicke auf "Speichern" um die Änderungen zu übernehmen.`
-            });
-          }
+        onSelect={(file) => {
+          setLocalSettings({
+            ...localSettings,
+            type: file.file_type === 'video' ? 'video' : 'image',
+            storagePath: file.storage_path,
+            url: null,
+            filename: file.filename
+          });
+          setLegacyMediaSelectorOpen(false);
+          toast({
+            title: "Datei ausgewählt",
+            description: `${file.filename} wurde ausgewählt. Klicke auf "Speichern" um die Änderungen zu übernehmen.`
+          });
         }}
         title="Gespeicherte Dateien durchsuchen"
         description="Wähle eine Datei aus dem Dateimanager"

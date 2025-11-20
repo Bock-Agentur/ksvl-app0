@@ -3,7 +3,8 @@ import { useAppSettings } from "./use-app-settings";
 
 export interface LoginBackground {
   type: 'gradient' | 'image' | 'video';
-  url: string | null;
+  url: string | null; // @deprecated - Use storagePath instead
+  storagePath: string | null;
   filename: string | null;
   videoOnMobile: boolean;
   cardOpacity: number;
@@ -34,6 +35,7 @@ export interface LoginBackground {
 const DEFAULT_BACKGROUND: LoginBackground = {
   type: 'gradient',
   url: null,
+  storagePath: null,
   filename: null,
   videoOnMobile: false,
   cardOpacity: 95,
