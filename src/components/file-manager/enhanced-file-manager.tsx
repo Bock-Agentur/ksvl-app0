@@ -77,13 +77,6 @@ export function EnhancedFileManager() {
         isAdminUser: isAdmin,
         userId: user?.id || null
       });
-      console.log('File Manager Auth Debug:', {
-        isLoggedIn: !!user,
-        isAdminUser: isAdmin,
-        userId: user?.id,
-        currentRole,
-        filesCount: files.length
-      });
     })();
   }, [isAdmin, currentRole, files.length]);
 
@@ -208,7 +201,6 @@ export function EnhancedFileManager() {
                 <Select 
                   value={filters.category || 'all'} 
                   onValueChange={(value) => {
-                    console.log('Category changed to:', value);
                     setFilters({ ...filters, category: value === 'all' ? undefined : value });
                   }}
                 >
@@ -346,7 +338,6 @@ export function EnhancedFileManager() {
             <Tabs 
               value={filters.category || 'all'} 
               onValueChange={(value) => {
-                console.log('Category tab changed to:', value);
                 setFilters({ ...filters, category: value === 'all' ? undefined : value });
               }}
               className="w-full"

@@ -71,7 +71,7 @@ export function SlotManagement() {
 
   // Ensure current user is included in crane operators list
   const allCraneOperators = currentUserAsCraneOperator && !craneOperators.find(op => op.id === currentUserAsCraneOperator.id) ? [...craneOperators, currentUserAsCraneOperator] : craneOperators;
-  console.log('🔐 SLOT MANAGEMENT CRANE OPERATORS:', allCraneOperators.map(op => `${op.name} (${op.id})`));
+  
   const handleOpenForm = (slot?: Slot) => {
     setEditingSlot(slot || null);
     setIsEditing(true);
@@ -87,7 +87,6 @@ export function SlotManagement() {
     }
     const craneOperator = allCraneOperators.find(op => op.id === formData.craneOperatorId);
     if (!craneOperator) {
-      console.log('❌ Crane operator not found for ID:', formData.craneOperatorId, 'Available operators:', allCraneOperators.map(op => `${op.name} (${op.id})`));
       return;
     }
     if (editingSlot) {
@@ -119,12 +118,6 @@ export function SlotManagement() {
       // Create new slot(s) - always as block now
       const durations = formData.slotBlockDurations || [60];
       const dateString = format(formData.date!, 'yyyy-MM-dd');
-      console.log('📝 CREATING NEW SLOTS:', {
-        date: dateString,
-        time: formData.time,
-        durations,
-        operator: craneOperator.name
-      });
 
       // Build slots array
       const slotsToCreate = [];
@@ -147,7 +140,6 @@ export function SlotManagement() {
         const nextTime = addMinutes(parse(`${dateString} ${currentTime}`, 'yyyy-MM-dd HH:mm', new Date()), duration);
         currentTime = format(nextTime, 'HH:mm');
       }
-      console.log('📤 Slots to create:', slotsToCreate);
 
       // Create all slots as a block
       try {

@@ -57,22 +57,9 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
                        currentRole === "kranfuehrer" || 
                        currentRole === "admin";
 
-  console.log('🔐 WEEK CALENDAR PERMISSIONS:', {
-    currentUser: currentUser?.name,
-    currentRole,
-    userRoles: currentUser?.roles,
-    canManageSlots,
-    canBookSlots
-  });
-
   // Calculate week boundaries
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Monday
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
-  
-  console.log('🗓️ WEEK CALENDAR WEEK INFO:');
-  console.log('📅 Selected date (currentWeek):', format(currentWeek, 'yyyy-MM-dd'));
-  console.log('📅 Week start (Monday):', format(weekStart, 'yyyy-MM-dd'));
-  console.log('📅 Week end (Sunday):', format(addDays(weekStart, 6), 'yyyy-MM-dd'));
 
   // Generate 15-minute intervals from 6:00 to 21:00 (15 hours * 4 = 60 intervals)
   const timeSlots = useMemo(() => {
@@ -87,21 +74,11 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
 
   // Filter slots for current week - CRITICAL: Must re-compute when slots change
   const weekSlots = useMemo(() => {
-    console.log('📅 FILTERING SLOTS for week:', format(weekStart, 'yyyy-MM-dd'), 'to', format(addDays(weekStart, 6), 'yyyy-MM-dd'));
-    console.log('📊 ALL AVAILABLE SLOTS:', slots.length, slots.map(s => `${s.date} ${s.time} (${s.id})`));
-    console.log('🔍 SLOTS DEPENDENCY CHANGED - Re-filtering... Slots array reference:', slots);
-    
     const filtered = slots.filter(slot => {
       const slotDate = parseISO(slot.date);
       const isInWeek = weekDays.some(day => isSameDay(day, slotDate));
-      if (isInWeek) {
-        console.log('✅ Slot in current week:', slot.id, slot.date, slot.time, 'isBooked:', slot.isBooked);
-      }
       return isInWeek;
     });
-    
-    console.log('🎯 FILTERED SLOTS FOR WEEK:', filtered.length, filtered.map(s => `${s.date} ${s.time}`));
-    console.log('📋 WEEK SLOTS DETAILS:', filtered.map(s => ({ id: s.id, date: s.date, time: s.time, isBooked: s.isBooked, operator: s.craneOperator.name })));
     
     // Force a new array reference to ensure React detects the change
     return [...filtered];
@@ -120,16 +97,8 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
       const slotDate = parseISO(slot.date);
       const slotHour = parseInt(slot.time.split(':')[0]);
       const matches = isSameDay(day, slotDate) && slotHour === hour;
-      if (matches) {
-        console.log('🎯 FOUND SLOT for', format(day, 'yyyy-MM-dd'), 'at hour', hour, ':', slot.id, slot.time, 'status:', getSlotStatus(slot, weekSlots));
-      }
       return matches;
     });
-    
-    // Debug specific hours and dates for development
-    if ((hour === 5 || hour === 6 || hour === 7 || hour === 8 || hour === 9) && format(day, 'yyyy-MM-dd') === '2025-09-12') {
-      console.log('🔍 DEBUG HOUR', hour, 'on 2025-09-12:', daySlots.length, 'slots found:', daySlots.map(s => `${s.id} status:${getSlotStatus(s, weekSlots)}`));
-    }
     
     return daySlots;
   };
@@ -144,24 +113,15 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
         return false;
       }
       
-      console.log(`🔍 Checking slot ${slot.id} (${slot.time}) for ${hour}:${minute.toString().padStart(2, '0')} - slotMinute: ${slotMinute}, minute: ${minute}`);
-      
       // Check exact time match for ANY slot (not just mini-slots)
       if (slotMinute === minute) {
-        console.log(`✅ Exact match found for ${slot.id} at ${slot.time}`);
         return true;
       }
       
       // For slots that don't start at this exact minute, check if they cover this time interval
-      // A 60-minute slot at 10:00 covers 10:00, 10:15, 10:30, 10:45
-      // A 30-minute slot at 10:15 covers 10:15 and 10:30
       const slotStartMinute = slotMinute;
       const slotEndMinute = slotMinute + slot.duration;
       const matches = minute >= slotStartMinute && minute < slotEndMinute;
-      
-      if (matches) {
-        console.log(`✅ Slot ${slot.id} at ${slot.time} covers interval ${hour}:${minute.toString().padStart(2, '0')}`);
-      }
       
       return matches;
     });
@@ -271,8 +231,6 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
   };
 
   const handleHourClick = (day: Date, hour: number, minute?: number) => {
-    console.log('🖱️ HOUR CLICK:', { canManageSlots, currentUser: currentUser?.name, roles: currentUser?.roles });
-    
     if (!canManageSlots) {
       toast({
         title: "Keine Berechtigung",
@@ -313,9 +271,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
     
     // Create new slot for this time
     const dateString = format(day, 'yyyy-MM-dd');
-    console.log('🎯 Creating slot for', dateString, 'at', timeString);
     onSlotEdit(undefined, { date: dateString, time: timeString });
-    console.log('📝 SLOT EDIT DIALOG OPENED for new slot:', { date: dateString, time: timeString });
   };
 
   const formatWeekRange = () => {
@@ -800,20 +756,10 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
                  const checkMinute = parseInt(timeString.split(':')[1]);
                  const checkMinutes = checkHour * 60 + checkMinute;
                  
-                 return checkMinutes >= slotStartMinutes && checkMinutes < slotEndMinutes;
-               });
+                  return checkMinutes >= slotStartMinutes && checkMinutes < slotEndMinutes;
+                });
                
-               // Debug log to check what's happening
-               if (isCoveredByLongerSlot && coveringSlot) {
-                 console.log(`🔍 Time ${timeString} covered by slot:`, {
-                   slotId: coveringSlot.id,
-                   slotTime: coveringSlot.time,
-                   slotDuration: coveringSlot.duration,
-                   actualDuration: coveringSlot.duration
-                 });
-               }
-              
-              return (
+               return (
                  <div key={`${hour}-${minute}`} className="space-y-1">
                    {exactTimeSlots.length > 0 ? (
                     // Show existing slots for this exact time
@@ -1002,12 +948,11 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
                                  variant: "destructive"
                                });
                                return;
-                             }
-                             // Pass the selected day and time to create a slot at this specific time
-                             const dateString = format(selectedDay, 'yyyy-MM-dd');
-                             console.log(`Creating slot for ${dateString} at ${timeString}`);
-                             onSlotEdit(undefined, { date: dateString, time: timeString });
-                          } else {
+                              }
+                              // Pass the selected day and time to create a slot at this specific time
+                              const dateString = format(selectedDay, 'yyyy-MM-dd');
+                              onSlotEdit(undefined, { date: dateString, time: timeString });
+                           } else {
                             toast({
                               title: "Keine Berechtigung",
                               description: "Nur Kranführer und Administratoren können neue Slots erstellen. Wechseln Sie Ihre Rolle im Menü oben rechts.",

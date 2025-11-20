@@ -64,14 +64,7 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
                        currentRole === "vorstand";
 
   const handleFormSubmit = async (formData: SlotFormData) => {
-    console.log('🚀 HANDLE_FORM_SUBMIT called with:', formData);
-    
     if (!formData.date || !formData.time || !formData.craneOperatorId) {
-      console.log('❌ Missing required fields:', { 
-        date: !!formData.date, 
-        time: !!formData.time, 
-        craneOperatorId: !!formData.craneOperatorId 
-      });
       toast({
         title: "Fehler",
         description: "Bitte füllen Sie alle Pflichtfelder aus.",
@@ -79,8 +72,6 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
       });
       return;
     }
-
-    console.log('📋 Form validation passed, proceeding...');
     
     // Prepare date string for validation
     const dateString = format(formData.date, 'yyyy-MM-dd');
@@ -91,21 +82,6 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
     const startTotalMinutes = startHour * 60 + startMinute;
     const endTotalMinutes = startTotalMinutes + formData.slotBlockDurations[0];
     
-    console.log('🔍 CHECKING FOR OVERLAPPING SLOTS:', {
-      dateString,
-      startTime,
-      startTotalMinutes,
-      endTotalMinutes,
-      duration: formData.slotBlockDurations[0],
-      allSlotsForDate: allSlots.filter(s => s.date === dateString).map(s => ({
-        id: s.id,
-        time: s.time,
-        duration: s.duration,
-        startMin: parseInt(s.time.split(':')[0]) * 60 + parseInt(s.time.split(':')[1]),
-        endMin: (parseInt(s.time.split(':')[0]) * 60 + parseInt(s.time.split(':')[1])) + s.duration
-      }))
-    });
-    
     const overlappingSlot = allSlots.find(s => {
       if (s.date !== dateString || s.id === slot?.id) return false;
       
@@ -113,22 +89,11 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
       const slotStartMinutes = slotHour * 60 + slotMinute;
       const slotEndMinutes = slotStartMinutes + s.duration;
       
-      console.log('🔍 Checking slot overlap:', {
-        slotId: s.id,
-        slotTime: s.time,
-        slotStartMinutes,
-        slotEndMinutes,
-        newStartMinutes: startTotalMinutes,
-        newEndMinutes: endTotalMinutes,
-        overlaps: startTotalMinutes < slotEndMinutes && endTotalMinutes > slotStartMinutes
-      });
-      
       // Check for overlap
       return (startTotalMinutes < slotEndMinutes && endTotalMinutes > slotStartMinutes);
     });
     
     if (overlappingSlot) {
-      console.log('❌ OVERLAP DETECTED:', overlappingSlot);
       toast({
         title: "Fehler", 
         description: `Es existiert bereits ein Slot in diesem Zeitraum (${overlappingSlot.time}, ${overlappingSlot.duration}min).`,
@@ -160,7 +125,6 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
 
     const craneOperator = allCraneOperators.find(op => op.id === formData.craneOperatorId);
     if (!craneOperator) {
-      console.log('❌ Crane operator not found for ID:', formData.craneOperatorId, 'Available operators:', allCraneOperators.map(op => `${op.name} (${op.id})`));
       return;
     }
     
@@ -190,12 +154,6 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
           // Create slot-block with different durations
           const [startHour, startMinute] = formData.time.split(':').map(Number);
           let currentMinutes = startHour * 60 + startMinute;
-          
-          console.log('🔧 SLOT BLOCK CREATION:', {
-            dateString,
-            startTime: formData.time,
-            durations: formData.slotBlockDurations
-          });
           
           const slotsToCreate: CreateSlotData[] = [];
           
@@ -238,8 +196,6 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
             
             currentMinutes += duration; // Move to next slot start time
           }
-          
-          console.log('📝 CREATING SLOT BLOCK with slots:', slotsToCreate.map(s => `${s.time} (${s.duration}min)`));
           
           // Create all slots as a block
           await addSlotBlock(slotsToCreate);
