@@ -262,7 +262,7 @@ export function DashboardSettings() {
     setOverId(overId || null);
   };
 
-  const handleDragEnd = (event: DragEndEvent) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     
     setActiveId(null);
@@ -288,11 +288,11 @@ export function DashboardSettings() {
     let targetColumn = sourceColumn;
     let targetItem: DashboardItem | null = null;
     
-    // Check if dropped on a column container
     if (typeof over.id === 'string' && over.id.startsWith('column-')) {
+      // Dropped on empty column
       targetColumn = parseInt(over.id.replace('column-', ''));
     } else {
-      // Dropped on an item
+      // Dropped on another item
       Object.entries(itemsByColumn).forEach(([col, items]) => {
         const found = items.find(item => item.id === over.id);
         if (found) {
@@ -302,49 +302,46 @@ export function DashboardSettings() {
       });
     }
 
-    const newPositions = { ...settings.allItemsPositions };
+    // Build new positions object
+    const newPositions: Record<string, { column: number; order: number }> = {
+      ...settings.allItemsPositions
+    };
 
-    if (sourceColumn === targetColumn) {
-      // Same column - reorder
-      if (!targetItem || active.id === over.id) return;
-      
-      const columnItems = itemsByColumn[sourceColumn] || [];
+    if (sourceColumn === targetColumn && targetItem) {
+      // Reorder within same column
+      const columnItems = itemsByColumn[targetColumn];
       const oldIndex = columnItems.findIndex(item => item.id === active.id);
       const newIndex = columnItems.findIndex(item => item.id === over.id);
-
-      if (oldIndex === -1 || newIndex === -1) return;
-
-      const reorderedItems = arrayMove(columnItems, oldIndex, newIndex);
       
-      reorderedItems.forEach((item, index) => {
-        newPositions[item.id] = {
-          column: sourceColumn,
-          order: index
-        };
-      });
-    } else {
-      // Different columns - move item
-      const sourceItems = [...(itemsByColumn[sourceColumn] || [])].filter(item => item.id !== active.id);
-      const targetItems = [...(itemsByColumn[targetColumn] || [])];
-      
-      if (targetItem) {
-        // Insert at specific position
-        const targetIndex = targetItems.findIndex(item => item.id === over.id);
-        targetItems.splice(targetIndex, 0, sourceItem);
-      } else {
-        // Add to end of column
-        targetItems.push(sourceItem);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const reordered = arrayMove(columnItems, oldIndex, newIndex);
+        reordered.forEach((item, index) => {
+          newPositions[item.id] = {
+            column: targetColumn,
+            order: index
+          };
+        });
       }
-      
-      // Update positions for source column
+    } else {
+      // Move to different column
+      // Remove from source column
+      const sourceItems = itemsByColumn[sourceColumn].filter(item => item.id !== active.id);
       sourceItems.forEach((item, index) => {
         newPositions[item.id] = {
           column: sourceColumn,
           order: index
         };
       });
+
+      // Add to target column
+      const targetItems = [...itemsByColumn[targetColumn]];
+      if (targetItem) {
+        const targetIndex = targetItems.findIndex(item => item.id === targetItem.id);
+        targetItems.splice(targetIndex, 0, sourceItem);
+      } else {
+        targetItems.push(sourceItem);
+      }
       
-      // Update positions for target column
       targetItems.forEach((item, index) => {
         newPositions[item.id] = {
           column: targetColumn,
@@ -353,10 +350,14 @@ export function DashboardSettings() {
       });
     }
 
-    saveSettings({ allItemsPositions: newPositions });
+    try {
+      await saveSettings({ allItemsPositions: newPositions });
+    } catch (error) {
+      console.error('Failed to save dashboard layout:', error);
+    }
   };
 
-  const handleMobileDragEnd = (event: DragEndEvent) => {
+  const handleMobileDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     
     setActiveId(null);
@@ -372,7 +373,11 @@ export function DashboardSettings() {
     const reorderedItems = arrayMove(mobileItems, oldIndex, newIndex);
     const newOrder = reorderedItems.map(item => item.id);
 
-    saveSettings({ mobileItemsOrder: newOrder });
+    try {
+      await saveSettings({ mobileItemsOrder: newOrder });
+    } catch (error) {
+      console.error('Failed to save mobile order:', error);
+    }
   };
 
   const activeItem = activeId ? allDashboardItems.all.find(item => item.id === activeId) : null;
@@ -692,7 +697,13 @@ export function DashboardSettings() {
       <div className="flex justify-end">
         <Button
           variant="outline"
-          onClick={resetToDefaults}
+          onClick={async () => {
+            try {
+              await resetToDefaults();
+            } catch (error) {
+              console.error('Failed to reset to defaults:', error);
+            }
+          }}
           className="gap-2"
         >
           <RotateCcw className="h-4 w-4" />

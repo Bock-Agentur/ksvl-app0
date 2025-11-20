@@ -159,7 +159,7 @@ export function useAppSettings<T = any>(
         });
       }
       
-      throw error;
+      // Error nur loggen, nicht werfen (Phase 3 - throw error entfernt)
     }
   };
 

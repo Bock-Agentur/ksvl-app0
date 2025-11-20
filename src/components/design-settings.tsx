@@ -453,13 +453,17 @@ export function DesignSettings() {
           <div className="flex flex-col sm:flex-row justify-between gap-4">
             <Button
               variant="outline"
-              onClick={() => {
-                resetToOriginalDefaults();
-                setLocalSettings(settings);
-                toast({
-                  title: "Design zurückgesetzt",
-                  description: "Alle Slot-Farben wurden auf die ursprünglichen Standardwerte zurückgesetzt."
-                });
+              onClick={async () => {
+                try {
+                  await resetToOriginalDefaults();
+                  setLocalSettings(settings);
+                  toast({
+                    title: "Design zurückgesetzt",
+                    description: "Alle Slot-Farben wurden auf die ursprünglichen Standardwerte zurückgesetzt."
+                  });
+                } catch (error) {
+                  console.error('Failed to reset to original defaults:', error);
+                }
               }}
               className="flex items-center gap-2"
             >
@@ -468,12 +472,16 @@ export function DesignSettings() {
             </Button>
             
             <Button
-              onClick={() => {
-                saveSettings(localSettings);
-                toast({
-                  title: "Einstellungen gespeichert",
-                  description: "Alle Farbeinstellungen wurden erfolgreich gespeichert."
-                });
+              onClick={async () => {
+                try {
+                  await saveSettings(localSettings);
+                  toast({
+                    title: "Einstellungen gespeichert",
+                    description: "Alle Farbeinstellungen wurden erfolgreich gespeichert."
+                  });
+                } catch (error) {
+                  console.error('Failed to save settings:', error);
+                }
               }}
               className="flex items-center gap-2"
             >

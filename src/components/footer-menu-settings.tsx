@@ -92,7 +92,7 @@ export function FooterMenuSettings() {
     item => !currentItems.some(current => current.id === item.id)
   );
 
-  const handleAddItem = (item: FooterMenuItem) => {
+  const handleAddItem = async (item: FooterMenuItem) => {
     if (currentItems.length >= 8) {
       toast({
         title: "Maximum erreicht",
@@ -103,34 +103,47 @@ export function FooterMenuSettings() {
     }
 
     const newItems = [...currentItems, item];
-    updateRoleMenuItems(activeRole, newItems);
-    setIsAddDialogOpen(false);
-    
-    toast({
-      title: "Menüpunkt hinzugefügt",
-      description: `"${item.label}" wurde zum Footer-Menü hinzugefügt.`
-    });
+    try {
+      await updateRoleMenuItems(activeRole, newItems);
+      setIsAddDialogOpen(false);
+      
+      toast({
+        title: "Menüpunkt hinzugefügt",
+        description: `"${item.label}" wurde zum Footer-Menü hinzugefügt.`
+      });
+    } catch (error) {
+      console.error('Failed to add menu item:', error);
+    }
   };
 
-  const handleRemoveItem = (itemId: string) => {
+  const handleRemoveItem = async (itemId: string) => {
     const newItems = currentItems.filter(item => item.id !== itemId);
-    updateRoleMenuItems(activeRole, newItems);
-    
     const removedItem = currentItems.find(item => item.id === itemId);
-    toast({
-      title: "Menüpunkt entfernt",
-      description: `"${removedItem?.label}" wurde aus dem Footer-Menü entfernt.`
-    });
+    
+    try {
+      await updateRoleMenuItems(activeRole, newItems);
+      
+      toast({
+        title: "Menüpunkt entfernt",
+        description: `"${removedItem?.label}" wurde aus dem Footer-Menü entfernt.`
+      });
+    } catch (error) {
+      console.error('Failed to remove menu item:', error);
+    }
   };
 
-  const handleMoveItem = (fromIndex: number, toIndex: number) => {
+  const handleMoveItem = async (fromIndex: number, toIndex: number) => {
     if (toIndex < 0 || toIndex >= currentItems.length) return;
     
     const newItems = [...currentItems];
     const [movedItem] = newItems.splice(fromIndex, 1);
     newItems.splice(toIndex, 0, movedItem);
     
-    updateRoleMenuItems(activeRole, newItems);
+    try {
+      await updateRoleMenuItems(activeRole, newItems);
+    } catch (error) {
+      console.error('Failed to move item:', error);
+    }
   };
 
   const handleToggleLabels = (showLabels: boolean) => {
