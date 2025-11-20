@@ -169,34 +169,16 @@ export function Auth() {
   const isMobile = useIsMobile();
 
   const getMediaUrl = (background: LoginBackground): string | null => {
-    // Fallback for old data with stored URL
-    if (!background.storagePath && background.url) {
-      return background.url;
-    }
-    
-    if (!background.storagePath) {
+    if (!background.storagePath || !background.bucket) {
       return null;
     }
     
-    // Generate URL from storage path
-    const bucket = background.storagePath.startsWith('login-media/') 
-      ? 'login-media' 
-      : 'documents';
-    
     const { data } = supabase.storage
-      .from(bucket)
+      .from(background.bucket)
       .getPublicUrl(background.storagePath);
     
     return data.publicUrl;
   };
-
-  // Force re-render when background changes
-  const [, forceUpdate] = useState({});
-  useEffect(() => {
-    if (!isLoading) {
-      forceUpdate({});
-    }
-  }, [background, isLoading]);
 
   // Determine countdown position based on screen size
   const getCountdownPosition = () => {
