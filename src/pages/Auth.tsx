@@ -489,15 +489,20 @@ export function Auth() {
               </svg>
               <input
                 id="email"
-                name="email"
+                name="usr-id"
                 type="text"
-                autoComplete="off"
+                autoComplete="new-password"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onFocus={() => setEmailReadOnly(false)}
+                readOnly={emailReadOnly}
                 required
                 placeholder="E-Mail oder Benutzername"
+                data-lpignore="true"
+                data-1p-ignore="true"
+                data-form-type="other"
                 style={{ color: '#000000' }}
-                className="flex-1 bg-transparent border-none outline-none placeholder:text-black/50"
+                className="flex-1 bg-transparent border-none outline-none placeholder:text-black/50 no-webkit-autofill"
               />
             </div>
           </div>
