@@ -2,6 +2,8 @@ import { FileMetadata } from "@/hooks/use-file-manager";
 import { useFilePermissions } from "@/hooks/use-file-permissions";
 import { useFileManager } from "@/hooks/use-file-manager";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useRole } from "@/hooks/use-role";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -55,73 +57,46 @@ export function FileCard({
   multiSelectActive,
 }: FileCardProps) {
   const isMobile = useIsMobile();
-  const { canEdit, canDelete } = useFilePermissions();
-  const { deleteFile, downloadFile, getFilePreviewUrl } = useFileManager();
+  const { isAdmin } = useFilePermissions();
+  const { currentUser } = useRole();
+  const { deleteFile, downloadFile } = useFileManager();
   
-  const [canEditFile, setCanEditFile] = useState(false);
-  const [canDeleteFile, setCanDeleteFile] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [thumbnailLoading, setThumbnailLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
-  // Removed long-press - multi-select now controlled by toggle button
+  
+  // ✅ Calculate permissions client-side using already-loaded data
+  const userId = currentUser?.id;
+  const canEditFile = isAdmin || file.owner_id === userId;
+  const canDeleteFile = isAdmin || file.owner_id === userId;
 
+  // ✅ Generate thumbnail URL directly (no async request needed)
   useEffect(() => {
-    const checkPermissions = async () => {
-      const [editPerm, deletePerm] = await Promise.all([
-        canEdit(file.id),
-        canDelete(file.id),
-      ]);
-      setCanEditFile(editPerm);
-      setCanDeleteFile(deletePerm);
-    };
-    checkPermissions();
-  }, [file.id, canEdit, canDelete]);
-
-  useEffect(() => {
-    let isMounted = true;
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'];
+    const isImage = file.file_type === 'image' || 
+                   imageExtensions.some(ext => file.filename.toLowerCase().endsWith(ext));
     
-    const loadThumbnail = async () => {
-      // Check if it's an image by file_type OR file extension
-      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'];
-      const isImage = file.file_type === 'image' || 
-                     imageExtensions.some(ext => file.filename.toLowerCase().endsWith(ext));
-      
-      if (!isImage) return;
-      
-      // Reset states
-      setThumbnailLoading(true);
-      setImageError(false);
-      
-      try {
-        // Use the new getFilePreviewUrl method which handles both buckets
-        const url = await getFilePreviewUrl(file);
-        
-        if (isMounted) {
-          if (url) {
-            setThumbnailUrl(url);
-            setImageError(false);
-          } else {
-            setThumbnailUrl(null);
-            setImageError(true);
-          }
-          setThumbnailLoading(false);
-        }
-      } catch (error) {
-        console.error('Error loading thumbnail:', error);
-        if (isMounted) {
-          setThumbnailUrl(null);
-          setImageError(true);
-          setThumbnailLoading(false);
-        }
-      }
-    };
+    if (!isImage) {
+      setThumbnailUrl(null);
+      return;
+    }
     
-    loadThumbnail();
+    // Determine bucket from storage_path
+    const bucket = file.storage_path.startsWith('login-media/') 
+      ? 'login-media' 
+      : 'documents';
     
-    return () => {
-      isMounted = false;
-    };
-  }, [file.id, file.storage_path, file.category]);
+    const cleanPath = bucket === 'login-media' 
+      ? file.storage_path.replace('login-media/', '')
+      : file.storage_path;
+    
+    const { data } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(cleanPath);
+    
+    setThumbnailUrl(data.publicUrl);
+    setThumbnailLoading(false);
+  }, [file.storage_path, file.file_type, file.filename]);
 
   const handleDelete = async () => {
     if (window.confirm(`"${file.filename}" wirklich löschen?`)) {
