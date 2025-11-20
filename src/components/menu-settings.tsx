@@ -34,7 +34,7 @@ export function MenuSettings() {
     setDraggedOver(null);
   };
 
-  const handleDrop = (e: React.DragEvent, targetItem: MenuItemConfig) => {
+  const handleDrop = async (e: React.DragEvent, targetItem: MenuItemConfig) => {
     e.preventDefault();
     setDraggedOver(null);
     
@@ -52,38 +52,54 @@ export function MenuSettings() {
       const [removed] = items.splice(draggedIndex, 1);
       items.splice(targetIndex, 0, removed);
       
-      updateHeaderItemsOrder(items);
-      toast({
-        title: "Menüreihenfolge aktualisiert",
-        description: "Die neue Reihenfolge wurde gespeichert.",
-      });
+      try {
+        await updateHeaderItemsOrder(items);
+        toast({
+          title: "Menüreihenfolge aktualisiert",
+          description: "Die neue Reihenfolge wurde gespeichert.",
+        });
+      } catch (error) {
+        console.error('Failed to update order:', error);
+      }
     }
     
     setDraggedItem(null);
   };
 
-  const handleRoleChange = (role: UserRole) => {
-    updateDefaultRole(role);
-    toast({
-      title: "Standard-Rolle aktualisiert",
-      description: `${role === "admin" ? "Admin" : role === "kranfuehrer" ? "Kranführer" : "Mitglied"} ist jetzt die Standard-Rolle.`,
-    });
+  const handleRoleChange = async (role: UserRole) => {
+    try {
+      await updateDefaultRole(role);
+      toast({
+        title: "Standard-Rolle aktualisiert",
+        description: `${role === "admin" ? "Admin" : role === "kranfuehrer" ? "Kranführer" : "Mitglied"} ist jetzt die Standard-Rolle.`,
+      });
+    } catch (error) {
+      console.error('Failed to update default role:', error);
+    }
   };
 
-  const handleReset = () => {
-    resetToDefaults();
-    toast({
-      title: "Menü-Einstellungen zurückgesetzt",
-      description: "Alle Einstellungen wurden auf die Standardwerte zurückgesetzt.",
-    });
+  const handleReset = async () => {
+    try {
+      await resetToDefaults();
+      toast({
+        title: "Menü-Einstellungen zurückgesetzt",
+        description: "Alle Einstellungen wurden auf die Standardwerte zurückgesetzt.",
+      });
+    } catch (error) {
+      console.error('Failed to reset to defaults:', error);
+    }
   };
 
-  const handleForceRefresh = () => {
-    forceRefresh();
-    toast({
-      title: "Icons aktualisiert",
-      description: "Die Menü-Icons wurden mit den neuesten Änderungen aktualisiert.",
-    });
+  const handleForceRefresh = async () => {
+    try {
+      await forceRefresh();
+      toast({
+        title: "Icons aktualisiert",
+        description: "Die Menü-Icons wurden mit den neuesten Änderungen aktualisiert.",
+      });
+    } catch (error) {
+      console.error('Failed to force refresh:', error);
+    }
   };
 
   const getRoleDisplayName = (role: UserRole) => {
