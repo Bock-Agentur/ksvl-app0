@@ -61,7 +61,6 @@ export function CalendarView({
   // Wenn ein initialDate übergeben wird, setze es als selectedDate und wechsle zur Tagesansicht
   useEffect(() => {
     if (initialDate) {
-      console.log("📅 CalendarView: Navigating to date from chatbot:", initialDate);
       setSelectedDate(initialDate);
       setSelectedDay(initialDate);
       setViewMode("day");
@@ -72,25 +71,18 @@ export function CalendarView({
     date: string;
     time: string;
   }) => {
-    console.log('🎯 HANDLE_SLOT_EDIT called:', {
-      slot: slot?.id,
-      dateTime
-    });
     setSelectedSlot(slot || null);
     setPrefilledDateTime(dateTime || null);
     setIsDialogOpen(true);
-    console.log('📱 Dialog opened, state updated');
   };
   
   const handleDialogClose = (navigateToDate?: Date) => {
-    console.log('🔄 Dialog closing, navigate to date:', navigateToDate);
     setIsDialogOpen(false);
     setSelectedSlot(null);
     setPrefilledDateTime(null);
 
     // Wenn ein Datum übergeben wurde, navigiere dorthin
     if (navigateToDate) {
-      console.log('📅 Navigating to new date:', navigateToDate);
       setSelectedDate(navigateToDate);
       setViewMode("day"); // Wechsle zur Tagesansicht um den neuen Slot zu sehen
     }

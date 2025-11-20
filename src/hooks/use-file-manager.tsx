@@ -21,10 +21,6 @@ export interface FileMetadata {
   allowed_roles: string[] | null;
   created_at: string;
   updated_at: string;
-  ai_searchable?: boolean;
-  text_content?: string | null;
-  indexed_at?: string | null;
-  indexing_status?: 'not_indexed' | 'indexing' | 'indexed' | 'failed';
 }
 
 // Upload metadata schema for validation
