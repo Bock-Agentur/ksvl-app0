@@ -1257,8 +1257,8 @@ export function LoginBackgroundSettings() {
         open={fileSelectorOpen}
         onOpenChange={setFileSelectorOpen}
         onSelect={(file) => {
-          // Determine bucket from category
-          const bucket = file.category === 'login_media' ? 'login-media' : 'documents';
+          // All File Manager files are in documents bucket
+          const bucket = 'documents';
           
           // Generate preview URL
           const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(file.storage_path);
@@ -1266,7 +1266,7 @@ export function LoginBackgroundSettings() {
           setLocalSettings({
             ...localSettings,
             type: file.file_type === 'video' ? 'video' : 'image',
-            bucket: bucket as 'documents' | 'login-media',
+            bucket: bucket,
             storagePath: file.storage_path,
             url: urlData.publicUrl, // Temporary for preview
             filename: file.filename
@@ -1289,8 +1289,8 @@ export function LoginBackgroundSettings() {
         open={legacyMediaSelectorOpen}
         onOpenChange={setLegacyMediaSelectorOpen}
         onSelect={(file) => {
-          // Determine bucket from category
-          const bucket = file.category === 'login_media' ? 'login-media' : 'documents';
+          // All File Manager files are in documents bucket
+          const bucket = 'documents';
           
           // Generate preview URL
           const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(file.storage_path);
@@ -1298,7 +1298,7 @@ export function LoginBackgroundSettings() {
           setLocalSettings({
             ...localSettings,
             type: file.file_type === 'video' ? 'video' : 'image',
-            bucket: bucket as 'documents' | 'login-media',
+            bucket: bucket,
             storagePath: file.storage_path,
             url: urlData.publicUrl, // Temporary for preview
             filename: file.filename
