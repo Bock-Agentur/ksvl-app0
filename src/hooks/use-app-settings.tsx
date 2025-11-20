@@ -150,17 +150,16 @@ export function useAppSettings<T = any>(
       }
     } catch (error) {
       console.error(`Error saving setting ${settingKey}:`, error);
-      // Fallback to localStorage
-      localStorage.setItem(settingKey, JSON.stringify(newValue));
-      setValue(newValue);
       
       if (!skipToast) {
         toast({
-          title: "Warnung",
-          description: "Einstellungen wurden lokal gespeichert.",
-          variant: "default",
+          title: "Fehler",
+          description: "Einstellungen konnten nicht gespeichert werden. Bitte kontaktieren Sie den Administrator.",
+          variant: "destructive",
         });
       }
+      
+      throw error;
     }
   };
 
