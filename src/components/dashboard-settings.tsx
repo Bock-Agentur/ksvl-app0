@@ -13,6 +13,7 @@ import { useRole } from "@/hooks/use-role";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { getWidgetsForRole, getSectionsForRole, type DashboardItem } from "@/lib/dashboard-config";
 import { UserRole } from "@/types/user";
+import { SettingsSectionLoader } from "@/components/common/settings-section-loader";
 import { RotateCcw, GripVertical, Eye, EyeOff, LayoutGrid, Columns2, Square, Smartphone, Settings as SettingsIcon, Type } from "lucide-react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverEvent, DragOverlay, pointerWithin, useDroppable, rectIntersection } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -160,7 +161,8 @@ export function DashboardSettings() {
   
   // Admin bearbeitet Templates für die gewählte Rolle (Route ist bereits geschützt)
   const { 
-    settings, 
+    settings,
+    isLoading,
     saveSettings, 
     resetToDefaults, 
     isItemEnabled,
@@ -390,23 +392,24 @@ export function DashboardSettings() {
   };
 
   return (
-    <div className="space-y-6">
-      <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
-        <CardHeader className={isMobile ? "px-4 py-3" : ""}>
-          <CardTitle className={cn(
-            "flex items-center gap-2 font-bold",
-            isMobile ? "text-lg" : "text-2xl"
-          )}>
-            <SettingsIcon className={isMobile ? "w-5 h-5" : "w-6 h-6"} />
-            Dashboard-Einstellungen
-          </CardTitle>
-          {!isMobile && (
-            <CardDescription>
-              Passen Sie Ihr Dashboard nach Ihren Wünschen an.
-            </CardDescription>
-          )}
-        </CardHeader>
-      </Card>
+    <SettingsSectionLoader isLoading={isLoading} title="Dashboard-Einstellungen">
+      <div className="space-y-6">
+        <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
+          <CardHeader className={isMobile ? "px-4 py-3" : ""}>
+            <CardTitle className={cn(
+              "flex items-center gap-2 font-bold",
+              isMobile ? "text-lg" : "text-2xl"
+            )}>
+              <SettingsIcon className={isMobile ? "w-5 h-5" : "w-6 h-6"} />
+              Dashboard-Einstellungen
+            </CardTitle>
+            {!isMobile && (
+              <CardDescription>
+                Passen Sie Ihr Dashboard nach Ihren Wünschen an.
+              </CardDescription>
+            )}
+          </CardHeader>
+        </Card>
 
       <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
         <CardHeader className={isMobile ? "px-4 py-3" : ""}>
@@ -696,6 +699,7 @@ export function DashboardSettings() {
           Auf Standard zurücksetzen
         </Button>
       </div>
-    </div>
+      </div>
+    </SettingsSectionLoader>
   );
 }

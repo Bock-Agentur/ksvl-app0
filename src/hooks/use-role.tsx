@@ -8,11 +8,11 @@ const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export function RoleProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
-  const { settings } = useMenuSettings();
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const { settings } = useMenuSettings({ enabled: isInitialLoad });
   const [currentRole, setCurrentRole] = useState<UserRole>("mitglied");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [originalUser, setOriginalUser] = useState<User | null>(null);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // Load current user from Supabase only on initial load
   useEffect(() => {

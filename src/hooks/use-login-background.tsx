@@ -61,11 +61,14 @@ const DEFAULT_BACKGROUND: LoginBackground = {
   countdownVerticalPositionMobile: 35
 };
 
-export function useLoginBackground() {
+export function useLoginBackground(options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true;
+  
   const { value, setValue, isLoading } = useAppSettings<LoginBackground>(
     'login_background',
     DEFAULT_BACKGROUND,
-    true // global setting
+    true, // global setting
+    { enabled }
   );
 
   // Migration: Convert old verticalPosition to new slider values
