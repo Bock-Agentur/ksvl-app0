@@ -169,7 +169,14 @@ export function Auth() {
   const isMobile = useIsMobile();
 
   const getMediaUrl = (background: LoginBackground): string | null => {
+    console.log('🔐 Auth.tsx getMediaUrl called with:', {
+      bucket: background.bucket,
+      storagePath: background.storagePath,
+      filename: background.filename
+    });
+
     if (!background.storagePath || !background.bucket) {
+      console.log('❌ Missing storagePath or bucket');
       return null;
     }
     
@@ -177,6 +184,7 @@ export function Auth() {
       .from(background.bucket)
       .getPublicUrl(background.storagePath);
     
+    console.log('✅ Auth.tsx generated URL:', data.publicUrl);
     return data.publicUrl;
   };
 
