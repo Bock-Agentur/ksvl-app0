@@ -76,6 +76,9 @@ export function useLoginBackground() {
     true // global setting
   );
 
+  // Ensure all fields exist with defaults (for backward compatibility)
+  const mergedValue = { ...DEFAULT_BACKGROUND, ...value };
+
   // Migration: Convert old verticalPosition to new slider values
   useEffect(() => {
     if (value && 'verticalPosition' in value && !value.loginBlockVerticalPositionDesktop) {
@@ -87,6 +90,7 @@ export function useLoginBackground() {
       
       const oldPosition = (value as any).verticalPosition;
       const migratedValue = {
+        ...DEFAULT_BACKGROUND,
         ...value,
         loginBlockVerticalPositionDesktop: migrationMap[oldPosition] || 50,
         loginBlockVerticalPositionTablet: migrationMap[oldPosition] || 50,
@@ -101,7 +105,7 @@ export function useLoginBackground() {
   }, [value, setValue]);
 
   return {
-    background: value,
+    background: mergedValue,
     setBackground: setValue,
     isLoading
   };
