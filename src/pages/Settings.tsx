@@ -76,18 +76,16 @@ function SettingsContent() {
   // KRITISCH: Nur Admins und Vorstand haben Zugriff auf Settings
   const isAdmin = currentRole === "admin" || currentRole === "vorstand";
 
-  // Wait for component to be fully rendered
+  // ✅ Wait for component to be fully rendered (optimized)
   useEffect(() => {
     if (!isPageLoading) {
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setIsComponentReady(true);
-        });
+        setIsComponentReady(true);
       });
     } else {
       setIsComponentReady(false);
     }
-  }, [isPageLoading, activeSection, isOverview]);
+  }, [isPageLoading]);
   
   // Access control - redirect if not authorized
   useEffect(() => {
