@@ -61,31 +61,21 @@ type SettingSection = {
 function SettingsContent() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [isOverview, setIsOverview] = useState(true);
-  const [isComponentReady, setIsComponentReady] = useState(false);
   const { currentRole, isLoading: roleLoading } = useRole();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { background, isLoading: bgLoading } = useLoginBackground();
-  const { settings: desktopBackgroundSettings, isLoading: desktopBgLoading } = useDesktopBackground();
-  const { isPageSticky } = useStickyHeaderLayout();
+  
+  // ✅ Nur laden wenn Overview sichtbar (Background benötigt)
+  const { background, isLoading: bgLoading } = useLoginBackground({ enabled: isOverview });
+  const { settings: desktopBackgroundSettings, isLoading: desktopBgLoading } = useDesktopBackground({ enabled: isOverview });
+  const { isPageSticky } = useStickyHeaderLayout({ enabled: isOverview });
   const isStickyEnabled = isPageSticky('settings');
   
-  const showBackground = desktopBackgroundSettings.enabled && background;
-  const isPageLoading = roleLoading || bgLoading || desktopBgLoading;
+  const showBackground = isOverview && desktopBackgroundSettings.enabled && background;
+  const isPageLoading = roleLoading || (isOverview && (bgLoading || desktopBgLoading));
 
   // KRITISCH: Nur Admins und Vorstand haben Zugriff auf Settings
   const isAdmin = currentRole === "admin" || currentRole === "vorstand";
-
-  // ✅ Wait for component to be fully rendered (optimized)
-  useEffect(() => {
-    if (!isPageLoading) {
-      requestAnimationFrame(() => {
-        setIsComponentReady(true);
-      });
-    } else {
-      setIsComponentReady(false);
-    }
-  }, [isPageLoading]);
   
   // Access control - redirect if not authorized
   useEffect(() => {
@@ -143,23 +133,16 @@ function SettingsContent() {
     } else {
       setActiveSection(sectionId);
       setIsOverview(false);
-      setIsComponentReady(false);
     }
   };
 
   const handleBack = () => {
     setIsOverview(true);
     setActiveSection(null);
-    setIsComponentReady(false);
   };
 
   const ActiveComponent = sections.find(section => section.id === activeSection)?.component;
   const activeLabel = sections.find(section => section.id === activeSection)?.label;
-
-  // Show page loader while loading or content not ready
-  if (!isComponentReady) {
-    return <PageLoader />;
-  }
 
 
   if (isOverview) {

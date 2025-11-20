@@ -28,11 +28,14 @@ const DEFAULT_SETTINGS: MenuSettings = {
   defaultRole: "admin"
 };
 
-export function useMenuSettings() {
+export function useMenuSettings(options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true;
+  
   const { value: settings, setValue } = useAppSettings<MenuSettings>(
     "marina-menu-settings-template",
     DEFAULT_SETTINGS,
-    true // ✅ Global template storage
+    true, // ✅ Global template storage
+    { enabled }
   );
 
   // Auto-update: Nur neue Items hinzufügen, ohne Toast

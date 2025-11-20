@@ -22,11 +22,14 @@ const DEFAULT_SETTINGS: StickyHeaderLayoutSettings = {
   }
 };
 
-export function useStickyHeaderLayout() {
+export function useStickyHeaderLayout(options?: { enabled?: boolean }) {
+  const enabled = options?.enabled ?? true;
+  
   const { value, setValue, isLoading } = useAppSettings<StickyHeaderLayoutSettings>(
     'sticky_header_layout',
     DEFAULT_SETTINGS,
-    true // global setting
+    true, // global setting
+    { enabled }
   );
 
   // Migration: Ensure pages object exists (for backward compatibility)
