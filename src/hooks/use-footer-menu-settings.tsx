@@ -17,6 +17,12 @@ export interface FooterDisplaySettings {
   [key: string]: { showLabels: boolean }; // role -> display settings
 }
 
+// ✅ Combined settings type for single DB query
+export interface CombinedFooterSettings {
+  menu: FooterMenuItem[];
+  display: { showLabels: boolean };
+}
+
 // Default display settings per role
 const DEFAULT_DISPLAY_SETTINGS: FooterDisplaySettings = {
   gastmitglied: { showLabels: false },
@@ -79,48 +85,49 @@ const DEFAULT_FOOTER_SETTINGS: FooterMenuSettings = {
   ]
 };
 
+// ✅ Create combined default settings per role
+const getCombinedDefaultSettings = (role: UserRole): CombinedFooterSettings => ({
+  menu: DEFAULT_FOOTER_SETTINGS[role] || [],
+  display: DEFAULT_DISPLAY_SETTINGS[role] || { showLabels: false }
+});
+
 export function useFooterMenuSettings(userRole: UserRole) {
-  // Alle Benutzer laden Templates - nur Admins können diese bearbeiten (via Route Protection)
-  const storageKey = `footer-menu-template-${userRole}`;
-  const displayStorageKey = `footer-menu-display-template-${userRole}`;
+  // ✅ Single storage key for combined settings
+  const storageKey = `footer-settings-template-${userRole}`;
   
-  const { value: settings, setValue: setSettings, isLoading } = useAppSettings<FooterMenuSettings>(
+  const { value: combinedSettings, setValue: setCombinedSettings, isLoading } = useAppSettings<CombinedFooterSettings>(
     storageKey,
-    DEFAULT_FOOTER_SETTINGS,
-    true // Globale Template-Speicherung
+    getCombinedDefaultSettings(userRole),
+    true // Global template storage
   );
 
-  const { value: displaySettings, setValue: setDisplaySettings } = useAppSettings<FooterDisplaySettings>(
-    displayStorageKey,
-    DEFAULT_DISPLAY_SETTINGS,
-    true // Globale Template-Speicherung
-  );
-
-  const saveSettings = (newSettings: FooterMenuSettings) => {
-    setSettings(newSettings);
+  // ✅ Save both menu and display in one atomic operation
+  const saveSettings = (menu: FooterMenuItem[], display: { showLabels: boolean }) => {
+    setCombinedSettings({ menu, display });
     window.dispatchEvent(new CustomEvent('footerSettingsChanged'));
   };
 
-  const saveDisplaySettings = (role: UserRole, settings: { showLabels: boolean }) => {
-    const updated = { ...displaySettings, [role]: settings };
-    setDisplaySettings(updated);
+  const saveDisplaySettings = (role: UserRole, display: { showLabels: boolean }) => {
+    // Update only display settings, keep menu unchanged
+    saveSettings(combinedSettings.menu, display);
   };
 
   const getMenuItemsForRole = (role: UserRole): FooterMenuItem[] => {
-    return (settings && settings[role]) || DEFAULT_FOOTER_SETTINGS[role] || [];
+    return combinedSettings.menu || DEFAULT_FOOTER_SETTINGS[role] || [];
   };
 
   const getDisplaySettingsForRole = (role: UserRole) => {
-    return (displaySettings && displaySettings[role]) || DEFAULT_DISPLAY_SETTINGS[role] || { showLabels: false };
+    return combinedSettings.display || DEFAULT_DISPLAY_SETTINGS[role] || { showLabels: false };
   };
 
   const updateRoleMenuItems = (role: UserRole, items: FooterMenuItem[]) => {
-    saveSettings({ ...settings, [role]: items });
+    // Update only menu, keep display unchanged
+    saveSettings(items, combinedSettings.display);
   };
 
   const resetToDefaults = () => {
-    setSettings(DEFAULT_FOOTER_SETTINGS);
-    setDisplaySettings(DEFAULT_DISPLAY_SETTINGS);
+    const defaults = getCombinedDefaultSettings(userRole);
+    setCombinedSettings(defaults);
     window.dispatchEvent(new CustomEvent('footerSettingsChanged'));
   };
 
@@ -129,10 +136,14 @@ export function useFooterMenuSettings(userRole: UserRole) {
   };
 
   return {
-    settings: settings || DEFAULT_FOOTER_SETTINGS,
-    displaySettings: displaySettings || DEFAULT_DISPLAY_SETTINGS,
+    settings: { [userRole]: combinedSettings.menu },
+    displaySettings: { [userRole]: combinedSettings.display },
     isLoading,
-    saveSettings,
+    saveSettings: (newSettings: FooterMenuSettings) => {
+      // Legacy compatibility: extract this role's menu
+      const menu = newSettings[userRole] || combinedSettings.menu;
+      saveSettings(menu, combinedSettings.display);
+    },
     saveDisplaySettings,
     getMenuItemsForRole,
     getDisplaySettingsForRole,

@@ -3,6 +3,7 @@
  * Manages dashboard configuration and widget visibility
  */
 
+import { useMemo } from "react";
 import { useAppSettings } from "./use-app-settings";
 import { DashboardSettings, DEFAULT_DASHBOARD_SETTINGS } from "@/lib/dashboard-config";
 import { UserRole } from "@/types/user";
@@ -20,13 +21,13 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
     { enabled }
   );
 
-  // Migration: Ensure headerCard is in enabledSections
-  const settings = {
+  // ✅ Migration: Ensure headerCard is in enabledSections (memoized)
+  const settings = useMemo(() => ({
     ...rawSettings,
     enabledSections: rawSettings.enabledSections?.includes('headerCard') 
       ? rawSettings.enabledSections 
       : ['headerCard', ...(rawSettings.enabledSections || [])]
-  };
+  }), [rawSettings]);
 
   // Save settings to database
   const saveSettings = (newSettings: Partial<DashboardSettings>) => {

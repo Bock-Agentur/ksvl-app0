@@ -28,7 +28,23 @@ export function useAppSettings<T = any>(
   const { toast } = useToast();
   const enabled = options?.enabled ?? true;
 
-  // Load setting from database
+  // Helper für localStorage Migration
+  const tryMigrateFromLocalStorage = async (): Promise<boolean> => {
+    const storedValue = localStorage.getItem(settingKey);
+    if (!storedValue) return false;
+    
+    try {
+      const parsed = JSON.parse(storedValue);
+      setValue(parsed);
+      await saveSetting(parsed, true);
+      localStorage.removeItem(settingKey);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  // ✅ Load setting from database (optimized)
   const loadSetting = useCallback(async () => {
     if (!enabled) {
       setIsLoading(false);
@@ -46,7 +62,6 @@ export function useAppSettings<T = any>(
       if (isGlobal) {
         query = query.eq('is_global', true);
       } else {
-        // For user-specific settings, require a user to be logged in
         if (!user) {
           throw new Error('User must be logged in for user-specific settings');
         }
@@ -54,42 +69,24 @@ export function useAppSettings<T = any>(
       }
 
       const { data, error } = await query.maybeSingle();
-
       if (error) throw error;
 
+      // ✅ DB value found
       if (data) {
         setValue(data.setting_value as T);
-      } else {
-        // Try to migrate from localStorage
-        const storedValue = localStorage.getItem(settingKey);
-        if (storedValue) {
-          try {
-            const parsed = JSON.parse(storedValue);
-            setValue(parsed);
-            // Save to database
-            await saveSetting(parsed, true);
-            // Clean up localStorage
-            localStorage.removeItem(settingKey);
-          } catch (e) {
-            setValue(defaultValue);
-          }
-        } else {
-          setValue(defaultValue);
-        }
+        return;
       }
+      
+      // ✅ Try one-time localStorage migration
+      const migrated = await tryMigrateFromLocalStorage();
+      if (migrated) return;
+      
+      // ✅ Fallback to default
+      setValue(defaultValue);
+      
     } catch (error) {
       console.error(`Error loading setting ${settingKey}:`, error);
-      // Fallback to localStorage
-      const storedValue = localStorage.getItem(settingKey);
-      if (storedValue) {
-        try {
-          setValue(JSON.parse(storedValue));
-        } catch (e) {
-          setValue(defaultValue);
-        }
-      } else {
-        setValue(defaultValue);
-      }
+      setValue(defaultValue);
     } finally {
       setIsLoading(false);
     }
