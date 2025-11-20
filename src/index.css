@@ -288,17 +288,6 @@ All colors MUST be HSL for proper theme support.
   html {
     background-color: hsl(var(--background));
   }
-  
-  /* Prevent iOS/macOS iCloud password popup and autofill */
-  .no-webkit-autofill:-webkit-autofill,
-  .no-webkit-autofill:-webkit-autofill:hover,
-  .no-webkit-autofill:-webkit-autofill:focus,
-  .no-webkit-autofill:-webkit-autofill:active {
-    -webkit-text-fill-color: inherit !important;
-    -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
-    background-color: transparent !important;
-    transition: background-color 5000s ease-in-out 0s;
-  }
 }
 
 @layer components {

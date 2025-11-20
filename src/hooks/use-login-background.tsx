@@ -29,10 +29,6 @@ export interface LoginBackground {
   countdownVerticalPositionDesktop: number;
   countdownVerticalPositionTablet: number;
   countdownVerticalPositionMobile: number;
-  logoEnabled: boolean;
-  logoUrl: string | null;
-  logoFilename: string | null;
-  logoWidth: number;
 }
 
 const DEFAULT_BACKGROUND: LoginBackground = {
@@ -62,11 +58,7 @@ const DEFAULT_BACKGROUND: LoginBackground = {
   countdownFontWeight: 100,
   countdownVerticalPositionDesktop: 35,
   countdownVerticalPositionTablet: 35,
-  countdownVerticalPositionMobile: 35,
-  logoEnabled: false,
-  logoUrl: null,
-  logoFilename: null,
-  logoWidth: 200
+  countdownVerticalPositionMobile: 35
 };
 
 export function useLoginBackground() {
@@ -75,9 +67,6 @@ export function useLoginBackground() {
     DEFAULT_BACKGROUND,
     true // global setting
   );
-
-  // Ensure all fields exist with defaults (for backward compatibility)
-  const mergedValue = { ...DEFAULT_BACKGROUND, ...value };
 
   // Migration: Convert old verticalPosition to new slider values
   useEffect(() => {
@@ -90,7 +79,6 @@ export function useLoginBackground() {
       
       const oldPosition = (value as any).verticalPosition;
       const migratedValue = {
-        ...DEFAULT_BACKGROUND,
         ...value,
         loginBlockVerticalPositionDesktop: migrationMap[oldPosition] || 50,
         loginBlockVerticalPositionTablet: migrationMap[oldPosition] || 50,
@@ -105,7 +93,7 @@ export function useLoginBackground() {
   }, [value, setValue]);
 
   return {
-    background: mergedValue,
+    background: value,
     setBackground: setValue,
     isLoading
   };

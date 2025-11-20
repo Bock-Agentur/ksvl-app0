@@ -163,8 +163,6 @@ export function Auth() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
-  const [emailReadOnly, setEmailReadOnly] = useState(true);
-  const [passwordReadOnly, setPasswordReadOnly] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { background, isLoading } = useLoginBackground();
@@ -462,19 +460,7 @@ export function Auth() {
           zIndex: 3
         }}
       >
-        {/* Logo */}
-        {background.logoEnabled && background.logoUrl && (
-          <div className="flex justify-center mb-6 pointer-events-auto">
-            <img 
-              src={background.logoUrl} 
-              alt="Logo" 
-              style={{ width: `${background.logoWidth || 200}px` }}
-              className="max-w-full h-auto"
-            />
-          </div>
-        )}
-
-        <form onSubmit={showResetPassword ? handleResetPassword : handleLogin} className="w-full space-y-4 mb-8 pointer-events-auto" autoComplete="off">
+        <form onSubmit={showResetPassword ? handleResetPassword : handleLogin} className="w-full space-y-4 mb-8 pointer-events-auto" autoComplete="on">
           {/* Email Input with Glass Effect */}
           <div 
             className="relative overflow-hidden transition-all duration-300 h-12"
@@ -489,20 +475,15 @@ export function Auth() {
               </svg>
               <input
                 id="email"
-                name="usr-id"
+                name="email"
                 type="text"
-                autoComplete="new-password"
+                autoComplete="username"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => setEmailReadOnly(false)}
-                readOnly={emailReadOnly}
                 required
                 placeholder="E-Mail oder Benutzername"
-                data-lpignore="true"
-                data-1p-ignore="true"
-                data-form-type="other"
                 style={{ color: '#000000' }}
-                className="flex-1 bg-transparent border-none outline-none placeholder:text-black/50 no-webkit-autofill"
+                className="flex-1 bg-transparent border-none outline-none placeholder:text-black/50"
               />
             </div>
           </div>
@@ -522,20 +503,15 @@ export function Auth() {
                 </svg>
                 <input
                   id="password"
-                  name="usr-cred"
+                  name="password"
                   type="password"
-                  autoComplete="new-password"
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  onFocus={() => setPasswordReadOnly(false)}
-                  readOnly={passwordReadOnly}
                   required
                   placeholder="Passwort"
-                  data-lpignore="true"
-                  data-1p-ignore="true"
-                  data-form-type="other"
                   style={{ color: '#000000' }}
-                  className="flex-1 bg-transparent border-none outline-none placeholder:text-black/50 no-webkit-autofill"
+                  className="flex-1 bg-transparent border-none outline-none placeholder:text-black/50"
                 />
               </div>
             </div>
