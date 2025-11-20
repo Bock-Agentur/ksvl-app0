@@ -11,6 +11,7 @@ import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAIWelcomeMessage } from "@/hooks/use-ai-welcome-message";
+import { useNavigate } from "react-router-dom";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -40,6 +41,7 @@ export function DashboardHeader({
   const { currentRole } = useRole();
   const { settings } = useDashboardSettings(currentRole);
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -161,8 +163,21 @@ export function DashboardHeader({
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    window.location.href = '/auth';
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Erfolgreich abgemeldet",
+        variant: "default",
+      });
+      navigate('/auth');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: "Fehler beim Abmelden",
+        description: "Bitte versuchen Sie es erneut.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
