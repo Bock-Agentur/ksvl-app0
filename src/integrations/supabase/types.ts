@@ -246,6 +246,7 @@ export type Database = {
       }
       file_metadata: {
         Row: {
+          allowed_roles: string[] | null
           category: string
           created_at: string
           description: string | null
@@ -263,6 +264,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          allowed_roles?: string[] | null
           category: string
           created_at?: string
           description?: string | null
@@ -280,6 +282,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          allowed_roles?: string[] | null
           category?: string
           created_at?: string
           description?: string | null
@@ -793,6 +796,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_access_file: { Args: { storage_path: string }; Returns: boolean }
       get_email_for_login: { Args: { username_input: string }; Returns: string }
       has_role: {
         Args: {
