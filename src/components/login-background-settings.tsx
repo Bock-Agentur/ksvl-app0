@@ -23,6 +23,40 @@ import { useFileManager } from "@/hooks/use-file-manager";
 const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
 
+const DEFAULT_BACKGROUND = {
+  type: 'gradient' as const,
+  url: null,
+  filename: null,
+  videoOnMobile: false,
+  cardOpacity: 95,
+  cardBorderBlur: 8,
+  cardBorderRadius: 8,
+  overlayColor: '#000000',
+  overlayOpacity: 40,
+  mediaBlur: 0,
+  inputBgColor: '#FFFFFF',
+  inputBgOpacity: 10,
+  loginBlockVerticalPositionDesktop: 50,
+  loginBlockVerticalPositionTablet: 50,
+  loginBlockVerticalPositionMobile: 50,
+  loginBlockWidthDesktop: 400,
+  loginBlockWidthTablet: 380,
+  loginBlockWidthMobile: 340,
+  countdownEnabled: false,
+  countdownEndDate: null,
+  countdownText: 'bis zur neuen Segelsaison',
+  countdownShowDays: true,
+  countdownFontSize: 48,
+  countdownFontWeight: 100,
+  countdownVerticalPositionDesktop: 35,
+  countdownVerticalPositionTablet: 35,
+  countdownVerticalPositionMobile: 35,
+  logoEnabled: false,
+  logoUrl: null,
+  logoFilename: null,
+  logoWidth: 200
+};
+
 function CountdownPreview({ endDate, text, small, showDays, fontSize, fontWeight }: { endDate: string | null; text: string; small?: boolean; showDays?: boolean; fontSize?: number; fontWeight?: number }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, tenths: 0, hundredths: 0 });
 
@@ -122,7 +156,7 @@ export function LoginBackgroundSettings() {
 
   // Update local state when background changes from server
   useEffect(() => {
-    setLocalSettings(background);
+    setLocalSettings({ ...DEFAULT_BACKGROUND, ...background });
   }, [background]);
 
   // Track unsaved changes
