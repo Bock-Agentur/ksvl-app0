@@ -182,12 +182,13 @@ export function LoginBackgroundSettings() {
 
       if (uploadError) throw uploadError;
 
-      // Update local settings with storage path
+      // Update local settings with storage path (keep URL for preview)
+      const { data: urlData } = supabase.storage.from('documents').getPublicUrl(data.path);
       const newSettings = {
         ...localSettings,
         type: (isVideo ? 'video' : 'image') as 'video' | 'image',
         storagePath: data.path,
-        url: null,
+        url: urlData.publicUrl, // Keep URL for local preview
         filename: fileName
       };
       setLocalSettings(newSettings);
@@ -226,7 +227,8 @@ export function LoginBackgroundSettings() {
 
   const handleSave = async () => {
     try {
-      await setBackground(localSettings);
+      // Save with url set to null (only storagePath is persisted)
+      await setBackground({ ...localSettings, url: null });
       toast({
         title: "Einstellungen gespeichert",
         description: "Login-Hintergrund wurde aktualisiert"
@@ -1236,11 +1238,12 @@ export function LoginBackgroundSettings() {
         open={fileSelectorOpen}
         onOpenChange={setFileSelectorOpen}
         onSelect={(file) => {
+          const { data: urlData } = supabase.storage.from('documents').getPublicUrl(file.storage_path);
           setLocalSettings({
             ...localSettings,
             type: file.file_type === 'video' ? 'video' : 'image',
             storagePath: file.storage_path,
-            url: null,
+            url: urlData.publicUrl, // Keep URL for local preview
             filename: file.filename
           });
           setFileSelectorOpen(false);
@@ -1261,11 +1264,12 @@ export function LoginBackgroundSettings() {
         open={legacyMediaSelectorOpen}
         onOpenChange={setLegacyMediaSelectorOpen}
         onSelect={(file) => {
+          const { data: urlData } = supabase.storage.from('documents').getPublicUrl(file.storage_path);
           setLocalSettings({
             ...localSettings,
             type: file.file_type === 'video' ? 'video' : 'image',
             storagePath: file.storage_path,
-            url: null,
+            url: urlData.publicUrl, // Keep URL for local preview
             filename: file.filename
           });
           setLegacyMediaSelectorOpen(false);
