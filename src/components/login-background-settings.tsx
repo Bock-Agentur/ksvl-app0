@@ -1238,7 +1238,9 @@ export function LoginBackgroundSettings() {
         open={fileSelectorOpen}
         onOpenChange={setFileSelectorOpen}
         onSelect={(file) => {
-          const { data: urlData } = supabase.storage.from('documents').getPublicUrl(file.storage_path);
+          // Determine bucket from storage_path
+          const bucket = file.storage_path.startsWith('login-media/') ? 'login-media' : 'documents';
+          const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(file.storage_path);
           setLocalSettings({
             ...localSettings,
             type: file.file_type === 'video' ? 'video' : 'image',
@@ -1264,7 +1266,9 @@ export function LoginBackgroundSettings() {
         open={legacyMediaSelectorOpen}
         onOpenChange={setLegacyMediaSelectorOpen}
         onSelect={(file) => {
-          const { data: urlData } = supabase.storage.from('documents').getPublicUrl(file.storage_path);
+          // Determine bucket from storage_path
+          const bucket = file.storage_path.startsWith('login-media/') ? 'login-media' : 'documents';
+          const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(file.storage_path);
           setLocalSettings({
             ...localSettings,
             type: file.file_type === 'video' ? 'video' : 'image',
