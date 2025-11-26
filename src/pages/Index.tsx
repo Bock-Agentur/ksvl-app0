@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
+import { AuthProvider } from "@/contexts/auth-context";
 import { RoleProvider, useRole } from "@/hooks/use-role";
 import { useSlotDesign } from "@/hooks/use-slot-design";
 import { TestDataProvider } from "@/hooks/use-test-data";
@@ -57,12 +58,9 @@ function AppContent() {
   // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   
-  // 3-Phase transition system: fade-out → loader → fade-in + slide-up
+  // ✅ Simplified: Only 2 states needed
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [contentReady, setContentReady] = useState(true);
-  const [pendingTab, setPendingTab] = useState<string | null>(null);
   const [animationKey, setAnimationKey] = useState(0);
-  const [isContentRendered, setIsContentRendered] = useState(false);
   
   // Centralized loading state - determines when to show PageLoader
   const getLoadingStateForTab = (tab: string): boolean => {
@@ -98,47 +96,24 @@ function AppContent() {
     }
   }, [searchParams, setSearchParams, setActiveTabRaw]);
   
-  // Phase 2 & 3: Wait for data loading, then for DOM render
+  // ✅ Simplified transition: Just wait for data loading
   useEffect(() => {
-    // Handle both tab transitions AND initial page load
-    if (pendingTab && activeTab === pendingTab) {
-      // Wait for data to load
-      if (!isPageLoading) {
-        // Then wait for DOM to be fully rendered with double requestAnimationFrame
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            // Additional frame to ensure content is painted
-            requestAnimationFrame(() => {
-              setIsContentRendered(true);
-              setContentReady(true);
-              setIsTransitioning(false);
-              setPendingTab(null);
-            });
-          });
-        });
-      }
-    } else if (!pendingTab && !isPageLoading && !isContentRendered) {
-      // Initial page load (after login) - no pendingTab set
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            setIsContentRendered(true);
-            setContentReady(true);
-          });
-        });
-      });
+    if (isPageLoading) {
+      setIsTransitioning(true);
+    } else {
+      // Small delay for smooth transition
+      const timer = setTimeout(() => {
+        setIsTransitioning(false);
+      }, 150);
+      return () => clearTimeout(timer);
     }
-  }, [activeTab, pendingTab, isPageLoading, isContentRendered]);
+  }, [isPageLoading]);
   
-  // Phase 1: Fade out and trigger tab switch
-  const setActiveTab = async (tab: string) => {
+  // ✅ Simplified tab change
+  const setActiveTab = (tab: string) => {
     setIsTransitioning(true);
-    setContentReady(false);
-    setIsContentRendered(false);
-    await new Promise(resolve => setTimeout(resolve, 200)); // Fade out duration
-    setPendingTab(tab);
     setAnimationKey(prev => prev + 1);
-    setActiveTabRaw(tab, true); // This triggers React to start rendering new page
+    setActiveTabRaw(tab, true);
   };
   
   // Initialize slot design system
@@ -189,14 +164,14 @@ function AppContent() {
 
   return (
     <>
-      {/* Show loader during page transitions when data is loading or content not rendered */}
-      {(isPageLoading || !isContentRendered) && <PageLoader />}
+      {/* ✅ Show loader only when actually loading */}
+      {isTransitioning && <PageLoader />}
       
       <div 
         key={animationKey}
         className={cn(
-          "transition-all duration-300 ease-out",
-          !contentReady || isTransitioning || isPageLoading || !isContentRendered ? "opacity-0" : "opacity-100 animate-page-transition-in"
+          "transition-opacity duration-300",
+          isTransitioning ? "opacity-0" : "opacity-100"
         )}
       >
         <AppShell
@@ -247,18 +222,21 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // ✅ Show PageLoader instead of null
   if (loading || !session || !user) {
-    return null;
+    return <PageLoader />;
   }
 
   return (
-    <TestDataProvider>
-      <RoleProvider>
-        <ConsecutiveSlotsProvider>
-          <AppContent />
-        </ConsecutiveSlotsProvider>
-      </RoleProvider>
-    </TestDataProvider>
+    <AuthProvider>
+      <TestDataProvider>
+        <RoleProvider>
+          <ConsecutiveSlotsProvider>
+            <AppContent />
+          </ConsecutiveSlotsProvider>
+        </RoleProvider>
+      </TestDataProvider>
+    </AuthProvider>
   );
 };
 
