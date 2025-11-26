@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
-import { AuthProvider } from "@/contexts/auth-context";
-import { RoleProvider, useRole } from "@/hooks/use-role";
+import { useRole } from "@/hooks/use-role";
 import { useSlotDesign } from "@/hooks/use-slot-design";
 import { TestDataProvider } from "@/hooks/use-test-data";
 import { ConsecutiveSlotsProvider } from "@/hooks/use-consecutive-slots";
@@ -228,15 +227,11 @@ const Index = () => {
   }
 
   return (
-    <AuthProvider>
-      <TestDataProvider>
-        <RoleProvider>
-          <ConsecutiveSlotsProvider>
-            <AppContent />
-          </ConsecutiveSlotsProvider>
-        </RoleProvider>
-      </TestDataProvider>
-    </AuthProvider>
+    <TestDataProvider>
+      <ConsecutiveSlotsProvider>
+        <AppContent />
+      </ConsecutiveSlotsProvider>
+    </TestDataProvider>
   );
 };
 

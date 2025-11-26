@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { ScrollToTop } from "@/components/common/scroll-to-top";
+import { AuthProvider } from "@/contexts/auth-context";
 import { RoleProvider } from "@/hooks/use-role";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -21,27 +22,29 @@ const App = () => {
   return (
     <ErrorBoundary boundary="Application Root">
       <QueryClientProvider client={queryClient}>
-        <RoleProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            
-            <BrowserRouter>
-              <ScrollToTop />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/header-message" element={<HeaderMessage />} />
-                <Route path="/desktop-background" element={<DesktopBackground />} />
-                <Route path="/file-manager" element={<FileManager />} />
-                <Route path="/reports" element={<Reports />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </RoleProvider>
+        <AuthProvider>
+          <RoleProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              
+              <BrowserRouter>
+                <ScrollToTop />
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/header-message" element={<HeaderMessage />} />
+                  <Route path="/desktop-background" element={<DesktopBackground />} />
+                  <Route path="/file-manager" element={<FileManager />} />
+                  <Route path="/reports" element={<Reports />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </BrowserRouter>
+            </TooltipProvider>
+          </RoleProvider>
+        </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>
   );
