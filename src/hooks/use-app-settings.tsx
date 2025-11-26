@@ -6,6 +6,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/contexts/auth-context";
 
 export interface AppSetting {
   id: string;
@@ -26,6 +27,7 @@ export function useAppSettings<T = any>(
   const [value, setValue] = useState<T>(defaultValue);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
+  const { user } = useAuth(); // ✅ Use cached user from context
   const enabled = options?.enabled ?? true;
 
   // Helper für localStorage Migration
@@ -52,7 +54,7 @@ export function useAppSettings<T = any>(
     }
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // ✅ Use cached user from Auth Context - no getUser() call needed
       
       let query = supabase
         .from('app_settings')
@@ -90,12 +92,12 @@ export function useAppSettings<T = any>(
     } finally {
       setIsLoading(false);
     }
-  }, [settingKey, defaultValue, isGlobal, enabled]);
+  }, [settingKey, defaultValue, isGlobal, enabled, user]);
 
   // Save setting to database
   const saveSetting = async (newValue: T, skipToast: boolean = false) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // ✅ Use cached user from Auth Context
       
       if (!user && !isGlobal) {
         throw new Error("User must be logged in to save settings");
@@ -166,7 +168,7 @@ export function useAppSettings<T = any>(
   // Delete setting
   const deleteSetting = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      // ✅ Use cached user from Auth Context
       
       let query = supabase
         .from('app_settings')
