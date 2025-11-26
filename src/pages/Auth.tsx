@@ -275,6 +275,26 @@ export function Auth() {
         throw new Error('Benutzername oder Passwort falsch');
       }
 
+      // activeTab auf 'dashboard' zurücksetzen nach Login
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session?.user?.id) {
+        const userId = sessionData.session.user.id;
+        
+        await supabase
+          .from('app_settings')
+          .delete()
+          .eq('user_id', userId)
+          .eq('setting_key', 'activeTab');
+        
+        await supabase
+          .from('app_settings')
+          .insert({ 
+            user_id: userId,
+            setting_key: 'activeTab',
+            setting_value: 'dashboard'
+          });
+      }
+
       toast({
         title: "Erfolgreich angemeldet",
         description: "Sie werden weitergeleitet...",

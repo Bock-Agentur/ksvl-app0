@@ -220,7 +220,20 @@ const Index = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for existing session
+    // 1. ERST den Auth State Listener einrichten
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (event === 'SIGNED_OUT') {
+          navigate("/auth");
+        }
+        // SIGNED_IN wird in Auth.tsx behandelt - keine doppelte Navigation
+      }
+    );
+
+    // 2. DANN die bestehende Session prüfen
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
@@ -230,39 +243,6 @@ const Index = () => {
         navigate("/auth");
       }
     });
-
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (event === 'SIGNED_OUT') {
-          navigate("/auth");
-        } else if (event === 'SIGNED_IN') {
-          // Nach dem Login zwingend Dashboard laden
-          const userId = session?.user?.id;
-          if (userId) {
-            setTimeout(async () => {
-              await supabase
-                .from('app_settings')
-                .delete()
-                .eq('user_id', userId)
-                .eq('setting_key', 'activeTab');
-              
-              await supabase
-                .from('app_settings')
-                .insert({ 
-                  user_id: userId,
-                  setting_key: 'activeTab',
-                  setting_value: 'dashboard'
-                });
-            }, 0);
-          }
-          navigate("/", { replace: true });
-        }
-      }
-    );
 
     return () => subscription.unsubscribe();
   }, [navigate]);
