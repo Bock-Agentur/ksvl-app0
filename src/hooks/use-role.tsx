@@ -2,25 +2,25 @@ import { createContext, useContext, useState, ReactNode, useEffect } from "react
 import { useQueryClient } from "@tanstack/react-query";
 import { UserRole, RoleContextType, User } from "@/types";
 import { useMenuSettings } from "@/hooks/use-menu-settings";
+import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export function RoleProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
+  const { user: authUser, isLoading: authLoading } = useAuth();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const { settings } = useMenuSettings({ enabled: isInitialLoad });
+  const { settings } = useMenuSettings({ enabled: !authLoading });
   const [currentRole, setCurrentRole] = useState<UserRole>("mitglied");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [originalUser, setOriginalUser] = useState<User | null>(null);
 
-  // Load current user from Supabase only on initial load
+  // Load current user from Auth Context
   useEffect(() => {
-    if (!isInitialLoad) return;
+    if (authLoading || !authUser || !isInitialLoad) return;
 
     const loadUser = async () => {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (!authUser) return;
 
       // Fetch profile
       const { data: profile } = await supabase
@@ -77,7 +77,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     };
 
     loadUser();
-  }, [isInitialLoad, settings.defaultRole]);
+  }, [authUser, authLoading, isInitialLoad, settings.defaultRole]);
   
   const setRole = async (role: UserRole) => {
     // Check if role switching is enabled
@@ -186,7 +186,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       setCurrentUser: handleSetCurrentUser, 
       hasPermission,
       hasAnyRole,
-      isLoading: isInitialLoad
+      isLoading: authLoading || isInitialLoad
     }}>
       {children}
     </RoleContext.Provider>
