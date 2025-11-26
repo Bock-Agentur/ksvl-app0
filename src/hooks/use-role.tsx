@@ -9,9 +9,21 @@ const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export function RoleProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
-  const { user: authUser, isLoading: authLoading } = useAuth();
+  
+  // Safe hook call - AuthContext might not be ready during error recovery
+  let authUser = null;
+  let authLoading = true;
+  try {
+    const auth = useAuth();
+    authUser = auth.user;
+    authLoading = auth.isLoading;
+  } catch (error) {
+    // Fallback when AuthContext is not available
+    console.warn("AuthContext not available in RoleProvider:", error);
+  }
+  
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const { settings } = useMenuSettings({ enabled: !authLoading });
+  const { settings } = useMenuSettings({ enabled: !authLoading && !!authUser });
   const [currentRole, setCurrentRole] = useState<UserRole>("mitglied");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [originalUser, setOriginalUser] = useState<User | null>(null);

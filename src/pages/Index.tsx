@@ -27,7 +27,15 @@ import { cn } from "@/lib/utils";
 
 // Inner component that uses the role context
 function AppContent() {
-  const { currentRole, currentUser, setRole, isLoading: roleLoading } = useRole();
+  // Safe hook call with fallback
+  const roleContext = useRole();
+  
+  // Early return if context not ready
+  if (!roleContext || roleContext.isLoading) {
+    return <PageLoader />;
+  }
+  
+  const { currentRole, currentUser, setRole } = roleContext;
   const [searchParams, setSearchParams] = useSearchParams();
   
   // Use database for active tab storage
@@ -80,7 +88,7 @@ function AppContent() {
     }
   };
   
-  const isPageLoading = roleLoading || settingsLoading || !currentUser || getLoadingStateForTab(activeTab);
+  const isPageLoading = settingsLoading || !currentUser || getLoadingStateForTab(activeTab);
   
   // Verarbeite URL-Parameter für Datumsnavigation
   useEffect(() => {
@@ -156,8 +164,8 @@ function AppContent() {
     }
   };
 
-  // Show loader during initial load or when no user
-  if (roleLoading || settingsLoading || !currentUser) {
+  // Show loader when settings loading or no user data
+  if (settingsLoading || !currentUser) {
     return <PageLoader />;
   }
 
