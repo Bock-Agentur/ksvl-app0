@@ -31,7 +31,7 @@ serve(async (req) => {
     let isAuthorized = false;
 
     // Check if admin key is provided and valid
-    if (adminKey === Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')) {
+    if (adminKey && adminKey === Deno.env.get('ADMIN_PASSWORD_RESET_KEY')) {
       isAuthorized = true;
     } else if (authHeader) {
       // Verify the requesting user is an admin via JWT
