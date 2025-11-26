@@ -20,14 +20,14 @@ const queryClient = new QueryClient();
 
 const App = () => {
   return (
-    <ErrorBoundary boundary="Application Root">
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <RoleProvider>
-            <TooltipProvider>
-              <Toaster />
-              <Sonner />
-              
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <RoleProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            
+            <ErrorBoundary boundary="Application Root">
               <BrowserRouter>
                 <ScrollToTop />
                 <Routes>
@@ -42,11 +42,11 @@ const App = () => {
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
-            </TooltipProvider>
-          </RoleProvider>
-        </AuthProvider>
-      </QueryClientProvider>
-    </ErrorBoundary>
+            </ErrorBoundary>
+          </TooltipProvider>
+        </RoleProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 };
 
