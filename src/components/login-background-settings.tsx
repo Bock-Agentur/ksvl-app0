@@ -202,7 +202,7 @@ export function LoginBackgroundSettings() {
       const fileName = `background-${Date.now()}.${fileExt}`;
       
       const { data, error: uploadError } = await supabase.storage
-        .from('documents')
+        .from('login-media')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false
@@ -211,11 +211,11 @@ export function LoginBackgroundSettings() {
       if (uploadError) throw uploadError;
 
       // Update local settings with bucket and storage path
-      const { data: urlData } = supabase.storage.from('documents').getPublicUrl(data.path);
+      const { data: urlData } = supabase.storage.from('login-media').getPublicUrl(data.path);
       const newSettings = {
         ...localSettings,
         type: (isVideo ? 'video' : 'image') as 'video' | 'image',
-        bucket: 'documents' as const,
+        bucket: 'login-media' as const,
         storagePath: data.path,
         url: urlData.publicUrl, // Temporary for preview
         filename: fileName
