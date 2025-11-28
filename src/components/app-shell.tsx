@@ -39,6 +39,7 @@ const mobileNavItems: NavItem[] = [{
   roles: ["mitglied", "kranfuehrer", "admin"]
 }];
 import { useMenuSettings } from "@/hooks/use-menu-settings";
+import { ROUTES } from "@/lib/registry/routes";
 
 // Icon mapping for dynamic menu items
 const iconMap = {
@@ -203,17 +204,17 @@ export function AppShell({
               const isActive = activeTab === item.id;
               
               const handleClick = () => {
-                // Navigate to route-based items
+                // Navigate to route-based items using Route Registry
                 if (item.id === 'file-manager') {
-                  navigate('/file-manager');
+                  navigate(ROUTES.protected.fileManager.path);
                 } else if (item.id === 'reports') {
-                  navigate('/reports');
+                  navigate(ROUTES.protected.reports.path);
                 } else if (item.id === 'settings') {
-                  navigate('/settings');
+                  navigate(ROUTES.protected.settings.path);
                 } else if (item.id === 'header-message') {
-                  navigate('/header-message');
+                  navigate(ROUTES.protected.headerMessage.path);
                 } else if (item.id === 'desktop-background') {
-                  navigate('/desktop-background');
+                  navigate(ROUTES.protected.desktopBackground.path);
                 } else {
                   onTabChange(item.id);
                 }
@@ -314,7 +315,7 @@ export function AppShell({
                             // Handle special navigation cases
                             const handleClick = () => {
                               if (item.id === 'file-manager') {
-                                navigate('/file-manager');
+                                navigate(ROUTES.protected.fileManager.path);
                                 setIsMenuOpen(false);
                               } else {
                                 onTabChange(item.id);

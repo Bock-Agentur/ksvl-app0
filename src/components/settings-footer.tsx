@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { UserRole } from "@/types";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 import { Settings, Palette, TestTube, Users, Calendar, FileText, Layers, FolderOpen } from "lucide-react";
+import { ROUTES } from "@/lib/registry/routes";
 
 // Icon mapping for dynamic menu items
 const iconMap = {
@@ -110,25 +111,25 @@ export function SettingsFooter() {
   };
 
   const handleNavigate = (id: string) => {
-    // Handle route-based items first
+    // Handle route-based items using Route Registry
     if (id === 'file-manager') {
-      navigate('/file-manager');
+      navigate(ROUTES.protected.fileManager.path);
       return;
     }
     if (id === 'reports') {
-      navigate('/reports');
+      navigate(ROUTES.protected.reports.path);
       return;
     }
     if (id === 'settings') {
-      navigate('/settings');
+      navigate(ROUTES.protected.settings.path);
       return;
     }
     if (id === 'header-message') {
-      navigate('/header-message');
+      navigate(ROUTES.protected.headerMessage.path);
       return;
     }
     if (id === 'desktop-background') {
-      navigate('/desktop-background');
+      navigate(ROUTES.protected.desktopBackground.path);
       return;
     }
     
@@ -144,12 +145,12 @@ export function SettingsFooter() {
   const isItemActive = (itemId: string) => {
     const currentPath = location.pathname;
     
-    // Check route-based items
-    if (itemId === 'file-manager') return currentPath === '/file-manager';
-    if (itemId === 'reports') return currentPath === '/reports';
-    if (itemId === 'settings') return currentPath === '/settings';
-    if (itemId === 'header-message') return currentPath === '/header-message';
-    if (itemId === 'desktop-background') return currentPath === '/desktop-background';
+    // Check route-based items using Route Registry
+    if (itemId === 'file-manager') return currentPath === ROUTES.protected.fileManager.path;
+    if (itemId === 'reports') return currentPath === ROUTES.protected.reports.path;
+    if (itemId === 'settings') return currentPath === ROUTES.protected.settings.path;
+    if (itemId === 'header-message') return currentPath === ROUTES.protected.headerMessage.path;
+    if (itemId === 'desktop-background') return currentPath === ROUTES.protected.desktopBackground.path;
     
     // For dashboard items, check if we're on the main page
     if (currentPath === '/') return itemId === 'dashboard';
@@ -282,15 +283,15 @@ export function SettingsFooter() {
                           const handleClick = () => {
                             setIsMenuOpen(false);
                             
-                            // Use the same navigation logic
+                            // Use the same navigation logic with Route Registry
                             if (item.id === 'file-manager') {
-                              navigate('/file-manager');
+                              navigate(ROUTES.protected.fileManager.path);
                             } else if (item.id === 'settings') {
-                              navigate('/settings');
+                              navigate(ROUTES.protected.settings.path);
                             } else if (item.id === 'header-message') {
-                              navigate('/header-message');
+                              navigate(ROUTES.protected.headerMessage.path);
                             } else if (item.id === 'desktop-background') {
-                              navigate('/desktop-background');
+                              navigate(ROUTES.protected.desktopBackground.path);
                             } else {
                               navigate('/');
                               setTimeout(() => {

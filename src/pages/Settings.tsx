@@ -23,6 +23,7 @@ import { RoleProvider, useRole } from "@/hooks/use-role";
 import { ConsecutiveSlotsProvider } from "@/hooks/use-consecutive-slots";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/lib/registry/routes";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { useDesktopBackground } from "@/hooks/use-desktop-background";
 import { SettingsFooter } from "@/components/settings-footer";
@@ -105,11 +106,11 @@ function SettingsContent() {
     { id: "theme", label: "Theme", description: "Hell/Dunkel-Modus", icon: Brush, component: ThemeManager, group: "design" },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
       { id: "loginpage", label: "Login-Seite", description: "Hintergrundbild anpassen", icon: Image, component: LoginBackgroundSettings, group: "design" },
-      { id: "desktopbg", label: "Desktop-Hintergrund", description: "Hintergrundbild auf Desktop", icon: Monitor, route: "/desktop-background", group: "design" },
+      { id: "desktopbg", label: "Desktop-Hintergrund", description: "Hintergrundbild auf Desktop", icon: Monitor, route: ROUTES.protected.desktopBackground.path, group: "design" },
       { id: "stickyheader", label: "Fixierte Ansicht", description: "Header-Cards fixieren", icon: StickyNote, component: StickyHeaderLayoutSettings, group: "design" }
     ] : []),
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
-      { id: "filemanager", label: "Dateimanager", description: "Medien und Dateien verwalten", icon: FolderOpen, route: "/file-manager", group: "advanced" }
+      { id: "filemanager", label: "Dateimanager", description: "Medien und Dateien verwalten", icon: FolderOpen, route: ROUTES.protected.fileManager.path, group: "advanced" }
     ] : []),
     { id: "customfields", label: "Custom Fields", description: "Benutzerdefinierte Felder", icon: ListChecks, component: CustomFieldsManager, group: "advanced" },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
