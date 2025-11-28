@@ -1,0 +1,277 @@
+# KSVL App - Architektur-Übersicht
+
+**Erstellt:** 2025-11-28  
+**Status:** Phase 3 Cleanup abgeschlossen  
+**Foundation-Konformität:** 72/100
+
+---
+
+## Executive Summary
+
+Die KSVL Web-App ist eine moderne React-TypeScript-Anwendung zur Verwaltung von Bootsvereins-Mitgliedern, Slots und Buchungen. Die Architektur hat durch systematische Refactorings (Phase 1-3) eine solide Basis erreicht, zeigt aber noch Optimierungspotential in Richtung einer vollständigen "Foundation"-Architektur.
+
+### Kernstärken
+- ✅ Zentrale Daten-Hooks (`useUsersData`, `useSettingsBatch`) eliminieren redundante DB-Queries
+- ✅ Realtime-Manager als Singleton abstrahiert Supabase-Subscriptions
+- ✅ Konsequenter TypeScript-Einsatz mit klaren Interfaces
+- ✅ Design-System (shadcn/ui) konsistent implementiert
+
+### Hauptschwächen
+- ❌ Fehlender Slot-Service (CRUD-Logik noch in Hook)
+- ❌ "God Components" (>400 Zeilen) mit vermischten Verantwortlichkeiten
+- ❌ Keine zentrale Navigation-/Route-Registry
+- ❌ Core-Module nicht klar von Domain-Modulen getrennt
+
+---
+
+## Struktur-Mapping: IST → SOLL
+
+### Aktuelles Layout (IST)
+```
+/src
+├── /pages                    # Routen (Index, Auth, Settings, FileManager, etc.)
+├── /components               # UI-Komponenten (flach + verschachtelt)
+│   ├── /ui                   # shadcn/ui Base-Komponenten
+│   ├── /common               # Shared Components
+│   ├── /dashboard-*          # Dashboard-spezifisch
+│   ├── /file-manager         # Modul: File-Manager
+│   └── <modul>-*.tsx         # Diverse Modul-Komponenten (flach)
+├── /hooks                    # Custom Hooks (Users, Slots, Settings, etc.)
+├── /lib                      # Utils, Services, Business-Logik
+│   ├── /services             # user-service.ts (✅ vorhanden)
+│   ├── utils.ts, logger.ts   # Helpers
+│   └── realtime-manager.ts   # Singleton
+├── /contexts                 # Auth-Context
+├── /types                    # TypeScript-Definitionen
+└── /integrations/supabase    # Client, Types (readonly)
+
+/supabase/functions           # Edge Functions (manage-user, harbor-chat, etc.)
+/docs                         # Health-Checks, Custom-Fields, etc.
+```
+
+### Ideales Foundation-Layout (SOLL)
+```
+/app
+├── /routes
+│   ├── /public               # login, register, forgot-password
+│   └── /protected            # dashboard, settings, /mitglieder, /slots, /buchungen
+├── /layout                   # Shell, ProtectedLayout, GlobalNav
+└── /ui                       # Design-System, generische Components
+
+/core
+├── /auth                     # AuthContext, Guards, Hooks
+├── /db                       # DB-Access-Layer (z.B. db/users.ts, db/slots.ts)
+├── /api                      # Service-Layer (api/users.ts, api/slots.ts)
+├── /navigation               # routes.ts, menu-config.ts
+├── /errors                   # ErrorBoundary, Error-Handling
+└── /registry                 # modules.ts (Modul-Metadaten)
+
+/lib                          # Utils, Helpers, Logger, Realtime
+/docs                         # Architecture, Modules, Health
+/supabase/functions           # Edge Functions
+```
+
+### Mapping-Tabelle
+
+| **SOLL (Foundation)**        | **IST (KSVL)**                          | **Status**       | **Gap**                                      |
+|------------------------------|-----------------------------------------|------------------|----------------------------------------------|
+| `/app/routes/public`         | `/src/pages/Auth.tsx`                   | ✅ Vorhanden     | Keine klare Trennung public/protected        |
+| `/app/routes/protected`      | `/src/pages/Index.tsx`, `/Settings.tsx` | ✅ Vorhanden     | Flache Struktur, keine Modul-Ordner          |
+| `/app/layout`                | `/src/components/app-shell.tsx`         | ✅ Vorhanden     | Nicht als `/layout` separiert                |
+| `/app/ui`                    | `/src/components/ui/*`                  | ✅ Vorhanden     | Vermischt mit Domain-Komponenten             |
+| `/core/auth`                 | `/src/contexts/auth-context.tsx`        | ⚠️ Teilweise    | Nicht als `/core` strukturiert               |
+| `/core/db`                   | —                                       | ❌ Fehlt         | DB-Zugriffe in Hooks, nicht abstrahiert      |
+| `/core/api`                  | `/src/lib/services/user-service.ts`     | ⚠️ Teilweise    | Nur User-Service, kein Slot-Service          |
+| `/core/navigation`           | —                                       | ❌ Fehlt         | Menu-Settings in Hooks, keine zentrale Registry |
+| `/core/errors`               | `/src/components/common/error-boundary.tsx` | ⚠️ Teilweise    | Nicht als `/core` strukturiert               |
+| `/core/registry`             | —                                       | ❌ Fehlt         | Keine Modul-Registry                         |
+| `/lib`                       | `/src/lib/*`                            | ✅ Vorhanden     | Gut strukturiert (utils, logger, realtime)   |
+| `/docs`                      | `/docs/*`                               | ✅ Vorhanden     | Health-Checks, aber wenig Architektur-Docs   |
+
+---
+
+## High-Level Architektur-Score
+
+| **Kategorie**                  | **Score** | **Begründung**                                                                 |
+|--------------------------------|-----------|--------------------------------------------------------------------------------|
+| **Struktur-Klarheit**          | 65/100    | Ordner vorhanden, aber flache Hierarchie; keine klare Core/Domain-Trennung    |
+| **Modularität**                | 70/100    | Module erkennbar, aber nicht in eigenen Ordnern; CRUD teilweise vermischt     |
+| **Core-Schichten**             | 60/100    | Auth + User-Service vorhanden, aber kein /core-Verzeichnis; Slot-Service fehlt |
+| **CRUD-Schichtung**            | 75/100    | User-Service ✅, aber Slots-CRUD in Hook; direkte Supabase-Calls reduziert     |
+| **Navigation**                 | 50/100    | Menu-Settings in DB, aber keine zentrale Route-Registry                       |
+| **Dokumentation**              | 65/100    | Health-Checks gut, Architektur-Docs fehlten (jetzt erstellt)                  |
+| **Wiederverwendung**           | 80/100    | useUsersData, useSettingsBatch zentral; wenig Duplikate                       |
+| **TypeScript & Types**         | 90/100    | Konsequent typsicher, klare Interfaces                                         |
+| **Design-System**              | 85/100    | card-maritime-hero eingeführt, shadcn/ui konsistent                            |
+
+**🎯 Gesamt-Score: 72/100**
+
+---
+
+## Core-Module & Foundation-Konformität
+
+### Auth-Architektur
+**Score: 75/100**
+
+✅ **Stärken:**
+- `AuthContext` zentral in `/src/contexts/auth-context.tsx`
+- Supabase Auth abstrahiert
+- Password-Management via Edge Function
+
+❌ **Schwächen:**
+- Nicht in `/core/auth` strukturiert
+- Keine Guards-Komponenten (z.B. `<RequireAuth>`, `<RequireRole>`)
+
+---
+
+### User/Roles-Architektur
+**Score: 80/100**
+
+✅ **Stärken:**
+- `useUsersData()` zentral (eliminiert redundante Queries)
+- `user-service.ts` kapselt CRUD-Logik sauber
+- `use-role.tsx` verwaltet Rollenwechsel
+
+❌ **Schwächen:**
+- Role-Switching Query noch direkt in Hook (Zeile 115-127)
+- Kein `/core/db/users.ts` für reine DB-Abstraction
+
+**Empfehlung:** Role-Switching via `useUsersData()` optimieren.
+
+---
+
+### Settings-Architektur
+**Score: 85/100**
+
+✅ **Stärken:**
+- `useSettingsBatch()` lädt alle Settings in einer Query
+- `updateSetting()` mit Cache-Invalidierung
+- Klare Trennung: DB-Settings vs. UI-State
+
+❌ **Schwächen:**
+- Kein dedizierter `SettingsService` (ähnlich `UserService`)
+
+---
+
+### Navigation-Architektur
+**Score: 50/100**
+
+✅ **Stärken:**
+- Menu-Items in `menu_item_definitions` Tabelle
+- `useMenuSettings()` lädt Menü-Config
+
+❌ **Schwächen:**
+- **Keine zentrale Route-Registry** (`/core/navigation/routes.ts`)
+- Routen-Definitionen verstreut in `App.tsx`, `<Route>`-Komponenten
+- Keine rollenbezogene Route-Guards an zentraler Stelle
+
+**Empfehlung (HIGH PRIORITY):**
+```typescript
+// src/lib/registry/routes.ts
+export const ROUTES = {
+  public: {
+    login: '/auth',
+    register: '/register',
+  },
+  protected: {
+    dashboard: '/',
+    users: '/mitglieder',
+    slots: '/slots',
+    settings: '/settings',
+  },
+};
+
+export const ROUTE_GUARDS = {
+  '/mitglieder': ['admin', 'vorstand'],
+  '/settings': ['admin'],
+  // ...
+};
+```
+
+---
+
+## Technologie-Stack
+
+### Frontend
+- **Framework:** React 18 (funktional, Hooks)
+- **Language:** TypeScript (strict mode)
+- **Styling:** Tailwind CSS + Design-System (HSL-Variablen)
+- **UI-Library:** shadcn/ui (Radix Primitives)
+- **State:** React Query (@tanstack/react-query)
+- **Routing:** React Router v6
+
+### Backend (Lovable Cloud / Supabase)
+- **Database:** PostgreSQL (Supabase)
+- **Auth:** Supabase Auth
+- **Storage:** Supabase Storage (Buckets: `user-documents`, `login-backgrounds`, etc.)
+- **Edge Functions:** Deno (TypeScript)
+  - `manage-user`, `manage-user-password`
+  - `harbor-chat` (AI-Assistant)
+  - `monday-webhook`, `sync-monday`
+
+### DevOps
+- **Build:** Vite
+- **Deployment:** Lovable Cloud (Auto-Deploy)
+- **Realtime:** Supabase Realtime (via `realtime-manager.ts`)
+
+---
+
+## Design-Prinzipien
+
+### 1. Zentrale Daten-Hooks
+✅ **Implementiert:**
+- `useUsersData()` → single source für User + Roles
+- `useSettingsBatch()` → alle Settings in einer Query
+- React Query Caching (staleTime: 5min, gcTime: 10min)
+
+### 2. Service-Layer Pattern
+⚠️ **Teilweise implementiert:**
+- ✅ `user-service.ts` für User-CRUD
+- ❌ Fehlend: `slot-service.ts`, `file-service.ts`
+
+### 3. Realtime-Abstraction
+✅ **Implementiert:**
+- `realtime-manager.ts` als Singleton
+- Wrapper für Supabase Realtime Subscriptions
+
+### 4. Design-System
+✅ **Implementiert:**
+- HSL-Variablen in `index.css`
+- `.card-maritime-hero` Utility-Klasse
+- Konsistente shadcn/ui Komponenten
+
+---
+
+## Deployment & Performance
+
+### Database Performance
+- **Optimierungen (Phase 1-3):**
+  - 75-80% Reduktion redundanter Queries
+  - React Query Caching
+  - Batch-Queries (`useSettingsBatch`)
+
+### Realtime
+- **Setup:**
+  - `ALTER PUBLICATION supabase_realtime ADD TABLE profiles, user_roles, slots`
+  - Auto-Refetch bei Änderungen
+
+### Edge Functions
+- **Deployment:** Auto-Deploy bei Git-Push
+- **Auth:** Bearer Token (Supabase Session)
+
+---
+
+## Nächste Schritte
+
+Siehe [`ksvl_foundation_audit.md`](./ksvl_foundation_audit.md) für detaillierte Empfehlungen.
+
+**Top 3 Prioritäten:**
+1. **Slot-Service erstellen** → CRUD aus Hook extrahieren
+2. **Navigation Registry** → Zentrale Route-/Menu-Definition
+3. **Role-Switching optimieren** → useUsersData() statt direkter Query
+
+---
+
+**Dokumenten-Version:** 1.0  
+**Zuletzt aktualisiert:** 2025-11-28  
+**Verantwortlich:** Architecture Team
