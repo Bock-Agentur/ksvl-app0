@@ -7,6 +7,8 @@ import { ErrorBoundary } from "@/components/common/error-boundary";
 import { ScrollToTop } from "@/components/common/scroll-to-top";
 import { AuthProvider } from "@/contexts/auth-context";
 import { RoleProvider } from "@/hooks/use-role";
+import { ProtectedRoute } from "@/components/common/protected-route";
+import { ROUTES } from "@/lib/registry/routes";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Settings } from "./pages/Settings";
@@ -34,14 +36,61 @@ const App = () => {
               }}>
                 <ScrollToTop />
                 <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/auth" element={<Auth />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/header-message" element={<HeaderMessage />} />
-                  <Route path="/desktop-background" element={<DesktopBackground />} />
-                  <Route path="/file-manager" element={<FileManager />} />
-                  <Route path="/reports" element={<Reports />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  {/* Public Routes */}
+                  <Route path={ROUTES.public.auth.path} element={<Auth />} />
+                  
+                  {/* Protected Routes with Role Guards */}
+                  <Route 
+                    path={ROUTES.protected.dashboard.path} 
+                    element={<Index />} 
+                  />
+                  
+                  <Route 
+                    path={ROUTES.protected.settings.path} 
+                    element={
+                      <ProtectedRoute requiredRoles={['admin']}>
+                        <Settings />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  <Route 
+                    path={ROUTES.protected.headerMessage.path} 
+                    element={
+                      <ProtectedRoute requiredRoles={['admin']}>
+                        <HeaderMessage />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  <Route 
+                    path={ROUTES.protected.desktopBackground.path} 
+                    element={
+                      <ProtectedRoute requiredRoles={['admin']}>
+                        <DesktopBackground />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  <Route 
+                    path={ROUTES.protected.fileManager.path} 
+                    element={
+                      <ProtectedRoute requiredRoles={['admin', 'vorstand']}>
+                        <FileManager />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  <Route 
+                    path={ROUTES.protected.reports.path} 
+                    element={
+                      <ProtectedRoute requiredRoles={['admin', 'vorstand']}>
+                        <Reports />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  {/* Catch-all route for 404 */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>

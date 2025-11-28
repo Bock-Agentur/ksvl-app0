@@ -3,8 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { UserRole, RoleContextType, User } from "@/types";
 import { useMenuSettings } from "@/hooks/use-menu-settings";
 import { useAuth } from "@/contexts/auth-context";
-import { supabase } from "@/integrations/supabase/client";
-import { useUserData } from "@/hooks/use-users-data";
+import { useUserData, useUsersData } from "@/hooks/use-users-data";
 import { useSettingsBatch } from "@/hooks/use-settings-batch";
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
@@ -35,6 +34,9 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   const { user: profileData, isLoading: profileLoading } = useUserData(authUser?.id, { 
     enabled: !authLoading && !!authUser && isInitialLoad 
   });
+
+  // ✅ Load all users for role-switching (cached via useUsersData)
+  const { users: allUsers } = useUsersData({ enabled: !authLoading && !!authUser });
 
   // Load current user from Auth Context
   useEffect(() => {
@@ -110,23 +112,14 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       return;
     }
     
-    // Try to fetch the role user
+    // ✅ Try to find the role user from cached users data
     const roleUserEmail = `${role}-rolle@ksvl.test`;
-    const { data: roleProfile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('email', roleUserEmail)
-      .eq('is_role_user', true)
-      .single();
+    const roleProfile = allUsers.find(u => 
+      u.email === roleUserEmail && u.is_role_user === true
+    );
     
     if (roleProfile) {
-      // Fetch roles separately
-      const { data: userRoles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', roleProfile.id);
-      
-      const roles = userRoles?.map(r => r.role as UserRole) || [role];
+      const roles = roleProfile.roles as UserRole[] || [role];
       const roleUser: User = {
         id: roleProfile.id,
         name: roleProfile.name || '',
