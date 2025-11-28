@@ -1,7 +1,7 @@
 # KSVL App - Module-Übersicht
 
 **Erstellt:** 2025-11-28  
-**Status:** Phase 3 Cleanup abgeschlossen
+**Status:** HIGH PRIORITY Optimierungen abgeschlossen (Sprint 1 ✅)
 
 ---
 
@@ -25,8 +25,8 @@ Die KSVL-App besteht aus **8 funktionalen Modulen**, die in 3 Kategorien eingete
 | **Users/Profiles** | Core      | `/` (Dashboard), Settings   | `useUsersData`, `useUsers`, `useRole`   | `user-service.ts` ✅     | ✅ Gut             |
 | **Roles**          | Core      | —                           | `useRole`, `useRoleBadgeSettings`       | —                        | ✅ Gut             |
 | **Settings**       | Core      | `/settings`                 | `useSettingsBatch`, `use*Settings` (10+) | —                      | ✅ Gut             |
-| **Navigation**     | Core      | —                           | `useMenuSettings`, `useFooterMenuSettings` | —                     | ⚠️ Gemischt        |
-| **Marina/Slots**   | Domain    | `/` (Kalender)              | `useSlots`, `useConsecutiveSlots`       | ❌ Fehlt (in Hook)       | ⚠️ Gemischt        |
+| **Navigation**     | Core      | —                           | `useMenuSettings`, `useFooterMenuSettings` | `routes.ts` ✅         | ✅ Gut             |
+| **Marina/Slots**   | Domain    | `/` (Kalender)              | `useSlots`, `useConsecutiveSlots`       | `slot-service.ts` ✅   | ✅ Gut             |
 | **File-Manager**   | Domain    | `/dateimanager`             | `useFileManager`, `useFilePermissions`  | ❌ Fehlt                 | ⚠️ Gemischt        |
 | **Dashboard**      | Support   | `/`                         | `useDashboardSettings`, `useHarborChatData` | —                    | ✅ Gut             |
 
@@ -223,28 +223,34 @@ Hooks:        useMenuSettings() → useSettingsBatch()
 Database:     menu_item_definitions, app_settings
 ```
 
-**CRUD-Kapselung:** ⚠️ **Gemischt**  
+**CRUD-Kapselung:** ✅ **Gut**  
 - ✅ Menü-Items aus DB geladen
-- ❌ **Keine zentrale Route-Registry** (Routen in `App.tsx` verstreut)
-- ❌ Keine rollenbezogenen Route-Guards an zentraler Stelle
+- ✅ **Zentrale Route-Registry** (`src/lib/registry/routes.ts`) ✅
+- ✅ Rollenbezogene Route-Guards (`ProtectedRoute`) ✅
 
-**Schwächen:**
-- 🔴 **Route-Definitionen nicht zentralisiert** (App.tsx, <Route>-Komponenten)
-- 🔴 Keine deklarative Struktur für: "Route X benötigt Rolle Y"
+**Stärken:**
+- 🟢 **Route-Registry** mit Metadaten (path, title, allowedRoles) ✅
+- 🟢 `ProtectedRoute` Komponente für Guards ✅
+- 🟢 Helper-Funktionen: `getRouteByPath()`, `hasRouteAccess()`, `getAccessibleRoutes()` ✅
 
-**Empfehlungen (HIGH PRIORITY):**
-- 🔥 **Navigation Registry erstellen:** `src/lib/registry/routes.ts`
-  ```typescript
-  export const ROUTES = {
-    public: { login: '/auth', register: '/register' },
-    protected: { dashboard: '/', users: '/mitglieder', slots: '/slots' },
-  };
-  export const ROUTE_GUARDS = {
-    '/mitglieder': ['admin', 'vorstand'],
-    '/settings': ['admin'],
-  };
-  ```
-- 🔥 **Guards-Komponenten:** `<ProtectedRoute requiredRoles={['admin']} />`
+**✅ Optimierungen abgeschlossen (Sprint 1):**
+```typescript
+// src/lib/registry/routes.ts ✅ IMPLEMENTIERT
+export const ROUTES = {
+  public: [
+    { path: '/auth', component: 'Auth', title: 'Login' },
+  ],
+  protected: [
+    { path: '/', component: 'Index', title: 'Dashboard', allowedRoles: ['*'] },
+    { path: '/settings', component: 'Settings', title: 'Einstellungen', allowedRoles: ['admin'] },
+  ],
+};
+
+// src/components/common/protected-route.tsx ✅ IMPLEMENTIERT
+<ProtectedRoute path="/settings" allowedRoles={['admin']}>
+  <Settings />
+</ProtectedRoute>
+```
 
 ---
 
@@ -253,8 +259,9 @@ Database:     menu_item_definitions, app_settings
 **Verantwortung:** Krankalender, Slots, Buchungen, Kranführer-Verwaltung
 
 **Dateien:**
+- **Service:** `src/lib/services/slot-service.ts` ✅
 - **Hooks:**
-  - `src/hooks/use-slots.tsx` ⚠️ (enthält CRUD-Logik)
+  - `src/hooks/use-slots.tsx` ✅ (nutzt slot-service)
   - `src/hooks/use-consecutive-slots.tsx`
   - `src/hooks/use-slot-design.tsx`
 - **Components:**
@@ -271,39 +278,41 @@ Database:     menu_item_definitions, app_settings
 ```
 UI-Layer:     slot-management.tsx, calendar-view.tsx
               ↓
-Hooks:        useSlots() (CRUD + useUsersData für Profile)
+Hooks:        useSlots() → slotService (React Query Wrapper)
               ↓
-Backend:      Direkter Supabase-Zugriff (kein Service!)
+Service:      slot-service.ts (CRUD-Logik) ✅
+              ↓
+Backend:      Supabase Client
               Database: slots
 ```
 
-**CRUD-Kapselung:** ⚠️ **Gemischt**  
-- ⚠️ **Kein Slot-Service** → CRUD-Logik in `use-slots.tsx` (Zeile 50-492)
-- ✅ Komponenten rufen Hook-Methoden auf (nicht direkt Supabase)
-- ⚠️ `slot-management.tsx` ist "God-Component" (627 Zeilen):
+**CRUD-Kapselung:** ✅ **Gut**  
+- ✅ **Slot-Service** (`src/lib/services/slot-service.ts`) implementiert ✅
+- ✅ `use-slots.tsx` nutzt Service-Methoden (kein direkter Supabase-Call) ✅
+- ✅ Komponenten rufen Hook-Methoden auf (nicht direkt Supabase) ✅
+- ⚠️ `slot-management.tsx` ist noch "God-Component" (627 Zeilen):
   - Liste + Filter + Dialog + Kalender-Ansichten + CRUD-Forms
 
 **Stärken:**
-- 🟢 `useSlots()` nutzt `useUsersData()` für Profile-Daten (optimiert seit Phase 3)
-- 🟢 Realtime-Subscriptions via `realtime-manager.ts`
+- 🟢 **`slot-service.ts`** kapselt CRUD-Logik sauber (analog zu `user-service.ts`) ✅
+- 🟢 `useSlots()` nutzt `useUsersData()` für Profile-Daten (optimiert seit Phase 3) ✅
+- 🟢 Realtime-Subscriptions via `realtime-manager.ts` ✅
 
-**Schwächen:**
-- 🔴 **Kein `slot-service.ts`** → CRUD-Logik in Hook statt Service-Layer
-- 🔴 `slot-management.tsx` zu groß (627 Zeilen, 5+ Verantwortlichkeiten)
-- 🔴 Direct Supabase-Calls in Hook (nicht über abstrahierten Service)
+**✅ Optimierungen abgeschlossen (Sprint 1):**
+```typescript
+// src/lib/services/slot-service.ts ✅ IMPLEMENTIERT
+export const slotService = {
+  fetchSlots: async (options) => { /* ... */ },
+  createSlot: async (data: CreateSlotData) => { /* ... */ },
+  createSlotBlock: async (data: CreateSlotBlockData) => { /* ... */ },
+  updateSlot: async (id: string, updates: Partial<Slot>) => { /* ... */ },
+  deleteSlot: async (id: string) => { /* ... */ },
+  bookSlot: async (slotId: string, memberId: string, profile: Profile) => { /* ... */ },
+  cancelBooking: async (slotId: string) => { /* ... */ },
+};
+```
 
-**Empfehlungen (HIGH PRIORITY):**
-- 🔥 **`slot-service.ts` erstellen** (analog zu `user-service.ts`):
-  ```typescript
-  // src/lib/services/slot-service.ts
-  export class SlotService {
-    async createSlot(data: CreateSlotData) { /* ... */ }
-    async updateSlot(id: string, updates: Partial<CreateSlotData>) { /* ... */ }
-    async deleteSlot(id: string) { /* ... */ }
-    async bookSlot(slotId: string, memberId: string) { /* ... */ }
-    async cancelBooking(slotId: string) { /* ... */ }
-  }
-  ```
+**Verbleibende Empfehlungen (MEDIUM PRIORITY):**
 - 🔹 `slot-management.tsx` aufteilen:
   - `slot-list.tsx`, `slot-calendar.tsx`, `slot-filters.tsx`
 
@@ -431,14 +440,15 @@ Database:     dashboard_*_definitions, app_settings
 
 ## Empfehlungen nach Modul
 
-| **Modul**          | **Priorität** | **Empfehlung**                                             |
-|--------------------|---------------|------------------------------------------------------------|
-| **Marina/Slots**   | 🔥 HIGH       | `slot-service.ts` erstellen, CRUD aus Hook extrahieren    |
-| **Navigation**     | 🔥 HIGH       | Route-Registry (`lib/registry/routes.ts`) + Guards        |
-| **Roles**          | 🔹 MEDIUM     | Role-Switching via `useUsersData()` optimieren             |
-| **File-Manager**   | 🔹 MEDIUM     | `file-service.ts` erstellen (optional)                     |
-| **All Core**       | 🔹 MEDIUM     | In `/core`-Verzeichnis verschieben (Foundation-Struktur)   |
-| **Dashboard**      | ✅ DONE       | Gut strukturiert, keine Änderungen nötig                   |
+| **Modul**          | **Priorität** | **Empfehlung**                                                      | **Status**    |
+|--------------------|---------------|---------------------------------------------------------------------|---------------|
+| **Marina/Slots**   | ✅ DONE       | `slot-service.ts` erstellen, CRUD aus Hook extrahieren             | ✅ Erledigt   |
+| **Navigation**     | ✅ DONE       | Route-Registry (`lib/registry/routes.ts`) + Guards                 | ✅ Erledigt   |
+| **Roles**          | ✅ DONE       | Role-Switching via `useUsersData()` optimieren                      | ✅ Erledigt   |
+| **Marina/Slots**   | 🔹 MEDIUM     | `slot-management.tsx` aufteilen (God-Component → 5 Komponenten)     | 🔄 Offen      |
+| **File-Manager**   | 🔹 MEDIUM     | `file-service.ts` erstellen (optional)                              | 🔄 Offen      |
+| **All Core**       | 🔹 MEDIUM     | In `/core`-Verzeichnis verschieben (Foundation-Struktur)            | 🔄 Offen      |
+| **Dashboard**      | ✅ DONE       | Gut strukturiert, keine Änderungen nötig                            | ✅ Erledigt   |
 
 ---
 
