@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useAppSettings } from "./use-app-settings";
+import { useSettingsBatch } from "./use-settings-batch";
 import { UserRole } from "@/types";
 
 export interface MenuItemConfig {
@@ -31,17 +31,15 @@ const DEFAULT_SETTINGS: MenuSettings = {
 export function useMenuSettings(options?: { enabled?: boolean }) {
   const enabled = options?.enabled ?? true;
   
-  const { value: settings, setValue } = useAppSettings<MenuSettings>(
-    "marina-menu-settings-template",
-    DEFAULT_SETTINGS,
-    true, // ✅ Global template storage
-    { enabled }
-  );
+  // ✅ Use batch settings loading
+  const storageKey = "marina-menu-settings-template";
+  const { getSetting, updateSetting } = useSettingsBatch({ enabled });
+  
+  const settings = getSetting<MenuSettings>(storageKey, DEFAULT_SETTINGS);
 
   // Auto-update: Nur neue Items hinzufügen, ohne Toast
   useEffect(() => {
     const currentIds = settings.headerItems.map(item => item.id);
-    const defaultIds = DEFAULT_HEADER_ITEMS.map(item => item.id);
     const newItems = DEFAULT_HEADER_ITEMS.filter(item => !currentIds.includes(item.id));
     
     if (newItems.length > 0) {
@@ -50,16 +48,15 @@ export function useMenuSettings(options?: { enabled?: boolean }) {
         order: index
       }));
       
-      // Direktes setValue ohne Toast-Trigger
-      setValue({
+      updateSetting(storageKey, {
         ...settings,
         headerItems: mergedItems
-      });
+      }, true);
     }
   }, []);
 
-  const saveSettings = (newSettings: MenuSettings) => {
-    setValue(newSettings);
+  const saveSettings = async (newSettings: MenuSettings) => {
+    await updateSetting(storageKey, newSettings, true);
     // Dispatch event to notify other components
     window.dispatchEvent(new CustomEvent("menuSettingsChanged"));
   };
@@ -80,19 +77,19 @@ export function useMenuSettings(options?: { enabled?: boolean }) {
     saveSettings(updatedSettings);
   };
 
-  const resetToDefaults = () => {
+  const resetToDefaults = async () => {
     // Force update with the latest defaults
     const updatedDefaults = {
       headerItems: DEFAULT_HEADER_ITEMS,
       defaultRole: "admin" as UserRole
     };
-    setValue(updatedDefaults);
+    await updateSetting(storageKey, updatedDefaults, true);
     window.dispatchEvent(new CustomEvent("menuSettingsChanged"));
   };
 
-  const forceRefresh = () => {
+  const forceRefresh = async () => {
     // Force reload from defaults to pick up icon changes
-    setValue(DEFAULT_SETTINGS);
+    await updateSetting(storageKey, DEFAULT_SETTINGS, true);
     window.dispatchEvent(new CustomEvent("menuSettingsChanged"));
   };
 
