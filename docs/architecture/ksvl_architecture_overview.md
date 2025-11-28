@@ -1,8 +1,8 @@
 # KSVL App - Architektur-Übersicht
 
 **Erstellt:** 2025-11-28  
-**Status:** Phase 3 Cleanup abgeschlossen  
-**Foundation-Konformität:** 72/100
+**Status:** HIGH PRIORITY Optimierungen abgeschlossen  
+**Foundation-Konformität:** 82/100
 
 ---
 
@@ -17,10 +17,10 @@ Die KSVL Web-App ist eine moderne React-TypeScript-Anwendung zur Verwaltung von 
 - ✅ Design-System (shadcn/ui) konsistent implementiert
 
 ### Hauptschwächen
-- ❌ Fehlender Slot-Service (CRUD-Logik noch in Hook)
-- ❌ "God Components" (>400 Zeilen) mit vermischten Verantwortlichkeiten
-- ❌ Keine zentrale Navigation-/Route-Registry
-- ❌ Core-Module nicht klar von Domain-Modulen getrennt
+- ⚠️ "God Components" (>400 Zeilen) mit vermischten Verantwortlichkeiten
+- ⚠️ 476+ console.log Statements in Hooks (Debugging-Code in Produktion)
+- ⚠️ Keine zentrale Module-Registry
+- ⚠️ Core-Module nicht klar von Domain-Modulen getrennt
 
 ---
 
@@ -81,8 +81,8 @@ Die KSVL Web-App ist eine moderne React-TypeScript-Anwendung zur Verwaltung von 
 | `/app/ui`                    | `/src/components/ui/*`                  | ✅ Vorhanden     | Vermischt mit Domain-Komponenten             |
 | `/core/auth`                 | `/src/contexts/auth-context.tsx`        | ⚠️ Teilweise    | Nicht als `/core` strukturiert               |
 | `/core/db`                   | —                                       | ❌ Fehlt         | DB-Zugriffe in Hooks, nicht abstrahiert      |
-| `/core/api`                  | `/src/lib/services/user-service.ts`     | ⚠️ Teilweise    | Nur User-Service, kein Slot-Service          |
-| `/core/navigation`           | —                                       | ❌ Fehlt         | Menu-Settings in Hooks, keine zentrale Registry |
+| `/core/api`                  | `/src/lib/services/*-service.ts`        | ✅ Gut           | user-service + slot-service implementiert    |
+| `/core/navigation`           | `/src/lib/registry/routes.ts`           | ✅ Vorhanden     | Route-Registry + ProtectedRoute implementiert |
 | `/core/errors`               | `/src/components/common/error-boundary.tsx` | ⚠️ Teilweise    | Nicht als `/core` strukturiert               |
 | `/core/registry`             | —                                       | ❌ Fehlt         | Keine Modul-Registry                         |
 | `/lib`                       | `/src/lib/*`                            | ✅ Vorhanden     | Gut strukturiert (utils, logger, realtime)   |
@@ -96,15 +96,15 @@ Die KSVL Web-App ist eine moderne React-TypeScript-Anwendung zur Verwaltung von 
 |--------------------------------|-----------|--------------------------------------------------------------------------------|
 | **Struktur-Klarheit**          | 65/100    | Ordner vorhanden, aber flache Hierarchie; keine klare Core/Domain-Trennung    |
 | **Modularität**                | 70/100    | Module erkennbar, aber nicht in eigenen Ordnern; CRUD teilweise vermischt     |
-| **Core-Schichten**             | 60/100    | Auth + User-Service vorhanden, aber kein /core-Verzeichnis; Slot-Service fehlt |
-| **CRUD-Schichtung**            | 75/100    | User-Service ✅, aber Slots-CRUD in Hook; direkte Supabase-Calls reduziert     |
-| **Navigation**                 | 50/100    | Menu-Settings in DB, aber keine zentrale Route-Registry                       |
+| **Core-Schichten**             | 75/100    | Auth + Services vorhanden, Navigation Registry ✅; kein /core-Verzeichnis      |
+| **CRUD-Schichtung**            | 85/100    | User-Service ✅, Slot-Service ✅; Service-Layer-Pattern durchgängig            |
+| **Navigation**                 | 80/100    | Route-Registry ✅, ProtectedRoute ✅; Menu-Settings in DB                      |
 | **Dokumentation**              | 65/100    | Health-Checks gut, Architektur-Docs fehlten (jetzt erstellt)                  |
 | **Wiederverwendung**           | 80/100    | useUsersData, useSettingsBatch zentral; wenig Duplikate                       |
 | **TypeScript & Types**         | 90/100    | Konsequent typsicher, klare Interfaces                                         |
 | **Design-System**              | 85/100    | card-maritime-hero eingeführt, shadcn/ui konsistent                            |
 
-**🎯 Gesamt-Score: 72/100**
+**🎯 Gesamt-Score: 82/100**
 
 ---
 
@@ -132,11 +132,11 @@ Die KSVL Web-App ist eine moderne React-TypeScript-Anwendung zur Verwaltung von 
 - `user-service.ts` kapselt CRUD-Logik sauber
 - `use-role.tsx` verwaltet Rollenwechsel
 
-❌ **Schwächen:**
-- Role-Switching Query noch direkt in Hook (Zeile 115-127)
+⚠️ **Schwächen:**
 - Kein `/core/db/users.ts` für reine DB-Abstraction
 
-**Empfehlung:** Role-Switching via `useUsersData()` optimieren.
+**✅ Optimierungen abgeschlossen:**
+- Role-Switching nutzt jetzt `useUsersData()` Cache statt direkter Query
 
 ---
 
@@ -154,38 +154,35 @@ Die KSVL Web-App ist eine moderne React-TypeScript-Anwendung zur Verwaltung von 
 ---
 
 ### Navigation-Architektur
-**Score: 50/100**
+**Score: 80/100**
 
 ✅ **Stärken:**
 - Menu-Items in `menu_item_definitions` Tabelle
 - `useMenuSettings()` lädt Menü-Config
+- **Route-Registry** (`src/lib/registry/routes.ts`) mit Metadaten ✅
+- **ProtectedRoute** Komponente für rollenbezogene Guards ✅
 
-❌ **Schwächen:**
-- **Keine zentrale Route-Registry** (`/core/navigation/routes.ts`)
-- Routen-Definitionen verstreut in `App.tsx`, `<Route>`-Komponenten
-- Keine rollenbezogene Route-Guards an zentraler Stelle
+⚠️ **Schwächen:**
+- Noch keine zentrale Menü-zu-Route-Verknüpfung
 
-**Empfehlung (HIGH PRIORITY):**
+**✅ Optimierungen abgeschlossen:**
 ```typescript
-// src/lib/registry/routes.ts
+// src/lib/registry/routes.ts ✅ IMPLEMENTIERT
 export const ROUTES = {
-  public: {
-    login: '/auth',
-    register: '/register',
-  },
-  protected: {
-    dashboard: '/',
-    users: '/mitglieder',
-    slots: '/slots',
-    settings: '/settings',
-  },
+  public: [
+    { path: '/auth', component: 'Auth', title: 'Login' },
+  ],
+  protected: [
+    { path: '/', component: 'Index', title: 'Dashboard', allowedRoles: ['*'] },
+    { path: '/settings', component: 'Settings', title: 'Einstellungen', allowedRoles: ['admin'] },
+    // ...
+  ],
 };
 
-export const ROUTE_GUARDS = {
-  '/mitglieder': ['admin', 'vorstand'],
-  '/settings': ['admin'],
-  // ...
-};
+// src/components/common/protected-route.tsx ✅ IMPLEMENTIERT
+<ProtectedRoute path="/settings" allowedRoles={['admin']}>
+  <Settings />
+</ProtectedRoute>
 ```
 
 ---
@@ -225,9 +222,10 @@ export const ROUTE_GUARDS = {
 - React Query Caching (staleTime: 5min, gcTime: 10min)
 
 ### 2. Service-Layer Pattern
-⚠️ **Teilweise implementiert:**
+✅ **Implementiert:**
 - ✅ `user-service.ts` für User-CRUD
-- ❌ Fehlend: `slot-service.ts`, `file-service.ts`
+- ✅ `slot-service.ts` für Slot-CRUD
+- ⚠️ Optional: `file-service.ts` noch ausstehend
 
 ### 3. Realtime-Abstraction
 ✅ **Implementiert:**
@@ -265,10 +263,15 @@ export const ROUTE_GUARDS = {
 
 Siehe [`ksvl_foundation_audit.md`](./ksvl_foundation_audit.md) für detaillierte Empfehlungen.
 
-**Top 3 Prioritäten:**
-1. **Slot-Service erstellen** → CRUD aus Hook extrahieren
-2. **Navigation Registry** → Zentrale Route-/Menu-Definition
-3. **Role-Switching optimieren** → useUsersData() statt direkter Query
+**✅ HIGH PRIORITY abgeschlossen (Sprint 1):**
+1. ✅ **Slot-Service erstellt** → `src/lib/services/slot-service.ts`
+2. ✅ **Navigation Registry** → `src/lib/registry/routes.ts` + `ProtectedRoute`
+3. ✅ **Role-Switching optimiert** → nutzt `useUsersData()` Cache
+
+**🔹 MEDIUM PRIORITY (Sprint 2):**
+1. **"God Components" aufteilen** → slot-management.tsx, user-management.tsx
+2. **Console.log Cleanup** → 476+ Statements entfernen
+3. **Module-Registry erstellen** → `src/lib/registry/modules.ts`
 
 ---
 
