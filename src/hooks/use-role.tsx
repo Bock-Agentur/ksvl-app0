@@ -4,6 +4,8 @@ import { UserRole, RoleContextType, User } from "@/types";
 import { useMenuSettings } from "@/hooks/use-menu-settings";
 import { useAuth } from "@/contexts/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserData } from "@/hooks/use-users-data";
+import { useSettingsBatch } from "@/hooks/use-settings-batch";
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
@@ -24,32 +26,24 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const { settings } = useMenuSettings({ enabled: !authLoading && !!authUser });
+  const { getSetting } = useSettingsBatch({ enabled: !authLoading && !!authUser });
   const [currentRole, setCurrentRole] = useState<UserRole>("mitglied");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [originalUser, setOriginalUser] = useState<User | null>(null);
+  
+  // ✅ Use centralized user data hook instead of direct queries
+  const { user: profileData, isLoading: profileLoading } = useUserData(authUser?.id, { 
+    enabled: !authLoading && !!authUser && isInitialLoad 
+  });
 
   // Load current user from Auth Context
   useEffect(() => {
-    if (authLoading || !authUser || !isInitialLoad) return;
+    if (authLoading || !authUser || !isInitialLoad || profileLoading) return;
+    if (!profileData) return;
 
     const loadUser = async () => {
-
-      // Fetch profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', authUser.id)
-        .single();
-
-      if (!profile) return;
-
-      // Fetch roles
-      const { data: userRoles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', authUser.id);
-
-      let roles = (userRoles?.map(r => r.role as UserRole) || ['mitglied']) as UserRole[];
+      // ✅ Use cached profile data from useUserData
+      let roles = profileData.roles as UserRole[];
       
       // Ensure admin and kranfuehrer also have mitglied role for role switching
       if ((roles.includes('admin') || roles.includes('kranfuehrer')) && !roles.includes('mitglied')) {
@@ -59,22 +53,22 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       const primaryRole = roles.find(r => r === 'vorstand') || roles.find(r => r === 'admin') || roles.find(r => r === 'kranfuehrer') || roles.find(r => r === 'mitglied') || 'gastmitglied';
 
       const user: User = {
-        id: profile.id,
-        name: profile.name || '',
-        firstName: profile.first_name || undefined,
-        lastName: profile.last_name || undefined,
-        email: profile.email,
-        phone: profile.phone || undefined,
-        boatName: profile.boat_name || undefined,
-        memberNumber: profile.member_number || '',
-        streetAddress: profile.street_address || undefined,
-        postalCode: profile.postal_code || undefined,
-        city: profile.city || undefined,
+        id: profileData.id,
+        name: profileData.name || '',
+        firstName: profileData.first_name || undefined,
+        lastName: profileData.last_name || undefined,
+        email: profileData.email,
+        phone: profileData.phone || undefined,
+        boatName: profileData.boat_name || undefined,
+        memberNumber: profileData.member_number || '',
+        streetAddress: profileData.street_address || undefined,
+        postalCode: profileData.postal_code || undefined,
+        city: profileData.city || undefined,
         roles,
         role: primaryRole,
-        status: profile.status === 'active' ? 'active' : 'inactive',
-        joinDate: profile.entry_date || '',
-        isActive: profile.status === 'active'
+        status: profileData.status === 'active' ? 'active' : 'inactive',
+        joinDate: profileData.entry_date || '',
+        isActive: profileData.status === 'active'
       };
 
       setOriginalUser(user);
@@ -89,19 +83,12 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     };
 
     loadUser();
-  }, [authUser, authLoading, isInitialLoad, settings.defaultRole]);
+  }, [authUser, authLoading, isInitialLoad, profileData, profileLoading, settings.defaultRole]);
   
   const setRole = async (role: UserRole) => {
-    // Check if role switching is enabled
-    const { data: roleSwitchingSetting } = await supabase
-      .from('app_settings')
-      .select('setting_value')
-      .eq('setting_key', 'role_switching_enabled')
-      .eq('is_global', true)
-      .single();
-    
-    const settingValue = roleSwitchingSetting?.setting_value as { enabled?: boolean } | null;
-    const isRoleSwitchingEnabled = settingValue?.enabled !== false;
+    // ✅ Use cached settings instead of DB query
+    const roleSwitchingSetting = getSetting<{ enabled?: boolean }>('role_switching_enabled', { enabled: true });
+    const isRoleSwitchingEnabled = roleSwitchingSetting?.enabled !== false;
     
     setCurrentRole(role);
     

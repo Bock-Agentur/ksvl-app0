@@ -1,4 +1,4 @@
-import { useAppSettings } from "./use-app-settings";
+import { useSettingsBatch } from "./use-settings-batch";
 import { UserRole } from "@/types/user";
 
 export interface FooterMenuItem {
@@ -92,18 +92,21 @@ const getCombinedDefaultSettings = (role: UserRole): CombinedFooterSettings => (
 });
 
 export function useFooterMenuSettings(userRole: UserRole) {
-  // ✅ Single storage key for combined settings
+  // ✅ Use batch settings loading
   const storageKey = `footer-settings-template-${userRole}`;
+  const { getSetting, updateSetting, isLoading } = useSettingsBatch({ 
+    enabled: true, 
+    userRole 
+  });
   
-  const { value: combinedSettings, setValue: setCombinedSettings, isLoading } = useAppSettings<CombinedFooterSettings>(
-    storageKey,
-    getCombinedDefaultSettings(userRole),
-    true // Global template storage
+  const combinedSettings = getSetting<CombinedFooterSettings>(
+    storageKey, 
+    getCombinedDefaultSettings(userRole)
   );
 
   // ✅ Save both menu and display in one atomic operation
-  const saveSettings = (menu: FooterMenuItem[], display: { showLabels: boolean }) => {
-    setCombinedSettings({ menu, display });
+  const saveSettings = async (menu: FooterMenuItem[], display: { showLabels: boolean }) => {
+    await updateSetting(storageKey, { menu, display }, true);
     window.dispatchEvent(new CustomEvent('footerSettingsChanged'));
   };
 
@@ -125,9 +128,9 @@ export function useFooterMenuSettings(userRole: UserRole) {
     saveSettings(items, combinedSettings.display);
   };
 
-  const resetToDefaults = () => {
+  const resetToDefaults = async () => {
     const defaults = getCombinedDefaultSettings(userRole);
-    setCombinedSettings(defaults);
+    await updateSetting(storageKey, defaults, true);
     window.dispatchEvent(new CustomEvent('footerSettingsChanged'));
   };
 

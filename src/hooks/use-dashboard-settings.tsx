@@ -1,25 +1,25 @@
 /**
  * Dashboard Settings Hook
  * Manages dashboard configuration and widget visibility
+ * ✅ Optimized with batch settings loading
  */
 
 import { useMemo } from "react";
-import { useAppSettings } from "./use-app-settings";
+import { useSettingsBatch } from "./use-settings-batch";
 import { DashboardSettings, DEFAULT_DASHBOARD_SETTINGS } from "@/lib/dashboard-config";
 import { UserRole } from "@/types/user";
 
 export function useDashboardSettings(userRole: UserRole, options?: { enabled?: boolean }) {
   const enabled = options?.enabled ?? true;
   
-  // Alle Benutzer laden Templates - nur Admins können diese bearbeiten (via Route Protection)
+  // ✅ Use batch settings loading
   const storageKey = `dashboard-settings-template-${userRole}`;
+  const { getSetting, updateSetting, isLoading } = useSettingsBatch({ 
+    enabled, 
+    userRole 
+  });
   
-  const { value: rawSettings, setValue, isLoading } = useAppSettings<DashboardSettings>(
-    storageKey,
-    DEFAULT_DASHBOARD_SETTINGS,
-    true, // Globale Template-Speicherung
-    { enabled }
-  );
+  const rawSettings = getSetting<DashboardSettings>(storageKey, DEFAULT_DASHBOARD_SETTINGS);
 
   // ✅ Migration: Ensure headerCard is in enabledSections (memoized)
   const settings = useMemo(() => ({
@@ -30,9 +30,9 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
   }), [rawSettings]);
 
   // Save settings to database
-  const saveSettings = (newSettings: Partial<DashboardSettings>) => {
+  const saveSettings = async (newSettings: Partial<DashboardSettings>) => {
     const updatedSettings = { ...settings, ...newSettings };
-    setValue(updatedSettings);
+    await updateSetting(storageKey, updatedSettings, true);
   };
 
   const toggleWidget = (widgetId: string) => {
@@ -52,8 +52,8 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
     saveSettings({ widgetSettings: newWidgetSettings });
   };
 
-  const resetToDefaults = () => {
-    setValue(DEFAULT_DASHBOARD_SETTINGS);
+  const resetToDefaults = async () => {
+    await updateSetting(storageKey, DEFAULT_DASHBOARD_SETTINGS, true);
   };
 
   const toggleSection = (sectionKey: 'showWelcomeSection' | 'showStatsGrid' | 'showQuickActions' | 'showActivityFeed') => {
