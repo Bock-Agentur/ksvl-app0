@@ -29,6 +29,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
+import { userService } from "@/lib/services/user-service";
 
 /**
  * Benutzer-Verwaltung mit Supabase Datenbank
@@ -239,14 +240,6 @@ export function UserManagementRefactored() {
       const data = userForm.values;
       const memberNumber = data.memberNumber || generateMemberNumber(users);
       
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Nicht angemeldet');
-      }
-
-      // Always create mode in add dialog
-      console.log('Creating new user:', data);
-        
       if (!password) {
         toast({
           title: "Fehler",
@@ -256,41 +249,26 @@ export function UserManagementRefactored() {
         return;
       }
 
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          action: 'create',
-          userData: {
-            email: data.email,
-            password: password,
-            name: data.name,
-            phone: data.phone,
-            memberNumber: memberNumber,
-            boatName: data.boatName,
-            status: data.status,
-            roles: data.roles || generateRolesFromPrimary(data.role),
-            oesvNumber: (data as any).oesvNumber,
-            address: (data as any).address,
-            berthNumber: (data as any).berthNumber,
-            berthType: (data as any).berthType,
-            birthDate: (data as any).birthDate,
-            entryDate: (data as any).entryDate
-          }
-        })
+      // ✅ Use centralized user service
+      await userService.createUser({
+        email: data.email,
+        password: password,
+        name: data.name,
+        phone: data.phone,
+        memberNumber: memberNumber,
+        boatName: data.boatName,
+        status: data.status,
+        roles: data.roles || generateRolesFromPrimary(data.role),
+        oesvNumber: (data as any).oesvNumber,
+        address: (data as any).address,
+        berthNumber: (data as any).berthNumber,
+        berthType: (data as any).berthType,
+        birthDate: (data as any).birthDate,
+        entryDate: (data as any).entryDate
       });
-
-      const result = await response.json();
-      if (!response.ok || result.error) {
-        throw new Error(result.error || 'Benutzer konnte nicht erstellt werden');
-      }
 
       toast({ title: "Erfolg", description: `Benutzer ${data.name} wurde erstellt.` });
       setPassword("");
-
       refreshUsers();
       setShowAddDialog(false);
     } catch (error: any) {
@@ -314,24 +292,11 @@ export function UserManagementRefactored() {
     }
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify({
-          action: 'update',
-          userId: passwordUserId,
-          password: password
-        })
+      // ✅ Use centralized user service
+      await userService.updatePassword({
+        userId: passwordUserId,
+        password: password
       });
-
-      const result = await response.json();
-      if (!response.ok || result.error) {
-        throw new Error(result.error || 'Passwort konnte nicht aktualisiert werden');
-      }
 
       toast({ title: "Erfolg", description: "Passwort wurde erfolgreich geändert." });
       setShowPasswordDialog(false);

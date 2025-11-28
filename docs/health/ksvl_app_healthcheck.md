@@ -405,12 +405,12 @@ const handleUpdateUser = async (id, data) => {
 | 5  | Settings-Batch-Loading | ✅ **DONE** | 4h | **HOCH** |
 | 5a | use-role.tsx auf useUserData migrieren | ✅ **DONE** | 1h | **HOCH** |
 | 5b | setRole Funktion optimieren (role_switching_enabled cachen) | ✅ **DONE** | 30min | **MITTEL** |
-| 6  | User-Service extrahieren | ⏳ TODO | 2h | **MITTEL** |
+| 6  | User-Service extrahieren | ✅ **DONE** | 2h | **MITTEL** |
 | 7  | Slot-Service extrahieren | ⏳ TODO | 2h | **MITTEL** |
 
-**Gesamt Phase 2 (abgeschlossen):** 5.5h  
+**Gesamt Phase 2 (abgeschlossen):** 7.5h  
 **Performance-Gewinn:** ~80% weniger Settings-Queries + keine redundanten Profile-Queries in use-role  
-**Code-Qualität:** Bessere Cache-Nutzung, weniger DB-Last
+**Code-Qualität:** Bessere Cache-Nutzung, weniger DB-Last, CRUD-Logik jetzt testbar & wiederverwendbar
 
 ---
 
@@ -451,8 +451,8 @@ const handleUpdateUser = async (id, data) => {
 
 ### Empfohlene Reihenfolge:
 
-1. **✅ Phase 1 + 2 Tests** - Verifizieren, dass alle optimierten Hooks funktionieren
-2. **🔶 Service-Extraktion** - User + Slot Services für bessere Struktur & Testbarkeit
+1. **✅ Phase 1 + 2 Tests** - Verifizieren, dass alle optimierten Hooks & Services funktionieren
+2. **🔶 Slot-Service** - Extrahiere Slot-CRUD-Logik nach gleichem Muster wie User-Service
 3. **🟡 Cleanup** - Card-Styles, Duplikate, ungenutzter Code
 
 ---
@@ -509,6 +509,14 @@ const handleUpdateUser = async (id, data) => {
    
 9. **`src/hooks/use-menu-settings.tsx`** (Phase 2)
    - Nutzt `useSettingsBatch()` statt `useAppSettings`
+
+10. **`src/lib/services/user-service.ts`** (Phase 2 - NEU)
+    - Zentralisiert alle User-CRUD-Operationen
+    - Methoden: createUser, updateUser, deleteUser, updatePassword
+    
+11. **`src/components/user-management.tsx`** (Phase 2)
+    - Nutzt `userService` statt direkter Edge Function Calls
+    - Reduziert Komponente um ~70 Zeilen Boilerplate
 
 ---
 
