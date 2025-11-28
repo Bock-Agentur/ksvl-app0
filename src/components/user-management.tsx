@@ -354,7 +354,7 @@ export function UserManagementRefactored() {
         isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
       )}>
       {/* Hero Card */}
-      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+      <Card className="card-maritime-hero">
         <CardContent className="p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
@@ -392,41 +392,41 @@ export function UserManagementRefactored() {
         <CollapsibleTrigger asChild>
           <Button 
             variant="outline" 
-            className="w-full flex items-center justify-between bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 hover:bg-white/90 px-6 py-4 h-auto"
+            className="w-full flex items-center justify-between card-maritime-hero hover:bg-white/90 px-6 py-4 h-auto"
           >
             <span className="font-semibold text-sm">Statistiken anzeigen</span>
             <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isStatsOpen ? 'rotate-180' : ''}`} />
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-2">
-          <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+          <Card className="card-maritime-hero">
             <CardContent className="p-4">
               <div className="grid grid-cols-2 gap-2">
-                <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+                <Card className="card-maritime-hero">
                   <CardContent className="pt-3 pb-2">
                     <div className="text-lg font-bold text-primary">{stats.total}</div>
                     <p className="text-[10px] text-muted-foreground">Gesamt</p>
                   </CardContent>
                 </Card>
-                <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+                <Card className="card-maritime-hero">
                   <CardContent className="pt-3 pb-2">
                     <div className="text-lg font-bold text-green-600">{stats.active}</div>
                     <p className="text-[10px] text-muted-foreground">Aktiv</p>
                   </CardContent>
                 </Card>
-                <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+                <Card className="card-maritime-hero">
                   <CardContent className="pt-3 pb-2">
                     <div className="text-lg font-bold text-blue-600">{stats.roleCount.mitglied}</div>
                     <p className="text-[10px] text-muted-foreground">Mitglieder</p>
                   </CardContent>
                 </Card>
-                <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+                <Card className="card-maritime-hero">
                   <CardContent className="pt-3 pb-2">
                     <div className="text-lg font-bold text-purple-600">{stats.roleCount.kranfuehrer}</div>
                     <p className="text-[10px] text-muted-foreground">Kranführer</p>
                   </CardContent>
                 </Card>
-                <Card className="col-span-2 bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+                <Card className="col-span-2 card-maritime-hero">
                   <CardContent className="pt-3 pb-2">
                     <div className="text-lg font-bold text-red-600">{stats.roleCount.admin}</div>
                     <p className="text-[10px] text-muted-foreground">Admins</p>
@@ -440,31 +440,31 @@ export function UserManagementRefactored() {
 
       {/* Statistiken Cards - Normal auf Desktop */}
       <div className="hidden sm:grid grid-cols-2 sm:grid-cols-5 gap-2">
-        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <Card className="card-maritime-hero">
           <CardContent className="pt-3 pb-2">
             <div className="text-lg font-bold text-primary">{stats.total}</div>
             <p className="text-[10px] text-muted-foreground">Gesamt</p>
           </CardContent>
         </Card>
-        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <Card className="card-maritime-hero">
           <CardContent className="pt-3 pb-2">
             <div className="text-lg font-bold text-green-600">{stats.active}</div>
             <p className="text-[10px] text-muted-foreground">Aktiv</p>
           </CardContent>
         </Card>
-        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <Card className="card-maritime-hero">
           <CardContent className="pt-3 pb-2">
             <div className="text-lg font-bold text-blue-600">{stats.roleCount.mitglied}</div>
             <p className="text-[10px] text-muted-foreground">Mitglieder</p>
           </CardContent>
         </Card>
-        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <Card className="card-maritime-hero">
           <CardContent className="pt-3 pb-2">
              <div className="text-lg font-bold text-purple-600">{stats.roleCount.kranfuehrer}</div>
              <p className="text-[10px] text-muted-foreground">Kranführer</p>
           </CardContent>
         </Card>
-        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+        <Card className="card-maritime-hero">
           <CardContent className="pt-3 pb-2">
             <div className="text-lg font-bold text-red-600">{stats.roleCount.admin}</div>
             <p className="text-[10px] text-muted-foreground">Admins</p>

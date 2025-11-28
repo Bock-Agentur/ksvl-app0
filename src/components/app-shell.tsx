@@ -188,8 +188,7 @@ export function AppShell({
 
       {/* Bottom Navigation */}
       <nav className={cn(
-        "fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-2 pb-safe-bottom shadow-elevated-maritime z-50",
-        "transform will-change-transform",
+        "fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-2 pb-safe-bottom shadow-elevated-maritime z-50 transform will-change-transform",
         isFooterReady 
           ? "translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
           : "translate-y-full"

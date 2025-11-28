@@ -450,7 +450,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
           /* Desktop Day View - Same as Mobile/Tablet */
           <div>
             {/* Day Content */}
-            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+            <Card className="card-maritime-hero">
               <CardHeader className="pb-2">
                 <p className="text-center text-lg font-bold text-muted-foreground mb-6">
                   {format(selectedDay, "dd. MMMM yyyy", { locale: de })}
