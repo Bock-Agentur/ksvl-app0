@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useUsersData } from './use-users-data';
+import { useRealtimeSubscription } from '@/lib/realtime-manager';
 
 export interface DatabaseUser {
   id: string;
@@ -78,172 +80,105 @@ export interface DatabaseUser {
 }
 
 export function useUsers(options?: { enabled?: boolean }) {
-  const [users, setUsers] = useState<DatabaseUser[]>([]);
-  const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const enabled = options?.enabled ?? true;
 
-  const fetchUsers = async () => {
-    if (!enabled) {
-      setLoading(false);
-      return;
-    }
+  // ✅ Use centralized user data hook with caching
+  const { users: rawUsers, isLoading, refetch } = useUsersData({ enabled });
+
+  // Transform to DatabaseUser format with all fields
+  const users: DatabaseUser[] = rawUsers.map(user => {
+    const primaryRole = user.roles.find(r => r !== 'mitglied') || user.roles[0] || 'mitglied';
     
-    try {
-      setLoading(true);
-      
-      // Fetch profiles
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('name');
-
-      if (profilesError) throw profilesError;
-
-      if (!profiles) {
-        setUsers([]);
-        return;
-      }
-
-      // Fetch roles for all users
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('user_id, role');
-
-      if (rolesError) throw rolesError;
-
-      // Combine profiles with their roles
-      const usersWithRoles: DatabaseUser[] = profiles.map(profile => {
-        const roles = userRoles
-          ?.filter(r => r.user_id === profile.id)
-          .map(r => r.role) || [];
-
-        // Primary role is first non-mitglied role, or first role
-        const primaryRole = roles.find(r => r !== 'mitglied') || roles[0] || 'mitglied';
-
-        return {
-          id: profile.id,
-          email: profile.email,
-          name: profile.name,
-          username: profile.username,
-          phone: profile.phone,
-          member_number: profile.member_number,
-          memberNumber: profile.member_number, // Alias
-          boat_name: profile.boat_name,
-          boatName: profile.boat_name, // Alias
-          status: profile.status,
-          is_test_data: profile.is_test_data,
-          is_role_user: profile.is_role_user,
-          created_at: profile.created_at,
-          roles,
-          role: primaryRole,
-          isActive: profile.status === 'active',
-          joinDate: profile.entry_date || profile.created_at,
-          
-          // Existing fields
-          oesv_number: profile.oesv_number,
-          address: profile.address,
-          berth_number: profile.berth_number,
-          berth_type: profile.berth_type,
-          birth_date: profile.birth_date,
-          entry_date: profile.entry_date,
-          
-          // New fields from migration
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          street_address: profile.street_address,
-          postal_code: profile.postal_code,
-          city: profile.city,
-          password_change_required: profile.password_change_required,
-          two_factor_method: profile.two_factor_method,
-          membership_type: profile.membership_type,
-          membership_status: profile.membership_status,
-          board_position_start_date: profile.board_position_start_date,
-          board_position_end_date: profile.board_position_end_date,
-          boat_type: profile.boat_type,
-          boat_length: profile.boat_length,
-          boat_width: profile.boat_width,
-          boat_color: profile.boat_color,
-          berth_length: profile.berth_length,
-          berth_width: profile.berth_width,
-          buoy_radius: profile.buoy_radius,
-          has_dinghy_berth: profile.has_dinghy_berth,
-          dinghy_berth_number: profile.dinghy_berth_number,
-          parking_permit_number: profile.parking_permit_number,
-          parking_permit_issue_date: profile.parking_permit_issue_date,
-          beverage_chip_number: profile.beverage_chip_number,
-          beverage_chip_issue_date: profile.beverage_chip_issue_date,
-          beverage_chip_status: profile.beverage_chip_status,
-          vorstand_funktion: profile.vorstand_funktion,
-          ai_info_enabled: profile.ai_info_enabled,
-          data_public_in_ksvl: profile.data_public_in_ksvl,
-          contact_public_in_ksvl: profile.contact_public_in_ksvl,
-          statute_accepted: profile.statute_accepted,
-          privacy_accepted: profile.privacy_accepted,
-          newsletter_optin: profile.newsletter_optin,
-          emergency_contact: profile.emergency_contact,
-          emergency_contact_name: profile.emergency_contact_name,
-          emergency_contact_phone: profile.emergency_contact_phone,
-          emergency_contact_relationship: profile.emergency_contact_relationship,
-          notes: profile.notes,
-          document_bfa: profile.document_bfa,
-          document_insurance: profile.document_insurance,
-          document_berth_contract: profile.document_berth_contract,
-          document_member_photo: profile.document_member_photo,
-          membership_status_history: profile.membership_status_history,
-          board_position_history: profile.board_position_history,
-          created_by: profile.created_by,
-          modified_by: profile.modified_by
-        };
-      });
-
-      setUsers(usersWithRoles);
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      toast({
-        title: "Fehler",
-        description: "Benutzer konnten nicht geladen werden.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    if (!enabled) {
-      setLoading(false);
-      return;
-    }
-
-    fetchUsers();
-
-    let debounceTimeout: NodeJS.Timeout;
-    const debouncedFetch = () => {
-      clearTimeout(debounceTimeout);
-      debounceTimeout = setTimeout(() => {
-        fetchUsers();
-      }, 300);
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      username: user.username,
+      phone: user.phone,
+      member_number: user.member_number,
+      memberNumber: user.member_number,
+      boat_name: user.boat_name,
+      boatName: user.boat_name,
+      status: user.status,
+      is_test_data: user.is_test_data,
+      is_role_user: user.is_role_user,
+      created_at: user.created_at,
+      roles: user.roles,
+      role: primaryRole,
+      isActive: user.status === 'active',
+      joinDate: user.entry_date || user.created_at,
+      // All other profile fields
+      oesv_number: user.oesv_number,
+      address: user.address,
+      berth_number: user.berth_number,
+      berth_type: user.berth_type,
+      birth_date: user.birth_date,
+      entry_date: user.entry_date,
+      first_name: user.first_name,
+      last_name: user.last_name,
+      street_address: user.street_address,
+      postal_code: user.postal_code,
+      city: user.city,
+      password_change_required: user.password_change_required,
+      two_factor_method: user.two_factor_method,
+      membership_type: user.membership_type,
+      membership_status: user.membership_status,
+      board_position_start_date: user.board_position_start_date,
+      board_position_end_date: user.board_position_end_date,
+      boat_type: user.boat_type,
+      boat_length: user.boat_length,
+      boat_width: user.boat_width,
+      boat_color: user.boat_color,
+      berth_length: user.berth_length,
+      berth_width: user.berth_width,
+      buoy_radius: user.buoy_radius,
+      has_dinghy_berth: user.has_dinghy_berth,
+      dinghy_berth_number: user.dinghy_berth_number,
+      parking_permit_number: user.parking_permit_number,
+      parking_permit_issue_date: user.parking_permit_issue_date,
+      beverage_chip_number: user.beverage_chip_number,
+      beverage_chip_issue_date: user.beverage_chip_issue_date,
+      beverage_chip_status: user.beverage_chip_status,
+      vorstand_funktion: user.vorstand_funktion,
+      ai_info_enabled: user.ai_info_enabled,
+      data_public_in_ksvl: user.data_public_in_ksvl,
+      contact_public_in_ksvl: user.contact_public_in_ksvl,
+      statute_accepted: user.statute_accepted,
+      privacy_accepted: user.privacy_accepted,
+      newsletter_optin: user.newsletter_optin,
+      emergency_contact: user.emergency_contact,
+      emergency_contact_name: user.emergency_contact_name,
+      emergency_contact_phone: user.emergency_contact_phone,
+      emergency_contact_relationship: user.emergency_contact_relationship,
+      notes: user.notes,
+      document_bfa: user.document_bfa,
+      document_insurance: user.document_insurance,
+      document_berth_contract: user.document_berth_contract,
+      document_member_photo: user.document_member_photo,
+      membership_status_history: user.membership_status_history,
+      board_position_history: user.board_position_history,
+      created_by: user.created_by,
+      modified_by: user.modified_by
     };
+  });
 
-    // Subscribe to changes (only when enabled)
-    const profilesChannel = supabase
-      .channel('profiles-changes')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'profiles' }, 
-        debouncedFetch
-      )
-      .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'user_roles' },
-        debouncedFetch
-      )
-      .subscribe();
+  // ✅ Use realtime manager for subscriptions (automatic deduplication)
+  useRealtimeSubscription(
+    { table: 'profiles', event: '*' },
+    'use-users-profiles',
+    () => refetch(),
+    300, // 300ms debounce
+    enabled
+  );
 
-    return () => {
-      clearTimeout(debounceTimeout);
-      profilesChannel.unsubscribe();
-    };
-  }, [enabled]);
+  useRealtimeSubscription(
+    { table: 'user_roles', event: '*' },
+    'use-users-roles',
+    () => refetch(),
+    300, // 300ms debounce
+    enabled
+  );
 
   const deleteUser = async (userId: string) => {
     try {
@@ -268,7 +203,7 @@ export function useUsers(options?: { enabled?: boolean }) {
         description: "Der Benutzer wurde erfolgreich entfernt."
       });
 
-      fetchUsers();
+      refetch();
     } catch (error) {
       console.error('Error deleting user:', error);
       toast({
@@ -281,8 +216,8 @@ export function useUsers(options?: { enabled?: boolean }) {
 
   return {
     users,
-    loading,
-    refreshUsers: fetchUsers,
+    loading: isLoading,
+    refreshUsers: refetch,
     deleteUser
   };
 }

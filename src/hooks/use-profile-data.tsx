@@ -1,37 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useRole } from "./use-role";
+import { useUserData } from "./use-users-data";
 
 export function useProfileData(options?: { enabled?: boolean }) {
   const { currentUser } = useRole();
   const enabled = options?.enabled ?? true;
   
-  const { data, isLoading } = useQuery({
-    queryKey: ['profile', currentUser?.id],
-    queryFn: async () => {
-      if (!currentUser?.id) return null;
-      
-      const { data } = await supabase
-        .from('profiles')
-        .select('first_name, last_name, name, email')
-        .eq('id', currentUser.id)
-        .single();
-      
-      if (!data) return null;
-      
-      return {
-        firstName: data.first_name || data.name?.split(' ')[0] || 'User',
-        lastName: data.last_name || data.name?.split(' ')[1] || '',
-        fullName: data.first_name && data.last_name
-          ? `${data.first_name} ${data.last_name}`
-          : data.name || 'User',
-        email: data.email,
-      };
-    },
-    staleTime: 30 * 60 * 1000, // 30 minutes cache - profiles don't change often
-    gcTime: 60 * 60 * 1000, // 60 minutes in cache
-    enabled: enabled && !!currentUser?.id,
-  });
+  // ✅ Use centralized user data hook
+  const { user, isLoading } = useUserData(currentUser?.id, { enabled });
+
+  // Transform to expected format
+  const data = user ? {
+    firstName: user.first_name || user.name?.split(' ')[0] || 'User',
+    lastName: user.last_name || user.name?.split(' ')[1] || '',
+    fullName: user.first_name && user.last_name
+      ? `${user.first_name} ${user.last_name}`
+      : user.name || 'User',
+    email: user.email,
+  } : null;
 
   return { 
     firstName: data?.firstName || '',
