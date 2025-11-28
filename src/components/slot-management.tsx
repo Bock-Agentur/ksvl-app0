@@ -273,7 +273,7 @@ export function SlotManagement() {
         "pt-4 pb-0 my-0 px-4",
         isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
       )}>
-        <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
+        <Card className="card-maritime-hero">
           <CardHeader>
             <CardTitle>Slot-Verwaltung</CardTitle>
             <CardDescription>

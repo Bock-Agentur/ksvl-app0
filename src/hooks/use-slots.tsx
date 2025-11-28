@@ -4,6 +4,7 @@ import { Slot, CraneOperator } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { useRealtimeSubscription } from '@/lib/realtime-manager';
+import { useUsersData } from '@/hooks/use-users-data';
 
 export interface CreateSlotData {
   date: string;
@@ -22,9 +23,12 @@ export function useSlots(options?: { enabled?: boolean }) {
   const { toast } = useToast();
   const enabled = options?.enabled ?? true;
 
+  // ✅ Use centralized useUsersData for profile lookups
+  const { users: allUsers, isLoading: usersLoading } = useUsersData();
+
   // Fetch all slots from database with profiles data
   const fetchSlots = async () => {
-    if (!enabled) {
+    if (!enabled || usersLoading) {
       setIsLoading(false);
       return;
     }
@@ -45,17 +49,16 @@ export function useSlots(options?: { enabled?: boolean }) {
 
       console.log('📦 RAW SLOTS DATA:', slotsData);
 
-      // Fetch all profiles for operators and members
-      const { data: profilesData, error: profilesError } = await supabase
-        .from('profiles')
-        .select('id, name, email, member_number');
-
-      if (profilesError) throw profilesError;
-
-      console.log('👥 PROFILES DATA:', profilesData);
+      // ✅ Use cached user data from useUsersData instead of fetching again
+      console.log('👥 USING CACHED USERS DATA:', allUsers);
 
       // Create a map for quick profile lookup
-      const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+      const profilesMap = new Map(allUsers.map(u => [u.id, {
+        id: u.id,
+        name: u.name,
+        email: u.email,
+        member_number: u.memberNumber
+      }]));
 
       // Transform database format to app format
       const transformedSlots: Slot[] = (slotsData || []).map(dbSlot => {
@@ -456,9 +459,12 @@ export function useSlots(options?: { enabled?: boolean }) {
       return;
     }
 
-    console.log('🔄 Setting up slots realtime subscription');
-    fetchSlots();
-  }, [enabled]);
+    // Only fetch slots when users are loaded
+    if (!usersLoading) {
+      console.log('🔄 Setting up slots realtime subscription');
+      fetchSlots();
+    }
+  }, [enabled, usersLoading]);
 
   // ✅ Use realtime manager for subscriptions (automatic deduplication + debouncing)
   useRealtimeSubscription(
