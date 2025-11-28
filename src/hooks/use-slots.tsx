@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { Slot, CraneOperator } from '@/types';
 import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
 import { useRealtimeSubscription } from '@/lib/realtime-manager';
 import { useUsersData } from '@/hooks/use-users-data';
+import { slotService } from '@/lib/services/slot-service';
 
 export interface CreateSlotData {
   date: string;
@@ -38,14 +37,8 @@ export function useSlots(options?: { enabled?: boolean }) {
       
       console.log('🔄 FETCHING SLOTS FROM DATABASE...');
       
-      // Fetch slots
-      const { data: slotsData, error: slotsError } = await supabase
-        .from('slots')
-        .select('*')
-        .order('date', { ascending: true })
-        .order('time', { ascending: true });
-
-      if (slotsError) throw slotsError;
+      // ✅ Fetch slots via service
+      const slotsData = await slotService.fetchSlots();
 
       console.log('📦 RAW SLOTS DATA:', slotsData);
 
@@ -120,28 +113,8 @@ export function useSlots(options?: { enabled?: boolean }) {
   // Create a single slot
   const addSlot = async (slotData: CreateSlotData) => {
     try {
-      const insertData: any = {
-        date: slotData.date,
-        time: slotData.time,
-        duration: slotData.duration,
-        crane_operator_id: slotData.craneOperator.id,
-        notes: slotData.notes,
-        is_booked: slotData.isBooked || false,
-        block_id: slotData.blockId
-      };
-
-      // Add member_id if slot is booked
-      if (slotData.isBooked && slotData.bookedBy) {
-        insertData.member_id = slotData.bookedBy;
-      }
-
-      const { data, error } = await supabase
-        .from('slots')
-        .insert(insertData)
-        .select()
-        .single();
-
-      if (error) throw error;
+      // ✅ Create slot via service
+      const data = await slotService.createSlot(slotData);
 
       // Transform and add to local state
       const newSlot: Slot = {
@@ -179,25 +152,8 @@ export function useSlots(options?: { enabled?: boolean }) {
   // Create multiple slots as a block
   const addSlotBlock = async (slotsData: CreateSlotData[]) => {
     try {
-      // Generate a unique block ID for all slots
-      const blockId = crypto.randomUUID();
-
-      const slotsToInsert = slotsData.map(slotData => ({
-        date: slotData.date,
-        time: slotData.time,
-        duration: slotData.duration,
-        crane_operator_id: slotData.craneOperator.id,
-        notes: slotData.notes,
-        is_booked: false,
-        block_id: blockId
-      }));
-
-      const { data, error } = await supabase
-        .from('slots')
-        .insert(slotsToInsert)
-        .select();
-
-      if (error) throw error;
+      // ✅ Create slot block via service
+      const data = await slotService.createSlotBlock(slotsData);
 
       // Transform and add to local state
       const newSlots: Slot[] = (data || []).map((dbSlot, index) => ({
@@ -257,26 +213,16 @@ export function useSlots(options?: { enabled?: boolean }) {
         return updated;
       }));
 
-      const updateData: any = {};
-      
-      if (updates.date) updateData.date = updates.date;
-      if (updates.time) updateData.time = updates.time;
-      if (updates.duration) updateData.duration = updates.duration;
-      if (updates.craneOperator) updateData.crane_operator_id = updates.craneOperator.id;
-      if (updates.notes !== undefined) updateData.notes = updates.notes;
-      if (updates.isBooked !== undefined) {
-        updateData.is_booked = updates.isBooked;
-        updateData.member_id = updates.isBooked ? updates.memberId : null;
-      }
-
-      const { data, error } = await supabase
-        .from('slots')
-        .update(updateData)
-        .eq('id', id)
-        .select()
-        .single();
-
-      if (error) throw error;
+      // ✅ Update slot via service
+      const data = await slotService.updateSlot(id, {
+        date: updates.date,
+        time: updates.time,
+        duration: updates.duration,
+        craneOperatorId: updates.craneOperator?.id,
+        notes: updates.notes,
+        isBooked: updates.isBooked,
+        memberId: updates.memberId
+      });
 
       // Fetch full data with profiles in background
       fetchSlots();
@@ -298,12 +244,8 @@ export function useSlots(options?: { enabled?: boolean }) {
   // Delete a slot
   const deleteSlot = async (id: string) => {
     try {
-      const { error } = await supabase
-        .from('slots')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      // ✅ Delete slot via service
+      await slotService.deleteSlot(id);
 
       setSlots(prev => prev.filter(slot => slot.id !== id));
     } catch (error) {
@@ -322,12 +264,8 @@ export function useSlots(options?: { enabled?: boolean }) {
     try {
       console.log('🔄 BOOK SLOT - START:', slotId, 'for member:', memberId);
       
-      // Get member profile first for optimistic update
-      const { data: memberProfile } = await supabase
-        .from('profiles')
-        .select('id, name, email, member_number')
-        .eq('id', memberId)
-        .single();
+      // ✅ Get member profile via service for optimistic update
+      const memberProfile = await slotService.fetchMemberProfile(memberId);
 
       console.log('👤 Member profile fetched:', memberProfile?.name);
 
@@ -361,20 +299,8 @@ export function useSlots(options?: { enabled?: boolean }) {
 
 
       console.log('📡 UPDATING DATABASE...');
-      const { data, error } = await supabase
-        .from('slots')
-        .update({
-          is_booked: true,
-          member_id: memberId
-        })
-        .eq('id', slotId)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('❌ DATABASE UPDATE FAILED:', error);
-        throw error;
-      }
+      // ✅ Book slot via service
+      const data = await slotService.bookSlot(slotId, memberId);
 
       console.log('✅ DATABASE UPDATED SUCCESSFULLY');
       console.log('🔄 FETCHING LATEST DATA...');
@@ -415,20 +341,8 @@ export function useSlots(options?: { enabled?: boolean }) {
       });
 
       console.log('📡 UPDATING DATABASE...');
-      const { data, error } = await supabase
-        .from('slots')
-        .update({
-          is_booked: false,
-          member_id: null
-        })
-        .eq('id', slotId)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('❌ DATABASE UPDATE FAILED:', error);
-        throw error;
-      }
+      // ✅ Cancel booking via service
+      const data = await slotService.cancelBooking(slotId);
 
       console.log('✅ DATABASE UPDATED SUCCESSFULLY');
       console.log('🔄 FETCHING LATEST DATA...');
