@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Slot, CraneOperator } from '@/types';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
+import { useRealtimeSubscription } from '@/lib/realtime-manager';
 
 export interface CreateSlotData {
   date: string;
@@ -448,7 +449,7 @@ export function useSlots(options?: { enabled?: boolean }) {
     }
   };
 
-  // Set up realtime subscription (only when enabled)
+  // ✅ Set up realtime subscription using singleton manager
   useEffect(() => {
     if (!enabled) {
       setIsLoading(false);
@@ -457,37 +458,19 @@ export function useSlots(options?: { enabled?: boolean }) {
 
     console.log('🔄 Setting up slots realtime subscription');
     fetchSlots();
-
-    let debounceTimeout: NodeJS.Timeout;
-    
-    const channel = supabase
-      .channel('slots-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'slots'
-        },
-        (payload) => {
-          console.log('🔔 REALTIME UPDATE RECEIVED:', payload.eventType, payload);
-          // ✅ Debounced refetch (300ms)
-          clearTimeout(debounceTimeout);
-          debounceTimeout = setTimeout(() => {
-            fetchSlots();
-          }, 300);
-        }
-      )
-      .subscribe((status) => {
-        console.log('📡 Realtime subscription status:', status);
-      });
-
-    return () => {
-      console.log('🔌 Cleaning up realtime subscription');
-      clearTimeout(debounceTimeout);
-      supabase.removeChannel(channel);
-    };
   }, [enabled]);
+
+  // ✅ Use realtime manager for subscriptions (automatic deduplication + debouncing)
+  useRealtimeSubscription(
+    { table: 'slots', event: '*' },
+    'use-slots-main',
+    (payload) => {
+      console.log('🔔 REALTIME UPDATE RECEIVED:', payload.eventType || payload.event, payload);
+      fetchSlots();
+    },
+    300, // 300ms debounce
+    enabled
+  );
 
   return {
     slots,
