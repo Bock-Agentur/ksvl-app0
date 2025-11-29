@@ -38,7 +38,6 @@ function AppContent() {
   );
   
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
-  const [animationKey, setAnimationKey] = useState(0);
   const [footerAnimated, setFooterAnimated] = useState(false);
   
   // ✅ Alle Daten immer laden (kein conditional enabled basierend auf activeTab)
@@ -78,7 +77,6 @@ function AppContent() {
   useEffect(() => {
     const handleNavigateToTab = (event: CustomEvent<{ tab: string }>) => {
       const targetTab = event.detail.tab;
-      setAnimationKey(prev => prev + 1);
       setActiveTabRaw(targetTab, true);
     };
     
@@ -97,8 +95,11 @@ function AppContent() {
     return () => clearTimeout(timer);
   }, []);
   
-  // ✅ JETZT erst Early Return (nach ALLEN Hooks) - Wait until tab is loaded
-  if (!roleContext || roleContext.isLoading || settingsLoading || !roleContext.currentUser || !activeTab) {
+  // ✅ Synchronize all loading states
+  const isFullyLoaded = !settingsLoading && !footerLoading && !roleContext?.isLoading;
+  
+  // ✅ JETZT erst Early Return (nach ALLEN Hooks) - Wait until everything is loaded
+  if (!roleContext || !isFullyLoaded || !roleContext.currentUser || !activeTab) {
     return <PageLoader />;
   }
   
@@ -107,7 +108,6 @@ function AppContent() {
   
   // ✅ Tab change handler
   const setActiveTab = (tab: string) => {
-    setAnimationKey(prev => prev + 1);
     setActiveTabRaw(tab, true);
   };
 
@@ -136,7 +136,6 @@ function AppContent() {
       {/* ✅ Show loader ONLY during initial app load */}
       
       <div 
-        key={animationKey}
         className="min-h-screen flex flex-col relative z-0 pt-safe bg-background"
       >
         {/* Main Content */}
