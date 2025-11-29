@@ -15,7 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useUsers } from "@/hooks/use-users";
-import { useSlots } from "@/hooks/use-slots";
+import { useSlotsContext } from "@/contexts/slots-context";
 import { useRole } from "@/hooks/use-role";
 import { Slot } from "@/types";
 import { useConsecutiveSlots } from "@/hooks/use-consecutive-slots";
@@ -35,7 +35,7 @@ export function SlotManagement() {
     addSlotBlock,
     updateSlot,
     deleteSlot
-  } = useSlots();
+  } = useSlotsContext();
   const {
     getSlotStatus
   } = useConsecutiveSlots();
