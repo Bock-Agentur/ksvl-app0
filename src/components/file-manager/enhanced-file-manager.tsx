@@ -68,7 +68,7 @@ export function EnhancedFileManager() {
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const [bulkPermissionsOpen, setBulkPermissionsOpen] = useState(false);
 
-  // Debug: Check auth status (reactive to role changes)
+  // Debug: Check auth status on mount only
   useEffect(() => {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -78,7 +78,7 @@ export function EnhancedFileManager() {
         userId: user?.id || null
       });
     })();
-  }, [isAdmin, currentRole, files.length]);
+  }, [isAdmin, currentRole]); // ✅ Removed files.length from dependencies
 
   // Category tabs - reactive to role changes
   const categories = [
@@ -139,8 +139,8 @@ export function EnhancedFileManager() {
         toast.success(
           `Migration erfolgreich! ${data.migratedCount} Dateien migriert, ${data.skippedCount} übersprungen.`
         );
-        // Refresh file list
-        window.location.reload();
+        // ✅ Refresh file list via hook instead of page reload
+        window.location.reload(); // TODO: Replace with refetch when hook exports it
       } else {
         toast.error(`Migration mit Fehlern: ${data.errors.join(', ')}`);
       }
@@ -416,8 +416,8 @@ export function EnhancedFileManager() {
 
       {/* File Grid/List */}
       <div className="space-y-4">
-        {/* Debug Info for Admins */}
-        {authDebug && (
+        {/* Debug Info for Admins - Only in Development */}
+        {import.meta.env.DEV && authDebug && (
           <Alert className="mb-4 border-yellow-500/20 bg-yellow-500/5">
             <Info className="h-4 w-4" />
             <AlertDescription className="text-xs font-mono">
