@@ -100,6 +100,8 @@ export interface ConsecutiveSlotsContextType {
 export interface MonthCalendarProps {
   onDayClick: (date: Date) => void;
   onSlotCreate?: (dateTime?: { date: string; time: string }) => void;
+  slots?: Slot[];
+  isLoading?: boolean;
 }
 
 export interface WeekCalendarProps {
@@ -107,6 +109,8 @@ export interface WeekCalendarProps {
   selectedDate?: Date;
   selectedDay?: Date;
   viewMode?: "day" | "week";
+  slots?: Slot[];
+  isLoading?: boolean;
 }
 
 export interface DayStats {

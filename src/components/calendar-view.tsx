@@ -4,12 +4,12 @@ import { MonthCalendar } from "./month-calendar";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Calendar, CalendarDays, Home, ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useRole } from "@/hooks/use-role";
+import { usePermissions } from "@/hooks/use-permissions";
 import { SlotFormDialog } from "./slot-form-dialog";
 import { Slot } from "@/types";
 import { format, startOfWeek, addDays, isSameDay, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
-import { useSlots } from "@/hooks/use-slots";
+import { useSlotsContext } from "@/contexts/slots-context";
 import { cn } from "@/lib/utils";
 import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -21,13 +21,11 @@ interface CalendarViewProps {
 export function CalendarView({
   initialDate
 }: CalendarViewProps) {
+  const { canManageSlots, canBookSlots } = usePermissions();
   const {
-    currentRole,
-    currentUser
-  } = useRole();
-  const {
-    slots
-  } = useSlots();
+    slots,
+    isLoading: slotsLoading
+  } = useSlotsContext();
   const { isPageSticky } = useStickyHeaderLayout();
   const isStickyEnabled = isPageSticky('calendar');
   const isMobile = useIsMobile();
@@ -92,18 +90,6 @@ export function CalendarView({
     setSelectedDate(date);
     setViewMode("week");
   };
-
-  // FIXED: Multi-Role System - Admin, Vorstand und Kranführer können Slots verwalten
-  const canManageSlots = currentUser?.roles?.includes("kranfuehrer") || currentUser?.roles?.includes("admin") || currentUser?.roles?.includes("vorstand") || currentRole === "kranfuehrer" || currentRole === "admin" || currentRole === "vorstand";
-  const canBookSlots = currentUser?.roles?.includes("mitglied") || currentUser?.roles?.includes("kranfuehrer") || currentUser?.roles?.includes("admin") || currentUser?.roles?.includes("vorstand") || currentRole === "mitglied" || currentRole === "kranfuehrer" || currentRole === "admin" || currentRole === "vorstand";
-  
-  console.log('🔐 CALENDAR VIEW PERMISSIONS:', {
-    currentUser: currentUser?.name,
-    currentRole,
-    userRoles: currentUser?.roles,
-    canManageSlots,
-    canBookSlots
-  });
   
   const handlePreviousWeek = () => {
     setCurrentWeek(prevWeek => {
@@ -328,12 +314,16 @@ export function CalendarView({
             selectedDate={selectedDate} 
             onSlotEdit={handleSlotEdit} 
             viewMode={viewMode} 
-            selectedDay={selectedDay} 
+            selectedDay={selectedDay}
+            slots={slots}
+            isLoading={slotsLoading}
           />
         )}
         {viewMode === "month" && (
           <MonthCalendar 
             onDayClick={handleDayClick}
+            slots={slots}
+            isLoading={slotsLoading}
           />
         )}
       </div>

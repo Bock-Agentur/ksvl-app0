@@ -19,25 +19,22 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useTestData } from "@/hooks/use-test-data";
-import { useSlots } from "@/hooks/use-slots";
-import { useRole } from "@/hooks/use-role";
+import { usePermissions } from "@/hooks/use-permissions";
+import { useSlotsContext } from "@/contexts/slots-context";
 import { useConsecutiveSlots } from "@/hooks/use-consecutive-slots";
 import { cn } from "@/lib/utils";
 import { Slot, MonthCalendarProps, DayStats } from "@/types";
 
 // MonthCalendarProps and DayStats are now imported from @/types
 
-export function MonthCalendar({ onDayClick, onSlotCreate }: MonthCalendarProps) {
-  const { slots } = useSlots();
+export function MonthCalendar({ onDayClick, onSlotCreate, slots: propSlots, isLoading: propIsLoading }: MonthCalendarProps) {
+  // Use props if provided, otherwise fall back to context
+  const context = useSlotsContext();
+  const slots = propSlots ?? context.slots;
+  const isLoading = propIsLoading ?? context.isLoading;
   const { getSlotStatus } = useConsecutiveSlots();
-  const { currentUser, currentRole } = useRole();
+  const { canManageSlots } = usePermissions();
   const [currentMonth, setCurrentMonth] = useState(new Date());
-
-  // FIXED: Multi-Role System Implementation
-  const canManageSlots = currentUser?.roles?.includes("kranfuehrer") || 
-                         currentUser?.roles?.includes("admin") ||
-                         currentRole === "kranfuehrer" || 
-                         currentRole === "admin";
 
   // Calculate month boundaries
   const monthStart = startOfMonth(currentMonth);

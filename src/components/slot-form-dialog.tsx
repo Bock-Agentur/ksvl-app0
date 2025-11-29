@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { useSlots, CreateSlotData } from "@/hooks/use-slots";
+import { CreateSlotData } from "@/hooks/use-slots";
 import { useUsers } from "@/hooks/use-users";
+import { useSlotsContext } from "@/contexts/slots-context";
 import { Slot, SlotFormDialogProps } from "@/types";
-import { useRole } from "@/hooks/use-role";
+import { usePermissions } from "@/hooks/use-permissions";
 import { useConsecutiveSlots } from "@/hooks/use-consecutive-slots";
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO } from "date-fns";
@@ -18,8 +19,8 @@ import { SlotForm, SlotFormData } from "@/components/common/slot-form";
 
 export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, onClose }: SlotFormDialogProps) {
   const { toast } = useToast();
-  const { currentRole, currentUser } = useRole();
-  const { slots: allSlots, addSlot, addSlotBlock, updateSlot, deleteSlot, bookSlot, cancelBooking } = useSlots();
+  const { canManageSlots, canBookSlots, currentUser, currentRole } = usePermissions();
+  const { slots: allSlots, addSlot, addSlotBlock, updateSlot, deleteSlot, bookSlot, cancelBooking } = useSlotsContext();
   const { users } = useUsers();
   const { validateConsecutiveSlots } = useConsecutiveSlots();
   
@@ -47,21 +48,6 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
     !craneOperators.find(op => op.id === currentUserAsCraneOperator.id)
     ? [...craneOperators, currentUserAsCraneOperator]
     : craneOperators;
-
-  const canManageSlots = currentUser?.roles?.includes("kranfuehrer") || 
-                         currentUser?.roles?.includes("admin") ||
-                         currentUser?.roles?.includes("vorstand") ||
-                         currentRole === "kranfuehrer" || 
-                         currentRole === "admin" ||
-                         currentRole === "vorstand";
-  const canBookSlots = currentUser?.roles?.includes("mitglied") || 
-                       currentUser?.roles?.includes("kranfuehrer") || 
-                       currentUser?.roles?.includes("admin") ||
-                       currentUser?.roles?.includes("vorstand") ||
-                       currentRole === "mitglied" || 
-                       currentRole === "kranfuehrer" || 
-                       currentRole === "admin" ||
-                       currentRole === "vorstand";
 
   const handleFormSubmit = async (formData: SlotFormData) => {
     if (!formData.date || !formData.time || !formData.craneOperatorId) {
