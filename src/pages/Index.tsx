@@ -25,7 +25,7 @@ import { PageLoader } from "@/components/common/page-loader";
 import { cn } from "@/lib/utils";
 
 // Inner component that uses the role context
-function AppContent() {
+function AppContent({ onTabChange }: { onTabChange: (tab: string) => void }) {
   // Safe hook call with fallback
   const roleContext = useRole();
   
@@ -117,6 +117,7 @@ function AppContent() {
     setIsTransitioning(true);
     setAnimationKey(prev => prev + 1);
     setActiveTabRaw(tab, true);
+    onTabChange(tab); // Notify parent for conditional provider loading
   };
   
   // Initialize slot design system
@@ -205,12 +206,21 @@ const Index = () => {
     return <PageLoader />;
   }
 
+  // ✅ Only load Slots when needed (calendar, slots tabs)
+  const [activeTab, setActiveTab] = useState<string>("dashboard");
+  
+  const shouldLoadSlots = activeTab === 'calendar' || activeTab === 'slots';
+
   return (
     <TestDataProvider>
       <ConsecutiveSlotsProvider>
-        <SlotsProvider>
-          <AppContent />
-        </SlotsProvider>
+        {shouldLoadSlots ? (
+          <SlotsProvider>
+            <AppContent onTabChange={setActiveTab} />
+          </SlotsProvider>
+        ) : (
+          <AppContent onTabChange={setActiveTab} />
+        )}
       </ConsecutiveSlotsProvider>
     </TestDataProvider>
   );

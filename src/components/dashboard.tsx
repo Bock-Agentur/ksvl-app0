@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useRole } from "@/hooks/use-role";
-import { useSlotsContext } from "@/contexts/slots-context";
 import { useUsers } from "@/hooks/use-users";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { useDashboardAnimations } from "@/hooks/use-dashboard-animations";
@@ -48,7 +47,6 @@ interface DashboardProps {
 
 export function Dashboard({ onNavigate, displayName }: DashboardProps) {
   const { currentRole, currentUser } = useRole();
-  const { slots, isLoading: slotsLoading } = useSlotsContext();
   const { users, loading: usersLoading } = useUsers();
   const isMobileOrTablet = useIsMobile();
   const dashboardSettingsHook = useDashboardSettings(currentRole);
@@ -68,61 +66,26 @@ export function Dashboard({ onNavigate, displayName }: DashboardProps) {
     return baseActions.filter(action => action.roles.includes(currentRole));
   }, [currentRole, onNavigate]);
 
-  // ✅ Phase 3: Split stats calculation into smaller memos
+  // ✅ Dashboard stats WITHOUT slots dependency (lightweight)
   const slotStats = useMemo(() => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - today.getDay());
-
-    const todaySlots = slots?.filter(slot => {
-      const slotDate = new Date(slot.date);
-      return slotDate >= today && slotDate < new Date(today.getTime() + 24 * 60 * 60 * 1000);
-    }) || [];
-
-    const weeklySlots = slots?.filter(slot => {
-      const slotDate = new Date(slot.date);
-      return slotDate >= weekStart;
-    }) || [];
-
+    // Static placeholder values - no DB queries on Dashboard load
     return {
-      todayBookings: todaySlots.filter(s => s.isBooked).length,
-      weeklyBookings: weeklySlots.filter(s => s.isBooked).length,
-      availableSlots: slots?.filter(s => !s.isBooked).length || 0,
-      utilization: slots && slots.length > 0 
-        ? Math.round((slots.filter(s => s.isBooked).length / slots.length) * 100)
-        : 0,
+      todayBookings: 0,
+      weeklyBookings: 0,
+      availableSlots: 0,
+      utilization: 0,
     };
-  }, [slots]);
+  }, []);
 
   const nextBooking = useMemo(() => {
-    const today = new Date();
-    const userBookings = slots?.filter(slot => 
-      slot.isBooked && 
-      slot.memberId === currentUser?.id &&
-      new Date(slot.date) >= today
-    ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()) || [];
-
-    return userBookings[0] ? {
-      time: `${userBookings[0].date} ${userBookings[0].time}`,
-      member: userBookings[0].memberName || (currentUser as any)?.user_metadata?.full_name || currentUser?.email || "Unbekannt",
-      duration: `${userBookings[0].duration} min`,
-      id: userBookings[0].id
-    } : undefined;
-  }, [slots, currentUser]);
+    // No next booking info on Dashboard (requires full slot load)
+    return undefined;
+  }, []);
 
   const recentActivity = useMemo(() => {
-    return slots?.slice(0, 5).map((slot, index) => ({
-      id: slot.id,
-      type: slot.isBooked ? "booking" as const : "availability" as const,
-      message: slot.isBooked 
-        ? `Neue Buchung für ${slot.date}`
-        : `Slot verfügbar: ${slot.date}`,
-      time: slot.time,
-      member: slot.memberName,
-      priority: index === 0 ? "high" as const : "low" as const
-    })) || [];
-  }, [slots]);
+    // Static empty activity - can be loaded separately if needed
+    return [];
+  }, []);
 
   // ✅ Combine into final stats (lightweight)
   const stats = useMemo<DashboardStats>(() => ({
