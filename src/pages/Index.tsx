@@ -54,17 +54,7 @@ function AppContent() {
   
   useSlotDesign();
   
-  // ✅ JETZT erst Early Return (nach allen Hooks)
-  if (!roleContext || roleContext.isLoading || settingsLoading || !roleContext.currentUser) {
-    return <PageLoader />;
-  }
-  
-  // Ab hier normaler Code mit sicheren Werten
-  const { currentRole, currentUser, setRole } = roleContext;
-  
-  // ✅ Vereinfachte Loading-Logik
-  const isPageLoading = false; // Einzelne Komponenten zeigen eigene Loading-States
-  
+  // ✅ ALLE useEffect Hooks VOR dem Early Return (React Rules of Hooks)
   // Verarbeite URL-Parameter für Datumsnavigation
   useEffect(() => {
     const dateParam = searchParams.get('date');
@@ -78,32 +68,12 @@ function AppContent() {
     }
   }, [searchParams, setSearchParams, setActiveTabRaw]);
   
-  // ✅ Simplified transition: Just wait for data loading
-  useEffect(() => {
-    if (isPageLoading) {
-      setIsTransitioning(true);
-    } else {
-      // Small delay for smooth transition
-      const timer = setTimeout(() => {
-        setIsTransitioning(false);
-      }, 150);
-      return () => clearTimeout(timer);
-    }
-  }, [isPageLoading]);
-  
-  // ✅ Simplified tab change - useCallback to prevent unnecessary re-renders
-  const setActiveTab = (tab: string) => {
-    setIsTransitioning(true);
-    setAnimationKey(prev => prev + 1);
-    setActiveTabRaw(tab, true);
-  };
-
   // Scroll to top when tab changes
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [activeTab]);
 
-  // Phase 1: Listen for navigate-to-tab events from footer
+  // Listen for navigate-to-tab events from footer
   useEffect(() => {
     const handleNavigateToTab = (event: CustomEvent<{ tab: string }>) => {
       const targetTab = event.detail.tab;
@@ -118,6 +88,29 @@ function AppContent() {
       window.removeEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
     };
   }, [setActiveTabRaw]);
+  
+  // Transition effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsTransitioning(false);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [activeTab]);
+  
+  // ✅ JETZT erst Early Return (nach ALLEN Hooks)
+  if (!roleContext || roleContext.isLoading || settingsLoading || !roleContext.currentUser) {
+    return <PageLoader />;
+  }
+  
+  // Ab hier normaler Code mit sicheren Werten
+  const { currentRole, currentUser, setRole } = roleContext;
+  
+  // Tab change handler
+  const setActiveTab = (tab: string) => {
+    setIsTransitioning(true);
+    setAnimationKey(prev => prev + 1);
+    setActiveTabRaw(tab, true);
+  };
 
   const renderContent = () => {
     switch (activeTab) {
