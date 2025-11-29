@@ -34,7 +34,8 @@ export function SlotManagement() {
     addSlot,
     addSlotBlock,
     updateSlot,
-    deleteSlot
+    deleteSlot,
+    isLoading: slotsLoading
   } = useSlotsContext();
   const {
     getSlotStatus
@@ -42,8 +43,9 @@ export function SlotManagement() {
   const {
     settings
   } = useSlotDesign();
-  const { isPageSticky } = useStickyHeaderLayout();
+  const { isPageSticky, isLoading: stickyLoading } = useStickyHeaderLayout();
   const isStickyEnabled = isPageSticky('slotManagement');
+  const isLoading = slotsLoading || stickyLoading;
   const [isEditing, setIsEditing] = useState(false);
   const [editingSlot, setEditingSlot] = useState<Slot | null>(null);
   const [activeFilter, setActiveFilter] = useState<"all" | "booked" | "available">("all");
@@ -264,6 +266,30 @@ export function SlotManagement() {
     booked: slots.filter(s => s.isBooked).length,
     available: slots.filter(s => !s.isBooked).length
   };
+
+  if (isLoading) {
+    return (
+      <div className={cn(
+        "bg-background max-w-7xl mx-auto",
+        isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
+      )}>
+        <div className="pt-4 pb-0 my-0 px-4">
+          <Card className="animate-pulse">
+            <CardHeader>
+              <div className="h-6 bg-muted rounded w-1/3 mb-2" />
+              <div className="h-4 bg-muted rounded w-1/2" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-24 bg-muted rounded" />
+              ))}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
+
   // ✅ Stable layout without loading check since default is enabled
   return <div className={cn(
     "bg-background max-w-7xl mx-auto",

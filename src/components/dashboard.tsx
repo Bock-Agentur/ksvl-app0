@@ -53,6 +53,9 @@ export function Dashboard({ onNavigate, displayName }: DashboardProps) {
   const settings = dashboardSettingsHook.settings;
   const { getAnimationClass, isAnimationEnabled } = useDashboardAnimations();
   
+  // Combined loading state
+  const isLoading = usersLoading || dashboardSettingsHook.isLoading;
+  
 
   // ✅ Phase 3: Memoize Quick Actions
   const quickActions = useMemo(() => {
@@ -177,6 +180,29 @@ export function Dashboard({ onNavigate, displayName }: DashboardProps) {
 
     return () => observer.disconnect();
   }, [isAnimationEnabled, settings.animationType]);
+
+  if (isLoading) {
+    return (
+      <div className="p-4 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader>
+                <div className="h-4 bg-muted rounded w-3/4 mb-2" />
+                <div className="h-3 bg-muted rounded w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="h-3 bg-muted rounded" />
+                  <div className="h-3 bg-muted rounded w-5/6" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 max-w-7xl mx-auto">
