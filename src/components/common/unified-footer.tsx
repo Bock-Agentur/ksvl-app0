@@ -165,9 +165,12 @@ export function UnifiedFooter({
     // For tab-based items: navigate to / first if needed
     if (currentPath !== '/') {
       navigate('/');
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: { tab: itemId } }));
-      }, 100);
+      // Use requestAnimationFrame for more reliable event dispatch after navigation
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: { tab: itemId } }));
+        });
+      });
     } else if (onTabChange) {
       onTabChange(itemId);
     }
