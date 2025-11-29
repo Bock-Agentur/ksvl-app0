@@ -32,11 +32,14 @@ export function WeekCalendar({ onSlotEdit, selectedDate, selectedDay: propSelect
 function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelectedDay, viewMode = "week", slots: propSlots, isLoading: propIsLoading }: WeekCalendarProps) {
   const { toast } = useToast();
   const { canManageSlots, canBookSlots, currentRole, currentUser } = usePermissions();
-  const { deleteSlot, updateSlot } = useSlotsContext();
+  const context = useSlotsContext();
+  const { deleteSlot, updateSlot } = context;
   
   // Use props if provided, otherwise fall back to context
-  const slots = propSlots ?? [];
-  const isLoading = propIsLoading ?? false;
+  const slots = propSlots ?? context.slots;
+  const isLoading = propIsLoading ?? context.isLoading;
+  
+  console.log('📅 [WeekCalendar] Rendering with', slots.length, 'slots');
   const { consecutiveSlotsEnabled, getSlotBlocks, getSlotStatus, isSlotBookable } = useConsecutiveSlots();
   const { settings } = useSlotDesign();
   const [currentWeek, setCurrentWeek] = useState(selectedDate || new Date());
