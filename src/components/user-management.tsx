@@ -30,6 +30,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 import { userService } from "@/lib/services/user-service";
+import { validatePassword } from "@/lib/password-validation";
 
 /**
  * Benutzer-Verwaltung mit Supabase Datenbank
@@ -286,6 +287,17 @@ export function UserManagementRefactored() {
       toast({
         title: "Fehler",
         description: "Bitte geben Sie ein Passwort ein.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Validate password with strong requirements
+    const validation = validatePassword(password);
+    if (!validation.isValid) {
+      toast({
+        title: "Fehler",
+        description: validation.error,
         variant: "destructive"
       });
       return;

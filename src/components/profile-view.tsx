@@ -21,6 +21,7 @@ import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 import { DocumentUpload } from "@/components/common/document-upload";
 import { UserHistoryTimeline } from "@/components/common/user-history-timeline";
+import { validatePassword } from "@/lib/password-validation";
 
 // ProfileViewProps is now imported from @/types
 
@@ -237,10 +238,12 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       return;
     }
     
-    if (newPassword.length < 6) {
+    // Validate password with strong requirements
+    const validation = validatePassword(newPassword);
+    if (!validation.isValid) {
       toast({
         title: "Fehler",
-        description: "Das Passwort muss mindestens 6 Zeichen lang sein.",
+        description: validation.error,
         variant: "destructive"
       });
       return;
