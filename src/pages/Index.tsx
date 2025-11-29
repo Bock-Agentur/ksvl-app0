@@ -30,8 +30,7 @@ function AppContent() {
   const roleContext = useRole();
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // ✅ Initialize with default to prevent showing wrong page first
-  const [localActiveTab, setLocalActiveTab] = useState<string>("dashboard");
+  // ✅ No local state - use activeTab directly after loading
   const { value: activeTab, setValue: setActiveTabRaw, isLoading: settingsLoading } = useAppSettings<string>(
     "activeTab",
     "dashboard",
@@ -41,13 +40,6 @@ function AppContent() {
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   const [animationKey, setAnimationKey] = useState(0);
   const [footerAnimated, setFooterAnimated] = useState(false);
-  
-  // ✅ Sync local tab with settings after loading
-  useEffect(() => {
-    if (!settingsLoading && activeTab) {
-      setLocalActiveTab(activeTab);
-    }
-  }, [activeTab, settingsLoading]);
   
   // ✅ Alle Daten immer laden (kein conditional enabled basierend auf activeTab)
   const { loading: usersLoading } = useUsers({ enabled: !!roleContext?.currentRole });
@@ -82,13 +74,12 @@ function AppContent() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [activeTab]);
 
-  // ✅ Listen for navigate-to-tab events - optimistic update
+  // ✅ Listen for navigate-to-tab events
   useEffect(() => {
     const handleNavigateToTab = (event: CustomEvent<{ tab: string }>) => {
       const targetTab = event.detail.tab;
-      setLocalActiveTab(targetTab); // Immediate update
       setAnimationKey(prev => prev + 1);
-      setActiveTabRaw(targetTab, true); // Persist in background
+      setActiveTabRaw(targetTab, true);
     };
     
     window.addEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
@@ -106,24 +97,23 @@ function AppContent() {
     return () => clearTimeout(timer);
   }, []);
   
-  // ✅ JETZT erst Early Return (nach ALLEN Hooks)
-  if (!roleContext || roleContext.isLoading || settingsLoading || !roleContext.currentUser) {
+  // ✅ JETZT erst Early Return (nach ALLEN Hooks) - Wait until tab is loaded
+  if (!roleContext || roleContext.isLoading || settingsLoading || !roleContext.currentUser || !activeTab) {
     return <PageLoader />;
   }
   
   // Ab hier normaler Code mit sicheren Werten
   const { currentRole, currentUser, setRole } = roleContext;
   
-  // ✅ Tab change handler - optimistic update without loader
+  // ✅ Tab change handler
   const setActiveTab = (tab: string) => {
-    setLocalActiveTab(tab); // Immediate update
     setAnimationKey(prev => prev + 1);
-    setActiveTabRaw(tab, true); // Persist in background
+    setActiveTabRaw(tab, true);
   };
 
   const renderContent = () => {
-    // ✅ Use localActiveTab for immediate rendering
-    switch (localActiveTab) {
+    // ✅ Use activeTab directly - it's guaranteed to be loaded now
+    switch (activeTab) {
       case "dashboard":
         return <Dashboard onNavigate={setActiveTab} displayName={displayName} />;
       case "calendar":
@@ -159,7 +149,7 @@ function AppContent() {
           currentRole={currentRole}
           currentUser={currentUser}
           onRoleChange={setRole}
-          activeTab={localActiveTab}
+          activeTab={activeTab}
           onTabChange={setActiveTab}
           hasAnimated={footerAnimated}
         />
