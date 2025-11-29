@@ -19,8 +19,7 @@ import { StickyHeaderLayoutSettings } from "@/components/sticky-header-layout-se
 import { PageLoader } from "@/components/common/page-loader";
 import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
 import { cn } from "@/lib/utils";
-import { RoleProvider, useRole } from "@/hooks/use-role";
-import { ConsecutiveSlotsProvider } from "@/hooks/use-consecutive-slots";
+import { useRole } from "@/hooks/use-role";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/lib/registry/routes";
@@ -369,11 +368,5 @@ function SettingsContent() {
 }
 
 export function Settings() {
-  return (
-    <RoleProvider>
-      <ConsecutiveSlotsProvider>
-        <SettingsContent />
-      </ConsecutiveSlotsProvider>
-    </RoleProvider>
-  );
+  return <SettingsContent />;
 }
