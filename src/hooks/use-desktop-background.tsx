@@ -5,7 +5,7 @@ export interface DesktopBackgroundSettings {
 }
 
 const DEFAULT_SETTINGS: DesktopBackgroundSettings = {
-  enabled: true
+  enabled: false
 };
 
 export function useDesktopBackground(options?: { enabled?: boolean }) {

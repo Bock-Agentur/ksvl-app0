@@ -6,6 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useRole } from "@/hooks/use-role";
 import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
 import { cn } from "@/lib/utils";
+import { ROUTES } from "@/lib/registry/routes";
 import { Badge } from "@/components/ui/badge";
 import { Home, Users, Calendar, FileText, Settings, Menu } from "lucide-react";
 import * as LucideIcons from "lucide-react";
@@ -25,16 +26,17 @@ export function FileManager() {
     if (itemId === 'file-manager') {
       // Already on file-manager, do nothing
     } else if (itemId === 'reports') {
-      navigate('/reports');
+      navigate(ROUTES.protected.reports.path);
     } else if (itemId === 'settings') {
-      navigate('/settings');
+      navigate(ROUTES.protected.settings.path);
     } else if (itemId === 'header-message') {
-      navigate('/header-message');
-    } else if (itemId === 'desktop-background') {
-      navigate('/desktop-background');
+      navigate(ROUTES.protected.headerMessage.path);
     } else {
-      // Navigate back to main app with tab
-      navigate(`/?tab=${itemId}`);
+      // Navigate to main app with tab
+      navigate('/');
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: { tab: itemId } }));
+      }, 100);
     }
     setIsMenuOpen(false);
   };

@@ -71,15 +71,6 @@ const App = () => {
                   />
                   
                   <Route 
-                    path={ROUTES.protected.desktopBackground.path} 
-                    element={
-                      <ProtectedRoute requiredRoles={['admin']}>
-                        <DesktopBackground />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  
-                  <Route 
                     path={ROUTES.protected.fileManager.path} 
                     element={
                       <ProtectedRoute requiredRoles={['admin', 'vorstand']}>
