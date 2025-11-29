@@ -35,11 +35,18 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
     isLoading: slotsLoading,
     refetch: refetchSlots
   } = useQuery({
-    queryKey: ['slots'],
+    queryKey: ['slots', allUsers.length],
     queryFn: async () => {
+      console.log('🔄 [SlotsContext] Fetching slots from database');
       logger.info('Fetching slots from database (React Query)', 'slots-context');
       
       const slotsData = await slotService.fetchSlots();
+      console.log('📦 [SlotsContext] Raw slots from DB:', slotsData?.length || 0);
+
+      if (!slotsData || slotsData.length === 0) {
+        console.log('❌ [SlotsContext] No slots data received');
+        return [];
+      }
 
       // Create a map for quick profile lookup
       const profilesMap = new Map(allUsers.map(u => [u.id, {
@@ -48,6 +55,7 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
         email: u.email,
         member_number: u.memberNumber
       }]));
+      console.log('👥 [SlotsContext] User profiles map size:', profilesMap.size);
 
       // Transform database format to app format
       const transformedSlots: Slot[] = (slotsData || []).map(dbSlot => {
@@ -88,11 +96,12 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
         };
       });
 
+      console.log('✅ [SlotsContext] Transformed', transformedSlots.length, 'slots');
+      console.log('📊 [SlotsContext] Sample slot:', transformedSlots[0]);
       logger.info(`Transformed ${transformedSlots.length} slots`, 'slots-context');
       return transformedSlots;
     },
-    // ✅ FIX: Einfach laden wenn User da und Users geladen
-    enabled: !!authUser && !usersLoading,
+    enabled: !!authUser && allUsers.length > 0,
     staleTime: 1000 * 60, // 1 Minute
     refetchOnWindowFocus: false
   });
