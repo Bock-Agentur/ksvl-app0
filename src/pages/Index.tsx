@@ -6,6 +6,7 @@ import { useRole } from "@/hooks/use-role";
 import { useSlotDesign } from "@/hooks/use-slot-design";
 import { TestDataProvider } from "@/hooks/use-test-data";
 import { ConsecutiveSlotsProvider } from "@/hooks/use-consecutive-slots";
+import { SlotsProvider } from "@/contexts/slots-context";
 import { useAppSettings } from "@/hooks/use-app-settings";
 import { useSlots } from "@/hooks/use-slots";
 import { useUsers } from "@/hooks/use-users";
@@ -46,11 +47,8 @@ function AppContent() {
   );
   
   // ✅ Phase 1: Conditional Hook Execution (Lazy Loading)
-  const shouldLoadSlots = activeTab === 'dashboard' || activeTab === 'calendar';
   const shouldLoadUsers = activeTab === 'dashboard' || activeTab === 'users';
   const shouldLoadDashboard = activeTab === 'dashboard';
-
-  const { isLoading: slotsLoading } = useSlots({ enabled: shouldLoadSlots });
   const { loading: usersLoading } = useUsers({ enabled: shouldLoadUsers });
   const { isLoading: aiAssistantLoading } = useAIAssistantSettings({ enabled: shouldLoadDashboard });
   const { isLoading: aiWelcomeLoading } = useAIWelcomeMessage({ enabled: shouldLoadDashboard });
@@ -76,9 +74,9 @@ function AppContent() {
     
     switch(tab) {
       case 'dashboard': 
-        return baseLoading || slotsLoading || usersLoading || harborChatLoading || aiWelcomeLoading || profileLoading || dashboardSettingsLoading;
+        return baseLoading || usersLoading || harborChatLoading || aiWelcomeLoading || profileLoading || dashboardSettingsLoading;
       case 'calendar': 
-        return baseLoading || slotsLoading;
+        return baseLoading; // Slots loading is now handled by SlotsProvider
       case 'users': 
         return baseLoading || usersLoading;
       case 'settings':
@@ -237,7 +235,9 @@ const Index = () => {
   return (
     <TestDataProvider>
       <ConsecutiveSlotsProvider>
-        <AppContent />
+        <SlotsProvider>
+          <AppContent />
+        </SlotsProvider>
       </ConsecutiveSlotsProvider>
     </TestDataProvider>
   );

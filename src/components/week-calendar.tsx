@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useTestData } from "@/hooks/use-test-data";
-import { useSlots } from "@/hooks/use-slots";
 import { Slot, WeekCalendarProps } from "@/types";
+import { useSlotsContext } from "@/contexts/slots-context";
+import { usePermissions } from "@/hooks/use-permissions";
 import { useRole } from "@/hooks/use-role";
 import { useToast } from "@/hooks/use-toast";
 import { useConsecutiveSlots } from "@/hooks/use-consecutive-slots";
@@ -28,10 +29,14 @@ export function WeekCalendar({ onSlotEdit, selectedDate, selectedDay: propSelect
   );
 }
 
-function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelectedDay, viewMode = "week" }: WeekCalendarProps) {
+function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelectedDay, viewMode = "week", slots: propSlots, isLoading: propIsLoading }: WeekCalendarProps) {
   const { toast } = useToast();
-  const { currentRole, currentUser } = useRole();
-  const { slots, deleteSlot, updateSlot } = useSlots();
+  const { canManageSlots, canBookSlots, currentRole, currentUser } = usePermissions();
+  const { deleteSlot, updateSlot } = useSlotsContext();
+  
+  // Use props if provided, otherwise fall back to context
+  const slots = propSlots ?? [];
+  const isLoading = propIsLoading ?? false;
   const { consecutiveSlotsEnabled, getSlotBlocks, getSlotStatus, isSlotBookable } = useConsecutiveSlots();
   const { settings } = useSlotDesign();
   const [currentWeek, setCurrentWeek] = useState(selectedDate || new Date());
@@ -44,18 +49,6 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
   const getSlotColors = (status: 'available' | 'booked' | 'blocked') => {
     return settings[status];
   };
-
-  // FIXED: Multi-Role System Implementation
-  const canManageSlots = currentUser?.roles?.includes("kranfuehrer") || 
-                         currentUser?.roles?.includes("admin") ||
-                         currentRole === "kranfuehrer" || 
-                         currentRole === "admin";
-  const canBookSlots = currentUser?.roles?.includes("mitglied") || 
-                       currentUser?.roles?.includes("kranfuehrer") || 
-                       currentUser?.roles?.includes("admin") ||
-                       currentRole === "mitglied" || 
-                       currentRole === "kranfuehrer" || 
-                       currentRole === "admin";
 
   // Calculate week boundaries
   const weekStart = startOfWeek(currentWeek, { weekStartsOn: 1 }); // Monday
