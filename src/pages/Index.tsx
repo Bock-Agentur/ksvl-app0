@@ -26,65 +26,46 @@ import { cn } from "@/lib/utils";
 
 // Inner component that uses the role context
 function AppContent() {
-  // Safe hook call with fallback
+  // ✅ ALLE Hooks ZUERST aufrufen - IMMER (React Rules of Hooks)
   const roleContext = useRole();
-  
-  // Early return if context not ready
-  if (!roleContext || roleContext.isLoading) {
-    return <PageLoader />;
-  }
-  
-  const { currentRole, currentUser, setRole } = roleContext;
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // Use database for active tab storage
   const { value: activeTab, setValue: setActiveTabRaw, isLoading: settingsLoading } = useAppSettings<string>(
     "activeTab",
     "dashboard",
     false
   );
   
-  // ✅ Phase 1: Conditional Hook Execution (Lazy Loading)
-  const shouldLoadUsers = activeTab === 'dashboard' || activeTab === 'users';
-  const shouldLoadDashboard = activeTab === 'dashboard';
-  const { loading: usersLoading } = useUsers({ enabled: shouldLoadUsers });
-  const { isLoading: aiAssistantLoading } = useAIAssistantSettings({ enabled: shouldLoadDashboard });
-  const { isLoading: aiWelcomeLoading } = useAIWelcomeMessage({ enabled: shouldLoadDashboard });
-  const { agentName, isLoading: harborChatLoading } = useHarborChatData({ enabled: shouldLoadDashboard });
-  const { firstName, fullName: displayName, isLoading: profileLoading } = useProfileData({ enabled: shouldLoadDashboard });
-  const { isLoading: footerLoading } = useFooterMenuSettings(currentRole);
-  const {
-    settings: dashboardSettings,
-    isLoading: dashboardSettingsLoading,
-  } = useDashboardSettings(currentRole, { enabled: shouldLoadDashboard });
-  
-  // State für das ausgewählte Datum im Kalender
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
-  
-  // ✅ Simplified: Only 2 states needed
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
   
-  // Centralized loading state - determines when to show PageLoader
-  const getLoadingStateForTab = (tab: string): boolean => {
-    // Footer must always be loaded on every tab
-    const baseLoading = footerLoading;
-    
-    switch(tab) {
-      case 'dashboard': 
-        return baseLoading || usersLoading || harborChatLoading || aiWelcomeLoading || profileLoading || dashboardSettingsLoading;
-      case 'calendar': 
-        return baseLoading; // Slots loading is now handled by SlotsProvider
-      case 'users': 
-        return baseLoading || usersLoading;
-      case 'settings':
-        return baseLoading || aiAssistantLoading || aiWelcomeLoading;
-      default: 
-        return baseLoading;
-    }
-  };
+  // ✅ Conditional hooks mit enabled flag (React-konform)
+  const shouldLoadUsers = activeTab === 'dashboard' || activeTab === 'users';
+  const shouldLoadDashboard = activeTab === 'dashboard';
+  const { loading: usersLoading } = useUsers({ enabled: shouldLoadUsers && !!roleContext?.currentRole });
+  const { isLoading: aiAssistantLoading } = useAIAssistantSettings({ enabled: shouldLoadDashboard && !!roleContext?.currentRole });
+  const { isLoading: aiWelcomeLoading } = useAIWelcomeMessage({ enabled: shouldLoadDashboard && !!roleContext?.currentRole });
+  const { agentName, isLoading: harborChatLoading } = useHarborChatData({ enabled: shouldLoadDashboard && !!roleContext?.currentRole });
+  const { firstName, fullName: displayName, isLoading: profileLoading } = useProfileData({ enabled: shouldLoadDashboard && !!roleContext?.currentRole });
+  const { isLoading: footerLoading } = useFooterMenuSettings(roleContext?.currentRole || 'mitglied');
+  const {
+    settings: dashboardSettings,
+    isLoading: dashboardSettingsLoading,
+  } = useDashboardSettings(roleContext?.currentRole || 'mitglied', { enabled: shouldLoadDashboard && !!roleContext?.currentRole });
   
-  const isPageLoading = settingsLoading || !currentUser || getLoadingStateForTab(activeTab);
+  useSlotDesign();
+  
+  // ✅ JETZT erst Early Return (nach allen Hooks)
+  if (!roleContext || roleContext.isLoading || settingsLoading || !roleContext.currentUser) {
+    return <PageLoader />;
+  }
+  
+  // Ab hier normaler Code mit sicheren Werten
+  const { currentRole, currentUser, setRole } = roleContext;
+  
+  // ✅ Vereinfachte Loading-Logik
+  const isPageLoading = false; // Einzelne Komponenten zeigen eigene Loading-States
   
   // Verarbeite URL-Parameter für Datumsnavigation
   useEffect(() => {
@@ -118,9 +99,6 @@ function AppContent() {
     setAnimationKey(prev => prev + 1);
     setActiveTabRaw(tab, true);
   };
-  
-  // Initialize slot design system
-  useSlotDesign();
 
   // Scroll to top when tab changes
   useEffect(() => {
@@ -160,14 +138,9 @@ function AppContent() {
     }
   };
 
-  // Show loader when settings loading or no user data
-  if (settingsLoading || !currentUser) {
-    return <PageLoader />;
-  }
-
   return (
     <>
-      {/* ✅ Show loader only when actually loading */}
+      {/* ✅ Show loader only during transitions */}
       {isTransitioning && <PageLoader />}
       
       <div 

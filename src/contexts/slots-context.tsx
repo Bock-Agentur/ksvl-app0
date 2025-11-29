@@ -28,9 +28,6 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
   const queryClient = useQueryClient();
   const { user: authUser } = useAuth();
   const { users: allUsers, isLoading: usersLoading } = useUsersData({ enabled: !!authUser });
-  
-  // ✅ Only fetch slots when explicitly requested (via context usage)
-  const [shouldFetch, setShouldFetch] = React.useState(false);
 
   // Fetch slots with React Query
   const {
@@ -40,7 +37,6 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
   } = useQuery({
     queryKey: ['slots'],
     queryFn: async () => {
-      setShouldFetch(true);
       logger.info('Fetching slots from database (React Query)', 'slots-context');
       
       const slotsData = await slotService.fetchSlots();
@@ -95,8 +91,9 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
       logger.info(`Transformed ${transformedSlots.length} slots`, 'slots-context');
       return transformedSlots;
     },
-    enabled: shouldFetch && !usersLoading,
-    staleTime: 1000 * 30, // 30 seconds
+    // ✅ FIX: Einfach laden wenn User da und Users geladen
+    enabled: !!authUser && !usersLoading,
+    staleTime: 1000 * 60, // 1 Minute
     refetchOnWindowFocus: false
   });
 
