@@ -5,8 +5,6 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
-import { useLoginBackground } from "@/hooks/use-login-background";
-import { useDesktopBackground } from "@/hooks/use-desktop-background";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -76,12 +74,6 @@ export function AppShell({
   const {
     getOrderedHeaderItems
   } = useMenuSettings();
-  const {
-    background
-  } = useLoginBackground();
-  const {
-    settings: desktopBackgroundSettings
-  } = useDesktopBackground();
   const handleLogout = async () => {
     try {
       await supabase.auth.signOut();
@@ -149,39 +141,8 @@ export function AppShell({
     admin: "bg-gradient-deep text-primary-foreground",
     vorstand: "bg-gradient-deep text-primary-foreground"
   };
-  const renderBackground = () => {
-    // Only show background if enabled in settings
-    if (!desktopBackgroundSettings.enabled) {
-      return null;
-    }
-    if (background.type === 'gradient') {
-      return null;
-    }
-    if (background.type === 'video' && background.url) {
-      return <video className="fixed inset-0 w-full h-full object-cover -z-20" autoPlay muted loop playsInline style={{
-        filter: `blur(${background.mediaBlur}px)`
-      }}>
-          <source src={background.url} type="video/mp4" />
-        </video>;
-    }
-    if (background.type === 'image' && background.url) {
-      return <div className="fixed inset-0 w-full h-full bg-cover bg-center bg-no-repeat -z-20" style={{
-        backgroundImage: `url(${background.url})`,
-        filter: `blur(${background.mediaBlur}px)`
-      }} />;
-    }
-    return null;
-  };
   return <>
-      {/* Background Layer */}
-      {renderBackground()}
-      
-      {/* Overlay Layer */}
-      {desktopBackgroundSettings.enabled && background.type !== 'gradient' && background.url && <div className="fixed inset-0 -z-10" style={{
-      backgroundColor: `${background.overlayColor}${Math.round(background.overlayOpacity / 100 * 255).toString(16).padStart(2, '0')}`
-    }} />}
-
-      <div className={`min-h-screen flex flex-col relative z-0 pt-safe ${!desktopBackgroundSettings.enabled ? 'bg-background' : ''}`}>
+      <div className="min-h-screen flex flex-col relative z-0 pt-safe bg-background">
       {/* Main Content */}
       <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
         {children}
@@ -204,6 +165,8 @@ export function AppShell({
               const isActive = activeTab === item.id;
               
               const handleClick = () => {
+                const currentPath = window.location.pathname;
+                
                 // Navigate to route-based items using Route Registry
                 if (item.id === 'file-manager') {
                   navigate(ROUTES.protected.fileManager.path);
@@ -213,10 +176,18 @@ export function AppShell({
                   navigate(ROUTES.protected.settings.path);
                 } else if (item.id === 'header-message') {
                   navigate(ROUTES.protected.headerMessage.path);
-                } else if (item.id === 'desktop-background') {
-                  navigate(ROUTES.protected.desktopBackground.path);
                 } else {
-                  onTabChange(item.id);
+                  // ✅ FIX: Für Tab-basierte Items ERST zu / navigieren
+                  if (currentPath !== '/') {
+                    navigate('/');
+                    // Event dispatchen nach Navigation
+                    setTimeout(() => {
+                      window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: { tab: item.id } }));
+                    }, 100);
+                  } else {
+                    // Wenn wir bereits auf / sind, direkt Tab wechseln
+                    onTabChange(item.id);
+                  }
                 }
               };
               

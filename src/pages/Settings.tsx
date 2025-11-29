@@ -105,7 +105,6 @@ function SettingsContent() {
     { id: "theme", label: "Theme", description: "Hell/Dunkel-Modus", icon: Brush, component: ThemeManager, group: "design" },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
       { id: "loginpage", label: "Login-Seite", description: "Hintergrundbild anpassen", icon: Image, component: LoginBackgroundSettings, group: "design" },
-      { id: "desktopbg", label: "Desktop-Hintergrund", description: "Hintergrundbild auf Desktop", icon: Monitor, route: ROUTES.protected.desktopBackground.path, group: "design" },
       { id: "stickyheader", label: "Fixierte Ansicht", description: "Header-Cards fixieren", icon: StickyNote, component: StickyHeaderLayoutSettings, group: "design" }
     ] : []),
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
