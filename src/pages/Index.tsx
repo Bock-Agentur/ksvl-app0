@@ -40,19 +40,17 @@ function AppContent() {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
   
-  // ✅ Conditional hooks mit enabled flag (React-konform)
-  const shouldLoadUsers = activeTab === 'dashboard' || activeTab === 'users';
-  const shouldLoadDashboard = activeTab === 'dashboard';
-  const { loading: usersLoading } = useUsers({ enabled: shouldLoadUsers && !!roleContext?.currentRole });
-  const { isLoading: aiAssistantLoading } = useAIAssistantSettings({ enabled: shouldLoadDashboard && !!roleContext?.currentRole });
-  const { isLoading: aiWelcomeLoading } = useAIWelcomeMessage({ enabled: shouldLoadDashboard && !!roleContext?.currentRole });
-  const { agentName, isLoading: harborChatLoading } = useHarborChatData({ enabled: shouldLoadDashboard && !!roleContext?.currentRole });
-  const { firstName, fullName: displayName, isLoading: profileLoading } = useProfileData({ enabled: shouldLoadDashboard && !!roleContext?.currentRole });
+  // ✅ Alle Daten immer laden (kein conditional enabled basierend auf activeTab)
+  const { loading: usersLoading } = useUsers({ enabled: !!roleContext?.currentRole });
+  const { isLoading: aiAssistantLoading } = useAIAssistantSettings({ enabled: !!roleContext?.currentRole });
+  const { isLoading: aiWelcomeLoading } = useAIWelcomeMessage({ enabled: !!roleContext?.currentRole });
+  const { agentName, isLoading: harborChatLoading } = useHarborChatData({ enabled: !!roleContext?.currentRole });
+  const { firstName, fullName: displayName, isLoading: profileLoading } = useProfileData({ enabled: !!roleContext?.currentRole });
   const { isLoading: footerLoading } = useFooterMenuSettings(roleContext?.currentRole || 'mitglied');
   const {
     settings: dashboardSettings,
     isLoading: dashboardSettingsLoading,
-  } = useDashboardSettings(roleContext?.currentRole || 'mitglied', { enabled: shouldLoadDashboard && !!roleContext?.currentRole });
+  } = useDashboardSettings(roleContext?.currentRole || 'mitglied', { enabled: !!roleContext?.currentRole });
   
   useSlotDesign();
   
@@ -93,7 +91,7 @@ function AppContent() {
     }
   }, [isPageLoading]);
   
-  // ✅ Simplified tab change
+  // ✅ Simplified tab change - useCallback to prevent unnecessary re-renders
   const setActiveTab = (tab: string) => {
     setIsTransitioning(true);
     setAnimationKey(prev => prev + 1);
@@ -109,7 +107,9 @@ function AppContent() {
   useEffect(() => {
     const handleNavigateToTab = (event: CustomEvent<{ tab: string }>) => {
       const targetTab = event.detail.tab;
-      setActiveTab(targetTab);
+      setIsTransitioning(true);
+      setAnimationKey(prev => prev + 1);
+      setActiveTabRaw(targetTab, true);
     };
     
     window.addEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
@@ -117,7 +117,7 @@ function AppContent() {
     return () => {
       window.removeEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
     };
-  }, []);
+  }, [setActiveTabRaw]);
 
   const renderContent = () => {
     switch (activeTab) {
