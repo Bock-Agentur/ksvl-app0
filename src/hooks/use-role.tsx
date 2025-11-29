@@ -41,7 +41,13 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   // Load current user from Auth Context
   useEffect(() => {
     if (authLoading || !authUser || !isInitialLoad || profileLoading) return;
-    if (!profileData) return;
+    
+    // ✅ FIX: Beende Loading auch wenn kein Profil gefunden wurde
+    if (!profileData) {
+      console.warn('No profile data found for user');
+      setIsInitialLoad(false);
+      return;
+    }
 
     const loadUser = async () => {
       // ✅ Use cached profile data from useUserData

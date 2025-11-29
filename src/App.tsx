@@ -42,6 +42,10 @@ const App = () => {
                   {/* Redirect /dashboard to / */}
                   <Route path="/dashboard" element={<Navigate to="/" replace />} />
                   
+                  {/* Legacy URL Redirects */}
+                  <Route path="/desktop-background" element={<Navigate to="/desktop-hintergrund" replace />} />
+                  <Route path="/header-message" element={<Navigate to="/header-nachricht" replace />} />
+                  
                   {/* Protected Routes with Role Guards */}
                   <Route 
                     path={ROUTES.protected.dashboard.path} 
