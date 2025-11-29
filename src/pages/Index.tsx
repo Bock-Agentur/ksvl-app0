@@ -14,7 +14,7 @@ import { useHarborChatData } from "@/hooks/use-harbor-chat-data";
 import { useProfileData } from "@/hooks/use-profile-data";
 import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
-import { AppShell } from "@/components/app-shell";
+import { UnifiedFooter } from "@/components/common/unified-footer";
 import { Dashboard } from "@/components/dashboard";
 import { UserManagementRefactored as UserManagement } from "@/components/user-management";
 import { SlotManagement } from "@/components/slot-management";
@@ -39,6 +39,7 @@ function AppContent() {
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
+  const [footerAnimated, setFooterAnimated] = useState(false); // Track footer animation globally
   
   // ✅ Alle Daten immer laden (kein conditional enabled basierend auf activeTab)
   const { loading: usersLoading } = useUsers({ enabled: !!roleContext?.currentRole });
@@ -97,6 +98,14 @@ function AppContent() {
     return () => clearTimeout(timer);
   }, [activeTab]);
   
+  // Mark footer as animated after first render
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setFooterAnimated(true);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
+  
   // ✅ JETZT erst Early Return (nach ALLEN Hooks)
   if (!roleContext || roleContext.isLoading || settingsLoading || !roleContext.currentUser) {
     return <PageLoader />;
@@ -139,19 +148,24 @@ function AppContent() {
       <div 
         key={animationKey}
         className={cn(
-          "transition-opacity duration-300",
+          "min-h-screen flex flex-col relative z-0 pt-safe bg-background transition-opacity duration-300",
           isTransitioning ? "opacity-0" : "opacity-100"
         )}
       >
-        <AppShell
+        {/* Main Content */}
+        <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
+          {renderContent()}
+        </main>
+
+        {/* Unified Footer */}
+        <UnifiedFooter
           currentRole={currentRole}
           currentUser={currentUser}
           onRoleChange={setRole}
           activeTab={activeTab}
           onTabChange={setActiveTab}
-        >
-          {renderContent()}
-        </AppShell>
+          hasAnimated={footerAnimated}
+        />
       </div>
     </>
   );

@@ -4,164 +4,68 @@ import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRole } from "@/hooks/use-role";
-import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
 import { cn } from "@/lib/utils";
-import { ROUTES } from "@/lib/registry/routes";
-import { Badge } from "@/components/ui/badge";
-import { Home, Users, Calendar, FileText, Settings, Menu } from "lucide-react";
-import * as LucideIcons from "lucide-react";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { useState } from "react";
+import { UnifiedFooter } from "@/components/common/unified-footer";
 
 export function FileManager() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { currentRole } = useRole();
-  const { getMenuItemsForRole, getDisplaySettingsForRole, isLoading: footerLoading } = useFooterMenuSettings(currentRole);
-  const footerMenuItems = getMenuItemsForRole(currentRole);
-  const { showLabels } = getDisplaySettingsForRole(currentRole);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const handleNavigate = (itemId: string) => {
-    if (itemId === 'file-manager') {
-      // Already on file-manager, do nothing
-    } else if (itemId === 'reports') {
-      navigate(ROUTES.protected.reports.path);
-    } else if (itemId === 'settings') {
-      navigate(ROUTES.protected.settings.path);
-    } else if (itemId === 'header-message') {
-      navigate(ROUTES.protected.headerMessage.path);
-    } else {
-      // Navigate to main app with tab
-      navigate('/');
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: { tab: itemId } }));
-      }, 100);
-    }
-    setIsMenuOpen(false);
-  };
+  const { currentRole, currentUser, setRole } = useRole();
 
   return (
-    <div key={currentRole}>
-      <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-muted/20">
-        <div className="max-w-7xl mx-auto">
-          {/* Header */}
-          <div className={cn(
-            "bg-gradient-to-br from-primary via-primary to-primary/90 rounded-[2rem] shadow-[0_20px_60px_-15px_hsl(var(--primary)_/_0.4)] border-0 mx-4",
-            isMobile ? "mt-4 mb-4" : "mb-6 mt-8"
-          )}>
-            <div className="p-6 md:p-8 flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate("/")}
-                className={cn(
-                  "rounded-full bg-white shadow-lg hover:shadow-xl transition-all hover:scale-105 border-0",
-                  isMobile ? "h-8 w-8" : "h-10 w-10"
-                )}
-              >
-                <ArrowLeft className={cn(
-                  "text-primary",
-                  isMobile ? "h-4 w-4" : "h-5 w-5"
-                )} />
-              </Button>
-              <div>
-                <h1 className={cn(
-                  "font-bold tracking-tight text-white",
-                  isMobile ? "text-2xl" : "text-3xl"
-                )}>Dateimanager</h1>
-                {!isMobile && (
-                  <p className="text-white/90 mt-1">
-                    Zentrale Verwaltung für alle Dokumente und Medien
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* File Manager Content */}
-          <div className="px-4">
-            <EnhancedFileManager />
-          </div>
-        </div>
-      </div>
-
-      {/* Footer Menu */}
-      {!footerLoading && footerMenuItems.length > 0 && (
-        <footer className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-border z-50 shadow-[0_-4px_20px_-4px_rgba(0,0,0,0.1)]">
-          <div className="flex items-center justify-around px-2 sm:px-4 py-2 max-w-7xl mx-auto">
-            {footerMenuItems.map((item, index) => {
-              const IconComponent = LucideIcons[item.icon as keyof typeof LucideIcons] as React.ComponentType<{
-                className?: string;
-              }>;
-              const Icon = IconComponent || Home;
-              const isActive = item.id === 'file-manager';
-              
-              return (
+    <div className="min-h-screen flex flex-col relative z-0 pt-safe bg-background">
+      <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
+        <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-muted/20">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className={cn(
+              "bg-gradient-to-br from-primary via-primary to-primary/90 rounded-[2rem] shadow-[0_20px_60px_-15px_hsl(var(--primary)_/_0.4)] border-0 mx-4",
+              isMobile ? "mt-4 mb-4" : "mb-6 mt-8"
+            )}>
+              <div className="p-6 md:p-8 flex items-center gap-4">
                 <Button
-                  key={`${item.id}-${index}`}
                   variant="ghost"
-                  size="sm"
-                  onClick={() => handleNavigate(item.id)}
+                  size="icon"
+                  onClick={() => navigate("/")}
                   className={cn(
-                    "flex flex-col items-center h-auto py-2 px-1 sm:px-3 relative transition-wave min-w-0",
-                    showLabels ? "gap-1" : "gap-0",
-                    isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    "rounded-full bg-white shadow-lg hover:shadow-xl transition-all hover:scale-105 border-0",
+                    isMobile ? "h-8 w-8" : "h-10 w-10"
                   )}
                 >
-                  <Icon className="h-5 w-5 flex-shrink-0" />
-                  {showLabels && <span className="text-xs font-medium truncate max-w-16">{item.label}</span>}
-                  {item.badge && (
-                    <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 w-4 text-xs p-0 flex items-center justify-center">
-                      {item.badge}
-                    </Badge>
-                  )}
+                  <ArrowLeft className={cn(
+                    "text-primary",
+                    isMobile ? "h-4 w-4" : "h-5 w-5"
+                  )} />
                 </Button>
-              );
-            })}
+                <div>
+                  <h1 className={cn(
+                    "font-bold tracking-tight text-white",
+                    isMobile ? "text-2xl" : "text-3xl"
+                  )}>Dateimanager</h1>
+                  {!isMobile && (
+                    <p className="text-white/90 mt-1">
+                      Zentrale Verwaltung für alle Dokumente und Medien
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
 
-            {/* Burger Menu for Admin/Vorstand */}
-            {(currentRole === 'admin' || currentRole === 'vorstand') && (
-              <Drawer open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-                <DrawerTrigger asChild>
-                  <Button variant="ghost" size="sm" className={cn(
-                    "flex flex-col items-center h-auto py-2 px-1 sm:px-3 min-w-0",
-                    showLabels ? "gap-1" : "gap-0"
-                  )}>
-                    <Menu className="w-5 h-5 flex-shrink-0" />
-                    {showLabels && <span className="text-xs font-medium">Menü</span>}
-                  </Button>
-                </DrawerTrigger>
-                
-                <DrawerContent className="max-h-[90vh]">
-                  <DrawerHeader className="pb-2">
-                    <DrawerTitle className="text-base">Menü</DrawerTitle>
-                  </DrawerHeader>
-                  
-                  <div className="px-4 pb-6 space-y-1">
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start"
-                      onClick={() => handleNavigate('settings')}
-                    >
-                      <Settings className="mr-2 h-4 w-4" />
-                      Einstellungen
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start"
-                      onClick={() => handleNavigate('file-manager')}
-                    >
-                      <FileText className="mr-2 h-4 w-4" />
-                      Dateimanager
-                    </Button>
-                  </div>
-                </DrawerContent>
-              </Drawer>
-            )}
+            {/* File Manager Content */}
+            <div className="px-4">
+              <EnhancedFileManager />
+            </div>
           </div>
-        </footer>
-      )}
+        </div>
+      </main>
+
+      {/* Unified Footer - always shown, no re-animation */}
+      <UnifiedFooter
+        currentRole={currentRole}
+        currentUser={currentUser}
+        onRoleChange={setRole}
+        hasAnimated={true}
+      />
     </div>
   );
 }
