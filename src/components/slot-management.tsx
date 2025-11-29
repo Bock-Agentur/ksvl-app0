@@ -42,7 +42,7 @@ export function SlotManagement() {
   const {
     settings
   } = useSlotDesign();
-  const { isPageSticky } = useStickyHeaderLayout();
+  const { isPageSticky, isLoading: stickyLayoutLoading } = useStickyHeaderLayout();
   const isStickyEnabled = isPageSticky('slotManagement');
   const [isEditing, setIsEditing] = useState(false);
   const [editingSlot, setEditingSlot] = useState<Slot | null>(null);
@@ -264,14 +264,16 @@ export function SlotManagement() {
     booked: slots.filter(s => s.isBooked).length,
     available: slots.filter(s => !s.isBooked).length
   };
+  // ✅ Show stable layout during sticky settings load to prevent layout shifts
   return <div className={cn(
     "bg-background max-w-7xl mx-auto",
-    isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
+    // Use fixed layout class during loading to prevent shift
+    stickyLayoutLoading ? "space-y-6" : (isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6")
   )}>
       {/* Fixed Top Card */}
       <div className={cn(
         "pt-4 pb-0 my-0 px-4",
-        isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
+        stickyLayoutLoading ? "" : (isStickyEnabled ? "flex-shrink-0 relative z-10" : "")
       )}>
         <Card className="card-maritime-hero">
           <CardHeader>
@@ -434,7 +436,7 @@ export function SlotManagement() {
       {/* Scrollable Slots Area */}
       {!isEditing && <div className={cn(
         "pb-4 pt-6 px-[16px]",
-        isStickyEnabled ? "flex-1 overflow-y-auto" : ""
+        stickyLayoutLoading ? "" : (isStickyEnabled ? "flex-1 overflow-y-auto" : "")
       )}>
           {/* Desktop/Tablet: Card wrapper */}
           <Card className="hidden md:block bg-white rounded-[2rem] card-shadow-soft border-0 overflow-hidden">

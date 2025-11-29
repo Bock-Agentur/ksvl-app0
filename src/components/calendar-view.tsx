@@ -26,7 +26,7 @@ export function CalendarView({
     slots,
     isLoading: slotsLoading
   } = useSlotsContext();
-  const { isPageSticky } = useStickyHeaderLayout();
+  const { isPageSticky, isLoading: stickyLayoutLoading } = useStickyHeaderLayout();
   const isStickyEnabled = isPageSticky('calendar');
   const isMobile = useIsMobile();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -115,15 +115,17 @@ export function CalendarView({
     setSelectedDate(today);
   };
 
+  // ✅ Show stable layout during sticky settings load to prevent layout shifts
   return (
     <div className={cn(
       "bg-background max-w-7xl mx-auto",
-      isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
+      // Use fixed layout class during loading to prevent shift
+      stickyLayoutLoading ? "space-y-6" : (isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6")
     )}>
       {/* Sticky Navigation Card with soft transparent shadow */}
       <div className={cn(
         "pt-4 pb-0 my-0 p-4",
-        isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
+        stickyLayoutLoading ? "" : (isStickyEnabled ? "flex-shrink-0 relative z-10" : "")
       )}>
         <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
           <CardHeader>
@@ -307,7 +309,7 @@ export function CalendarView({
       {/* Calendar Content */}
       <div className={cn(
         "px-4",
-        isStickyEnabled ? "flex-1 overflow-y-auto overflow-x-hidden pb-6" : ""
+        stickyLayoutLoading ? "" : (isStickyEnabled ? "flex-1 overflow-y-auto overflow-x-hidden pb-6" : "")
       )}>
         {(viewMode === "day" || viewMode === "week") && (
           <WeekCalendar 
