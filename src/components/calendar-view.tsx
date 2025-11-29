@@ -26,8 +26,9 @@ export function CalendarView({
     slots,
     isLoading: slotsLoading
   } = useSlotsContext();
-  const { isPageSticky } = useStickyHeaderLayout();
+  const { isPageSticky, isLoading: stickyLoading } = useStickyHeaderLayout();
   const isStickyEnabled = isPageSticky('calendar');
+  const isLoading = slotsLoading || stickyLoading;
   
   // Desktop/tablet rendering with sticky header support
   const isMobile = useIsMobile();
@@ -116,6 +117,32 @@ export function CalendarView({
     setCurrentWeek(today);
     setSelectedDate(today);
   };
+
+  if (isLoading) {
+    return (
+      <div className={cn(
+        isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
+      )}>
+        <div className="pt-4 pb-0 my-0 p-4">
+          <Card className="animate-pulse">
+            <CardHeader>
+              <div className="h-6 bg-muted rounded w-1/4 mb-2" />
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                  <div key={i} className="flex-1">
+                    <div className="h-4 bg-muted rounded mb-2" />
+                    <div className="h-32 bg-muted rounded" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    );
+  }
 
   // ✅ Stable layout without loading check since default is enabled
   return (
