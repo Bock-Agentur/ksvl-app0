@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Plus, X, Clock, CheckCircle, XCircle, Edit2, Trash2, User, StickyNote, CalendarCheck, Calendar, CalendarDays } from "lucide-react";
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, parseISO, addMinutes, getWeek } from "date-fns";
 import { de } from "date-fns/locale";
@@ -44,6 +44,20 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
   const { settings } = useSlotDesign();
   const [currentWeek, setCurrentWeek] = useState(selectedDate || new Date());
   const [selectedDay, setSelectedDay] = useState(propSelectedDay || selectedDate || new Date());
+  
+  // Synchronize with props when they change
+  useEffect(() => {
+    if (selectedDate) {
+      setCurrentWeek(selectedDate);
+    }
+  }, [selectedDate]);
+
+  useEffect(() => {
+    if (propSelectedDay) {
+      setSelectedDay(propSelectedDay);
+    }
+  }, [propSelectedDay]);
+  
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedSlotForAction, setSelectedSlotForAction] = useState<Slot | null>(null);
