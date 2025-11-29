@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { ScrollToTop } from "@/components/common/scroll-to-top";
 import { AuthProvider } from "@/contexts/auth-context";
@@ -38,6 +38,9 @@ const App = () => {
                 <Routes>
                   {/* Public Routes */}
                   <Route path={ROUTES.public.auth.path} element={<Auth />} />
+                  
+                  {/* Redirect /dashboard to / */}
+                  <Route path="/dashboard" element={<Navigate to="/" replace />} />
                   
                   {/* Protected Routes with Role Guards */}
                   <Route 

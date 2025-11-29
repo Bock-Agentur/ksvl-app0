@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useRole } from "@/hooks/use-role";
-import { useSlots } from "@/hooks/use-slots";
+import { useSlotsContext } from "@/contexts/slots-context";
 import { useUsers } from "@/hooks/use-users";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { useDashboardAnimations } from "@/hooks/use-dashboard-animations";
@@ -48,7 +48,7 @@ interface DashboardProps {
 
 export function Dashboard({ onNavigate, displayName }: DashboardProps) {
   const { currentRole, currentUser } = useRole();
-  const { slots, isLoading: slotsLoading } = useSlots();
+  const { slots, isLoading: slotsLoading } = useSlotsContext();
   const { users, loading: usersLoading } = useUsers();
   const isMobileOrTablet = useIsMobile();
   const dashboardSettingsHook = useDashboardSettings(currentRole);
