@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import type { User, Session } from "@supabase/supabase-js";
+import { useAuth } from "@/contexts/auth-context";
 import { useRole } from "@/hooks/use-role";
 import { useSlotDesign } from "@/hooks/use-slot-design";
 import { TestDataProvider } from "@/hooks/use-test-data";
 import { ConsecutiveSlotsProvider } from "@/hooks/use-consecutive-slots";
 import { SlotsProvider } from "@/contexts/slots-context";
 import { useAppSettings } from "@/hooks/use-app-settings";
-import { useSlots } from "@/hooks/use-slots";
 import { useUsers } from "@/hooks/use-users";
 import { useAIAssistantSettings } from "@/hooks/use-ai-assistant-settings";
 import { useAIWelcomeMessage } from "@/hooks/use-ai-welcome-message";
@@ -194,40 +192,15 @@ function AppContent() {
 }
 
 const Index = () => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, session, isLoading: loading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // 1. ERST den Auth State Listener einrichten
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (event === 'SIGNED_OUT') {
-          navigate("/auth");
-        }
-        // SIGNED_IN wird in Auth.tsx behandelt - keine doppelte Navigation
-      }
-    );
+    if (!loading && !session) {
+      navigate("/auth");
+    }
+  }, [loading, session, navigate]);
 
-    // 2. DANN die bestehende Session prüfen
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-      
-      if (!session) {
-        navigate("/auth");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  // ✅ Show PageLoader instead of null
   if (loading || !session || !user) {
     return <PageLoader />;
   }

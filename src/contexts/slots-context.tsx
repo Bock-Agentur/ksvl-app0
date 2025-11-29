@@ -2,6 +2,7 @@ import React, { createContext, useContext, ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Slot } from '@/types';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/auth-context';
 import { useRealtimeSubscription } from '@/lib/realtime-manager';
 import { useUsersData } from '@/hooks/use-users-data';
 import { slotService } from '@/lib/services/slot-service';
@@ -25,7 +26,8 @@ const SlotsContext = createContext<SlotsContextValue | undefined>(undefined);
 export function SlotsProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { users: allUsers, isLoading: usersLoading } = useUsersData();
+  const { user: authUser } = useAuth();
+  const { users: allUsers, isLoading: usersLoading } = useUsersData({ enabled: !!authUser });
 
   // Fetch slots with React Query
   const {
