@@ -30,6 +30,8 @@ function AppContent() {
   const roleContext = useRole();
   const [searchParams, setSearchParams] = useSearchParams();
   
+  // ✅ Initialize with default to prevent showing wrong page first
+  const [localActiveTab, setLocalActiveTab] = useState<string>("dashboard");
   const { value: activeTab, setValue: setActiveTabRaw, isLoading: settingsLoading } = useAppSettings<string>(
     "activeTab",
     "dashboard",
@@ -37,9 +39,15 @@ function AppContent() {
   );
   
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
-  const [footerAnimated, setFooterAnimated] = useState(false); // Track footer animation globally
+  const [footerAnimated, setFooterAnimated] = useState(false);
+  
+  // ✅ Sync local tab with settings after loading
+  useEffect(() => {
+    if (!settingsLoading && activeTab) {
+      setLocalActiveTab(activeTab);
+    }
+  }, [activeTab, settingsLoading]);
   
   // ✅ Alle Daten immer laden (kein conditional enabled basierend auf activeTab)
   const { loading: usersLoading } = useUsers({ enabled: !!roleContext?.currentRole });
@@ -74,13 +82,13 @@ function AppContent() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [activeTab]);
 
-  // Listen for navigate-to-tab events from footer
+  // ✅ Listen for navigate-to-tab events - optimistic update
   useEffect(() => {
     const handleNavigateToTab = (event: CustomEvent<{ tab: string }>) => {
       const targetTab = event.detail.tab;
-      setIsTransitioning(true);
+      setLocalActiveTab(targetTab); // Immediate update
       setAnimationKey(prev => prev + 1);
-      setActiveTabRaw(targetTab, true);
+      setActiveTabRaw(targetTab, true); // Persist in background
     };
     
     window.addEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
@@ -89,14 +97,6 @@ function AppContent() {
       window.removeEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
     };
   }, [setActiveTabRaw]);
-  
-  // Transition effect
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsTransitioning(false);
-    }, 150);
-    return () => clearTimeout(timer);
-  }, [activeTab]);
   
   // Mark footer as animated after first render
   useEffect(() => {
@@ -114,15 +114,16 @@ function AppContent() {
   // Ab hier normaler Code mit sicheren Werten
   const { currentRole, currentUser, setRole } = roleContext;
   
-  // Tab change handler
+  // ✅ Tab change handler - optimistic update without loader
   const setActiveTab = (tab: string) => {
-    setIsTransitioning(true);
+    setLocalActiveTab(tab); // Immediate update
     setAnimationKey(prev => prev + 1);
-    setActiveTabRaw(tab, true);
+    setActiveTabRaw(tab, true); // Persist in background
   };
 
   const renderContent = () => {
-    switch (activeTab) {
+    // ✅ Use localActiveTab for immediate rendering
+    switch (localActiveTab) {
       case "dashboard":
         return <Dashboard onNavigate={setActiveTab} displayName={displayName} />;
       case "calendar":
@@ -142,15 +143,11 @@ function AppContent() {
 
   return (
     <>
-      {/* ✅ Show loader only during transitions */}
-      {isTransitioning && <PageLoader />}
+      {/* ✅ Show loader ONLY during initial app load */}
       
       <div 
         key={animationKey}
-        className={cn(
-          "min-h-screen flex flex-col relative z-0 pt-safe bg-background transition-opacity duration-300",
-          isTransitioning ? "opacity-0" : "opacity-100"
-        )}
+        className="min-h-screen flex flex-col relative z-0 pt-safe bg-background"
       >
         {/* Main Content */}
         <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
@@ -162,7 +159,7 @@ function AppContent() {
           currentRole={currentRole}
           currentUser={currentUser}
           onRoleChange={setRole}
-          activeTab={activeTab}
+          activeTab={localActiveTab}
           onTabChange={setActiveTab}
           hasAnimated={footerAnimated}
         />
