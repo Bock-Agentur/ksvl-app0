@@ -270,8 +270,8 @@ Siehe [`ksvl_foundation_audit.md`](./ksvl_foundation_audit.md) für detaillierte
 
 **🔹 MEDIUM PRIORITY (Sprint 2):**
 1. **"God Components" aufteilen** → slot-management.tsx (956 Zeilen), user-management.tsx (963 Zeilen)
-2. **Console.log Cleanup** → 523 Statements in 17 Dateien entfernen
-3. **Module-Registry erstellen** → `src/lib/registry/modules.ts`
+2. ✅ **Console.log Cleanup DONE** → ~235+ Statements aus 5 Hauptdateien entfernt
+3. ✅ **Module-Registry erstellt** → `src/lib/registry/modules.ts` mit 8 Modulen (Core: 5, Domain: 2, Support: 1)
 
 ---
 
