@@ -534,14 +534,14 @@ WICHTIG:
 | EPIC | Aufwand | Priorität | Status |
 |------|---------|-----------|--------|
 | S2-E1: Slot-Management Refactoring | 4-6h | HIGH | 🔜 Sprint 2 |
-| S2-E2: Console.log Cleanup | 2-3h | MEDIUM | 🔜 Sprint 2 |
-| S2-E3: Module-Registry | 1-2h | MEDIUM | 🔜 Sprint 2 |
+| S2-E2: Console.log Cleanup | 2-3h | MEDIUM | ✅ DONE |
+| S2-E3: Module-Registry | 1-2h | MEDIUM | ✅ DONE |
 | S2-E4: User-Management Refactoring | 4-6h | MEDIUM (BONUS) | 🔜 Sprint 2 |
 
 **Empfohlene Reihenfolge:**
-1. **S2-E3** (Module-Registry) → Schneller Win, schafft Klarheit
-2. **S2-E2** (Console.log Cleanup) → Verbessert Code-Qualität massiv
-3. **S2-E1** (Slot-Management) → Größter Architektur-Win
+1. ✅ **S2-E3** (Module-Registry) → DONE: `src/lib/registry/modules.ts` mit 8 Modulen erstellt
+2. ✅ **S2-E2** (Console.log Cleanup) → DONE: ~235+ Statements aus 5 Hauptdateien entfernt
+3. **S2-E1** (Slot-Management) → NEXT: Größter Architektur-Win
 4. **S2-E4** (User-Management) → Wenn Zeit übrig (BONUS)
 
 ---
