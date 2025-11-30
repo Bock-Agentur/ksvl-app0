@@ -18,6 +18,7 @@ import { RotateCcw, GripVertical, Eye, EyeOff, LayoutGrid, Columns2, Square, Sma
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent, DragOverEvent, DragOverlay, pointerWithin, useDroppable, rectIntersection } from '@dnd-kit/core';
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { uiLogger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { RoleCardGrid } from "@/components/common/role-card-grid";
@@ -353,7 +354,7 @@ export function DashboardSettings() {
     try {
       await saveSettings({ allItemsPositions: newPositions });
     } catch (error) {
-      console.error('Failed to save dashboard layout:', error);
+      uiLogger.error('Failed to save dashboard layout', error);
     }
   };
 
@@ -376,7 +377,7 @@ export function DashboardSettings() {
     try {
       await saveSettings({ mobileItemsOrder: newOrder });
     } catch (error) {
-      console.error('Failed to save mobile order:', error);
+      uiLogger.error('Failed to save mobile order', error);
     }
   };
 
@@ -701,7 +702,7 @@ export function DashboardSettings() {
             try {
               await resetToDefaults();
             } catch (error) {
-              console.error('Failed to reset to defaults:', error);
+              uiLogger.error('Failed to reset to defaults', error);
             }
           }}
           className="gap-2"

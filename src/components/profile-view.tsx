@@ -15,6 +15,7 @@ import { useRole } from "@/hooks/use-role";
 import { useCustomFields, useCustomFieldValues } from "@/hooks/use-custom-fields";
 import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
+import { userLogger } from "@/lib/logger";
 
 // ProfileViewProps is now imported from @/types
 
@@ -186,7 +187,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       setEditedUser(userData);
       setAiInfoEnabled(profile.ai_info_enabled === true);
     } catch (error) {
-      console.error('Error loading user:', error);
+      userLogger.error('Error loading user profile', error);
       toast({
         title: "Fehler",
         description: "Profil konnte nicht geladen werden.",
@@ -416,7 +417,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         onUpdate();
       }
     } catch (error: any) {
-      console.error('Error saving profile:', error);
+      userLogger.error('Error saving profile', error);
       toast({
         title: "Fehler",
         description: error.message || "Profil konnte nicht gespeichert werden.",

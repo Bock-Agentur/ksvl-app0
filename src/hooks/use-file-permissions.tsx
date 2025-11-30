@@ -1,6 +1,7 @@
 import { useRef } from "react";
 import { useRole } from "./use-role";
 import { supabase } from "@/integrations/supabase/client";
+import { logger } from "@/lib/logger";
 
 /**
  * Hook for managing file permissions
@@ -92,7 +93,7 @@ export const useFilePermissions = () => {
 
       return false;
     } catch (error) {
-      console.error('Error checking view permission:', error);
+      logger.error('FILE', 'Error checking view permission', error);
       return false;
     }
   };
@@ -123,7 +124,7 @@ export const useFilePermissions = () => {
       // Users can only edit their own files
       return file.owner_id === userId;
     } catch (error) {
-      console.error('Error checking edit permission:', error);
+      logger.error('FILE', 'Error checking edit permission', error);
       return false;
     }
   };
@@ -154,7 +155,7 @@ export const useFilePermissions = () => {
       // Users can only delete their own files
       return file.owner_id === userId;
     } catch (error) {
-      console.error('Error checking delete permission:', error);
+      logger.error('FILE', 'Error checking delete permission', error);
       return false;
     }
   };
@@ -234,7 +235,7 @@ export const useFilePermissions = () => {
 
       return results;
     } catch (error) {
-      console.error('Error checking batch view permissions:', error);
+      logger.error('FILE', 'Error checking batch view permissions', error);
       fileIds.forEach(id => results.set(id, false));
       return results;
     }

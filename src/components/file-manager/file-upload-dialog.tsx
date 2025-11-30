@@ -3,6 +3,7 @@ import { useFileManager, UploadMetadata } from "@/hooks/use-file-manager";
 import { useFilePermissions } from "@/hooks/use-file-permissions";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useUsers } from "@/hooks/use-users";
+import { logger } from "@/lib/logger";
 import {
   Dialog,
   DialogContent,
@@ -123,7 +124,7 @@ export function FileUploadDialog({
       setLinkedUserId(undefined);
       onOpenChange(false);
     } catch (error) {
-      console.error('Upload error:', error);
+      logger.error('FILE', 'Upload error', error);
     }
   };
 

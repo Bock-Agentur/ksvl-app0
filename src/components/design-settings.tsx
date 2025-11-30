@@ -11,7 +11,8 @@ import { useSlotDesign, SlotDesignSettings } from "@/hooks/use-slot-design";
 import { StatusLabel } from "@/components/ui/status-label";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { 
+import { uiLogger } from "@/lib/logger";
+import {
   Palette, 
   RotateCcw, 
   Eye, 
@@ -462,7 +463,7 @@ export function DesignSettings() {
                     description: "Alle Slot-Farben wurden auf die ursprünglichen Standardwerte zurückgesetzt."
                   });
                 } catch (error) {
-                  console.error('Failed to reset to original defaults:', error);
+                  uiLogger.error('Failed to reset to original defaults', error);
                 }
               }}
               className="flex items-center gap-2"
@@ -480,7 +481,7 @@ export function DesignSettings() {
                     description: "Alle Farbeinstellungen wurden erfolgreich gespeichert."
                   });
                 } catch (error) {
-                  console.error('Failed to save settings:', error);
+                  uiLogger.error('Failed to save settings', error);
                 }
               }}
               className="flex items-center gap-2"

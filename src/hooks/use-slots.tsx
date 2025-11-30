@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useRealtimeSubscription } from '@/lib/realtime-manager';
 import { useUsersData } from '@/hooks/use-users-data';
 import { slotService } from '@/lib/services/slot-service';
+import { slotLogger } from '@/lib/logger';
 
 export interface CreateSlotData {
   date: string;
@@ -87,7 +88,7 @@ export function useSlots(options?: { enabled?: boolean }) {
 
       setSlots(transformedSlots);
     } catch (error) {
-      console.error('Error fetching slots:', error);
+      slotLogger.error('Error fetching slots', error);
       toast({
         title: 'Fehler',
         description: 'Slots konnten nicht geladen werden.',
@@ -127,7 +128,7 @@ export function useSlots(options?: { enabled?: boolean }) {
 
       return newSlot;
     } catch (error) {
-      console.error('Error creating slot:', error);
+      slotLogger.error('Error creating slot', error);
       toast({
         title: 'Fehler',
         description: 'Slot konnte nicht erstellt werden.',
@@ -166,7 +167,7 @@ export function useSlots(options?: { enabled?: boolean }) {
 
       return newSlots;
     } catch (error) {
-      console.error('Error creating slot block:', error);
+      slotLogger.error('Error creating slot block', error);
       toast({
         title: 'Fehler',
         description: 'Slotblock konnte nicht erstellt werden.',
@@ -217,7 +218,7 @@ export function useSlots(options?: { enabled?: boolean }) {
 
       return data;
     } catch (error) {
-      console.error('Error updating slot:', error);
+      slotLogger.error('Error updating slot', error);
       // Revert optimistic update on error
       await fetchSlots();
       toast({
@@ -237,7 +238,7 @@ export function useSlots(options?: { enabled?: boolean }) {
 
       setSlots(prev => prev.filter(slot => slot.id !== id));
     } catch (error) {
-      console.error('Error deleting slot:', error);
+      slotLogger.error('Error deleting slot', error);
       toast({
         title: 'Fehler',
         description: 'Slot konnte nicht gelöscht werden.',
@@ -285,7 +286,7 @@ export function useSlots(options?: { enabled?: boolean }) {
 
       return data;
     } catch (error) {
-      console.error('Error booking slot:', error);
+      slotLogger.error('Error booking slot', error);
       // Revert optimistic update on error
       await fetchSlots();
       toast({
@@ -318,7 +319,7 @@ export function useSlots(options?: { enabled?: boolean }) {
       
       return data;
     } catch (error) {
-      console.error('Error canceling booking:', error);
+      slotLogger.error('Error canceling booking', error);
       // Revert optimistic update on error
       await fetchSlots();
       toast({

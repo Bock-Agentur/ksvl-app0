@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useFileManager } from "@/hooks/use-file-manager";
 import { useFilePermissions } from "@/hooks/use-file-permissions";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { logger } from "@/lib/logger";
 import {
   Drawer,
   DrawerContent,
@@ -73,7 +74,7 @@ export function FileDetailDrawer({
       const url = await getFileUrl(file.storage_path, file.category);
       setFileUrl(url);
     } catch (error) {
-      console.error('Error loading file URL:', error);
+      logger.error('FILE', 'Error loading file URL', error);
       setFileUrl(null);
     } finally {
       setLoadingUrl(false);

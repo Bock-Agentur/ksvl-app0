@@ -16,6 +16,7 @@ import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 import { Settings, Palette, TestTube, Users, Calendar, FileText, Layers, FolderOpen, LogOut } from "lucide-react";
 import { ROUTES } from "@/lib/registry/routes";
 import { useMenuSettings } from "@/hooks/use-menu-settings";
+import { uiLogger } from "@/lib/logger";
 
 // Icon mapping for dynamic menu items
 const iconMap = {
@@ -98,7 +99,7 @@ export function UnifiedFooter({
       toast.success("Erfolgreich abgemeldet");
       navigate('/auth');
     } catch (error) {
-      console.error('Logout error:', error);
+      uiLogger.error('Logout error', error);
       toast.error("Fehler beim Abmelden");
     }
   };
