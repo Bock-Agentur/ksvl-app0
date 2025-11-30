@@ -35,15 +35,8 @@ export function useSlots(options?: { enabled?: boolean }) {
     try {
       setIsLoading(true);
       
-      console.log('🔄 FETCHING SLOTS FROM DATABASE...');
-      
       // ✅ Fetch slots via service
       const slotsData = await slotService.fetchSlots();
-
-      console.log('📦 RAW SLOTS DATA:', slotsData);
-
-      // ✅ Use cached user data from useUsersData instead of fetching again
-      console.log('👥 USING CACHED USERS DATA:', allUsers);
 
       // Create a map for quick profile lookup
       const profilesMap = new Map(allUsers.map(u => [u.id, {
@@ -63,8 +56,6 @@ export function useSlots(options?: { enabled?: boolean }) {
         if (normalizedTime && normalizedTime.length === 8) { // Format: HH:MM:SS
           normalizedTime = normalizedTime.substring(0, 5); // Get HH:MM only
         }
-
-        console.log(`🔧 Transforming slot ${dbSlot.id}: ${dbSlot.date} ${dbSlot.time} -> ${normalizedTime}`);
 
         return {
           id: dbSlot.id,
@@ -94,12 +85,9 @@ export function useSlots(options?: { enabled?: boolean }) {
         };
       });
 
-      console.log('✅ TRANSFORMED SLOTS:', transformedSlots);
-      console.log(`📊 Total slots loaded: ${transformedSlots.length}`);
-
       setSlots(transformedSlots);
     } catch (error) {
-      console.error('❌ Error fetching slots:', error);
+      console.error('Error fetching slots:', error);
       toast({
         title: 'Fehler',
         description: 'Slots konnten nicht geladen werden.',
@@ -262,17 +250,12 @@ export function useSlots(options?: { enabled?: boolean }) {
   // Book a slot
   const bookSlot = async (slotId: string, memberId: string) => {
     try {
-      console.log('🔄 BOOK SLOT - START:', slotId, 'for member:', memberId);
-      
       // ✅ Get member profile via service for optimistic update
       const memberProfile = await slotService.fetchMemberProfile(memberId);
-
-      console.log('👤 Member profile fetched:', memberProfile?.name);
 
       // Optimistic update - update UI immediately with full member data
       // CRITICAL: Create a completely new array to force React to detect the change
       setSlots(prev => {
-        console.log('🔄 BEFORE UPDATE - Array ref:', prev.length, 'items');
         const updated = prev.map(slot => 
           slot.id === slotId 
             ? { 
@@ -290,30 +273,20 @@ export function useSlots(options?: { enabled?: boolean }) {
               }
             : slot
         );
-        console.log('✅ OPTIMISTIC UPDATE COMPLETE - Slot booked:', slotId);
-        console.log('🔄 AFTER UPDATE - Array ref:', updated.length, 'items');
-        console.log('📊 Updated slot details:', updated.find(s => s.id === slotId));
         // Return a new array reference
         return [...updated];
       });
 
-
-      console.log('📡 UPDATING DATABASE...');
       // ✅ Book slot via service
       const data = await slotService.bookSlot(slotId, memberId);
-
-      console.log('✅ DATABASE UPDATED SUCCESSFULLY');
-      console.log('🔄 FETCHING LATEST DATA...');
 
       // Fetch full data with profiles to ensure consistency
       await fetchSlots();
 
-      console.log('✅ BOOK SLOT - COMPLETE');
       return data;
     } catch (error) {
-      console.error('❌ ERROR BOOKING SLOT:', error);
+      console.error('Error booking slot:', error);
       // Revert optimistic update on error
-      console.log('🔄 REVERTING OPTIMISTIC UPDATE...');
       await fetchSlots();
       toast({
         title: 'Fehler',
@@ -327,8 +300,6 @@ export function useSlots(options?: { enabled?: boolean }) {
   // Cancel a booking
   const cancelBooking = async (slotId: string) => {
     try {
-      console.log('🔄 CANCEL BOOKING - START:', slotId);
-      
       // Optimistic update - update UI immediately
       setSlots(prev => {
         const updated = prev.map(slot => 
@@ -336,26 +307,19 @@ export function useSlots(options?: { enabled?: boolean }) {
             ? { ...slot, isBooked: false, memberId: undefined, memberName: undefined, member: undefined, bookedBy: undefined }
             : slot
         );
-        console.log('✅ OPTIMISTIC UPDATE COMPLETE - Slot cancelled:', slotId);
         return updated;
       });
 
-      console.log('📡 UPDATING DATABASE...');
       // ✅ Cancel booking via service
       const data = await slotService.cancelBooking(slotId);
-
-      console.log('✅ DATABASE UPDATED SUCCESSFULLY');
-      console.log('🔄 FETCHING LATEST DATA...');
       
       // Fetch full data to ensure consistency
       await fetchSlots();
       
-      console.log('✅ CANCEL BOOKING - COMPLETE');
       return data;
     } catch (error) {
-      console.error('❌ ERROR CANCELING BOOKING:', error);
+      console.error('Error canceling booking:', error);
       // Revert optimistic update on error
-      console.log('🔄 REVERTING OPTIMISTIC UPDATE...');
       await fetchSlots();
       toast({
         title: 'Fehler',
@@ -375,7 +339,6 @@ export function useSlots(options?: { enabled?: boolean }) {
 
     // Only fetch slots when users are loaded
     if (!usersLoading) {
-      console.log('🔄 Setting up slots realtime subscription');
       fetchSlots();
     }
   }, [enabled, usersLoading]);
@@ -384,8 +347,7 @@ export function useSlots(options?: { enabled?: boolean }) {
   useRealtimeSubscription(
     { table: 'slots', event: '*' },
     'use-slots-main',
-    (payload) => {
-      console.log('🔔 REALTIME UPDATE RECEIVED:', payload.eventType || payload.event, payload);
+    () => {
       fetchSlots();
     },
     300, // 300ms debounce

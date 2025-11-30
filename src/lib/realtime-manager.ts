@@ -35,7 +35,7 @@ class RealtimeManager {
   private debounceTimers: Map<string, NodeJS.Timeout> = new Map();
 
   private constructor() {
-    console.log('🔌 [RealtimeManager] Initialized');
+    // RealtimeManager initialized
   }
 
   /**
@@ -73,13 +73,10 @@ class RealtimeManager {
     const channelName = this.getChannelName(config);
     const fullListenerId = `${channelName}:${listenerId}`;
 
-    console.log(`📡 [RealtimeManager] Subscribe: ${fullListenerId}`);
-
     // Get or create channel
     let managed = this.channels.get(channelName);
 
     if (!managed) {
-      console.log(`🆕 [RealtimeManager] Creating new channel: ${channelName}`);
       
       const channel = supabase.channel(channelName);
       
@@ -98,20 +95,15 @@ class RealtimeManager {
           table: config.table,
         },
         (payload: any) => {
-          console.log(`🔔 [RealtimeManager] Change detected: ${channelName}`, payload.eventType || payload.event);
-          
           // Call all registered listeners for this channel
-          managed!.listeners.forEach((listenerCallback, lid) => {
-            console.log(`📤 [RealtimeManager] Notifying listener: ${lid}`);
+          managed!.listeners.forEach((listenerCallback) => {
             listenerCallback(payload);
           });
         }
       );
 
       // Subscribe to the channel
-      channel.subscribe((status) => {
-        console.log(`📡 [RealtimeManager] Channel status [${channelName}]:`, status);
-      });
+      channel.subscribe();
 
       this.channels.set(channelName, managed);
     }
@@ -139,7 +131,6 @@ class RealtimeManager {
 
     // Register listener
     managed.listeners.set(fullListenerId, wrappedCallback);
-    console.log(`✅ [RealtimeManager] Listener registered: ${fullListenerId} (${managed.listeners.size} total)`);
 
     // Return unsubscribe function
     return () => this.unsubscribe(channelName, fullListenerId);
@@ -149,21 +140,16 @@ class RealtimeManager {
    * Unsubscribe a specific listener
    */
   private unsubscribe(channelName: string, listenerId: string): void {
-    console.log(`🔌 [RealtimeManager] Unsubscribe: ${listenerId}`);
-
     const managed = this.channels.get(channelName);
     if (!managed) {
-      console.warn(`⚠️ [RealtimeManager] Channel not found: ${channelName}`);
       return;
     }
 
     // Remove listener
     managed.listeners.delete(listenerId);
-    console.log(`✅ [RealtimeManager] Listener removed: ${listenerId} (${managed.listeners.size} remaining)`);
 
     // If no more listeners, clean up channel
     if (managed.listeners.size === 0) {
-      console.log(`🗑️ [RealtimeManager] Removing channel (no listeners): ${channelName}`);
       supabase.removeChannel(managed.channel);
       this.channels.delete(channelName);
     }
@@ -181,27 +167,23 @@ class RealtimeManager {
    * Unsubscribe all listeners and clean up all channels
    */
   cleanup(): void {
-    console.log('🧹 [RealtimeManager] Cleaning up all channels');
-    
     // Clear all debounce timers
     this.debounceTimers.forEach(timer => clearTimeout(timer));
     this.debounceTimers.clear();
 
     // Remove all channels
-    this.channels.forEach((managed, channelName) => {
-      console.log(`🗑️ [RealtimeManager] Removing channel: ${channelName}`);
+    this.channels.forEach((managed) => {
       supabase.removeChannel(managed.channel);
     });
     
     this.channels.clear();
-    console.log('✅ [RealtimeManager] Cleanup complete');
   }
 
   /**
    * Get current statistics
    */
   getStats() {
-    const stats = {
+    return {
       totalChannels: this.channels.size,
       channels: Array.from(this.channels.entries()).map(([name, managed]) => ({
         name,
@@ -209,9 +191,6 @@ class RealtimeManager {
         config: managed.config,
       })),
     };
-    
-    console.log('📊 [RealtimeManager] Stats:', stats);
-    return stats;
   }
 }
 

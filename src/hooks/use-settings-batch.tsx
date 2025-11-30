@@ -69,8 +69,6 @@ export function useSettingsBatch(options: UseSettingsBatchOptions = {}) {
   const query = useQuery({
     queryKey: ['app-settings-batch', userRole, userId],
     queryFn: async () => {
-      console.log('🔄 [use-settings-batch] Fetching settings batch...');
-      
       const { data, error } = await supabase
         .from('app_settings')
         .select('*')
@@ -84,7 +82,6 @@ export function useSettingsBatch(options: UseSettingsBatchOptions = {}) {
         settingsMap.set(setting.setting_key, setting);
       });
 
-      console.log(`✅ [use-settings-batch] Loaded ${data?.length || 0} settings`);
       return settingsMap;
     },
     enabled,
@@ -104,8 +101,6 @@ export function useSettingsBatch(options: UseSettingsBatchOptions = {}) {
    * Update a specific setting (optimistic update + invalidation)
    */
   const updateSetting = async (key: string, value: any, isGlobal: boolean = true) => {
-    console.log(`🔄 [use-settings-batch] Updating setting: ${key}`);
-    
     // Check if setting exists
     const existingSetting = query.data?.get(key);
 
@@ -133,7 +128,6 @@ export function useSettingsBatch(options: UseSettingsBatchOptions = {}) {
 
     // Invalidate cache to refetch
     await queryClient.invalidateQueries({ queryKey: ['app-settings-batch'] });
-    console.log(`✅ [use-settings-batch] Setting updated: ${key}`);
   };
 
   return {

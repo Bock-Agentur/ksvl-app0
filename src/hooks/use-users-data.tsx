@@ -48,8 +48,6 @@ export function useUsersData(options: UseUsersDataOptions = {}) {
   const query = useQuery({
     queryKey: ['users-with-roles', userId],
     queryFn: async () => {
-      console.log('🔄 [use-users-data] Fetching users data...');
-      
       // Build profiles query
       let profilesQuery = supabase
         .from('profiles')
@@ -66,7 +64,6 @@ export function useUsersData(options: UseUsersDataOptions = {}) {
       if (profilesError) throw profilesError;
 
       if (!profiles || profiles.length === 0) {
-        console.log('ℹ️ [use-users-data] No profiles found');
         return [];
       }
 
@@ -108,7 +105,6 @@ export function useUsersData(options: UseUsersDataOptions = {}) {
         };
       });
 
-      console.log(`✅ [use-users-data] Loaded ${usersWithRoles.length} users with roles`);
       return usersWithRoles;
     },
     enabled,

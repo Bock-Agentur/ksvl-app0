@@ -37,14 +37,9 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
   } = useQuery({
     queryKey: ['slots', allUsers.length],
     queryFn: async () => {
-      console.log('🔄 [SlotsContext] Fetching slots from database');
-      logger.info('Fetching slots from database (React Query)', 'slots-context');
-      
       const slotsData = await slotService.fetchSlots();
-      console.log('📦 [SlotsContext] Raw slots from DB:', slotsData?.length || 0);
 
       if (!slotsData || slotsData.length === 0) {
-        console.log('❌ [SlotsContext] No slots data received');
         return [];
       }
 
@@ -55,7 +50,6 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
         email: u.email,
         member_number: u.memberNumber
       }]));
-      console.log('👥 [SlotsContext] User profiles map size:', profilesMap.size);
 
       // Transform database format to app format
       const transformedSlots: Slot[] = (slotsData || []).map(dbSlot => {
@@ -96,9 +90,6 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
         };
       });
 
-      console.log('✅ [SlotsContext] Transformed', transformedSlots.length, 'slots');
-      console.log('📊 [SlotsContext] Sample slot:', transformedSlots[0]);
-      logger.info(`Transformed ${transformedSlots.length} slots`, 'slots-context');
       return transformedSlots;
     },
     enabled: !!authUser && allUsers.length > 0,
@@ -209,12 +200,8 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
 
   const bookSlotMutation = useMutation({
     mutationFn: async ({ slotId, memberId }: { slotId: string; memberId: string }) => {
-      logger.info(`Booking slot ${slotId} for member ${memberId}`, 'slots-context');
       const memberProfile = await slotService.fetchMemberProfile(memberId);
-      logger.info(`Member profile fetched: ${memberProfile?.name}`, 'slots-context');
-      
       const data = await slotService.bookSlot(slotId, memberId);
-      logger.info('Booking completed successfully', 'slots-context');
       return data;
     },
     onSuccess: () => {
@@ -231,9 +218,7 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
 
   const cancelBookingMutation = useMutation({
     mutationFn: async (slotId: string) => {
-      logger.info(`Canceling booking for slot ${slotId}`, 'slots-context');
       const data = await slotService.cancelBooking(slotId);
-      logger.info('Booking canceled successfully', 'slots-context');
       return data;
     },
     onSuccess: () => {
@@ -252,8 +237,7 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
   useRealtimeSubscription(
     { table: 'slots', event: '*' },
     'slots-context-realtime',
-    (payload) => {
-      logger.info(`Realtime update received: ${payload.eventType || payload.event}`, 'slots-context');
+    () => {
       queryClient.invalidateQueries({ queryKey: ['slots'] });
     },
     300,
