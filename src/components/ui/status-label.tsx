@@ -36,13 +36,6 @@ export function StatusLabel({
   
   const colorConfig = directColors[status];
   
-  // DEBUG: Was wird verwendet
-  console.log('🚀 TRENDY DESIGN APPROACH:', {
-    status,
-    directColor: colorConfig.background,
-    settingsColor: settings[status]?.label
-  });
-  
   // Size configurations
   const sizeConfig = {
     sm: { padding: "2px 8px", fontSize: "12px", borderRadius: "4px" },

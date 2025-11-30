@@ -12,18 +12,19 @@ import { useSlotDesign } from "@/hooks/use-slot-design";
 
 interface SlotListItemProps {
   slot: Slot;
+  allSlots: Slot[];
   onEdit: (slot: Slot) => void;
   onDelete: (slotId: string) => void;
   onCancel: (slotId: string) => void;
   onShowDetails: (slot: Slot) => void;
 }
 
-export function SlotListItem({ slot, onEdit, onDelete, onCancel, onShowDetails }: SlotListItemProps) {
+export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onShowDetails }: SlotListItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { getSlotStatus } = useConsecutiveSlots();
   const { settings } = useSlotDesign();
 
-  const status = getSlotStatus(slot, []);
+  const status = getSlotStatus(slot, allSlots);
   const colors = settings[status];
 
   const formatDate = (dateString: string) => {
