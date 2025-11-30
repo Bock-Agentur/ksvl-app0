@@ -1,36 +1,23 @@
-import { useState, useEffect } from "react";
-import { Search, Plus, Edit, Trash2, Users, Mail, Phone, Anchor, Filter, Download, Key, Eye, ChevronDown, ArrowUpDown } from "lucide-react";
+import { useState } from "react";
 import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Card, CardContent } from "@/components/ui/card";
 import { useUsers, DatabaseUser } from "@/hooks/use-users";
 import { useSearchFilter, useCommonFilters } from "@/hooks/use-search-filter";
 import { useFormHandler, useCommonFieldConfigs } from "@/hooks/use-form-handler";
 import { User, UserRole, generateRolesFromPrimary } from "@/types";
 import { ProfileView } from "./profile-view";
 import { cn } from "@/lib/utils";
-import { UserRoleSelector } from "./user-role-selector";
-import { UserCardWithCustomFields } from "./user-card-with-custom-fields";
 import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
-import {
-  getRoleLabel, 
-  calculateUserStats, 
-  convertToCSV, 
-  downloadCSV, 
-  generateMemberNumber 
-} from "@/lib/business-logic";
-import { supabase } from "@/integrations/supabase/client";
+import { calculateUserStats, convertToCSV, downloadCSV, generateMemberNumber } from "@/lib/business-logic";
 import { useToast } from "@/hooks/use-toast";
-import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 import { userService } from "@/lib/services/user-service";
 import { validatePassword } from "@/lib/password-validation";
+import { UserHeroSection } from "./user-management/user-hero-section";
+import { UserStatsCards } from "./user-management/user-stats-cards";
+import { UserFiltersSection } from "./user-management/user-filters-section";
+import { UserListSection } from "./user-management/user-list-section";
+import { UserAddDialog } from "./user-management/user-add-dialog";
+import { UserPasswordDialog } from "./user-management/user-password-dialog";
 
 /**
  * Benutzer-Verwaltung mit Supabase Datenbank
@@ -41,8 +28,6 @@ export function UserManagementRefactored() {
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
   const { isPageSticky } = useStickyHeaderLayout();
   const isStickyEnabled = isPageSticky('userManagement');
-  const [isStatsOpen, setIsStatsOpen] = useState(false);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState<'name' | 'email' | 'memberNumber' | 'role'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   
@@ -130,7 +115,6 @@ export function UserManagementRefactored() {
 
     switch (sortBy) {
       case 'name':
-        // Use firstName and lastName directly from user object
         const aFullName = [a.firstName, a.lastName].filter(Boolean).join(' ') || a.name;
         const bFullName = [b.firstName, b.lastName].filter(Boolean).join(' ') || b.name;
         
@@ -200,7 +184,6 @@ export function UserManagementRefactored() {
       entryDate: ''
     } as any,
     onSubmit: async (data) => {
-      // Validation only, actual submission in handleFormSubmit
       return true;
     }
   });
@@ -250,7 +233,6 @@ export function UserManagementRefactored() {
         return;
       }
 
-      // ✅ Use centralized user service
       await userService.createUser({
         email: data.email,
         password: password,
@@ -273,7 +255,6 @@ export function UserManagementRefactored() {
       refreshUsers();
       setShowAddDialog(false);
     } catch (error: any) {
-      console.error('Form submission error:', error);
       toast({
         title: "Fehler",
         description: error.message || "Benutzer konnte nicht gespeichert werden.",
@@ -292,7 +273,6 @@ export function UserManagementRefactored() {
       return;
     }
     
-    // Validate password with strong requirements
     const validation = validatePassword(password);
     if (!validation.isValid) {
       toast({
@@ -304,7 +284,6 @@ export function UserManagementRefactored() {
     }
 
     try {
-      // ✅ Use centralized user service
       await userService.updatePassword({
         userId: passwordUserId,
         password: password
@@ -346,10 +325,6 @@ export function UserManagementRefactored() {
         isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
       )}>
         <Card className="animate-pulse">
-          <CardHeader>
-            <div className="h-8 bg-muted rounded w-1/3 mb-2" />
-            <div className="h-4 bg-muted rounded w-1/2" />
-          </CardHeader>
           <CardContent className="space-y-4">
             {[1, 2, 3, 4, 5].map((i) => (
               <div key={i} className="flex items-center gap-4 p-4 border rounded-lg">
@@ -388,332 +363,31 @@ export function UserManagementRefactored() {
         "space-y-2",
         isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
       )}>
-      {/* Hero Card */}
-      <Card className="card-maritime-hero">
-        <CardContent className="p-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <h1 className="text-2xl font-bold">Mitgliederverwaltung</h1>
-              <p className="text-muted-foreground">
-                {stats.total} Mitglieder • {stats.active} aktiv • {stats.roleCount.admin} Admins • {stats.activeRate}% Aktivitätsrate
-              </p>
-            </div>
-            
-            <div className="flex items-center gap-1.5 sm:gap-2">
-              <Button 
-                variant="outline" 
-                onClick={handleExport}
-                className="text-xs sm:text-sm px-2 sm:px-4 py-1.5 sm:py-2 h-auto"
-              >
-                <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Export CSV</span>
-                <span className="sm:hidden">CSV</span>
-              </Button>
-              <Button 
-                onClick={handleAddUser}
-                className="text-xs sm:text-sm px-2 sm:px-4 py-1.5 sm:py-2 h-auto"
-              >
-                <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">Benutzer hinzufügen</span>
-                <span className="sm:hidden">Neu</span>
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Statistiken Cards - Collapsible auf Mobile */}
-      <Collapsible open={isStatsOpen} onOpenChange={setIsStatsOpen} className="sm:hidden">
-        <CollapsibleTrigger asChild>
-          <Button 
-            variant="outline" 
-            className="w-full flex items-center justify-between card-maritime-hero hover:bg-white/90 px-6 py-4 h-auto"
-          >
-            <span className="font-semibold text-sm">Statistiken anzeigen</span>
-            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isStatsOpen ? 'rotate-180' : ''}`} />
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="mt-2">
-          <Card className="card-maritime-hero">
-            <CardContent className="p-4">
-              <div className="grid grid-cols-2 gap-2">
-                <Card className="card-maritime-hero">
-                  <CardContent className="pt-3 pb-2">
-                    <div className="text-lg font-bold text-primary">{stats.total}</div>
-                    <p className="text-[10px] text-muted-foreground">Gesamt</p>
-                  </CardContent>
-                </Card>
-                <Card className="card-maritime-hero">
-                  <CardContent className="pt-3 pb-2">
-                    <div className="text-lg font-bold text-green-600">{stats.active}</div>
-                    <p className="text-[10px] text-muted-foreground">Aktiv</p>
-                  </CardContent>
-                </Card>
-                <Card className="card-maritime-hero">
-                  <CardContent className="pt-3 pb-2">
-                    <div className="text-lg font-bold text-blue-600">{stats.roleCount.mitglied}</div>
-                    <p className="text-[10px] text-muted-foreground">Mitglieder</p>
-                  </CardContent>
-                </Card>
-                <Card className="card-maritime-hero">
-                  <CardContent className="pt-3 pb-2">
-                    <div className="text-lg font-bold text-purple-600">{stats.roleCount.kranfuehrer}</div>
-                    <p className="text-[10px] text-muted-foreground">Kranführer</p>
-                  </CardContent>
-                </Card>
-                <Card className="col-span-2 card-maritime-hero">
-                  <CardContent className="pt-3 pb-2">
-                    <div className="text-lg font-bold text-red-600">{stats.roleCount.admin}</div>
-                    <p className="text-[10px] text-muted-foreground">Admins</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </CardContent>
-          </Card>
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Statistiken Cards - Normal auf Desktop */}
-      <div className="hidden sm:grid grid-cols-2 sm:grid-cols-5 gap-2">
-        <Card className="card-maritime-hero">
-          <CardContent className="pt-3 pb-2">
-            <div className="text-lg font-bold text-primary">{stats.total}</div>
-            <p className="text-[10px] text-muted-foreground">Gesamt</p>
-          </CardContent>
-        </Card>
-        <Card className="card-maritime-hero">
-          <CardContent className="pt-3 pb-2">
-            <div className="text-lg font-bold text-green-600">{stats.active}</div>
-            <p className="text-[10px] text-muted-foreground">Aktiv</p>
-          </CardContent>
-        </Card>
-        <Card className="card-maritime-hero">
-          <CardContent className="pt-3 pb-2">
-            <div className="text-lg font-bold text-blue-600">{stats.roleCount.mitglied}</div>
-            <p className="text-[10px] text-muted-foreground">Mitglieder</p>
-          </CardContent>
-        </Card>
-        <Card className="card-maritime-hero">
-          <CardContent className="pt-3 pb-2">
-             <div className="text-lg font-bold text-purple-600">{stats.roleCount.kranfuehrer}</div>
-             <p className="text-[10px] text-muted-foreground">Kranführer</p>
-          </CardContent>
-        </Card>
-        <Card className="card-maritime-hero">
-          <CardContent className="pt-3 pb-2">
-            <div className="text-lg font-bold text-red-600">{stats.roleCount.admin}</div>
-            <p className="text-[10px] text-muted-foreground">Admins</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Such- und Filter-Bereich - Collapsible auf Mobile */}
-      <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen} className="sm:hidden">
-        <CollapsibleTrigger asChild>
-          <Button 
-            variant="outline" 
-            className="w-full flex items-center justify-between bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 hover:bg-white/90 px-6 py-4 h-auto"
-          >
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4" />
-              <span className="font-semibold text-sm">Suche & Filter</span>
-            </div>
-            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="mt-2">
-          <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
-            <CardContent className="pt-4 space-y-4">
-              <div className="flex flex-col gap-4">
-                <div className="flex-1">
-                  <Label htmlFor="search-mobile">Suche</Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="search-mobile"
-                      placeholder="Nach Name, E-Mail, Telefon..."
-                      value={searchFilter.searchTerm}
-                      onChange={(e) => searchFilter.setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-                </div>
-                
-                <div>
-                  <Label>Rolle</Label>
-                  <Select 
-                    value={searchFilter.filters.role || "all"} 
-                    onValueChange={(value) => searchFilter.setFilter('role', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {userRoleFilter.options.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div>
-                  <Label>Status</Label>
-                  <Select 
-                    value={searchFilter.filters.status || "all"} 
-                    onValueChange={(value) => searchFilter.setFilter('status', value)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {statusFilter.options.map(option => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {(searchFilter.searchTerm || Object.values(searchFilter.filters).some(v => v && v !== 'all')) && (
-                  <Button variant="outline" onClick={searchFilter.clearAll} className="w-full">
-                    Filter zurücksetzen
-                  </Button>
-                )}
-              </div>
-              
-              <div className="flex items-center justify-between text-sm text-muted-foreground">
-                <span>{searchFilter.stats.filtered} von {searchFilter.stats.total} Benutzern</span>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="sort-mobile" className="text-xs">Sortieren:</Label>
-                  <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                    <SelectTrigger id="sort-mobile" className="h-8 w-32">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="name">Name</SelectItem>
-                      <SelectItem value="email">E-Mail</SelectItem>
-                      <SelectItem value="memberNumber">Mitgliedsnr.</SelectItem>
-                      <SelectItem value="role">Rolle</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-                  >
-                    <ArrowUpDown className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </CollapsibleContent>
-      </Collapsible>
-
-      {/* Such- und Filter-Bereich - Normal auf Desktop */}
-      <Card className="hidden sm:block bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Filter className="h-5 w-5" />
-              Suche & Filter
-            </div>
-            <div className="flex items-center gap-2">
-              <Label htmlFor="sort-desktop" className="text-sm font-normal">Sortieren:</Label>
-              <Select value={sortBy} onValueChange={(value: any) => setSortBy(value)}>
-                <SelectTrigger id="sort-desktop" className="h-9 w-40">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="name">Name</SelectItem>
-                  <SelectItem value="email">E-Mail</SelectItem>
-                  <SelectItem value="memberNumber">Mitgliedsnummer</SelectItem>
-                  <SelectItem value="role">Rolle</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-9 w-9 p-0"
-                onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
-              >
-                <ArrowUpDown className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1">
-              <Label htmlFor="search">Suche</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="search"
-                  placeholder="Nach Name, E-Mail, Telefon oder Mitgliedsnummer suchen..."
-                  value={searchFilter.searchTerm}
-                  onChange={(e) => searchFilter.setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            
-            <div className="sm:w-48">
-              <Label>Rolle</Label>
-              <Select 
-                value={searchFilter.filters.role || "all"} 
-                onValueChange={(value) => searchFilter.setFilter('role', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {userRoleFilter.options.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="sm:w-48">
-              <Label>Status</Label>
-              <Select 
-                value={searchFilter.filters.status || "all"} 
-                onValueChange={(value) => searchFilter.setFilter('status', value)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {statusFilter.options.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {(searchFilter.searchTerm || Object.values(searchFilter.filters).some(v => v && v !== 'all')) && (
-              <div className="flex items-end">
-                <Button variant="outline" onClick={searchFilter.clearAll}>
-                  Filter zurücksetzen
-                </Button>
-              </div>
-            )}
-          </div>
-          
-          <div className="text-sm text-muted-foreground">
-            {searchFilter.stats.filtered} von {searchFilter.stats.total} Benutzern angezeigt
-          </div>
-        </CardContent>
-      </Card>
+        <UserHeroSection 
+          stats={stats} 
+          onAddUser={handleAddUser}
+          onExport={handleExport}
+        />
+        
+        <UserStatsCards stats={stats} />
+        
+        <UserFiltersSection
+          searchTerm={searchFilter.searchTerm}
+          onSearchChange={searchFilter.setSearchTerm}
+          roleFilter={searchFilter.filters.role || null}
+          onRoleFilterChange={(value) => searchFilter.setFilter('role', value)}
+          statusFilter={searchFilter.filters.status || null}
+          onStatusFilterChange={(value) => searchFilter.setFilter('status', value)}
+          roleOptions={userRoleFilter.options}
+          statusOptions={statusFilter.options}
+          onClearFilters={searchFilter.clearAll}
+          filteredCount={searchFilter.stats.filtered}
+          totalCount={searchFilter.stats.total}
+          sortBy={sortBy}
+          onSortByChange={setSortBy}
+          sortOrder={sortOrder}
+          onSortOrderChange={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+        />
       </div>
 
       {/* Scrollable Content Area */}
@@ -721,242 +395,41 @@ export function UserManagementRefactored() {
         "space-y-6",
         isStickyEnabled ? "flex-1 overflow-y-auto" : ""
       )}>
-      {/* Benutzerliste */}
-      <div className="space-y-3">
-        {sortedUsers.length === 0 ? (
-          <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
-            <CardContent className="pt-6 text-center">
-              <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground">Keine Benutzer gefunden.</p>
-              {searchFilter.searchTerm && (
-                <p className="text-sm text-muted-foreground mt-2">
-                  Versuche einen anderen Suchbegriff oder entferne die Filter.
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        ) : (
-          sortedUsers.map((user) => (
-            <UserCardWithCustomFields
-              key={user.id}
-              user={user}
-              getRoleBadgeInlineStyle={getRoleBadgeInlineStyle}
-              onViewUser={handleViewUser}
-              onPasswordChange={(userId) => {
-                setPasswordUserId(userId);
-                setShowPasswordDialog(true);
-              }}
-              onDeleteUser={handleDeleteUser}
-            />
-          ))
-        )}
-      </div>
+        <UserListSection
+          users={sortedUsers}
+          searchTerm={searchFilter.searchTerm}
+          getRoleBadgeInlineStyle={getRoleBadgeInlineStyle}
+          onViewUser={handleViewUser}
+          onPasswordChange={(userId) => {
+            setPasswordUserId(userId);
+            setShowPasswordDialog(true);
+          }}
+          onDeleteUser={handleDeleteUser}
+        />
 
-      {/* Benutzer Hinzufügen Dialog */}
-      <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Neuen Benutzer hinzufügen</DialogTitle>
-            <DialogDescription>
-              Erstellen Sie einen neuen Benutzer mit allen erforderlichen Informationen.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-6">
-            <Tabs defaultValue="basic" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="basic">Basis</TabsTrigger>
-                <TabsTrigger value="contact">Kontakt & Boot</TabsTrigger>
-                <TabsTrigger value="roles">Rollen & Status</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="basic" className="space-y-4 mt-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="name">Name *</Label>
-                    <Input
-                      id="name"
-                      placeholder="Max Mustermann"
-                      value={userForm.values.name || ''}
-                      onChange={(e) => userForm.setValue('name', e.target.value)}
-                    />
-                    {userForm.errors.name && (
-                      <p className="text-sm text-destructive">{userForm.errors.name}</p>
-                    )}
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="email">E-Mail *</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="max@beispiel.de"
-                      value={userForm.values.email || ''}
-                      onChange={(e) => userForm.setValue('email', e.target.value)}
-                    />
-                    {userForm.errors.email && (
-                      <p className="text-sm text-destructive">{userForm.errors.email}</p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="password">Passwort *</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Mindestens 6 Zeichen"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="memberNumber">Mitgliedsnummer</Label>
-                  <Input
-                    id="memberNumber"
-                    placeholder="Automatisch generiert, falls leer"
-                      value={userForm.values.memberNumber || ''}
-                      onChange={(e) => userForm.setValue('memberNumber', e.target.value)}
-                  />
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="contact" className="space-y-4 mt-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="phone">Telefon</Label>
-                    <Input
-                      id="phone"
-                      placeholder="+43 123 456789"
-                      value={userForm.values.phone || ''}
-                      onChange={(e) => userForm.setValue('phone', e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="boatName">Bootsname</Label>
-                    <Input
-                      id="boatName"
-                      placeholder="Name des Bootes"
-                      value={userForm.values.boatName || ''}
-                      onChange={(e) => userForm.setValue('boatName', e.target.value)}
-                    />
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="col-span-2 space-y-2">
-                    <Label htmlFor="streetAddress">Straße</Label>
-                    <Input
-                      id="streetAddress"
-                      placeholder="Musterstraße 123"
-                      value={(userForm.values as any).streetAddress || ''}
-                      onChange={(e) => userForm.setValue('streetAddress' as any, e.target.value)}
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="postalCode">PLZ</Label>
-                    <Input
-                      id="postalCode"
-                      placeholder="1234"
-                      value={(userForm.values as any).postalCode || ''}
-                      onChange={(e) => userForm.setValue('postalCode' as any, e.target.value)}
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="city">Ort</Label>
-                  <Input
-                    id="city"
-                    placeholder="Wien"
-                    value={(userForm.values as any).city || ''}
-                    onChange={(e) => userForm.setValue('city' as any, e.target.value)}
-                  />
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="roles" className="space-y-4 mt-4">
-                <div className="space-y-2">
-                  <Label>Rollen</Label>
-                  <UserRoleSelector
-                    selectedRoles={userForm.values.roles || []}
-                    onRolesChange={(roles) => userForm.setValue('roles', roles)}
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="status">Status</Label>
-                  <Select
-                    value={userForm.values.status || 'active'}
-                    onValueChange={(value) => userForm.setValue('status', value as any)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Aktiv</SelectItem>
-                      <SelectItem value="inactive">Inaktiv</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </TabsContent>
-            </Tabs>
-            
-            <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" onClick={() => setShowAddDialog(false)}>
-                Abbrechen
-              </Button>
-              <Button onClick={handleFormSubmit}>
-                Benutzer erstellen
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+        <UserAddDialog
+          open={showAddDialog}
+          onOpenChange={setShowAddDialog}
+          formValues={userForm.values as any}
+          onFormValueChange={(field, value) => userForm.setValue(field as any, value)}
+          formErrors={userForm.errors}
+          password={password}
+          onPasswordChange={setPassword}
+          onSubmit={handleFormSubmit}
+        />
 
-      {/* Password Change Dialog */}
-      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Passwort ändern</DialogTitle>
-            <DialogDescription>
-              Geben Sie ein neues Passwort für den Benutzer ein.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="newPassword">Neues Passwort</Label>
-              <Input
-                id="newPassword"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mindestens 6 Zeichen"
-              />
-            </div>
-            
-            <div className="flex justify-end gap-2">
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setShowPasswordDialog(false);
-                  setPassword("");
-                  setPasswordUserId(null);
-                }}
-              >
-                Abbrechen
-              </Button>
-              <Button onClick={handlePasswordChange}>
-                Passwort ändern
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+        <UserPasswordDialog
+          open={showPasswordDialog}
+          onOpenChange={setShowPasswordDialog}
+          password={password}
+          onPasswordChange={setPassword}
+          onSubmit={handlePasswordChange}
+          onCancel={() => {
+            setShowPasswordDialog(false);
+            setPassword("");
+            setPasswordUserId(null);
+          }}
+        />
       </div>
     </div>
   );
