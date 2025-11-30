@@ -1,8 +1,8 @@
 # KSVL App - Architektur-Übersicht
 
-**Erstellt:** 2025-11-28  
+**Erstellt:** 2025-11-30  
 **Status:** HIGH PRIORITY Optimierungen abgeschlossen  
-**Foundation-Konformität:** 82/100
+**Foundation-Konformität:** 87/100
 
 ---
 
@@ -17,8 +17,8 @@ Die KSVL Web-App ist eine moderne React-TypeScript-Anwendung zur Verwaltung von 
 - ✅ Design-System (shadcn/ui) konsistent implementiert
 
 ### Hauptschwächen
-- ⚠️ "God Components" (>400 Zeilen) mit vermischten Verantwortlichkeiten
-- ⚠️ 476+ console.log Statements in Hooks (Debugging-Code in Produktion)
+- ⚠️ "God Components" (>900 Zeilen): slot-management.tsx (956), user-management.tsx (963)
+- ⚠️ 523 console.log Statements in 17 Dateien (Debugging-Code in Produktion)
 - ⚠️ Keine zentrale Module-Registry
 - ⚠️ Core-Module nicht klar von Domain-Modulen getrennt
 
@@ -104,7 +104,7 @@ Die KSVL Web-App ist eine moderne React-TypeScript-Anwendung zur Verwaltung von 
 | **TypeScript & Types**         | 90/100    | Konsequent typsicher, klare Interfaces                                         |
 | **Design-System**              | 85/100    | card-maritime-hero eingeführt, shadcn/ui konsistent                            |
 
-**🎯 Gesamt-Score: 82/100**
+**🎯 Gesamt-Score: 87/100**
 
 ---
 
@@ -269,12 +269,12 @@ Siehe [`ksvl_foundation_audit.md`](./ksvl_foundation_audit.md) für detaillierte
 3. ✅ **Role-Switching optimiert** → nutzt `useUsersData()` Cache
 
 **🔹 MEDIUM PRIORITY (Sprint 2):**
-1. **"God Components" aufteilen** → slot-management.tsx, user-management.tsx
-2. **Console.log Cleanup** → 476+ Statements entfernen
+1. **"God Components" aufteilen** → slot-management.tsx (956 Zeilen), user-management.tsx (963 Zeilen)
+2. **Console.log Cleanup** → 523 Statements in 17 Dateien entfernen
 3. **Module-Registry erstellen** → `src/lib/registry/modules.ts`
 
 ---
 
-**Dokumenten-Version:** 1.0  
-**Zuletzt aktualisiert:** 2025-11-28  
+**Dokumenten-Version:** 1.1  
+**Zuletzt aktualisiert:** 2025-11-30  
 **Verantwortlich:** Architecture Team

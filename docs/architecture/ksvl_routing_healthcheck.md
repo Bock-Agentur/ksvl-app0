@@ -1,6 +1,6 @@
 # KSVL App – Routing & Link-Stabilitäts-Check
 
-**Datum:** 2025-01-28  
+**Datum:** 2025-11-30  
 **Version:** 1.0  
 **Status:** ✅ **CRITICAL FIXES APPLIED**
 
@@ -263,12 +263,13 @@ describe('ROUTES Registry', () => {
 - **Routing-Score von 45 → 95** (+50 Punkte)
 
 ### 🎯 Nächste Schritte
-1. ✅ **Sprint 1 DONE:** Kritische Routing-Fixes + Profile-Refactoring
-2. ⏭️ **Sprint 2 NEXT:** "God Components" aufteilen (slot-management 956 Zeilen, user-management 963 Zeilen)
-3. ⏭️ **Sprint 2 NEXT:** Console.log Cleanup (523 Statements entfernen)
-4. ⏭️ **Sprint 2 NEXT:** Module-Registry erstellen
+1. ✅ **Sprint 1 DONE:** Kritische Routing-Fixes + Slot-Service + Navigation-Registry
+2. ✅ **Profile-Refactoring DONE:** profile-view.tsx (2173 → 594 Zeilen, 13 Sub-Komponenten)
+3. ⏭️ **Sprint 2 NEXT:** "God Components" aufteilen (slot-management 956 Zeilen, user-management 963 Zeilen)
+4. ⏭️ **Sprint 2 NEXT:** Console.log Cleanup (523 Statements in 17 Dateien entfernen)
+5. ⏭️ **Sprint 2 NEXT:** Module-Registry erstellen (`src/lib/registry/modules.ts`)
 
 ---
 
 **Healthcheck Status:** ✅ **STABIL**  
-**Letzte Aktualisierung:** 2025-01-28
+**Letzte Aktualisierung:** 2025-11-30
