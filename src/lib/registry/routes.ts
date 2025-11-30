@@ -78,14 +78,6 @@ export const ROUTES: RouteRegistry = {
       description: 'Header-Nachricht bearbeiten'
     },
     
-    desktopBackground: {
-      path: '/desktop-hintergrund',
-      label: 'Desktop-Hintergrund',
-      allowedRoles: ['admin'],
-      icon: 'Image',
-      description: 'Desktop-Hintergrundbild verwalten'
-    },
-    
     reports: {
       path: '/berichte',
       label: 'Berichte',
@@ -106,7 +98,6 @@ export const ROUTE_GUARDS: Record<string, UserRole[]> = {
   '/dateimanager': ['admin', 'vorstand'],
   '/settings': ['admin'],
   '/header-nachricht': ['admin'],
-  '/desktop-hintergrund': ['admin'],
   '/berichte': ['admin', 'vorstand'],
 };
 

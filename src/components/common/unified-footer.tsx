@@ -128,7 +128,6 @@ export function UnifiedFooter({
     if (itemId === 'reports') return currentPath === ROUTES.protected.reports.path;
     if (itemId === 'settings') return currentPath === ROUTES.protected.settings.path;
     if (itemId === 'header-message') return currentPath === ROUTES.protected.headerMessage.path;
-    if (itemId === 'desktop-background') return currentPath === ROUTES.protected.desktopBackground.path;
     
     // For dashboard items, check active tab
     if (currentPath === '/' && activeTab) {
@@ -156,10 +155,6 @@ export function UnifiedFooter({
     }
     if (itemId === 'header-message') {
       navigate(ROUTES.protected.headerMessage.path);
-      return;
-    }
-    if (itemId === 'desktop-background') {
-      navigate(ROUTES.protected.desktopBackground.path);
       return;
     }
     

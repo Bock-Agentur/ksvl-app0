@@ -14,7 +14,6 @@ import NotFound from "./pages/NotFound";
 import { Settings } from "./pages/Settings";
 import { Auth } from "./pages/Auth";
 import { HeaderMessage } from "./pages/HeaderMessage";
-import { DesktopBackground } from "./pages/DesktopBackground";
 import { FileManager } from "./pages/FileManager";
 import { Reports } from "./pages/Reports";
 
@@ -43,7 +42,6 @@ const App = () => {
                   <Route path="/dashboard" element={<Navigate to="/" replace />} />
                   
                   {/* Legacy URL Redirects */}
-                  <Route path="/desktop-background" element={<Navigate to="/desktop-hintergrund" replace />} />
                   <Route path="/header-message" element={<Navigate to="/header-nachricht" replace />} />
                   
                   {/* Protected Routes with Role Guards */}

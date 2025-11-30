@@ -12,7 +12,6 @@ import { TestDataManager } from "@/components/test-data-manager";
 import { UserListDatabase } from "@/components/user-list-database";
 import { CustomFieldsManager } from "@/components/custom-fields-manager";
 import { LoginBackgroundSettings } from "@/components/login-background-settings";
-import { DesktopBackgroundSettings } from "@/components/desktop-background-settings";
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
 import { StickyHeaderLayoutSettings } from "@/components/sticky-header-layout-settings";
@@ -24,7 +23,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/lib/registry/routes";
 import { useLoginBackground } from "@/hooks/use-login-background";
-import { useDesktopBackground } from "@/hooks/use-desktop-background";
 import { SettingsFooter } from "@/components/settings-footer";
 import { toast } from "sonner";
 import { 
@@ -67,12 +65,11 @@ function SettingsContent() {
   
   // ✅ Nur laden wenn Overview sichtbar (Background benötigt)
   const { background, isLoading: bgLoading } = useLoginBackground({ enabled: isOverview });
-  const { settings: desktopBackgroundSettings, isLoading: desktopBgLoading } = useDesktopBackground({ enabled: isOverview });
   const { isPageSticky } = useStickyHeaderLayout({ enabled: isOverview });
   const isStickyEnabled = isPageSticky('settings');
   
-  const showBackground = isOverview && desktopBackgroundSettings.enabled && background;
-  const isPageLoading = roleLoading || (isOverview && (bgLoading || desktopBgLoading));
+  const showBackground = false; // Desktop background feature removed
+  const isPageLoading = roleLoading || (isOverview && bgLoading);
 
   // KRITISCH: Nur Admins und Vorstand haben Zugriff auf Settings
   const isAdmin = currentRole === "admin" || currentRole === "vorstand";
