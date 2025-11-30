@@ -340,6 +340,7 @@ export function SlotManagement() {
                 <SlotListItem
                   key={slot.id}
                   slot={slot}
+                  allSlots={slots}
                   onEdit={handleOpenForm}
                   onDelete={handleDeleteSlot}
                   onCancel={handleCancelSlot}
