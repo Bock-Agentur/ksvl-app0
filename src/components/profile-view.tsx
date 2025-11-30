@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
 import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings } from "lucide-react";
 import { PasswordChangeDialog } from "@/components/profile/password-change-dialog";
+import { ProfileDocumentsSection } from "@/components/profile/profile-documents-section";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,6 @@ import { useRole } from "@/hooks/use-role";
 import { useCustomFields, useCustomFieldValues } from "@/hooks/use-custom-fields";
 import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
-import { DocumentUpload } from "@/components/common/document-upload";
 import { UserHistoryTimeline } from "@/components/common/user-history-timeline";
 import { validatePassword } from "@/lib/password-validation";
 
@@ -1844,65 +1844,15 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         </CardContent>
       </Card>
 
-      {/* 📎 Dokumente Card */}
-      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            📎 Dokumente
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 gap-6">
-            <DocumentUpload
-              userId={user.id}
-              documentType="bfa"
-              label="Befähigungsnachweis (BFA Binnen)"
-              currentUrl={(user as any).documentBfa}
-              onUploadComplete={(url) => {
-                setEditedUser(prev => prev ? { ...prev, documentBfa: url } as any : null);
-                loadCurrentUser();
-              }}
-              disabled={!isEditing}
-            />
-
-            <DocumentUpload
-              userId={user.id}
-              documentType="insurance"
-              label="Versicherung Nachweis"
-              currentUrl={(user as any).documentInsurance}
-              onUploadComplete={(url) => {
-                setEditedUser(prev => prev ? { ...prev, documentInsurance: url } as any : null);
-                loadCurrentUser();
-              }}
-              disabled={!isEditing}
-            />
-
-            <DocumentUpload
-              userId={user.id}
-              documentType="berth_contract"
-              label="Liegeplatzvertrag"
-              currentUrl={(user as any).documentBerthContract}
-              onUploadComplete={(url) => {
-                setEditedUser(prev => prev ? { ...prev, documentBerthContract: url } as any : null);
-                loadCurrentUser();
-              }}
-              disabled={!isEditing}
-            />
-
-            <DocumentUpload
-              userId={user.id}
-              documentType="member_photo"
-              label="Mitgliederfoto"
-              currentUrl={(user as any).documentMemberPhoto}
-              onUploadComplete={(url) => {
-                setEditedUser(prev => prev ? { ...prev, documentMemberPhoto: url } as any : null);
-                loadCurrentUser();
-              }}
-              disabled={!isEditing}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <ProfileDocumentsSection
+        userId={user.id}
+        user={user}
+        isEditing={isEditing}
+        onDocumentUpload={(field, url) => {
+          setEditedUser(prev => prev ? { ...prev, [field]: url } as any : null);
+          loadCurrentUser();
+        }}
+      />
 
       {/* 🗂️ Historie & Verwaltung Card - nur für Admin */}
       {isAdmin && (
