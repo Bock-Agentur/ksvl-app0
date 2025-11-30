@@ -1,39 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { z } from "zod";
+import { fileService, FileMetadata, UploadMetadata, FileServiceError } from "@/lib/services/file-service";
 
-// File metadata type
-export interface FileMetadata {
-  id: string;
-  filename: string;
-  storage_path: string;
-  file_type: 'image' | 'pdf' | 'video' | 'other';
-  mime_type: string;
-  file_size: number;
-  owner_id: string | null;
-  linked_user_id: string | null;
-  category: 'login_media' | 'user_document' | 'general' | 'shared';
-  document_type: 'bfa' | 'insurance' | 'berth_contract' | 'member_photo' | null;
-  tags: string[];
-  description: string | null;
-  is_public: boolean;
-  allowed_roles: string[] | null;
-  created_at: string;
-  updated_at: string;
-}
-
-// Upload metadata schema for validation
-const uploadMetadataSchema = z.object({
-  category: z.enum(['login_media', 'user_document', 'general', 'shared']),
-  document_type: z.enum(['bfa', 'insurance', 'berth_contract', 'member_photo']).nullable().optional(),
-  linked_user_id: z.string().uuid().nullable().optional(),
-  tags: z.array(z.string()).optional(),
-  description: z.string().max(500).nullable().optional(),
-  is_public: z.boolean().optional(),
-});
-
-export type UploadMetadata = z.infer<typeof uploadMetadataSchema>;
+// Re-export types for backward compatibility
+export type { FileMetadata, UploadMetadata };
 
 // Filters type
 export interface FileFilters {
@@ -153,109 +124,30 @@ export const useFileManager = () => {
   }, [filters, searchQuery, sortBy, sortOrder, toast]);
 
   /**
-   * Upload single file
-   * Mobile-optimized with progress tracking
+   * Upload single file - delegates to fileService
    */
   const uploadFile = async (file: File, metadata: UploadMetadata): Promise<FileMetadata | null> => {
+    setUploading(true);
     try {
-      // Validate metadata
-      const validatedMetadata = uploadMetadataSchema.parse(metadata);
+      const result = await fileService.uploadFile(file, metadata);
       
-      // Validate file size (20MB for images/videos, 10MB for PDFs)
-      const maxSize = file.type.startsWith('image/') || file.type.startsWith('video/') 
-        ? 20 * 1024 * 1024 
-        : 10 * 1024 * 1024;
-      
-      if (file.size > maxSize) {
-        toast({
-          title: "Datei zu groß",
-          description: `Maximale Dateigröße: ${maxSize / (1024 * 1024)}MB`,
-          variant: "destructive",
-        });
-        return null;
-      }
-
-      setUploading(true);
-
-      // Get current user
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user) throw new Error("Nicht angemeldet");
-
-      // Determine storage bucket and path based on category
-      const userId = session.user.id;
-      let storagePath = '';
-      let bucket = 'documents';
-      
-      if (validatedMetadata.category === 'login_media') {
-        // Login media goes to login-media bucket with simple filename
-        bucket = 'login-media';
-        storagePath = `${file.name.replace(/\s/g, '-')}-${Date.now()}.${file.name.split('.').pop()}`;
-      } else if (validatedMetadata.category === 'user_document' && validatedMetadata.linked_user_id) {
-        storagePath = `user_documents/${validatedMetadata.linked_user_id}/${validatedMetadata.document_type || 'general'}/${file.name}`;
-      } else {
-        storagePath = `${userId}/general/${file.name}`;
-      }
-
-      console.log('📤 Uploading file:', { bucket, storagePath, category: validatedMetadata.category });
-
-      // Upload to storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from(bucket)
-        .upload(storagePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-        });
-
-      if (uploadError) throw uploadError;
-
-      // Determine file type
-      let fileType: 'image' | 'pdf' | 'video' | 'other' = 'other';
-      if (file.type.startsWith('image/') || file.type === 'image/webp') fileType = 'image';
-      else if (file.type === 'application/pdf') fileType = 'pdf';
-      else if (file.type.startsWith('video/')) fileType = 'video';
-
-      // Create metadata entry
-      const { data: metadataData, error: metadataError } = await supabase
-        .from('file_metadata')
-        .insert({
-          filename: file.name,
-          storage_path: uploadData.path,
-          file_type: fileType,
-          mime_type: file.type,
-          file_size: file.size,
-          owner_id: userId,
-          linked_user_id: validatedMetadata.linked_user_id || null,
-          category: validatedMetadata.category,
-          document_type: validatedMetadata.document_type || null,
-          tags: validatedMetadata.tags || [],
-          description: validatedMetadata.description || null,
-          is_public: validatedMetadata.is_public || false,
-        })
-        .select()
-        .single() as { data: FileMetadata | null; error: any };
-
-      if (metadataError) {
-        // Rollback storage upload
-        await supabase.storage.from(bucket).remove([uploadData.path]);
-        throw metadataError;
-      }
-
       toast({
         title: "Erfolg",
         description: "Datei erfolgreich hochgeladen",
       });
 
       // Add to current files list immediately for instant UI update
-      if (metadataData) {
-        setFiles(prev => [metadataData, ...prev]);
-      }
-
-      return metadataData;
+      setFiles(prev => [result, ...prev]);
+      
+      return result;
     } catch (error) {
-      console.error('Error uploading file:', error);
+      const errorMessage = error instanceof FileServiceError 
+        ? error.message 
+        : "Datei konnte nicht hochgeladen werden";
+      
       toast({
         title: "Fehler",
-        description: "Datei konnte nicht hochgeladen werden",
+        description: errorMessage,
         variant: "destructive",
       });
       return null;
@@ -265,51 +157,48 @@ export const useFileManager = () => {
   };
 
   /**
-   * Upload multiple files
+   * Upload multiple files - delegates to fileService
    */
   const uploadMultipleFiles = async (
     files: File[], 
     metadata: UploadMetadata
   ): Promise<FileMetadata[]> => {
-    const uploadedFiles: FileMetadata[] = [];
-    
-    for (const file of files) {
-      const result = await uploadFile(file, metadata);
-      if (result) uploadedFiles.push(result);
+    setUploading(true);
+    try {
+      const results = await fileService.uploadMultipleFiles(files, metadata);
+      
+      // Add to files list
+      setFiles(prev => [...results, ...prev]);
+      
+      toast({
+        title: "Erfolg",
+        description: `${results.length} Datei(en) hochgeladen`,
+      });
+      
+      return results;
+    } catch (error) {
+      const errorMessage = error instanceof FileServiceError 
+        ? error.message 
+        : "Dateien konnten nicht hochgeladen werden";
+      
+      toast({
+        title: "Fehler",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      return [];
+    } finally {
+      setUploading(false);
     }
-    
-    return uploadedFiles;
   };
 
   /**
-   * Delete single file
+   * Delete single file - delegates to fileService
    */
   const deleteFile = async (fileId: string): Promise<boolean> => {
     try {
-      // Get file metadata
-      const { data: file, error: fetchError } = await supabase
-        .from('file_metadata')
-        .select('storage_path')
-        .eq('id', fileId)
-        .single();
-
-      if (fetchError || !file) throw fetchError;
-
-      // Delete from storage
-      const { error: storageError } = await supabase.storage
-        .from('documents')
-        .remove([file.storage_path]);
-
-      if (storageError) throw storageError;
-
-      // Delete metadata
-      const { error: metadataError } = await supabase
-        .from('file_metadata')
-        .delete()
-        .eq('id', fileId);
-
-      if (metadataError) throw metadataError;
-
+      await fileService.deleteFile(fileId);
+      
       toast({
         title: "Erfolg",
         description: "Datei gelöscht",
@@ -317,13 +206,15 @@ export const useFileManager = () => {
 
       // Refresh files list
       await fetchFiles();
-
       return true;
     } catch (error) {
-      console.error('Error deleting file:', error);
+      const errorMessage = error instanceof FileServiceError 
+        ? error.message 
+        : "Datei konnte nicht gelöscht werden";
+      
       toast({
         title: "Fehler",
-        description: "Datei konnte nicht gelöscht werden",
+        description: errorMessage,
         variant: "destructive",
       });
       return false;
@@ -331,30 +222,42 @@ export const useFileManager = () => {
   };
 
   /**
-   * Delete multiple files
+   * Delete multiple files - delegates to fileService
    */
   const deleteMultipleFiles = async (fileIds: string[]): Promise<void> => {
-    for (const fileId of fileIds) {
-      await deleteFile(fileId);
+    try {
+      await fileService.deleteMultipleFiles(fileIds);
+      
+      toast({
+        title: "Erfolg",
+        description: `${fileIds.length} Datei(en) gelöscht`,
+      });
+      
+      await fetchFiles();
+      clearSelection();
+    } catch (error) {
+      const errorMessage = error instanceof FileServiceError 
+        ? error.message 
+        : "Dateien konnten nicht gelöscht werden";
+      
+      toast({
+        title: "Fehler",
+        description: errorMessage,
+        variant: "destructive",
+      });
     }
-    clearSelection();
   };
 
   /**
-   * Update file metadata
+   * Update file metadata - delegates to fileService
    */
   const updateFileMetadata = async (
     fileId: string,
     updates: Partial<Pick<FileMetadata, 'description' | 'tags' | 'is_public' | 'allowed_roles'>>
   ): Promise<boolean> => {
     try {
-      const { error } = await supabase
-        .from('file_metadata')
-        .update(updates)
-        .eq('id', fileId);
-
-      if (error) throw error;
-
+      await fileService.updateMetadata(fileId, updates);
+      
       toast({
         title: "Erfolg",
         description: "Metadaten aktualisiert",
@@ -362,13 +265,15 @@ export const useFileManager = () => {
 
       // Refresh files list
       await fetchFiles();
-
       return true;
     } catch (error) {
-      console.error('Error updating metadata:', error);
+      const errorMessage = error instanceof FileServiceError 
+        ? error.message 
+        : "Metadaten konnten nicht aktualisiert werden";
+      
       toast({
         title: "Fehler",
-        description: "Metadaten konnten nicht aktualisiert werden",
+        description: errorMessage,
         variant: "destructive",
       });
       return false;
@@ -376,137 +281,32 @@ export const useFileManager = () => {
   };
 
   /**
-   * Get download URL for a file
+   * Get download URL for a file - delegates to fileService
    */
   const getFileUrl = async (storagePath: string, category?: string): Promise<string | null> => {
-    try {
-      // Determine bucket based on category or path
-      const bucket = category === 'login_media' || storagePath.includes('login-media') 
-        ? 'login-media' 
-        : 'documents';
-      
-      // Clean the path
-      let filePath = storagePath;
-      if (filePath.startsWith(`${bucket}/`)) {
-        filePath = filePath.substring(bucket.length + 1);
-      }
-
-      // For public bucket, use public URL
-      if (bucket === 'login-media') {
-        const { data } = supabase.storage
-          .from(bucket)
-          .getPublicUrl(filePath);
-        
-        if (data?.publicUrl) {
-          return data.publicUrl;
-        }
-      }
-
-      // For private buckets, create signed URL
-      const { data } = await supabase.storage
-        .from(bucket)
-        .createSignedUrl(filePath, 3600);
-
-      return data?.signedUrl || null;
-    } catch (error) {
-      console.error('Error getting file URL:', error);
-      return null;
-    }
+    return fileService.getFileUrl(storagePath, category);
   };
 
   /**
-   * Get preview URL for a file
-   * Handles both public buckets (login-media) and private buckets (documents)
-   * with automatic fallback logic and caching
+   * Get preview URL for a file with caching - delegates to fileService
    */
   const getFilePreviewUrl = async (file: FileMetadata): Promise<string | null> => {
-    try {
-      // Check cache first
-      if (previewUrlCache.current.has(file.id)) {
-        const cachedUrl = previewUrlCache.current.get(file.id)!;
-        console.log('💾 Using cached preview URL for:', file.filename);
-        return cachedUrl;
-      }
-
-      // Determine bucket - check actual storage path first
-      let bucket = 'documents';
-      let filePath = file.storage_path;
-      
-      // Check if path starts with bucket name
-      if (filePath.startsWith('login-media/')) {
-        bucket = 'login-media';
-        filePath = filePath.substring('login-media/'.length);
-      } else if (filePath.startsWith('documents/')) {
-        bucket = 'documents';
-        filePath = filePath.substring('documents/'.length);
-      }
-      // If no bucket prefix in path, determine by category
-      // BUT: check if path contains user ID (documents bucket pattern)
-      else if (filePath.includes('/general/') || filePath.match(/^[0-9a-f-]{36}\//)) {
-        // This is a documents bucket file (has user ID path structure)
-        bucket = 'documents';
-      } else if (file.category === 'login_media') {
-        // Only use login-media bucket if category matches AND no user path structure
-        bucket = 'login-media';
-      }
-      
-      console.log('🖼️ Loading preview:', { 
-        bucket, 
-        originalPath: file.storage_path, 
-        cleanedPath: filePath,
-        filename: file.filename,
-        category: file.category 
-      });
-      
-      let resultUrl: string | null = null;
-
-      // Try to get URL from determined bucket
-      if (bucket === 'login-media') {
-        const { data } = supabase.storage
-          .from(bucket)
-          .getPublicUrl(filePath);
-        
-        if (data?.publicUrl) {
-          console.log('✅ Public URL generated:', data.publicUrl);
-          resultUrl = data.publicUrl;
-        }
-      } else {
-        // For documents bucket, create signed URL
-        const { data, error } = await supabase.storage
-          .from(bucket)
-          .createSignedUrl(filePath, 3600);
-
-        if (error) {
-          console.error('❌ Error creating signed URL:', error);
-          
-          // If this failed and category is login_media, try login-media bucket as fallback
-          if (file.category === 'login_media') {
-            console.log('🔄 Trying fallback bucket: login-media');
-            const { data: fallbackData } = supabase.storage
-              .from('login-media')
-              .getPublicUrl(filePath);
-            
-            if (fallbackData?.publicUrl) {
-              console.log('✅ Fallback public URL generated:', fallbackData.publicUrl);
-              resultUrl = fallbackData.publicUrl;
-            }
-          }
-        } else if (data?.signedUrl) {
-          console.log('✅ Signed URL generated:', data.signedUrl);
-          resultUrl = data.signedUrl;
-        }
-      }
-
-      // Cache the result
-      if (resultUrl) {
-        previewUrlCache.current.set(file.id, resultUrl);
-      }
-
-      return resultUrl;
-    } catch (error) {
-      console.error('❌ Error getting file preview URL:', error);
-      return null;
+    // Check cache first
+    if (previewUrlCache.current.has(file.id)) {
+      const cachedUrl = previewUrlCache.current.get(file.id)!;
+      console.log('💾 Using cached preview URL for:', file.filename);
+      return cachedUrl;
     }
+
+    // Get URL from service
+    const url = await fileService.getPreviewUrl(file);
+    
+    // Cache the result
+    if (url) {
+      previewUrlCache.current.set(file.id, url);
+    }
+
+    return url;
   };
 
   /**
