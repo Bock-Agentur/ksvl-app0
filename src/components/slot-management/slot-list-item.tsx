@@ -32,32 +32,31 @@ export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onSho
   };
 
   return (
-    <Card className="border bg-card hover:shadow-md transition-shadow">
+    <Card 
+      className="border hover:shadow-md transition-shadow"
+      style={{
+        backgroundColor: colors.background,
+        borderColor: colors.border,
+      }}
+    >
       <CardContent className="p-4">
         {/* Compact View */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <Badge
-              style={{
-                backgroundColor: colors.background,
-                color: colors.text,
-                borderColor: colors.border,
-              }}
-              className="border"
-            >
+            <StatusLabel status={status} size="sm">
               {status === "booked" ? "Gebucht" : status === "blocked" ? "Blockiert" : "Verfügbar"}
-            </Badge>
+            </StatusLabel>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-medium text-sm">{formatDate(slot.date)}</span>
-                <Badge variant="outline" className="text-xs">
+                <span className="font-medium text-sm" style={{ color: colors.text }}>{formatDate(slot.date)}</span>
+                <Badge variant="outline" className="text-xs" style={{ color: colors.text, borderColor: colors.border }}>
                   {slot.time} Uhr
                 </Badge>
-                <Badge variant="secondary" className="text-xs">
+                <Badge variant="secondary" className="text-xs" style={{ color: colors.text }}>
                   {slot.duration} Min
                 </Badge>
               </div>
-              <p className="text-xs text-muted-foreground truncate">{slot.craneOperator.name}</p>
+              <p className="text-xs truncate" style={{ color: colors.text, opacity: 0.8 }}>{slot.craneOperator.name}</p>
             </div>
           </div>
 
@@ -76,22 +75,22 @@ export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onSho
         {isExpanded && (
           <div className="mt-4 pt-4 border-t space-y-4">
             {/* Details Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm" style={{ color: colors.text }}>
               <div className="flex items-center gap-2">
-                <CalendarDays className="w-4 h-4 text-muted-foreground" />
+                <CalendarDays className="w-4 h-4" style={{ color: colors.text, opacity: 0.7 }} />
                 <span>{format(parseISO(slot.date), "EEEE, dd. MMMM yyyy", { locale: de })}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-muted-foreground" />
+                <Clock className="w-4 h-4" style={{ color: colors.text, opacity: 0.7 }} />
                 <span>{slot.time} Uhr ({slot.duration} Minuten)</span>
               </div>
               <div className="flex items-center gap-2">
-                <User className="w-4 h-4 text-muted-foreground" />
+                <User className="w-4 h-4" style={{ color: colors.text, opacity: 0.7 }} />
                 <span>Kranführer: {slot.craneOperator.name}</span>
               </div>
               {slot.craneOperator.email && (
                 <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-muted-foreground" />
+                  <Mail className="w-4 h-4" style={{ color: colors.text, opacity: 0.7 }} />
                   <span className="truncate">{slot.craneOperator.email}</span>
                 </div>
               )}
@@ -99,9 +98,9 @@ export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onSho
 
             {/* Booking Information */}
             {slot.isBooked && slot.member && (
-              <div className="p-3 bg-muted/50 rounded-lg space-y-2">
-                <p className="text-sm font-medium">Gebucht von:</p>
-                <div className="space-y-1 text-sm text-muted-foreground">
+              <div className="p-3 rounded-lg space-y-2" style={{ backgroundColor: `${colors.background}dd`, borderLeft: `3px solid ${colors.border}` }}>
+                <p className="text-sm font-medium" style={{ color: colors.text }}>Gebucht von:</p>
+                <div className="space-y-1 text-sm" style={{ color: colors.text, opacity: 0.9 }}>
                   <p>{slot.member.name}</p>
                   {slot.member.email && <p>{slot.member.email}</p>}
                   {slot.member.memberNumber && <p>Mitgliedsnr.: {slot.member.memberNumber}</p>}
@@ -111,9 +110,9 @@ export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onSho
 
             {/* Notes */}
             {slot.notes && (
-              <div className="text-sm">
+              <div className="text-sm" style={{ color: colors.text }}>
                 <p className="font-medium mb-1">Notizen:</p>
-                <p className="text-muted-foreground">{slot.notes}</p>
+                <p style={{ opacity: 0.9 }}>{slot.notes}</p>
               </div>
             )}
 

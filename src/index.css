@@ -86,15 +86,15 @@ All colors MUST be HSL for proper theme support.
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 75% 95%;
 
-    /* Status Colors for Slots */
-    --status-available: 160 60% 35%;
-    --status-available-foreground: 160 60% 95%;
-    --status-booked: 210 80% 35%;
-    --status-booked-foreground: 210 80% 95%;
-    --status-blocked: 0 75% 55%;
-    --status-blocked-foreground: 0 75% 95%;
-    --status-slot-block: 0 75% 55%;
-    --status-slot-block-foreground: 0 75% 95%;
+    /* Status Colors for Slots - Synchronized with Trendy Design */
+    --status-available: 133 28% 68%;           /* trendy-green */
+    --status-available-foreground: 0 0% 100%;  /* white */
+    --status-booked: 202 85% 23%;              /* trendy-navy */
+    --status-booked-foreground: 0 0% 100%;     /* white */
+    --status-blocked: 348 77% 67%;             /* trendy-pink */
+    --status-blocked-foreground: 0 0% 100%;    /* white */
+    --status-slot-block: 348 77% 67%;          /* trendy-pink */
+    --status-slot-block-foreground: 0 0% 100%; /* white */
 
     /* Borders & Inputs */
     --border: 210 25% 85%;
