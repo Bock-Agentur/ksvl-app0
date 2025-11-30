@@ -75,10 +75,23 @@ Backend:      Supabase Auth + Edge Functions
   - `src/hooks/use-profile-data.tsx`
   - `src/hooks/use-role.tsx` (mit Rollenwechsel)
 - **Components:**
-  - `src/components/user-management.tsx` (Liste + CRUD)
+  - `src/components/user-management.tsx` (963 Zeilen - God-Component)
   - `src/components/user-list-database.tsx`
   - `src/components/user-detail-view.tsx`
-  - `src/components/profile-view.tsx`
+  - **Profile-View (REFACTORED ✅):**
+    - `src/components/profile-view.tsx` (594 Zeilen - Orchestrator)
+    - `src/components/profile/profile-header.tsx` (99 Zeilen)
+    - `src/components/profile/profile-documents-section.tsx` (66 Zeilen)
+    - `src/components/profile/password-change-dialog.tsx` (163 Zeilen)
+    - `src/components/profile/custom-fields-section.tsx` (369 Zeilen)
+    - `src/components/profile/profile-form-cards.tsx` (81 Zeilen)
+    - `src/components/profile/profile-personal-cards.tsx` (85 Zeilen)
+    - `src/components/profile/profile-admin-cards.tsx` (110 Zeilen)
+    - `src/components/profile/profile-boat-cards.tsx` (304 Zeilen)
+    - `src/components/profile/profile-login-card.tsx` (125 Zeilen)
+    - `src/components/profile/profile-master-data-card.tsx` (205 Zeilen)
+    - `src/components/profile/profile-membership-card.tsx` (194 Zeilen)
+    - `src/components/profile/profile-privacy-card.tsx` (268 Zeilen)
 - **Pages:** `/` (Dashboard mit User-Liste)
 
 **Layer-Struktur:**
@@ -97,17 +110,20 @@ Backend:      Edge Function: manage-user
 - ✅ Alle CRUD-Operationen via `user-service.ts`
 - ✅ Zentrale Datenquelle: `useUsersData()` (React Query Cache)
 - ✅ Komponenten rufen nur Hooks auf, keine direkten Supabase-Calls
+- ✅ Profile-View modular aufgeteilt (13 Sub-Komponenten)
 
 **Stärken:**
 - 🟢 `useUsersData()` eliminiert redundante Queries (75-80% Reduktion)
 - 🟢 `user-service.ts` kapselt Edge-Function-Calls sauber
 - 🟢 React Query Caching (staleTime: 5min)
+- 🟢 **Profile-View Refactoring abgeschlossen** (2173 → 594 Zeilen, -73%)
 
 **Schwächen:**
-- 🔴 Role-Switching in `use-role.tsx` nutzt noch direkte Supabase-Query (Zeile 115-127)
+- 🔴 `user-management.tsx` ist God-Component (963 Zeilen)
+- 🔴 Sollte aufgeteilt werden (siehe Sprint 2 Plan)
 
 **Empfehlungen:**
-- 🔹 Role-Switching via `useUsersData()` Cache optimieren
+- 🔥 **HIGH PRIORITY:** `user-management.tsx` aufteilen (6 Komponenten)
 - 🔹 Optional: `/core/db/users.ts` für reine DB-Abstraction (kein Service-Layer)
 
 ---
@@ -290,13 +306,17 @@ Backend:      Supabase Client
 - ✅ **Slot-Service** (`src/lib/services/slot-service.ts`) implementiert ✅
 - ✅ `use-slots.tsx` nutzt Service-Methoden (kein direkter Supabase-Call) ✅
 - ✅ Komponenten rufen Hook-Methoden auf (nicht direkt Supabase) ✅
-- ⚠️ `slot-management.tsx` ist noch "God-Component" (627 Zeilen):
-  - Liste + Filter + Dialog + Kalender-Ansichten + CRUD-Forms
+- ⚠️ `slot-management.tsx` ist **God-Component** (956 Zeilen):
+  - Liste + Filter + Dialog + Kalender-Ansichten + CRUD-Forms + Booking
 
 **Stärken:**
 - 🟢 **`slot-service.ts`** kapselt CRUD-Logik sauber (analog zu `user-service.ts`) ✅
 - 🟢 `useSlots()` nutzt `useUsersData()` für Profile-Daten (optimiert seit Phase 3) ✅
 - 🟢 Realtime-Subscriptions via `realtime-manager.ts` ✅
+
+**Schwächen:**
+- 🔴 `slot-management.tsx` ist God-Component (956 Zeilen)
+- 🔴 Sollte aufgeteilt werden (siehe Sprint 2 Plan)
 
 **✅ Optimierungen abgeschlossen (Sprint 1):**
 ```typescript
@@ -312,9 +332,14 @@ export const slotService = {
 };
 ```
 
-**Verbleibende Empfehlungen (MEDIUM PRIORITY):**
-- 🔹 `slot-management.tsx` aufteilen:
-  - `slot-list.tsx`, `slot-calendar.tsx`, `slot-filters.tsx`
+**Verbleibende Empfehlungen (HIGH PRIORITY):**
+- 🔥 **Sprint 2:** `slot-management.tsx` aufteilen (6 Komponenten):
+  - `slot-list.tsx` (~200 Zeilen)
+  - `slot-filters.tsx` (~150 Zeilen)
+  - `slot-calendar-view.tsx` (~200 Zeilen)
+  - `slot-details-dialog.tsx` (~150 Zeilen)
+  - `slot-booking-dialog.tsx` (~100 Zeilen)
+  - `slot-management.tsx` (~150 Zeilen - Orchestrator)
 
 ---
 
@@ -445,9 +470,13 @@ Database:     dashboard_*_definitions, app_settings
 | **Marina/Slots**   | ✅ DONE       | `slot-service.ts` erstellen, CRUD aus Hook extrahieren             | ✅ Erledigt   |
 | **Navigation**     | ✅ DONE       | Route-Registry (`lib/registry/routes.ts`) + Guards                 | ✅ Erledigt   |
 | **Roles**          | ✅ DONE       | Role-Switching via `useUsersData()` optimieren                      | ✅ Erledigt   |
-| **Marina/Slots**   | 🔹 MEDIUM     | `slot-management.tsx` aufteilen (God-Component → 5 Komponenten)     | 🔄 Offen      |
-| **File-Manager**   | 🔹 MEDIUM     | `file-service.ts` erstellen (optional)                              | 🔄 Offen      |
-| **All Core**       | 🔹 MEDIUM     | In `/core`-Verzeichnis verschieben (Foundation-Struktur)            | 🔄 Offen      |
+| **Users/Profiles** | ✅ DONE       | `profile-view.tsx` refactoren (13 Sub-Komponenten)                  | ✅ Erledigt   |
+| **Marina/Slots**   | 🔥 HIGH       | `slot-management.tsx` aufteilen (God-Component → 6 Komponenten)     | 🔄 Sprint 2   |
+| **Users**          | 🔥 HIGH       | `user-management.tsx` aufteilen (God-Component → 6 Komponenten)     | 🔄 Sprint 2   |
+| **All Hooks**      | 🔹 MEDIUM     | Console.log Cleanup (523 Statements entfernen)                      | 🔄 Sprint 2   |
+| **Core**           | 🔹 MEDIUM     | Module-Registry erstellen (`lib/registry/modules.ts`)               | 🔄 Sprint 2   |
+| **File-Manager**   | 🔷 LOW        | `file-service.ts` erstellen (optional)                              | 🔄 Sprint 3+  |
+| **All Core**       | 🔷 LOW        | In `/core`-Verzeichnis verschieben (Foundation-Struktur)            | 🔄 Sprint 3+  |
 | **Dashboard**      | ✅ DONE       | Gut strukturiert, keine Änderungen nötig                            | ✅ Erledigt   |
 
 ---
