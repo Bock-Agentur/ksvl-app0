@@ -35,7 +35,6 @@ function getSettingKeys(userRole?: UserRole): string[] {
   const keys = [
     'marina-menu-settings-template',
     'login_background',
-    'desktop_background',
     'header-message',
   ];
 

@@ -108,7 +108,7 @@ export const APP_MODULES: AppModule[] = [
     description: 'App-Einstellungen (Theme, Design, Menü, Dashboard)',
     type: 'core',
     lifecycle: 'stable',
-    routes: ['/settings', '/header-message', '/desktop-background'],
+    routes: ['/settings', '/header-message'],
     requiredRoles: ['admin'],
     components: [
       'pages/Settings.tsx',
@@ -121,7 +121,6 @@ export const APP_MODULES: AppModule[] = [
       'footer-menu-settings.tsx',
       'header-message-settings.tsx',
       'login-background-settings.tsx',
-      'desktop-background-settings.tsx',
       'sticky-header-layout-settings.tsx',
       'consecutive-slots-settings.tsx'
     ],
@@ -132,7 +131,6 @@ export const APP_MODULES: AppModule[] = [
       'use-menu-settings.tsx',
       'use-footer-menu-settings.tsx',
       'use-login-background.tsx',
-      'use-desktop-background.tsx',
       'use-sticky-header-layout.tsx',
       'use-custom-fields.tsx',
       'use-consecutive-slots.tsx',

@@ -7,16 +7,14 @@ import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { RoleProvider } from "@/hooks/use-role";
 import { useLoginBackground } from "@/hooks/use-login-background";
-import { useDesktopBackground } from "@/hooks/use-desktop-background";
 import { SettingsFooter } from "@/components/settings-footer";
 
 function HeaderMessageContent() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { background } = useLoginBackground();
-  const { settings: desktopBackgroundSettings } = useDesktopBackground();
 
-  const showBackground = desktopBackgroundSettings.enabled && background;
+  const showBackground = false; // Desktop background feature removed
 
   return (
     <>
