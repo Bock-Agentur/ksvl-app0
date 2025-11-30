@@ -39,7 +39,6 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
   const slots = propSlots ?? context.slots;
   const isLoading = propIsLoading ?? context.isLoading;
   
-  console.log('📅 [WeekCalendar] Rendering with', slots.length, 'slots');
   const { consecutiveSlotsEnabled, getSlotBlocks, getSlotStatus, isSlotBookable } = useConsecutiveSlots();
   const { settings } = useSlotDesign();
   const [currentWeek, setCurrentWeek] = useState(selectedDate || new Date());

@@ -14,10 +14,7 @@ export function ConsecutiveSlotsProvider({ children }: { children: ReactNode }) 
 
   // Memoized slot blocks calculation - ALL slots of same crane operator on same day form a block
   const getSlotBlocks = useMemo(() => (slots: Slot[]) => {
-    console.log('🔍 GET_SLOT_BLOCKS called with', slots.length, 'slots');
-    
     if (!slots || slots.length === 0) {
-      console.log('❌ No slots provided, returning empty blocks');
       return [];
     }
 
@@ -26,7 +23,6 @@ export function ConsecutiveSlotsProvider({ children }: { children: ReactNode }) 
     
     slots.forEach(slot => {
       if (!slot || !slot.craneOperator || !slot.craneOperator.id) {
-        console.warn('Invalid slot data:', slot);
         return;
       }
       
@@ -50,35 +46,26 @@ export function ConsecutiveSlotsProvider({ children }: { children: ReactNode }) 
       });
 
       // ALL slots of the same crane operator on the same day form ONE block
-      console.log('📦 Found crane operator block with', sortedSlots.length, 'slots:', sortedSlots.map(s => `${s.time}(${s.id})`));
       blocks.push(sortedSlots);
     });
-    
-    console.log('🎯 FOUND', blocks.length, 'crane operator blocks total');
-    console.log('📊 BLOCKS BREAKDOWN:', blocks.map(block => `Block with ${block.length} slots: ${block.map(s => s.time).join(', ')}`));
     
     return blocks;
   }, []);
 
   // Unified slot status logic - ALL slots of same crane operator form a block
   const getSlotStatus = (slot: Slot, allSlots: Slot[]): SlotStatus => {
-    console.log('🎯 GET_SLOT_STATUS for slot:', slot.id, slot.time);
-    
     // Safety checks
     if (!slot || !allSlots) {
-      console.log('❌ Invalid input -> status: available');
       return 'available';
     }
 
     // If slot is booked, it's always "booked"
     if (slot.isBooked) {
-      console.log('✅ Slot is booked -> status: booked');
       return 'booked';
     }
 
     // If consecutive slots is disabled, all unbooked slots are "available"
     if (!consecutiveSlotsEnabled) {
-      console.log('⚪ Consecutive slots disabled -> status: available');
       return 'available';
     }
 
@@ -88,17 +75,13 @@ export function ConsecutiveSlotsProvider({ children }: { children: ReactNode }) 
       block.some(s => s.id === slot.id)
     );
 
-    console.log('🔍 Slot block for', slot.id, ':', blockContainingSlot ? `Found block with ${blockContainingSlot.length} slots` : 'No block found');
-
     // If slot is not in any block, it's available (should not happen with new logic)
     if (!blockContainingSlot) {
-      console.log('⚪ Not in block -> status: available');
       return 'available';
     }
 
     // Single slot in block (no other slots for this crane operator on this day)
     if (blockContainingSlot.length === 1) {
-      console.log('⚪ Single slot in block -> status: available');
       return 'available';
     }
 
@@ -112,23 +95,18 @@ export function ConsecutiveSlotsProvider({ children }: { children: ReactNode }) 
     // Find the position of current slot in the sorted block
     const slotIndex = sortedBlock.findIndex(s => s.id === slot.id);
     if (slotIndex === -1) {
-      console.log('❌ Slot not found in block -> status: available');
       return 'available';
     }
-
-    console.log('📍 Slot position in block:', slotIndex, 'of', sortedBlock.length);
 
     // Check if all previous slots in the block are booked (no gaps allowed)
     for (let i = 0; i < slotIndex; i++) {
       if (!sortedBlock[i].isBooked) {
         // There's an unbooked slot before this one, so this slot is blocked
-        console.log('🔒 For crane operator blocks: Unbooked slot', sortedBlock[i].id, 'before current slot -> status: blocked');
         return 'blocked';
       }
     }
 
     // All previous slots are booked (or this is the first slot), so this slot is available
-    console.log('🟢 All previous slots booked or first slot -> status: available');
     return 'available';
   };
 
