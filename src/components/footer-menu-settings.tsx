@@ -41,6 +41,7 @@ import { cn } from "@/lib/utils";
 import { 
   Dialog, 
   DialogContent, 
+  DialogDescription,
   DialogHeader, 
   DialogTitle, 
   DialogTrigger 
@@ -253,6 +254,9 @@ export function FooterMenuSettings() {
                   <DialogContent className="max-w-md">
                     <DialogHeader>
                       <DialogTitle>Menüpunkt hinzufügen</DialogTitle>
+                      <DialogDescription>
+                        Wählen Sie einen verfügbaren Menüpunkt zum Hinzufügen aus.
+                      </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-3 max-h-96 overflow-y-auto">
                       {unusedItems.map((item) => (

@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -26,6 +26,9 @@ export function SlotDetailsDialog({ slot, open, onOpenChange }: SlotDetailsDialo
               {slot.isBooked ? "Gebucht" : "Verfügbar"}
             </Badge>
           </DialogTitle>
+          <DialogDescription className="sr-only">
+            Detaillierte Ansicht des ausgewählten Slots
+          </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
