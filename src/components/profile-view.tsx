@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
-import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings, Key } from "lucide-react";
+import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings } from "lucide-react";
+import { PasswordChangeDialog } from "@/components/profile/password-change-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,10 +52,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const [editedCustomValues, setEditedCustomValues] = useState<Record<string, any>>({});
   const [aiInfoEnabled, setAiInfoEnabled] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const { toast } = useToast();
   const { currentUser: roleCurrentUser, currentRole: roleCurrentRole } = useRole();
   
@@ -258,82 +255,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     );
   }
 
-  const handleChangePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: "Fehler",
-        description: "Die Passwörter stimmen nicht überein.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    // Validate password with strong requirements
-    const validation = validatePassword(newPassword);
-    if (!validation.isValid) {
-      toast({
-        title: "Fehler",
-        description: validation.error,
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    try {
-      setIsChangingPassword(true);
-      
-      // Determine target user ID
-      let targetUserId: string;
-      if (userId) {
-        // Admin editing another user
-        targetUserId = userId;
-      } else {
-        // User editing their own profile
-        const { data: { user: authUser } } = await supabase.auth.getUser();
-        if (!authUser) throw new Error('Nicht angemeldet');
-        targetUserId = authUser.id;
-      }
-
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('Nicht angemeldet');
-
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session.access_token}`
-        },
-        body: JSON.stringify({
-          action: 'update',
-          userId: targetUserId,
-          password: newPassword
-        })
-      });
-
-      const result = await response.json();
-      if (!response.ok || result.error) {
-        throw new Error(result.error || 'Passwort konnte nicht geändert werden');
-      }
-
-      toast({
-        title: "Passwort geändert",
-        description: "Das Passwort wurde erfolgreich aktualisiert."
-      });
-      
-      setShowPasswordDialog(false);
-      setNewPassword("");
-      setConfirmPassword("");
-    } catch (error: any) {
-      console.error('Error changing password:', error);
-      toast({
-        title: "Fehler",
-        description: error.message || "Passwort konnte nicht geändert werden.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsChangingPassword(false);
-    }
-  };
 
   const handleSaveProfile = async () => {
     if (!editedUser) return;
@@ -989,14 +910,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                     disabled
                     className="bg-muted flex-1"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setShowPasswordDialog(true)}
-                  >
-                    <Key className="w-4 h-4" />
-                  </Button>
+                  <PasswordChangeDialog userId={userId} />
                 </div>
               </div>
 
@@ -2012,58 +1926,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       )}
 
 
-      {/* Password Change Dialog */}
-      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Passwort ändern</DialogTitle>
-            <DialogDescription>
-              Bitte geben Sie ein neues Passwort ein.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="new-password">Neues Passwort</Label>
-              <Input
-                id="new-password"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Mindestens 6 Zeichen"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">Passwort bestätigen</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Passwort wiederholen"
-              />
-            </div>
-            
-            <div className="flex gap-2 justify-end">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setShowPasswordDialog(false);
-                  setNewPassword("");
-                  setConfirmPassword("");
-                }}
-                disabled={isChangingPassword}
-              >
-                Abbrechen
-              </Button>
-              <Button onClick={handleChangePassword} disabled={isChangingPassword}>
-                {isChangingPassword ? "Wird geändert..." : "Passwort ändern"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 
