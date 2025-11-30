@@ -4,6 +4,7 @@ import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings } from
 import { PasswordChangeDialog } from "@/components/profile/password-change-dialog";
 import { ProfileDocumentsSection } from "@/components/profile/profile-documents-section";
 import { CustomFieldsSection } from "@/components/profile/custom-fields-section";
+import { ProfileHeader } from "@/components/profile/profile-header";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -454,81 +455,22 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     <div className="space-y-6">
       {/* Hero Card - nur anzeigen wenn sticky NICHT enabled ist */}
       {!isStickyEnabled && (
-        <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
-          <CardContent className="p-6">
-            {/* Mobile: Avatar rechts, Name links */}
-            <div className="flex items-start justify-between gap-4 mb-4">
-              <div className="flex-1 space-y-2">
-                <h1 className="text-xl md:text-3xl font-bold text-foreground">
-                  {user.firstName && user.lastName 
-                    ? `${user.firstName} ${user.lastName}` 
-                    : user.name}
-                </h1>
-                {user?.roles?.includes('vorstand') && (user as any).vorstandFunktion && (
-                  <p className="text-sm text-muted-foreground">
-                    {(user as any).vorstandFunktion}
-                  </p>
-                )}
-                <div className="flex flex-wrap gap-1.5">
-                  {sortRoles(user.roles || []).map((role) => (
-                    <Badge 
-                      key={role} 
-                      className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5" 
-                      style={getRoleBadgeInlineStyle(role)}
-                    >
-                      {ROLE_LABELS[role] || roleLabels[role]}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              {/* Avatar rechts oben */}
-              <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground text-2xl md:text-3xl font-bold shrink-0">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-            </div>
-
-            {/* Buttons unten */}
-            <div className="flex gap-2">
-              {!isEditing ? (
-                <>
-                  <Button 
-                    onClick={() => {
-                      setIsEditing(true);
-                      setEditedUser(user);
-                      setEditedCustomValues(customValues);
-                    }} 
-                    size="sm" 
-                    className="h-8"
-                  >
-                    <Edit className="w-3 h-3 mr-1.5" />
-                    Bearbeiten
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="h-8"
-                    onClick={() => {
-                      setIsEditing(false);
-                      setEditedUser(user);
-                      setEditedCustomValues(customValues);
-                    }}
-                  >
-                    <X className="w-3 h-3 mr-1.5" />
-                    Abbrechen
-                  </Button>
-                  <Button size="sm" className="h-8" onClick={handleSaveProfile}>
-                    <Save className="w-3 h-3 mr-1.5" />
-                    Speichern
-                  </Button>
-                </>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        <ProfileHeader
+          user={user}
+          isEditing={isEditing}
+          getRoleBadgeInlineStyle={getRoleBadgeInlineStyle}
+          onEdit={() => {
+            setIsEditing(true);
+            setEditedUser(user);
+            setEditedCustomValues(customValues);
+          }}
+          onSave={handleSaveProfile}
+          onCancel={() => {
+            setIsEditing(false);
+            setEditedUser(user);
+            setEditedCustomValues(customValues);
+          }}
+        />
       )}
 
       {/* Rollen Card - Nur für Admins sichtbar */}
