@@ -69,18 +69,10 @@ const generateConsecutiveSlots = (craneOperators: User[]): Slot[] => {
   currentWeekStart.setDate(today.getDate() - (today.getDay() + 6) % 7); // Get Monday
   const todayString = currentWeekStart.toISOString().split('T')[0];
   
-  console.log('🗓️ GENERATING CONSECUTIVE SLOTS:');
-  console.log('📅 Today:', today.toISOString().split('T')[0]);
-  console.log('📅 Current week start (Monday):', todayString);
-  console.log('📅 Week days:', Array.from({length: 7}, (_, i) => {
-    const day = new Date(currentWeekStart);
-    day.setDate(currentWeekStart.getDate() + i);
-    return day.toISOString().split('T')[0];
-  }));
+  // Slot generation logging removed - use logger if needed
   
   // Sicherstellen, dass wir mindestens 2 Kranführer haben
   if (craneOperators.length < 2) {
-    console.warn("Nicht genügend Kranführer für Slot-Block Demo");
     return [];
   }
   
@@ -187,9 +179,6 @@ const generateConsecutiveSlots = (craneOperators: User[]): Slot[] => {
   
   
   slots.push(...block1Slots, ...tuesdaySlots);
-  
-  console.log('✅ GENERATED SLOTS:', slots.length, 'slots');
-  console.log('📋 SLOT DETAILS:', slots.map(s => `${s.id}: ${s.date} ${s.time} (${s.isBooked ? 'booked' : 'available'})`));
   
   return slots;
 };
@@ -1033,10 +1022,7 @@ export function TestDataProvider({ children }: { children: ReactNode }) {
       slots.push(...daySlots);
     }
     
-    console.log(`🎯 Neues Komplettset erstellt: ${slots.length} Slots für ${format(new Date(today.getTime() - 3*24*60*60*1000), 'dd.MM')} bis ${format(new Date(today.getTime() + 6*24*60*60*1000), 'dd.MM.yyyy')}`);
-    console.log(`👥 ${extendedPersonas.length} Personas: ${extendedPersonas.filter(u => u.role === 'admin').length} Admin, ${extendedPersonas.filter(u => u.role === 'kranfuehrer').length} Kranführer, ${extendedPersonas.filter(u => u.role === 'mitglied').length} Mitglieder`);
-    console.log(`📊 Slot-Verteilung: ${slots.filter(s => s.blockId).length} Block-Slots, ${slots.filter(s => !s.blockId).length} Einzelslots`);
-    console.log(`✅ Gebuchte Slots: ${slots.filter(s => s.isBooked).length}/${slots.length} (${Math.round((slots.filter(s => s.isBooked).length / slots.length) * 100)}%)`);
+    // Test data generation complete - details logged if needed
     
     // Slots setzen
     setSlots(slots);
@@ -1097,8 +1083,6 @@ export function TestDataProvider({ children }: { children: ReactNode }) {
   };
 
   const addSlot = (newSlotData: Partial<Slot>) => {
-    console.log('🚀 ADD_SLOT called with:', newSlotData);
-    
     const newSlot: Slot = {
       id: `slot-${Date.now()}`,
       date: newSlotData.date || format(new Date(), 'yyyy-MM-dd'),
@@ -1111,18 +1095,8 @@ export function TestDataProvider({ children }: { children: ReactNode }) {
       notes: newSlotData.notes
     };
     
-    console.log('📅 CREATED NEW SLOT:', {
-      id: newSlot.id,
-      date: newSlot.date,
-      time: newSlot.time,
-      duration: newSlot.duration,
-      craneOperator: newSlot.craneOperator.name
-    });
-    
     setSlots(prev => {
       const newSlots = [...prev, newSlot];
-      console.log('💾 SLOTS STATE UPDATED. Total slots now:', newSlots.length);
-      console.log('📊 Latest 5 slots:', newSlots.slice(-5).map(s => `${s.date} ${s.time} (${s.id})`));
       return newSlots;
     });
   };
@@ -1130,12 +1104,6 @@ export function TestDataProvider({ children }: { children: ReactNode }) {
   const addSlotBlock = (slotDataArray: Partial<Slot>[]) => {
     // Generate unique timestamp for this block
     const blockTimestamp = Date.now();
-    
-    console.log('🚀 ADD_SLOT_BLOCK called with:', {
-      slotCount: slotDataArray.length,
-      blockTimestamp,
-      firstSlot: slotDataArray[0]
-    });
     
     const newSlots: Slot[] = slotDataArray.map((slotData, index) => ({
       id: `block-${blockTimestamp}-${index + 1}`,
@@ -1149,12 +1117,8 @@ export function TestDataProvider({ children }: { children: ReactNode }) {
       notes: slotData.notes
     }));
     
-    console.log('📊 GENERATED SLOTS with IDs:', newSlots.map(s => `${s.time} (${s.id})`));
-    console.log('📋 FULL SLOT DATA:', newSlots);
-    
     setSlots(prev => {
       const newSlotsList = [...prev, ...newSlots];
-      console.log('💾 SLOTS STATE UPDATED. Total slots now:', newSlotsList.length);
       return newSlotsList;
     });
   };
