@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { ValidationResult } from "@/types";
+import { logger } from "@/lib/logger";
 
 export interface FieldConfig<T> {
   name: keyof T;
@@ -233,7 +234,7 @@ export function useFormHandler<T extends Record<string, any>>(
       
       return success;
     } catch (error) {
-      console.error('Form submission error:', error);
+      logger.error('FORM', 'Form submission error', error);
       return false;
     } finally {
       setIsSubmitting(false);

@@ -80,7 +80,6 @@ export function AppShell({
       toast.success("Erfolgreich abgemeldet");
       navigate('/auth');
     } catch (error) {
-      console.error('Logout error:', error);
       toast.error("Fehler beim Abmelden");
     }
   };
