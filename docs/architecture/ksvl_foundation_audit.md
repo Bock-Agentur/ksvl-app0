@@ -128,15 +128,16 @@ Konsequenter Einsatz von Tailwind + shadcn/ui mit HSL-Variablen und Utility-Klas
 
 ## Top 3 Schwächen
 
-### 1. 🟡 "God Components" (Score: 60/100) — *vorher Platz 3*
+### 1. 🟡 "God Components" (Score: 60/100) — *KRITISCH*
 **Beschreibung:**  
-Einige Komponenten haben zu viele Verantwortlichkeiten (>400 Zeilen).
+Zwei große Komponenten haben zu viele Verantwortlichkeiten (>900 Zeilen).
 
 **Beispiele:**
-- `slot-management.tsx` (627 Zeilen):
-  - Liste + Filter + Kalender + Dialog + CRUD-Forms
-- `user-management.tsx` (400+ Zeilen):
-  - Liste + Filter + Detail-View + CRUD-Dialogs
+- `slot-management.tsx` (956 Zeilen):
+  - Liste + Filter + Kalender + Dialog + CRUD-Forms + Booking
+- `user-management.tsx` (963 Zeilen):
+  - Liste + Filter + Detail-View + CRUD-Dialogs + Export + Stats
+- ✅ `profile-view.tsx` (594 Zeilen) - **REFACTORED** → 13 Sub-Komponenten
 
 **Problem:**
 - ❌ Schwer wartbar (zu viele Verantwortlichkeiten in einer Datei)
@@ -145,29 +146,45 @@ Einige Komponenten haben zu viele Verantwortlichkeiten (>400 Zeilen).
 
 **Soll-Zustand:**
 ```
-// ✅ Aufteilen in kleinere Komponenten
+// ✅ Aufteilen in kleinere Komponenten (siehe Sprint 2 Plan unten)
 /components/slots/
-  - slot-list.tsx (Liste + Pagination)
-  - slot-filters.tsx (Filter-UI)
-  - slot-calendar.tsx (Kalender-Ansicht)
-  - slot-form-dialog.tsx (CRUD-Dialog)
-  - slot-management.tsx (Orchestrierung, <200 Zeilen)
+  - slot-list.tsx (~200 Zeilen) - Liste + Pagination
+  - slot-filters.tsx (~150 Zeilen) - Filter-UI
+  - slot-calendar-view.tsx (~200 Zeilen) - Kalender-Ansicht
+  - slot-details-dialog.tsx (~150 Zeilen) - Detail-Dialog
+  - slot-booking-dialog.tsx (~100 Zeilen) - Buchungs-Dialog
+  - slot-management.tsx (~150 Zeilen) - Orchestrierung
+
+/components/users/
+  - user-list.tsx (~200 Zeilen) - User-Liste + Pagination
+  - user-filters.tsx (~150 Zeilen) - Filter-UI
+  - user-stats-panel.tsx (~100 Zeilen) - Statistik-Panel
+  - user-create-dialog.tsx (~150 Zeilen) - Erstellungs-Dialog
+  - user-export.tsx (~80 Zeilen) - Export-Funktionalität
+  - user-management.tsx (~200 Zeilen) - Orchestrierung
 ```
 
 **Impact:**
-- 🔹 **MEDIUM PRIORITY** Refactoring
-- Verbessert Wartbarkeit und Testbarkeit
+- 🔥 **HIGH PRIORITY** Refactoring (Sprint 2)
+- Verbessert Wartbarkeit und Testbarkeit massiv
+- Reduziert Dateigröße um ~70-80%
 
 ---
 
-### 2. 🟡 Console.log Statements (Score: 55/100) — *NEU*
+### 2. 🟡 Console.log Statements (Score: 55/100) — *KRITISCH*
 **Beschreibung:**  
-476+ `console.log()` Statements in Hook-Dateien (Debugging-Code in Produktion).
+523 `console.log()` Statements in 17 Dateien (Debugging-Code in Produktion).
 
-**Beispiele:**
+**Detaillierte Aufschlüsselung:**
 ```bash
-# Gefunden via Codebase-Suche:
-src/hooks/use-*.tsx: 476 Matches für "console.log"
+# Gefunden via Codebase-Suche (2025-11-30):
+src/hooks/use-slots.tsx: 62 Matches
+src/hooks/use-users-data.tsx: 58 Matches
+src/contexts/slots-context.tsx: 45 Matches
+src/lib/realtime-manager.ts: 38 Matches
+src/hooks/use-settings-batch.tsx: 32 Matches
+... (12 weitere Dateien)
+GESAMT: 523 console.log Statements
 ```
 
 **Problem:**
@@ -466,13 +483,165 @@ UI → Hooks → Services → Supabase
 
 ---
 
-### Sprint 2 (MEDIUM PRIORITY, ~1-2 Wochen) — **NÄCHSTE SCHRITTE**
-- [ ] `slot-management.tsx` aufteilen (God-Component → 5 Komponenten)
-- [ ] `user-management.tsx` aufteilen
-- [ ] Console.log Cleanup (476+ Statements entfernen)
-- [ ] Module-Registry erstellen (`lib/registry/modules.ts`)
+### Sprint 2 (MEDIUM/HIGH PRIORITY, ~1-2 Wochen) — **AKTUELLE SPRINT-PLANUNG**
 
-**Erwartetes Ergebnis:** Foundation-Score +3-5 → **~90-92/100**
+#### 2.1 God-Components aufteilen (HIGH Priority)
+**Ziel:** Reduzierung auf max. 600 Zeilen pro Komponente
+
+##### `slot-management.tsx` (956 → ~150 Zeilen)
+**Aufteilung in 6 Komponenten:**
+1. **`slot-list.tsx`** (~200 Zeilen)
+   - Slots-Liste mit Pagination
+   - Desktop/Mobile-Layout
+   - Slot-Cards Rendering
+   
+2. **`slot-filters.tsx`** (~150 Zeilen)
+   - Filter-UI (Status, Datum, Kranführer)
+   - "Meine Slots" Toggle
+   - Filter-State Management
+   
+3. **`slot-calendar-view.tsx`** (~200 Zeilen)
+   - Kalender-Ansicht Integration
+   - Week/Month-Calendar Wrapper
+   - Datum-Navigation
+   
+4. **`slot-details-dialog.tsx`** (~150 Zeilen)
+   - Detail-Dialog mit allen Slot-Infos
+   - Mitglieder-Anzeige
+   - Notizen-Anzeige
+   
+5. **`slot-booking-dialog.tsx`** (~100 Zeilen)
+   - Buchungs-/Storno-Dialog
+   - Mitglieder-Auswahl
+   - Confirmation Logic
+   
+6. **`slot-management.tsx`** (~150 Zeilen)
+   - Orchestrierung & State
+   - Layout & Header
+   - Sub-Komponenten Integration
+
+**Aufwand:** ~6-8h  
+**Impact:** Wartbarkeit ↑↑, Testbarkeit ↑↑, Foundation-Score +5
+
+---
+
+##### `user-management.tsx` (963 → ~200 Zeilen)
+**Aufteilung in 6 Komponenten:**
+1. **`user-list.tsx`** (~200 Zeilen)
+   - User-Liste mit Pagination
+   - Role-Badge Integration
+   - Search & Sort
+   
+2. **`user-filters.tsx`** (~150 Zeilen)
+   - Filter-UI (Rolle, Status, Mitgliedschaft)
+   - Search-Input
+   - Filter-State Management
+   
+3. **`user-stats-panel.tsx`** (~100 Zeilen)
+   - Statistik-Cards (Total, Aktiv, Rollen)
+   - Schnell-Überblick
+   
+4. **`user-create-dialog.tsx`** (~150 Zeilen)
+   - Neuer User Dialog
+   - Form-Validierung
+   - Rollen-Auswahl
+   
+5. **`user-export.tsx`** (~80 Zeilen)
+   - Export-Funktionen (CSV, Excel)
+   - Export-Dialog
+   
+6. **`user-management.tsx`** (~200 Zeilen)
+   - Orchestrierung & State
+   - Layout & Header
+   - Sub-Komponenten Integration
+
+**Aufwand:** ~6-8h  
+**Impact:** Wartbarkeit ↑↑, Testbarkeit ↑↑, Foundation-Score +5
+
+---
+
+#### 2.2 Console.log Cleanup (MEDIUM Priority)
+**Ziel:** 523 Statements entfernen/ersetzen
+
+**Strategie:**
+1. **Produktions-relevante Logs** → `logger.ts` verwenden
+   ```typescript
+   // ❌ console.log('[useSlots] Fetching...');
+   // ✅ logger.info('[useSlots] Fetching...');
+   ```
+
+2. **Debug-Logs** → Komplett entfernen
+   ```typescript
+   // ❌ console.log('Sample slot:', slot);
+   // ✅ (entfernen)
+   ```
+
+3. **Error-Logs** → Beibehalten oder via logger
+   ```typescript
+   // ✅ console.error('Failed:', error); (behalten)
+   // ✅ logger.error('Failed:', error); (noch besser)
+   ```
+
+**Prioritäten:**
+- 🔥 High: `use-slots.tsx` (62), `use-users-data.tsx` (58), `slots-context.tsx` (45)
+- 🔹 Medium: `realtime-manager.ts` (38), `use-settings-batch.tsx` (32)
+- 🔷 Low: Restliche 12 Dateien (~288 Statements)
+
+**Aufwand:** ~4-6h  
+**Impact:** Performance ↑, Security ↑, Foundation-Score +3
+
+---
+
+#### 2.3 Module-Registry erstellen (MEDIUM Priority)
+**Ziel:** Zentrale Metadaten für alle 8 Module
+
+**Neue Datei:** `src/lib/registry/modules.ts`
+```typescript
+export interface AppModule {
+  id: string;
+  name: string;
+  type: 'core' | 'domain' | 'support';
+  routes: string[];
+  lifecycle: 'draft' | 'stable' | 'frozen';
+  docsPath?: string;
+  components?: string[];
+  hooks?: string[];
+  services?: string[];
+}
+
+export const MODULES: AppModule[] = [
+  {
+    id: 'auth',
+    name: 'Authentication',
+    type: 'core',
+    routes: ['/auth'],
+    lifecycle: 'stable',
+    docsPath: 'docs/modules/auth.md',
+    hooks: ['useAuth'],
+  },
+  {
+    id: 'users',
+    name: 'Users & Profiles',
+    type: 'core',
+    routes: ['/mitglieder'],
+    lifecycle: 'stable',
+    docsPath: 'docs/modules/users.md',
+    components: ['user-management', 'profile-view'],
+    hooks: ['useUsers', 'useUsersData', 'useProfileData'],
+    services: ['user-service'],
+  },
+  // ... 6 weitere Module
+];
+```
+
+**Aufwand:** ~2-3h  
+**Impact:** Dokumentation ↑, Modularität ↑, Foundation-Score +5
+
+---
+
+**Sprint 2 Gesamt:**
+- **Aufwand:** ~18-23h (über 1-2 Wochen verteilt)
+- **Erwartetes Ergebnis:** Foundation-Score +13 → **~95-100/100** ✅ FULL FOUNDATION
 
 ---
 
