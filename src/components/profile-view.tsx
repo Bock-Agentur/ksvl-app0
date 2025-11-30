@@ -223,6 +223,12 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     checkAdminStatus();
   }, [loadCurrentUser, checkAdminStatus]);
   
+  useEffect(() => {
+    if (customValues) {
+      setEditedCustomValues(customValues);
+    }
+  }, [customValues]);
+  
   if (loading) {
     return (
       <div className={cn(
@@ -251,12 +257,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       </div>
     );
   }
-  
-  useEffect(() => {
-    if (customValues) {
-      setEditedCustomValues(customValues);
-    }
-  }, [customValues]);
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {

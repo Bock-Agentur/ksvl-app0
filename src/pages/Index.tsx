@@ -55,9 +55,17 @@ function AppContent() {
   useSlotDesign();
   
   // ✅ ALLE useEffect Hooks VOR dem Early Return (React Rules of Hooks)
-  // Verarbeite URL-Parameter für Datumsnavigation
+  // Verarbeite URL-Parameter für Tab- und Datumsnavigation
   useEffect(() => {
+    const tabParam = searchParams.get('tab');
     const dateParam = searchParams.get('date');
+    
+    if (tabParam) {
+      setActiveTabRaw(tabParam, true);
+      setSearchParams({});
+      return;
+    }
+    
     if (dateParam) {
       const date = new Date(dateParam + 'T12:00:00');
       if (!isNaN(date.getTime())) {
@@ -72,20 +80,6 @@ function AppContent() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [activeTab]);
-
-  // ✅ Listen for navigate-to-tab events
-  useEffect(() => {
-    const handleNavigateToTab = (event: CustomEvent<{ tab: string }>) => {
-      const targetTab = event.detail.tab;
-      setActiveTabRaw(targetTab, true);
-    };
-    
-    window.addEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
-    
-    return () => {
-      window.removeEventListener('navigate-to-tab', handleNavigateToTab as EventListener);
-    };
-  }, [setActiveTabRaw]);
   
   // Mark footer as animated after first render
   useEffect(() => {
