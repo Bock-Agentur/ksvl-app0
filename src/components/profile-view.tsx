@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
 import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings, Key } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -77,47 +77,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     placeholder: ""
   });
 
-  useEffect(() => {
-    loadCurrentUser();
-    checkAdminStatus();
-  }, [userId, roleCurrentUser?.id]);
-  
-  if (loading) {
-    return (
-      <div className={cn(
-        "p-4 max-w-7xl mx-auto",
-        isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
-      )}>
-        <Card className="animate-pulse">
-          <CardHeader>
-            <div className="flex items-center gap-4">
-              <div className="h-20 w-20 bg-muted rounded-full" />
-              <div className="flex-1 space-y-2">
-                <div className="h-6 bg-muted rounded w-1/3" />
-                <div className="h-4 bg-muted rounded w-1/4" />
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="space-y-2">
-                <div className="h-4 bg-muted rounded w-1/4" />
-                <div className="h-10 bg-muted rounded" />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-  
-  useEffect(() => {
-    if (customValues) {
-      setEditedCustomValues(customValues);
-    }
-  }, [customValues]);
-  
-  const checkAdminStatus = async () => {
+  // Function definitions BEFORE useEffect to avoid Temporal Dead Zone
+  const checkAdminStatus = useCallback(async () => {
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     if (currentUser) {
       const { data: roles } = await supabase
@@ -128,9 +89,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       // Admin or Vorstand can edit restricted fields
       setIsAdmin(roles?.some(r => r.role === 'admin' || r.role === 'vorstand') || false);
     }
-  };
+  }, []);
 
-  const loadCurrentUser = async () => {
+  const loadCurrentUser = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -255,7 +216,47 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId, roleCurrentUser?.id, toast]);
+
+  useEffect(() => {
+    loadCurrentUser();
+    checkAdminStatus();
+  }, [loadCurrentUser, checkAdminStatus]);
+  
+  if (loading) {
+    return (
+      <div className={cn(
+        "p-4 max-w-7xl mx-auto",
+        isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
+      )}>
+        <Card className="animate-pulse">
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <div className="h-20 w-20 bg-muted rounded-full" />
+              <div className="flex-1 space-y-2">
+                <div className="h-6 bg-muted rounded w-1/3" />
+                <div className="h-4 bg-muted rounded w-1/4" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="space-y-2">
+                <div className="h-4 bg-muted rounded w-1/4" />
+                <div className="h-10 bg-muted rounded" />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+  
+  useEffect(() => {
+    if (customValues) {
+      setEditedCustomValues(customValues);
+    }
+  }, [customValues]);
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
