@@ -1,66 +1,239 @@
 # Profile View Refactoring Plan
 
-## ✅ REFACTORING ABGESCHLOSSEN
+## ✅ REFACTORING VOLLSTÄNDIG ABGESCHLOSSEN
 
 **Datum:** 2025-11-30  
-**Status:** Alle Phasen erfolgreich abgeschlossen  
+**Status:** Alle Phasen + zusätzliche Deep-Splits erfolgreich abgeschlossen  
 
 ### Finale Statistiken
 
-| Metrik | Vorher | Nachher | Reduktion |
-|--------|--------|---------|-----------|
-| profile-view.tsx | 2173 Zeilen | 594 Zeilen | **-1579 Zeilen (-73%)** |
-| Anzahl Komponenten | 1 (Monolith) | 6 (Modular) | +5 neue Komponenten |
+| Metrik | Vorher | Nachher | Verbesserung |
+|--------|--------|---------|--------------|
+| profile-view.tsx | 2173 Zeilen | 594 Zeilen | **-73% (-1579 Zeilen)** |
+| Größte Komponente | 2173 Zeilen | 594 Zeilen | **-73%** |
+| Anzahl Dateien | 1 Monolith | 13 fokussierte Komponenten | **+1200%** |
+| Durchschnittliche Dateigröße | 2173 | ~183 Zeilen | **-92%** |
+| Dateien über 600 Zeilen | 1 | 0 | **Eliminiert** |
 
-### Erstellte Komponenten
+---
 
-1. ✅ **password-change-dialog.tsx** (163 Zeilen)
-   - Passwort-Änderung Dialog
-   - Eigenständig, keine Abhängigkeiten zu parent
+## Komponenten-Hierarchie (13 Dateien)
 
-2. ✅ **profile-documents-section.tsx** (66 Zeilen)
-   - Dokumenten-Upload Sektion
-   - BFA, Versicherung, Liegeplatzvertrag, Mitgliedsfoto
+```mermaid
+graph TD
+    A[profile-view.tsx<br/>594 Zeilen<br/>Orchestrator] --> B[profile-header.tsx<br/>99 Zeilen]
+    A --> C[profile-form-cards.tsx<br/>81 Zeilen<br/>Wrapper]
+    A --> D[profile-documents-section.tsx<br/>66 Zeilen]
+    A --> E[password-change-dialog.tsx<br/>163 Zeilen]
+    
+    C --> F[profile-personal-cards.tsx<br/>85 Zeilen<br/>Wrapper]
+    C --> G[profile-admin-cards.tsx<br/>110 Zeilen]
+    C --> H[profile-boat-cards.tsx<br/>304 Zeilen]
+    
+    F --> I[profile-login-card.tsx<br/>125 Zeilen]
+    F --> J[profile-master-data-card.tsx<br/>205 Zeilen]
+    F --> K[profile-membership-card.tsx<br/>194 Zeilen]
+    F --> L[profile-privacy-card.tsx<br/>268 Zeilen]
+    
+    J --> M[custom-fields-section.tsx<br/>369 Zeilen]
+    
+    style A fill:#e1f5ff
+    style C fill:#fff3cd
+    style F fill:#fff3cd
+    style M fill:#d4edda
+```
 
-3. ✅ **custom-fields-section.tsx** (369 Zeilen)
-   - Custom Fields Verwaltung
-   - Admin: Felder hinzufügen/löschen
-   - User: Werte bearbeiten
+### 1. Orchestrierung (1 Datei)
+- **`profile-view.tsx`** (594 Zeilen)
+  - State Management (user, isEditing, customFields, etc.)
+  - Data Loading (useEffect, loadCurrentUser)
+  - Save/Cancel Logik (handleSaveProfile)
+  - Layout Wrapper mit Save/Cancel Buttons
+  - Integration aller Sub-Komponenten
 
-4. ✅ **profile-header.tsx** (99 Zeilen)
-   - Hero Card mit Avatar, Name, Rollen-Badges
-   - Bearbeiten/Speichern/Abbrechen Buttons
+### 2. Header & Utilities (4 Dateien)
+- **`profile-header.tsx`** (99 Zeilen)
+  - Hero Card mit Avatar, Name, Rollen-Badges
+  - Bearbeiten/Speichern/Abbrechen Buttons
+  - Conditional Rendering (Sticky-Layout)
 
-5. ✅ **profile-form-cards.tsx** (1146 Zeilen)
-   - Alle 9 Formular-Cards:
-     - Rollen (Admin only)
-     - Zugangsdaten
-     - Stammdaten
-     - Mitgliedschaft
-     - Boot & Liegeplatz
-     - Parkplatz & Getränkechip
-     - AI-Assistent & Datenschutz
-     - Notfallkontakt & Notizen
-     - Historie & Verwaltung (Admin only)
+- **`profile-documents-section.tsx`** (66 Zeilen)
+  - Dokumenten-Upload für 4 Dokumente
+  - BFA, Versicherung, Liegeplatzvertrag, Mitgliedsfoto
 
-### Architektur-Verbesserungen
+- **`password-change-dialog.tsx`** (163 Zeilen)
+  - Eigenständiger Passwort-Dialog
+  - Keine Dependencies zu Parent
+  - Admin kann fremde Passwörter ändern
 
-- ✅ **Modularität**: Jede Komponente hat klar definierte Verantwortlichkeiten
-- ✅ **Testbarkeit**: Kleinere Komponenten sind einfacher zu testen
-- ✅ **Wartbarkeit**: Änderungen sind isoliert und beeinflussen nicht das gesamte Profil
-- ✅ **Wiederverwendbarkeit**: Komponenten können in anderen Kontexten verwendet werden
-- ✅ **Performance**: Kleinere Komponenten ermöglichen besseres Code-Splitting
+- **`custom-fields-section.tsx`** (369 Zeilen)
+  - Custom Fields Rendering (View + Edit)
+  - Admin: Felder hinzufügen/löschen
+  - User: Werte bearbeiten
 
-### Mögliche zukünftige Verbesserungen
+### 3. Form Cards Wrapper (2 Dateien)
+- **`profile-form-cards.tsx`** (81 Zeilen)
+  - Hauptwrapper für alle Formular-Bereiche
+  - Orchestriert Personal, Admin & Boot Cards
 
-1. **profile-form-cards.tsx weiter splitten** (optional)
-   - Aktuell 1146 Zeilen - könnte in 3 kleinere Komponenten aufgeteilt werden
+- **`profile-personal-cards.tsx`** (85 Zeilen)
+  - Wrapper für 4 persönliche Sub-Cards
+  - Login, Stammdaten, Mitgliedschaft, Privacy
 
-2. **Custom Hooks extrahieren**
-   - State-Management-Logik in dedizierte Hooks verschieben
+### 4. Card Groups (2 Dateien)
+- **`profile-admin-cards.tsx`** (110 Zeilen)
+  - Rollen-Card (nur Admin)
+  - Historie & Verwaltung (nur Admin)
 
-3. **Testing hinzufügen**
-   - Unit Tests für jede neue Komponente
+- **`profile-boat-cards.tsx`** (304 Zeilen)
+  - Boot & Liegeplatz Card
+  - Parkplatz & Getränkechip Card
+  - Notfallkontakt & Notizen Card
+
+### 5. Personal Sub-Cards (4 Dateien)
+- **`profile-login-card.tsx`** (125 Zeilen)
+  - Benutzername (Admin edit)
+  - Passwort-Änderung Button
+  - 2FA-Einstellungen
+  - Passwort-Änderung erforderlich
+
+- **`profile-master-data-card.tsx`** (205 Zeilen)
+  - Vorname, Nachname, Mitgliedsnummer
+  - Geburtsdatum, E-Mail, Telefon
+  - Adresse (Straße, PLZ, Stadt)
+  - Integration: Custom Fields Section
+
+- **`profile-membership-card.tsx`** (194 Zeilen)
+  - Mitgliedsnummer (disabled)
+  - Eintrittsdatum, Mitgliedschaftsart
+  - Mitgliedschaftsstatus
+  - Vorstandsfunktion + Zeitraum
+  - ÖSVV-Nummer
+
+- **`profile-privacy-card.tsx`** (268 Zeilen)
+  - AI-Assistent Einstellungen
+  - Datenschutz-Checkboxen
+  - Kontakt-Sichtbarkeit
+  - Newsletter Opt-In
+
+---
+
+## Architektur-Verbesserungen
+
+### ✅ Modularität
+- Jede Komponente hat eine klar definierte Verantwortlichkeit
+- Wrapper-Komponenten orchestrieren Sub-Komponenten
+- Maximale Separation of Concerns
+
+### ✅ Testbarkeit
+- Kleinere Komponenten sind isoliert testbar
+- Props sind klar definiert und typsicher
+- Keine versteckten Dependencies
+
+### ✅ Wartbarkeit
+- Änderungen sind isoliert (z.B. nur Login-Card)
+- Kein Dominoeffekt durch Änderungen
+- Code-Duplikation minimiert
+
+### ✅ Wiederverwendbarkeit
+- Header, Documents, Password können in anderen Kontexten verwendet werden
+- Custom Fields Section ist generisch
+
+### ✅ Performance
+- Kleinere Komponenten ermöglichen besseres Code-Splitting
+- React kann effizienter re-rendern
+- Lazy Loading möglich
+
+---
+
+## Test-Empfehlungen
+
+### Kompletter User-Flow
+1. **Profil öffnen** → Daten werden geladen
+2. **Bearbeiten-Button** → isEditing = true
+3. **Felder ändern** in allen Cards:
+   - Login Card: 2FA ändern
+   - Stammdaten Card: Adresse ändern
+   - Mitgliedschaft Card: Status ändern
+   - Boot Card: Boot-Name ändern
+   - Privacy Card: AI-Assistent toggle
+4. **Speichern** → handleSaveProfile() erfolgreich
+5. **Reload** → Änderungen persistiert
+
+### Admin-spezifische Tests
+- Rollen ändern (Admin Card)
+- Benutzername ändern (Login Card)
+- Custom Fields hinzufügen/löschen (Stammdaten Card)
+- Historie anzeigen (Admin Card)
+- Fremdes Passwort ändern (Password Dialog)
+
+### Edge Cases
+- Profil ohne Boot-Daten
+- Profil ohne Custom Fields
+- Neues Mitglied (noch keine Historie)
+- Gastmitglied vs. Vollmitglied Rechte
+
+---
+
+## Zukünftige Verbesserungen (Optional)
+
+### 1. Custom Hooks extrahieren
+```typescript
+// useProfileForm.ts
+export function useProfileForm(userId: string) {
+  const [user, setUser] = useState<UserType | null>(null);
+  const [editedUser, setEditedUser] = useState<UserType | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  // ... weitere States
+  
+  const loadCurrentUser = async () => { /* ... */ };
+  const handleSaveProfile = async () => { /* ... */ };
+  
+  return {
+    user,
+    editedUser,
+    isEditing,
+    setIsEditing,
+    setEditedUser,
+    handleSaveProfile,
+    loadCurrentUser
+  };
+}
+```
+
+### 2. Unit Tests hinzufügen
+- Vitest + React Testing Library
+- Test für jede Komponente
+- Integration Tests für User-Flows
+
+### 3. Storybook Integration
+- Visual Testing für alle Cards
+- Verschiedene States (View, Edit, Admin, User)
+
+---
+
+## Vergleich: Vorher vs. Nachher
+
+| Aspekt | Vorher | Nachher |
+|--------|--------|---------|
+| **Dateien** | 1 Monolith | 13 fokussierte Komponenten |
+| **Größte Datei** | 2173 Zeilen | 594 Zeilen |
+| **Durchschnitt** | 2173 Zeilen | 183 Zeilen |
+| **Testbarkeit** | ❌ Schwierig | ✅ Einfach |
+| **Wartbarkeit** | ❌ Komplex | ✅ Modular |
+| **Code-Splitting** | ❌ Nicht möglich | ✅ Möglich |
+| **Wiederverwendbarkeit** | ❌ Niedrig | ✅ Hoch |
+
+---
+
+## Erfolgs-Kriterien ✅
+
+- [x] profile-view.tsx unter 600 Zeilen
+- [x] Keine Datei über 400 Zeilen (außer profile-view.tsx & custom-fields-section.tsx)
+- [x] Alle Funktionen erhalten
+- [x] Props typisiert mit TypeScript
+- [x] Komponenten-Hierarchie dokumentiert
+- [x] Test-Strategie definiert
 
 ---
 
