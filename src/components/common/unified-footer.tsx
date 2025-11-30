@@ -162,15 +162,9 @@ export function UnifiedFooter({
       return;
     }
     
-    // For tab-based items: navigate to / first if needed
+    // For tab-based items: use URL parameter for immediate navigation
     if (currentPath !== '/') {
-      navigate('/');
-      // Use requestAnimationFrame for more reliable event dispatch after navigation
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          window.dispatchEvent(new CustomEvent('navigate-to-tab', { detail: { tab: itemId } }));
-        });
-      });
+      navigate(`/?tab=${itemId}`);
     } else if (onTabChange) {
       onTabChange(itemId);
     }
