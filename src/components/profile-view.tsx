@@ -3,6 +3,7 @@ import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
 import { Edit, Save, X, Plus, Trash2, User, Mail, Phone, Anchor, Settings } from "lucide-react";
 import { PasswordChangeDialog } from "@/components/profile/password-change-dialog";
 import { ProfileDocumentsSection } from "@/components/profile/profile-documents-section";
+import { CustomFieldsSection } from "@/components/profile/custom-fields-section";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,7 +48,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const [user, setUser] = useState<UserType | null>(null);
   const [loading, setLoading] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
-  const [isManagingFields, setIsManagingFields] = useState(false);
   const [editedUser, setEditedUser] = useState<UserType | null>(null);
   const [editedCustomValues, setEditedCustomValues] = useState<Record<string, any>>({});
   const [aiInfoEnabled, setAiInfoEnabled] = useState(false);
@@ -64,15 +64,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
   const { isPageSticky } = useStickyHeaderLayout();
   const isStickyEnabled = isPageSticky('profile');
-
-  // New custom field form
-  const [newField, setNewField] = useState<Partial<CustomField>>({
-    name: "",
-    label: "",
-    type: "text",
-    required: false,
-    placeholder: ""
-  });
 
   // Function definitions BEFORE useEffect to avoid Temporal Dead Zone
   const checkAdminStatus = useCallback(async () => {
@@ -443,137 +434,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     }
   };
 
-  const handleAddCustomField = async () => {
-    if (!newField.name || !newField.label) {
-      toast({
-        title: "Fehler",
-        description: "Name und Label sind erforderlich.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    try {
-      await addCustomField({
-        name: newField.name!,
-        label: newField.label!,
-        type: newField.type || "text",
-        required: newField.required || false,
-        placeholder: newField.placeholder,
-        options: newField.type === "select" ? newField.options : undefined
-      });
-
-      setNewField({
-        name: "",
-        label: "",
-        type: "text",
-        required: false,
-        placeholder: ""
-      });
-
-      toast({
-        title: "Feld hinzugefügt",
-        description: `Das Feld "${newField.label}" wurde zu allen Profilen hinzugefügt.`
-      });
-    } catch (error) {
-      console.error('Error adding custom field:', error);
-      toast({
-        title: "Fehler",
-        description: "Feld konnte nicht hinzugefügt werden.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleDeleteCustomField = async (fieldId: string) => {
-    const field = customFields.find(f => f.id === fieldId);
-    
-    try {
-      await deleteCustomField(fieldId);
-
-      toast({
-        title: "Feld entfernt",
-        description: `Das Feld "${field?.label}" wurde von allen Profilen entfernt.`
-      });
-    } catch (error) {
-      console.error('Error deleting custom field:', error);
-      toast({
-        title: "Fehler",
-        description: "Feld konnte nicht entfernt werden.",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const renderCustomField = (field: CustomField, isEditing: boolean) => {
-    const value = isEditing ? editedCustomValues[field.name] : customValues[field.name];
-    
-    if (!isEditing) {
-      if (!value) return null;
-      return (
-        <div key={field.id} className="space-y-2">
-          <Label className="text-sm font-medium">{field.label}</Label>
-          <p className="text-sm text-muted-foreground">{value}</p>
-        </div>
-      );
-    }
-
-    switch (field.type) {
-      case "textarea":
-        return (
-          <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.name}>
-              {field.label} {field.required && <span className="text-destructive">*</span>}
-            </Label>
-            <Textarea
-              id={field.name}
-              value={value || ""}
-              onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-              placeholder={field.placeholder}
-            />
-          </div>
-        );
-      
-      case "select":
-        return (
-          <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.name}>
-              {field.label} {field.required && <span className="text-destructive">*</span>}
-            </Label>
-            <Select
-              value={value || ""}
-              onValueChange={(newValue) => setEditedCustomValues(prev => ({ ...prev, [field.name]: newValue }))}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={field.placeholder || "Auswählen..."} />
-              </SelectTrigger>
-              <SelectContent>
-                {field.options?.map(option => (
-                  <SelectItem key={option} value={option}>{option}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        );
-      
-      default:
-        return (
-          <div key={field.id} className="space-y-2">
-            <Label htmlFor={field.name}>
-              {field.label} {field.required && <span className="text-destructive">*</span>}
-            </Label>
-            <Input
-              id={field.name}
-              type={field.type === "number" ? "number" : field.type === "date" ? "date" : "text"}
-              value={value || ""}
-              onChange={(e) => setEditedCustomValues(prev => ({ ...prev, [field.name]: e.target.value }))}
-              placeholder={field.placeholder}
-            />
-          </div>
-        );
-    }
-  };
-
   if (loading) {
     return (
       <div className="p-4 text-center">
@@ -644,143 +504,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                     <Edit className="w-3 h-3 mr-1.5" />
                     Bearbeiten
                   </Button>
-                  {isAdmin && (
-                    <Dialog open={isManagingFields} onOpenChange={setIsManagingFields}>
-                      <DialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="h-8">
-                          <Settings className="w-3 h-3 mr-1.5" />
-                          Felder verwalten
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Custom Fields verwalten</DialogTitle>
-                          <DialogDescription>
-                            Verwalten Sie zusätzliche Felder für alle Benutzerprofile.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <div className="space-y-6">
-                          {/* Add New Field Form */}
-                          <div className="border rounded-lg p-4 space-y-4">
-                            <h3 className="font-semibold">Neues Feld hinzufügen</h3>
-                            
-                            <div className="grid grid-cols-2 gap-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="field-name">Feldname (technisch)</Label>
-                                <Input
-                                  id="field-name"
-                                  value={newField.name || ""}
-                                  onChange={(e) => setNewField(prev => ({ ...prev, name: e.target.value }))}
-                                  placeholder="z.B. custom_field_1"
-                                />
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <Label htmlFor="field-label">Anzeigename</Label>
-                                <Input
-                                  id="field-label"
-                                  value={newField.label || ""}
-                                  onChange={(e) => setNewField(prev => ({ ...prev, label: e.target.value }))}
-                                  placeholder="z.B. Zusätzliche Info"
-                                />
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <Label htmlFor="field-type">Feldtyp</Label>
-                                <Select
-                                  value={newField.type || "text"}
-                                  onValueChange={(value) => setNewField(prev => ({ ...prev, type: value as any }))}
-                                >
-                                  <SelectTrigger id="field-type">
-                                    <SelectValue />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="text">Text</SelectItem>
-                                    <SelectItem value="textarea">Mehrzeiliger Text</SelectItem>
-                                    <SelectItem value="number">Zahl</SelectItem>
-                                    <SelectItem value="date">Datum</SelectItem>
-                                    <SelectItem value="select">Auswahl</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                              
-                              <div className="space-y-2">
-                                <Label htmlFor="field-placeholder">Platzhalter</Label>
-                                <Input
-                                  id="field-placeholder"
-                                  value={newField.placeholder || ""}
-                                  onChange={(e) => setNewField(prev => ({ ...prev, placeholder: e.target.value }))}
-                                  placeholder="Optional"
-                                />
-                              </div>
-                            </div>
-                            
-                            {newField.type === "select" && (
-                              <div className="space-y-2">
-                                <Label htmlFor="field-options">Auswahloptionen (kommagetrennt)</Label>
-                                <Input
-                                  id="field-options"
-                                  value={newField.options?.join(", ") || ""}
-                                  onChange={(e) => setNewField(prev => ({ 
-                                    ...prev, 
-                                    options: e.target.value.split(",").map(o => o.trim()).filter(o => o) 
-                                  }))}
-                                  placeholder="Option 1, Option 2, Option 3"
-                                />
-                              </div>
-                            )}
-                            
-                            <div className="flex items-center space-x-2">
-                              <Checkbox
-                                id="field-required"
-                                checked={newField.required || false}
-                                onCheckedChange={(checked) => setNewField(prev => ({ ...prev, required: checked === true }))}
-                              />
-                              <label htmlFor="field-required" className="text-sm font-medium cursor-pointer">
-                                Pflichtfeld
-                              </label>
-                            </div>
-                            
-                            <Button onClick={handleAddCustomField}>
-                              <Plus className="w-4 h-4 mr-2" />
-                              Feld hinzufügen
-                            </Button>
-                          </div>
-
-                          {/* Existing Fields List */}
-                          <div className="space-y-4">
-                            <h3 className="font-semibold">Vorhandene Felder</h3>
-                            
-                            {fieldsLoading ? (
-                              <p className="text-sm text-muted-foreground">Lade Felder...</p>
-                            ) : customFields.length === 0 ? (
-                              <p className="text-sm text-muted-foreground">Keine benutzerdefinierten Felder vorhanden.</p>
-                            ) : (
-                              <div className="space-y-2">
-                                {customFields.map((field) => (
-                                  <div key={field.id} className="flex items-center justify-between p-3 border rounded-lg">
-                                    <div className="flex-1">
-                                      <p className="font-medium">{field.label}</p>
-                                      <p className="text-sm text-muted-foreground">
-                                        {field.name} • {field.type} {field.required && "• Pflichtfeld"}
-                                      </p>
-                                    </div>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      onClick={() => handleDeleteCustomField(field.id)}
-                                    >
-                                      <Trash2 className="w-4 h-4" />
-                                    </Button>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
-                  )}
                 </>
               ) : (
                 <>
@@ -1102,6 +825,21 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                 <p className="text-sm text-muted-foreground">{user.city || '-'}</p>
               )}
             </div>
+
+            {/* Custom Fields Section */}
+            <CustomFieldsSection
+              isAdmin={isAdmin}
+              customFields={customFields}
+              customValues={customValues}
+              editedCustomValues={editedCustomValues}
+              isEditing={isEditing}
+              fieldsLoading={fieldsLoading}
+              onValueChange={(field, value) =>
+                setEditedCustomValues((prev) => ({ ...prev, [field]: value }))
+              }
+              onAddField={addCustomField}
+              onDeleteField={deleteCustomField}
+            />
           </div>
         </CardContent>
       </Card>
@@ -1939,12 +1677,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                       <Edit className="w-3 h-3 mr-1.5" />
                       Bearbeiten
                     </Button>
-                    {isAdmin && (
-                      <Button variant="outline" size="sm" className="h-8" onClick={() => setIsManagingFields(true)}>
-                        <Settings className="w-3 h-3 mr-1.5" />
-                        Felder verwalten
-                      </Button>
-                    )}
                   </>
                 ) : (
                   <>
