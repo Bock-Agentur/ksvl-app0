@@ -105,16 +105,8 @@ function CountdownPreview({ endDate, text, small, showDays, fontSize, fontWeight
 
 // Helper: Generate preview URL from storagePath or url
 const getPreviewUrl = (settings: LoginBackground): string | null => {
-  console.log('🖼️ getPreviewUrl called with:', {
-    hasUrl: !!settings.url,
-    bucket: settings.bucket,
-    storagePath: settings.storagePath,
-    filename: settings.filename
-  });
-
   // If url exists (for preview during upload), use it
   if (settings.url) {
-    console.log('✅ Using existing URL:', settings.url);
     return settings.url;
   }
   
@@ -123,11 +115,9 @@ const getPreviewUrl = (settings: LoginBackground): string | null => {
     const { data } = supabase.storage
       .from(settings.bucket)
       .getPublicUrl(settings.storagePath);
-    console.log('✅ Generated URL from storage:', data.publicUrl);
     return data.publicUrl;
   }
   
-  console.log('❌ No valid URL data available');
   return null;
 };
 
