@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { generateMemberNumber } from "@/lib/business-logic";
 import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
+import { userLogger } from "@/lib/logger";
 
 interface UserDetailViewProps {
   user: UserType;
@@ -54,7 +55,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
           .eq('user_id', currentUser.id);
         
         const hasAdminRole = roles?.some(r => r.role === 'admin') || false;
-        console.log('User is admin:', hasAdminRole, roles);
+        userLogger.debug('Admin role check', { hasAdminRole, roles });
         setIsAdmin(hasAdminRole);
       }
     };
@@ -95,7 +96,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
         .eq('id', user.id);
 
       if (aiInfoError) {
-        console.error('Error updating ai_info_enabled:', aiInfoError);
+        userLogger.error('Error updating ai_info_enabled', aiInfoError);
         throw aiInfoError;
       }
 
@@ -157,7 +158,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
       onUpdate();
       onClose(); // Dialog schließen nach dem Speichern
     } catch (error: any) {
-      console.error('Error saving user:', error);
+      userLogger.error('Error saving user', error);
       toast({
         title: "Fehler",
         description: error.message || "Benutzerdaten konnten nicht gespeichert werden.",

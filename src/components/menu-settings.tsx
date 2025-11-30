@@ -9,6 +9,7 @@ import { GripVertical, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { uiLogger } from "@/lib/logger";
 
 export function MenuSettings() {
   const { settings, updateHeaderItemsOrder, updateDefaultRole, resetToDefaults, forceRefresh, getOrderedHeaderItems } = useMenuSettings();
@@ -59,7 +60,7 @@ export function MenuSettings() {
           description: "Die neue Reihenfolge wurde gespeichert.",
         });
       } catch (error) {
-        console.error('Failed to update order:', error);
+        uiLogger.error('Failed to update order', error);
       }
     }
     
@@ -74,7 +75,7 @@ export function MenuSettings() {
         description: `${role === "admin" ? "Admin" : role === "kranfuehrer" ? "Kranführer" : "Mitglied"} ist jetzt die Standard-Rolle.`,
       });
     } catch (error) {
-      console.error('Failed to update default role:', error);
+      uiLogger.error('Failed to update default role', error);
     }
   };
 
@@ -86,7 +87,7 @@ export function MenuSettings() {
         description: "Alle Einstellungen wurden auf die Standardwerte zurückgesetzt.",
       });
     } catch (error) {
-      console.error('Failed to reset to defaults:', error);
+      uiLogger.error('Failed to reset to defaults', error);
     }
   };
 
@@ -98,7 +99,7 @@ export function MenuSettings() {
         description: "Die Menü-Icons wurden mit den neuesten Änderungen aktualisiert.",
       });
     } catch (error) {
-      console.error('Failed to force refresh:', error);
+      uiLogger.error('Failed to force refresh', error);
     }
   };
 

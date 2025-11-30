@@ -1,6 +1,7 @@
 import { useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ApiResponse } from "@/types";
+import { logger } from "@/lib/logger";
 
 interface CrudConfig<T> {
   entityName: string; // e.g., "Benutzer", "Slot", "Nachricht"
@@ -47,7 +48,7 @@ export function useCrudOperations<T extends { id: string }>(
 
       return true;
     } catch (error) {
-      console.error(`Error creating ${entityName}:`, error);
+      logger.error('CRUD', `Error creating ${entityName}`, error);
       toast({
         title: "Fehler beim Erstellen",
         description: `${entityName} konnte nicht erstellt werden.`,
@@ -69,7 +70,7 @@ export function useCrudOperations<T extends { id: string }>(
 
       return true;
     } catch (error) {
-      console.error(`Error updating ${entityName}:`, error);
+      logger.error('CRUD', `Error updating ${entityName}`, error);
       toast({
         title: "Fehler beim Aktualisieren",
         description: `${entityName} konnte nicht aktualisiert werden.`,
@@ -91,7 +92,7 @@ export function useCrudOperations<T extends { id: string }>(
 
       return true;
     } catch (error) {
-      console.error(`Error deleting ${entityName}:`, error);
+      logger.error('CRUD', `Error deleting ${entityName}`, error);
       toast({
         title: "Fehler beim Löschen",
         description: `${entityName} konnte nicht gelöscht werden.`,
@@ -115,7 +116,7 @@ export function useCrudOperations<T extends { id: string }>(
 
       return true;
     } catch (error) {
-      console.error(`Error bulk deleting ${entityName}:`, error);
+      logger.error('CRUD', `Error bulk deleting ${entityName}`, error);
       toast({
         title: "Fehler beim Löschen",
         description: `${entityName} konnten nicht gelöscht werden.`,

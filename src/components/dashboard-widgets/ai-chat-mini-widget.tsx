@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
 import { useHarborChatData } from "@/hooks/use-harbor-chat-data";
+import { apiLogger } from "@/lib/logger";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -81,7 +82,7 @@ export function AIChatMiniWidget() {
       setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
 
     } catch (error: any) {
-      console.error('Chat-Fehler:', error);
+      apiLogger.error('AI Chat mini widget error', error);
       
       let errorMessage = 'Entschuldigung, es gab einen Fehler bei der Verarbeitung Ihrer Anfrage.';
       

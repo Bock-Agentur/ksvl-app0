@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useAIWelcomeMessage } from "@/hooks/use-ai-welcome-message";
 import { useNavigate } from "react-router-dom";
+import { apiLogger, uiLogger } from "@/lib/logger";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -130,7 +131,7 @@ export function DashboardHeader({
       setMessages(prev => [...prev, { role: 'assistant', content: assistantMessage }]);
 
     } catch (error: any) {
-      console.error('Chat-Fehler:', error);
+      apiLogger.error('Chat error occurred', error);
       
       let errorMessage = 'Entschuldigung, es gab einen Fehler bei der Verarbeitung Ihrer Anfrage.';
       
@@ -171,7 +172,7 @@ export function DashboardHeader({
       });
       navigate('/auth');
     } catch (error) {
-      console.error('Logout error:', error);
+      uiLogger.error('Logout failed', error);
       toast({
         title: "Fehler beim Abmelden",
         description: "Bitte versuchen Sie es erneut.",

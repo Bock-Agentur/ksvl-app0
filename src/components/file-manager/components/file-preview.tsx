@@ -4,6 +4,7 @@ import { useFileManager } from "@/hooks/use-file-manager";
 import { FileText, Image as ImageIcon, Video, File as FileIcon, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { logger } from "@/lib/logger";
 
 interface FilePreviewProps {
   file: File | FileMetadata;
@@ -76,7 +77,7 @@ export function FilePreview({
             setLoading(false);
           }
         } catch (err) {
-          console.error('Error loading preview:', err);
+          logger.error('FILE', 'Error loading preview', err);
           if (isMounted) {
             setError(true);
             setLoading(false);

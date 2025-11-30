@@ -9,7 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { UserRole } from "@/types/user";
 import { useFooterMenuSettings, FooterMenuItem } from "@/hooks/use-footer-menu-settings";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { 
+import { uiLogger } from "@/lib/logger";
+import {
   Navigation, 
   Plus, 
   X, 
@@ -112,7 +113,7 @@ export function FooterMenuSettings() {
         description: `"${item.label}" wurde zum Footer-Menü hinzugefügt.`
       });
     } catch (error) {
-      console.error('Failed to add menu item:', error);
+      uiLogger.error('Failed to add menu item', error);
     }
   };
 
@@ -128,7 +129,7 @@ export function FooterMenuSettings() {
         description: `"${removedItem?.label}" wurde aus dem Footer-Menü entfernt.`
       });
     } catch (error) {
-      console.error('Failed to remove menu item:', error);
+      uiLogger.error('Failed to remove menu item', error);
     }
   };
 
@@ -142,7 +143,7 @@ export function FooterMenuSettings() {
     try {
       await updateRoleMenuItems(activeRole, newItems);
     } catch (error) {
-      console.error('Failed to move item:', error);
+      uiLogger.error('Failed to move item', error);
     }
   };
 
