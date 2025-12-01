@@ -84,7 +84,7 @@ const getCombinedDefaultSettings = (role: UserRole): CombinedFooterSettings => (
 export function useFooterMenuSettings(userRole: UserRole) {
   // ✅ Use batch settings loading
   const storageKey = `footer-settings-template-${userRole}`;
-  const { getSetting, updateSetting, isLoading } = useSettingsBatch({ 
+  const { getSetting, updateSetting, isLoading, refetch } = useSettingsBatch({ 
     enabled: true, 
     userRole 
   });
@@ -132,6 +132,7 @@ export function useFooterMenuSettings(userRole: UserRole) {
     settings: { [userRole]: combinedSettings.menu },
     displaySettings: { [userRole]: combinedSettings.display },
     isLoading,
+    refetch,
     saveSettings: (newSettings: FooterMenuSettings) => {
       // Legacy compatibility: extract this role's menu
       const menu = newSettings[userRole] || combinedSettings.menu;
