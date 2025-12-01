@@ -123,6 +123,10 @@ export function FilePreview({
 
             if (data?.signedUrl) {
               url = data.signedUrl;
+              // Ensure URL is absolute
+              if (url.startsWith('/')) {
+                url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1${url}`;
+              }
             }
           }
 

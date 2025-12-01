@@ -379,7 +379,16 @@ class FileService {
         .from(bucket)
         .createSignedUrl(filePath, 3600);
 
-      return data?.signedUrl || null;
+      let url = data?.signedUrl || null;
+      
+      // Ensure URL is absolute
+      if (url && url.startsWith('/')) {
+        const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 
+          `https://${import.meta.env.VITE_SUPABASE_PROJECT_ID}.supabase.co`;
+        url = `${supabaseUrl}/storage/v1${url}`;
+      }
+
+      return url;
     } catch (error) {
       console.error('Error getting file URL:', error);
       return null;

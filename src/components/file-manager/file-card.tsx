@@ -132,15 +132,27 @@ export function FileCard({
       .from(bucket)
       .createSignedUrl(cleanPath, 3600) // 1 hour
       .then(({ data, error }) => {
+        if (error) {
+          console.error('[FileCard] Signed URL error:', error, { bucket, cleanPath, storagePath: file.storage_path });
+          setThumbnailUrl(null);
+          setThumbnailLoading(false);
+          return;
+        }
         if (data?.signedUrl) {
-          setThumbnailUrl(data.signedUrl);
-          signedUrlCache.set(cacheKey, { url: data.signedUrl, expires: Date.now() + 3500000 }); // Cache 58 min
+          // Ensure URL is absolute
+          let url = data.signedUrl;
+          if (url.startsWith('/')) {
+            url = `${import.meta.env.VITE_SUPABASE_URL}/storage/v1${url}`;
+          }
+          setThumbnailUrl(url);
+          signedUrlCache.set(cacheKey, { url, expires: Date.now() + 3500000 }); // Cache 58 min
         } else {
           setThumbnailUrl(null);
         }
         setThumbnailLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
+        console.error('[FileCard] createSignedUrl catch:', err);
         setThumbnailUrl(null);
         setThumbnailLoading(false);
       });
