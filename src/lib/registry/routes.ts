@@ -76,20 +76,16 @@ export const ROUTES: RouteRegistry = {
       allowedRoles: ['admin', 'vorstand'],
       icon: 'FileText',
       description: 'Berichte und Statistiken'
+    },
+
+    settingsManager: {
+      path: '/einstellungen/settings-manager',
+      label: 'Settings Manager',
+      allowedRoles: ['admin'],
+      icon: 'Database',
+      description: 'Erweiterte Settings-Verwaltung'
     }
   }
-};
-
-/**
- * Route Guards Configuration
- * 
- * Maps routes to required roles for access control.
- */
-export const ROUTE_GUARDS: Record<string, UserRole[]> = {
-  '/mitglieder': ['admin', 'vorstand'],
-  '/dateimanager': ['admin', 'vorstand'],
-  '/settings': ['admin'],
-  '/berichte': ['admin', 'vorstand'],
 };
 
 /**
@@ -109,6 +105,8 @@ export function getRouteByPath(path: string): RouteMetadata | null {
 
 /**
  * Helper: Check if user has access to route
+ * 
+ * Uses ROUTES.allowedRoles for access control.
  */
 export function hasRouteAccess(
   path: string, 

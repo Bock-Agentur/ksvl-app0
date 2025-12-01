@@ -109,48 +109,6 @@ export const NAV_ITEMS: NavItem[] = [
     position: ['drawer'], 
     order: 12 
   },
-  
-  // === ADDITIONAL ITEMS (Available for Footer Settings) ===
-  { 
-    id: 'notifications', 
-    label: 'Hinweise', 
-    icon: 'Bell',
-    routeId: null,
-    allowedRoles: '*', 
-    position: [], 
-    order: 20,
-    deprecated: true // Not used yet, but available for customization
-  },
-  { 
-    id: 'help', 
-    label: 'Hilfe', 
-    icon: 'HelpCircle',
-    routeId: null,
-    allowedRoles: '*', 
-    position: [], 
-    order: 21,
-    deprecated: true
-  },
-  { 
-    id: 'weather', 
-    label: 'Wetter', 
-    icon: 'Cloud',
-    routeId: null,
-    allowedRoles: '*', 
-    position: [], 
-    order: 22,
-    deprecated: true
-  },
-  { 
-    id: 'harbor', 
-    label: 'Hafenstatus', 
-    icon: 'Anchor',
-    routeId: null,
-    allowedRoles: '*', 
-    position: [], 
-    order: 23,
-    deprecated: true
-  },
 ];
 
 /**
@@ -163,7 +121,7 @@ export const ROUTE_VISIBILITY = {
   hideFooter: ['/auth'],
   
   // Routes where drawer is available (admin/vorstand only)
-  showDrawer: ['/', '/settings', '/dateimanager', '/berichte', '/mitglieder'],
+  showDrawer: ['/', '/settings', '/dateimanager', '/berichte', '/mitglieder', '/einstellungen/settings-manager'],
 };
 
 // ========================================
@@ -182,7 +140,6 @@ export function getNavItemsForRole(
   position: 'bottom' | 'drawer'
 ): NavItem[] {
   return NAV_ITEMS
-    .filter(item => !item.deprecated)
     .filter(item => item.position.includes(position))
     .filter(item => item.allowedRoles === '*' || item.allowedRoles.includes(role))
     .sort((a, b) => a.order - b.order);
