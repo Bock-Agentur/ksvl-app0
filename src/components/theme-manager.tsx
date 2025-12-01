@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/popover";
 import { useQueryClient } from "@tanstack/react-query";
 import { ROLE_ORDER, ROLE_LABELS } from "@/lib/role-order";
+import { QUERY_KEYS } from "@/lib/query-keys";
 
 interface ColorPickerProps {
   color: string;
@@ -232,7 +233,7 @@ export function ThemeManager() {
         return rest;
       });
       // Force re-fetch of role badge settings
-      queryClient.invalidateQueries({ queryKey: ["role-badge-settings"] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roleBadgeSettings });
     }
   };
 
