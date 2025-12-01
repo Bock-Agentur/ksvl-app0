@@ -101,24 +101,29 @@ export function ProfileAdminCards({
         </Card>
       )}
 
-      {/* 🗂️ Historie & Verwaltung Card - nur für Admin */}
-      <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold flex items-center gap-2">
-            🗂️ Historie & Verwaltung
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <UserHistoryTimeline
-            membershipHistory={(user as any).membershipStatusHistory}
-            boardHistory={(user as any).boardPositionHistory}
-            createdAt={(user as any).created_at}
-            createdBy={(user as any).createdBy}
-            updatedAt={(user as any).updated_at}
-            modifiedBy={(user as any).modifiedBy}
-          />
-        </CardContent>
-      </Card>
     </>
+  );
+}
+
+// Separate History Card Component - rendered at bottom of profile
+export function ProfileHistoryCard({ user }: { user: UserType }) {
+  return (
+    <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold flex items-center gap-2">
+          🗂️ Historie & Verwaltung
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <UserHistoryTimeline
+          membershipHistory={(user as any).membershipStatusHistory}
+          boardHistory={(user as any).boardPositionHistory}
+          createdAt={(user as any).created_at}
+          createdBy={(user as any).createdBy}
+          updatedAt={(user as any).updated_at}
+          modifiedBy={(user as any).modifiedBy}
+        />
+      </CardContent>
+    </Card>
   );
 }
