@@ -1,6 +1,7 @@
 import { useSettingsBatch } from "./use-settings-batch";
 import { AIAssistantSettings, Tonality } from "@/types/ai-assistant";
 import { UserRole } from "@/types/user";
+import { AIAssistantSettingsSchema, validateSettings } from "@/lib/settings-validation";
 
 const DEFAULT_SETTINGS: AIAssistantSettings = {
   tonality: {
@@ -20,9 +21,17 @@ export function useAIAssistantSettings(options?: { enabled?: boolean }) {
   
   const { getSetting, updateSetting, isLoading } = useSettingsBatch({ enabled: hookEnabled });
   
-  const settings = getSetting<AIAssistantSettings>(
+  const rawSettings = getSetting<AIAssistantSettings>(
     "aiAssistantSettings",
     DEFAULT_SETTINGS
+  );
+  
+  // Validate settings with schema
+  const settings = validateSettings(
+    AIAssistantSettingsSchema,
+    rawSettings,
+    DEFAULT_SETTINGS,
+    "aiAssistantSettings"
   );
 
   const updateTonality = async (role: UserRole, tonality: Tonality) => {

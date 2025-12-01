@@ -103,6 +103,85 @@ export const MenuSettingsSchema = z.object({
 export type MenuSettingsValidated = z.infer<typeof MenuSettingsSchema>;
 
 // ============================================================================
+// HEADER MESSAGE SETTINGS
+// ============================================================================
+
+export const HeaderMessageSettingsSchema = z.object({
+  enabled: z.boolean().default(false),
+  message: z.string().default(''),
+  variant: z.enum(['default', 'info', 'warning', 'success']).default('default'),
+});
+
+export type HeaderMessageSettingsValidated = z.infer<typeof HeaderMessageSettingsSchema>;
+
+// ============================================================================
+// STICKY HEADER LAYOUT SETTINGS
+// ============================================================================
+
+export const StickyHeaderLayoutSettingsSchema = z.object({
+  enabled: z.boolean().default(true),
+  pages: z.object({
+    calendar: z.boolean().default(true),
+    slotManagement: z.boolean().default(true),
+    userManagement: z.boolean().default(true),
+    profile: z.boolean().default(true),
+    settings: z.boolean().default(true),
+  }).default({
+    calendar: true,
+    slotManagement: true,
+    userManagement: true,
+    profile: true,
+    settings: true,
+  }),
+}).passthrough();
+
+export type StickyHeaderLayoutSettingsValidated = z.infer<typeof StickyHeaderLayoutSettingsSchema>;
+
+// ============================================================================
+// AI ASSISTANT SETTINGS
+// ============================================================================
+
+const TonalitySchema = z.enum(['formal', 'funny', 'witty', 'sensitive', 'motivating']);
+const ResponseLengthSchema = z.enum(['short', 'medium', 'long']);
+
+export const AIAssistantSettingsSchema = z.object({
+  tonality: z.record(z.string(), TonalitySchema).default({
+    admin: 'formal',
+    kranfuehrer: 'formal',
+    mitglied: 'formal',
+    gastmitglied: 'formal',
+    vorstand: 'formal',
+  }),
+  responseLength: ResponseLengthSchema.default('medium'),
+  customSystemPrompt: z.string().optional(),
+  agentName: z.string().optional(),
+});
+
+export type AIAssistantSettingsValidated = z.infer<typeof AIAssistantSettingsSchema>;
+
+// ============================================================================
+// AI WELCOME MESSAGE SETTINGS
+// ============================================================================
+
+export const AIWelcomeMessageSettingsSchema = z.object({
+  enabled: z.boolean().default(false),
+  message: z.string().default(''),
+});
+
+export type AIWelcomeMessageSettingsValidated = z.infer<typeof AIWelcomeMessageSettingsSchema>;
+
+// ============================================================================
+// ROLE WELCOME MESSAGES SETTINGS
+// ============================================================================
+
+export const RoleWelcomeMessagesSchema = z.record(
+  z.string(),
+  z.string().default('')
+).default({});
+
+export type RoleWelcomeMessagesValidated = z.infer<typeof RoleWelcomeMessagesSchema>;
+
+// ============================================================================
 // HELPER FUNCTIONS
 // ============================================================================
 

@@ -1,4 +1,5 @@
 import { useSettingsBatch } from "./use-settings-batch";
+import { StickyHeaderLayoutSettingsSchema, validateSettings } from "@/lib/settings-validation";
 
 export interface StickyHeaderLayoutSettings {
   enabled: boolean; // Master-Schalter
@@ -27,22 +28,18 @@ export function useStickyHeaderLayout(options?: { enabled?: boolean }) {
   
   const { getSetting, updateSetting, isLoading } = useSettingsBatch({ enabled: hookEnabled });
   
-  const value = getSetting<StickyHeaderLayoutSettings>(
+  const rawValue = getSetting<StickyHeaderLayoutSettings>(
     'sticky_header_layout',
     DEFAULT_SETTINGS
   );
 
-  // Migration: Ensure pages object exists (for backward compatibility)
-  const settings: StickyHeaderLayoutSettings = {
-    enabled: value.enabled,
-    pages: value.pages || {
-      calendar: value.enabled,
-      slotManagement: value.enabled,
-      userManagement: value.enabled,
-      profile: value.enabled,
-      settings: value.enabled,
-    }
-  };
+  // Validate settings with schema (includes migration logic)
+  const settings = validateSettings(
+    StickyHeaderLayoutSettingsSchema,
+    rawValue as any,
+    DEFAULT_SETTINGS as any,
+    "sticky_header_layout"
+  ) as StickyHeaderLayoutSettings; // Cast to ensure compatibility with existing type
 
   // Helper: Prüfen ob Seite sticky sein soll
   const isPageSticky = (page: keyof StickyHeaderLayoutSettings['pages']) => {
@@ -57,11 +54,11 @@ export function useStickyHeaderLayout(options?: { enabled?: boolean }) {
         ...settings.pages,
         [page]: enabled,
       }
-    }, true);
+    } as any, true);
   };
 
   const setSettings = async (newSettings: StickyHeaderLayoutSettings) => {
-    await updateSetting('sticky_header_layout', newSettings, true);
+    await updateSetting('sticky_header_layout', newSettings as any, true);
   };
 
   return {

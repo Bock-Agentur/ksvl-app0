@@ -10,7 +10,7 @@ export function StickyHeaderLayoutSettings() {
   const handleToggle = (enabled: boolean) => {
     setSettings({ 
       enabled,
-      pages: settings.pages 
+      pages: settings.pages // Already validated, guaranteed to exist
     });
     toast.success(
       enabled 

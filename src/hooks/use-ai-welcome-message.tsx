@@ -1,5 +1,6 @@
 import { useSettingsBatch } from "./use-settings-batch";
 import { AIWelcomeMessageSettings } from "@/types/ai-assistant";
+import { AIWelcomeMessageSettingsSchema, validateSettings } from "@/lib/settings-validation";
 
 const DEFAULT_SETTINGS: AIWelcomeMessageSettings = {
   enabled: false,
@@ -11,9 +12,17 @@ export function useAIWelcomeMessage(options?: { enabled?: boolean }) {
   
   const { getSetting, updateSetting, isLoading } = useSettingsBatch({ enabled: hookEnabled });
   
-  const value = getSetting<AIWelcomeMessageSettings>(
+  const rawValue = getSetting<AIWelcomeMessageSettings>(
     "aiWelcomeMessage",
     DEFAULT_SETTINGS
+  );
+  
+  // Validate settings with schema
+  const value = validateSettings(
+    AIWelcomeMessageSettingsSchema,
+    rawValue,
+    DEFAULT_SETTINGS,
+    "aiWelcomeMessage"
   );
 
   const updateSettings = async (newValue: AIWelcomeMessageSettings) => {
