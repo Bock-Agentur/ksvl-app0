@@ -45,11 +45,18 @@ export function UnifiedFooter({
   const currentUser = propsUser ?? hookUser;
   const onRoleChange = propsOnRoleChange ?? hookSetRole;
   
-  const { getDisplaySettingsForRole, isLoading: footerLoading } = useFooterMenuSettings(currentRole);
+  const { getDisplaySettingsForRole, getMenuItemsForRole, isLoading: footerLoading, refetch: refetchFooterSettings } = useFooterMenuSettings(currentRole);
   const { getOrderedHeaderItems } = useMenuSettings();
   
-  // ✅ Use central navigation registry
-  const footerItems = getNavItemsForRole(currentRole, 'bottom');
+  // ✅ Use user-configured menu items (merge custom order with NAV_ITEMS structure)
+  const customFooterItems = getMenuItemsForRole(currentRole);
+  const footerItems = customFooterItems.length > 0 
+    ? customFooterItems.map(customItem => {
+        // Find matching NavItem to preserve routeId/tabId
+        const navItem = NAV_ITEMS.find(n => n.id === customItem.id);
+        return navItem || customItem;
+      })
+    : getNavItemsForRole(currentRole, 'bottom');
   const drawerItems = getNavItemsForRole(currentRole, 'drawer');
   
   const currentDisplaySettings = getDisplaySettingsForRole(currentRole);
@@ -67,7 +74,9 @@ export function UnifiedFooter({
 
   // Listen for footer and menu settings changes
   useEffect(() => {
-    const handleSettingsChange = () => {
+    const handleSettingsChange = async () => {
+      // Force refetch from database
+      await refetchFooterSettings();
       setForceUpdate(prev => prev + 1);
     };
     window.addEventListener('footerSettingsChanged', handleSettingsChange);
@@ -76,7 +85,7 @@ export function UnifiedFooter({
       window.removeEventListener('footerSettingsChanged', handleSettingsChange);
       window.removeEventListener('menuSettingsChanged', handleSettingsChange);
     };
-  }, []);
+  }, [refetchFooterSettings]);
 
   // Trigger animation ONLY if not already animated
   useEffect(() => {
