@@ -5,10 +5,14 @@
 
 export interface CurrentWeather {
   temperature: number;        // °C
+  apparentTemperature: number; // °C - Gefühlte Temperatur
   humidity: number;           // %
   windSpeed: number;          // km/h
+  windGusts: number;          // km/h - Windböen
   windDirection: number;      // Degrees (0-360)
   windDirectionText: string;  // N, NE, E, SE, S, SW, W, NW
+  beaufort: number;           // 0-12 Beaufort scale
+  beaufortText: string;       // German Beaufort description
   weatherCode: number;        // WMO Weather Code
   condition: 'sunny' | 'cloudy' | 'rainy' | 'windy' | 'stormy' | 'snowy';
   description: string;        // German description
@@ -36,8 +40,10 @@ interface OpenMeteoResponse {
   current: {
     time: string;
     temperature_2m: number;
+    apparent_temperature: number;
     relative_humidity_2m: number;
     wind_speed_10m: number;
+    wind_gusts_10m: number;
     wind_direction_10m: number;
     weather_code: number;
     is_day: number;
@@ -94,6 +100,25 @@ function getWindDirectionText(degrees: number): string {
 }
 
 /**
+ * Converts wind speed (km/h) to Beaufort scale
+ */
+function windSpeedToBeaufort(kmh: number): { beaufort: number; text: string } {
+  if (kmh < 1) return { beaufort: 0, text: 'Windstille' };
+  if (kmh < 6) return { beaufort: 1, text: 'Leiser Zug' };
+  if (kmh < 12) return { beaufort: 2, text: 'Leichte Brise' };
+  if (kmh < 20) return { beaufort: 3, text: 'Schwache Brise' };
+  if (kmh < 29) return { beaufort: 4, text: 'Mäßige Brise' };
+  if (kmh < 39) return { beaufort: 5, text: 'Frische Brise' };
+  if (kmh < 50) return { beaufort: 6, text: 'Starker Wind' };
+  if (kmh < 62) return { beaufort: 7, text: 'Steifer Wind' };
+  if (kmh < 75) return { beaufort: 8, text: 'Stürmischer Wind' };
+  if (kmh < 89) return { beaufort: 9, text: 'Sturm' };
+  if (kmh < 103) return { beaufort: 10, text: 'Schwerer Sturm' };
+  if (kmh < 117) return { beaufort: 11, text: 'Orkanartiger Sturm' };
+  return { beaufort: 12, text: 'Orkan' };
+}
+
+/**
  * Determines if conditions are windy based on wind speed
  */
 function isWindy(windSpeed: number): boolean {
@@ -107,7 +132,7 @@ class WeatherService {
     const params = new URLSearchParams({
       latitude: config.latitude.toString(),
       longitude: config.longitude.toString(),
-      current: 'temperature_2m,relative_humidity_2m,wind_speed_10m,wind_direction_10m,weather_code,is_day',
+      current: 'temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,weather_code,is_day',
       timezone: 'Europe/Vienna',
       wind_speed_unit: 'kmh'
     });
@@ -129,12 +154,19 @@ class WeatherService {
       condition = 'windy';
     }
 
+    const windSpeed = Math.round(current.wind_speed_10m);
+    const { beaufort, text: beaufortText } = windSpeedToBeaufort(windSpeed);
+
     return {
       temperature: Math.round(current.temperature_2m * 10) / 10,
+      apparentTemperature: Math.round(current.apparent_temperature * 10) / 10,
       humidity: current.relative_humidity_2m,
-      windSpeed: Math.round(current.wind_speed_10m),
+      windSpeed,
+      windGusts: Math.round(current.wind_gusts_10m),
       windDirection: current.wind_direction_10m,
       windDirectionText: getWindDirectionText(current.wind_direction_10m),
+      beaufort,
+      beaufortText,
       weatherCode: current.weather_code,
       condition,
       description,

@@ -106,16 +106,24 @@ export function WeatherWidget() {
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center gap-2">
             <Wind className="h-4 w-4 text-muted-foreground" />
-            <span>{weather.windSpeed} km/h {weather.windDirectionText}</span>
+            <span>{weather.windSpeed} km/h ({weather.beaufort} Bft)</span>
           </div>
           <div className="flex items-center gap-2">
             <Droplets className="h-4 w-4 text-muted-foreground" />
             <span>{weather.humidity}% Luftf.</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Thermometer className="h-4 w-4 text-muted-foreground" />
-            <span>Wörthersee</span>
-          </div>
+          {Math.abs(weather.temperature - weather.apparentTemperature) > 2 && (
+            <div className="flex items-center gap-2">
+              <Thermometer className="h-4 w-4 text-muted-foreground" />
+              <span>gefühlt {weather.apparentTemperature}°C</span>
+            </div>
+          )}
+          {weather.windGusts > weather.windSpeed + 10 && (
+            <div className="flex items-center gap-2">
+              <Wind className="h-4 w-4 text-orange-500" />
+              <span>Böen {weather.windGusts} km/h</span>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>
