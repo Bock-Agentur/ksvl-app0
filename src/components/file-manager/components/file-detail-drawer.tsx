@@ -24,6 +24,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { FilePreview } from "./file-preview";
+import { DeleteConfirmationDialog } from "./delete-confirmation-dialog";
 import { FileDetailDrawerProps, FileMetadata } from "../types/file-manager.types";
 
 /**
@@ -49,6 +50,7 @@ export function FileDetailDrawer({
   const [loadingUrl, setLoadingUrl] = useState(false);
   const [canEditFile, setCanEditFile] = useState(false);
   const [canDeleteFile, setCanDeleteFile] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     if (fileId) {
@@ -101,10 +103,9 @@ export function FileDetailDrawer({
 
   const handleDelete = async () => {
     if (!file) return;
-    if (window.confirm(`"${file.filename}" wirklich löschen?`)) {
-      await deleteFile(file.id);
-      onOpenChange(false);
-    }
+    await deleteFile(file.id);
+    setDeleteDialogOpen(false);
+    onOpenChange(false);
   };
 
   const handleDownload = () => {
@@ -302,13 +303,21 @@ export function FileDetailDrawer({
             Herunterladen
           </Button>
           {canDeleteFile && (
-            <Button variant="destructive" onClick={handleDelete} className="w-full">
+            <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)} className="w-full">
               <Trash2 className="h-4 w-4 mr-2" />
               Löschen
             </Button>
           )}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+        description={`"${file.filename}" wirklich löschen?`}
+      />
     </div>
   );
 
