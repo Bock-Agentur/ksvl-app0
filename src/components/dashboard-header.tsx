@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import defaultAvatar from "@/assets/default-avatar.png";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
 import { useRole } from "@/hooks/use-role";
+import { useProfileData } from "@/hooks/use-profile-data";
 import { generateAutomaticHeadline } from "@/lib/headline-generator";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,6 +42,7 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const { currentRole } = useRole();
   const { settings } = useDashboardSettings(currentRole);
+  const { firstName: profileFirstName } = useProfileData();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -102,18 +104,8 @@ export function DashboardHeader({
     setIsLoading(true);
 
     try {
-      // Get first name from profile
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('first_name, name, email')
-        .eq('id', currentUser?.id)
-        .single();
-
-      const firstName = profileData?.first_name || 
-                       profileData?.name?.split(' ')[0] || 
-                       user?.email?.split('@')[0] || 
-                       'Segelfreund';
+      // Use cached profile data instead of direct DB query
+      const firstName = profileFirstName || 'Segelfreund';
 
       const { data, error } = await supabase.functions.invoke('harbor-chat', {
         body: { 

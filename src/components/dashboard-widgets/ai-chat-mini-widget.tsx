@@ -8,6 +8,7 @@ import { Loader2, Send, Bot, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
+import { useProfileData } from "@/hooks/use-profile-data";
 import { useHarborChatData } from "@/hooks/use-harbor-chat-data";
 import { apiLogger } from "@/lib/logger";
 
@@ -25,6 +26,7 @@ export function AIChatMiniWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { currentRole } = useRole();
+  const { firstName: profileFirstName } = useProfileData();
 
   // Auto-scroll nur wenn Nachrichten vorhanden sind und gesendet werden
   const scrollToBottom = () => {
@@ -53,18 +55,8 @@ export function AIChatMiniWidget() {
     setIsOpen(true);
 
     try {
-      // Get user data for first name
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('first_name, name')
-        .eq('id', user?.id)
-        .single();
-
-      const firstName = profileData?.first_name || 
-                       profileData?.name?.split(' ')[0] || 
-                       user?.email?.split('@')[0] || 
-                       'User';
+      // Use cached profile data instead of direct DB query
+      const firstName = profileFirstName || 'Segelfreund';
 
       const { data, error } = await supabase.functions.invoke('harbor-chat', {
         body: { 

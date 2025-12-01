@@ -8,6 +8,7 @@ import { Loader2, Send, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/hooks/use-role";
+import { useProfileData } from "@/hooks/use-profile-data";
 import { useHarborChatData } from "@/hooks/use-harbor-chat-data";
 import { cn } from "@/lib/utils";
 import { apiLogger } from "@/lib/logger";
@@ -27,6 +28,7 @@ export function HarborChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { currentRole } = useRole();
+  const { firstName: profileFirstName } = useProfileData();
 
   // Auto-scroll function
   const scrollToBottom = () => {
@@ -79,18 +81,8 @@ export function HarborChatWidget() {
     setIsLoading(true);
 
     try {
-      // Hole Benutzerprofil für Vorname
-      const { data: { user } } = await supabase.auth.getUser();
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('first_name, name, email')
-        .eq('id', user?.id)
-        .single();
-
-      const firstName = profileData?.first_name || 
-                       profileData?.name?.split(' ')[0] || 
-                       user?.email?.split('@')[0] || 
-                       'Segelfreund';
+      // Use cached profile data instead of direct DB query
+      const firstName = profileFirstName || 'Segelfreund';
 
       const { data, error } = await supabase.functions.invoke('harbor-chat', {
         body: { 
