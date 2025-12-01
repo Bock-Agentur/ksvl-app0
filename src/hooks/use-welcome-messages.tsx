@@ -1,5 +1,6 @@
 import { useSettingsBatch } from "./use-settings-batch";
 import { UserRole } from "@/types/user";
+import { RoleWelcomeMessagesSchema, validateSettings } from "@/lib/settings-validation";
 
 const DEFAULT_MESSAGES: Record<UserRole, string> = {
   gastmitglied: "🌊 Willkommen als Gast im Hafenverwaltungssystem! \n\nAls Gastmitglied können Sie:\n• Termine buchen 📅\n• Ihre Buchungen verwalten 📋\n• Den Kalender einsehen 👀\n\nViel Spaß beim Segeln! ⛵",
@@ -12,9 +13,17 @@ const DEFAULT_MESSAGES: Record<UserRole, string> = {
 export function useWelcomeMessages() {
   const { getSetting, updateSetting } = useSettingsBatch();
   
-  const messages = getSetting<Record<UserRole, string>>(
+  const rawMessages = getSetting<Record<UserRole, string>>(
     "roleWelcomeMessages",
     DEFAULT_MESSAGES
+  );
+  
+  // Validate settings with schema
+  const messages = validateSettings(
+    RoleWelcomeMessagesSchema,
+    rawMessages,
+    DEFAULT_MESSAGES,
+    "roleWelcomeMessages"
   );
 
   const getWelcomeMessage = (role: UserRole): string => {
