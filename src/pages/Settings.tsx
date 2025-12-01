@@ -113,6 +113,9 @@ function SettingsContent() {
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
       { id: "aiassistant", label: "AI-Assistent", description: "KI-Einstellungen", icon: Bot, component: AIAssistantSettings, group: "advanced" }
     ] : []),
+    ...(currentRole === 'admin' ? [
+      { id: "settingsmanager", label: "Settings Manager", description: "Alle Settings verwalten", icon: Database, route: "/einstellungen/settings-manager", group: "advanced" }
+    ] : []),
     { id: "system", label: "System", description: "Systemeinstellungen", icon: SettingsIcon, component: ConsecutiveSlotsSettings, group: "advanced" },
     { id: "testdata", label: "Testdaten", description: "Testdaten verwalten", icon: Database, component: TestDataManager, group: "advanced" },
   ];
