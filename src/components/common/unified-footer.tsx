@@ -8,8 +8,7 @@ import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { UserRole } from "@/types";
 import * as LucideIcons from "lucide-react";
-import { useMenuSettings } from "@/hooks/use-menu-settings";
-import { FOOTER_ICON_MAP, handleFooterLogout } from "@/lib/footer-utils";
+import { handleFooterLogout } from "@/lib/footer-utils";
 import { FooterDrawerContent } from "@/components/common/footer-drawer-content";
 import { useRole } from "@/hooks/use-role";
 import { getNavItemsForRole, isNavItemActive, getNavItemPath, NAV_ITEMS } from "@/lib/registry/navigation";
@@ -46,7 +45,6 @@ export function UnifiedFooter({
   const onRoleChange = propsOnRoleChange ?? hookSetRole;
   
   const { getDisplaySettingsForRole, getMenuItemsForRole, isLoading: footerLoading, refetch: refetchFooterSettings } = useFooterMenuSettings(currentRole);
-  const { getOrderedHeaderItems } = useMenuSettings();
   
   // ✅ Use user-configured menu items (merge custom order with NAV_ITEMS structure)
   const customFooterItems = getMenuItemsForRole(currentRole);
@@ -57,20 +55,12 @@ export function UnifiedFooter({
         return navItem || customItem;
       })
     : getNavItemsForRole(currentRole, 'bottom');
+  
+  // ✅ Use NAV_ITEMS for drawer instead of useMenuSettings
   const drawerItems = getNavItemsForRole(currentRole, 'drawer');
   
   const currentDisplaySettings = getDisplaySettingsForRole(currentRole);
   const showLabels = currentDisplaySettings?.showLabels ?? false;
-
-  // Get dynamic header navigation items for drawer (backward compatibility)
-  const menuItems = getOrderedHeaderItems();
-  const availableHeaderItems = menuItems.filter(item => item.roles.includes(currentRole)).map(item => ({
-    id: item.id,
-    label: item.label,
-    icon: FOOTER_ICON_MAP[item.icon as keyof typeof FOOTER_ICON_MAP] || FOOTER_ICON_MAP.Settings,
-    roles: item.roles,
-    badge: item.badge
-  }));
 
   // Listen for footer and menu settings changes
   useEffect(() => {
@@ -185,7 +175,7 @@ export function UnifiedFooter({
               <FooterDrawerContent
                 currentRole={currentRole}
                 currentUser={currentUser}
-                availableHeaderItems={availableHeaderItems}
+                drawerItems={drawerItems}
                 onRoleChange={onRoleChange}
                 onLogout={handleLogout}
                 onNavigate={handleNavigate}

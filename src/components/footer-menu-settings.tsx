@@ -423,28 +423,15 @@ export function FooterMenuSettings() {
           <CardTitle className="text-lg">Übersicht</CardTitle>
         </CardHeader>
         <CardContent>
-          {/* Summary for All Roles using RoleCardGrid */}
-          <RoleCardGrid 
-            activeRole={null}
-            onRoleSelect={(role) => {
-              setActiveRole(role);
-            }}
-          />
-          <div className="grid grid-cols-5 gap-2 mt-4">
-            {(["admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"] as UserRole[]).map((role) => {
-              const items = getMenuItemsForRole(role);
-              const displaySettings = getDisplaySettingsForRole(role);
-              return (
-                <div key={role} className="text-center p-2 bg-muted/30 rounded-lg">
-                  <p className="text-xs text-muted-foreground mb-1">
-                    {items.length}/8
-                  </p>
-                  <Badge variant="outline" className="text-xs px-1 py-0">
-                    {displaySettings.showLabels ? "Text" : "Icons"}
-                  </Badge>
-                </div>
-              );
-            })}
+          {/* Summary for Active Role */}
+          <div className="text-center p-4 bg-muted/30 rounded-lg">
+            <p className="text-sm font-medium mb-1">{getRoleDisplayName(activeRole)}</p>
+            <p className="text-xs text-muted-foreground mb-2">
+              {currentItems.length}/8 Menüpunkte
+            </p>
+            <Badge variant="outline" className="text-xs">
+              {currentRoleDisplaySettings.showLabels ? "Icons mit Text" : "Nur Icons"}
+            </Badge>
           </div>
         </CardContent>
       </Card>

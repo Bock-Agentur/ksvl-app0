@@ -1,6 +1,7 @@
 import { useSettingsBatch } from "./use-settings-batch";
 import { UserRole } from "@/types/user";
-import { NAV_ITEMS, getAllNavItemsForRole } from "@/lib/registry/navigation";
+import { getNavItemsForRole } from "@/lib/registry/navigation";
+import { NAV_ITEMS } from "@/lib/registry/navigation";
 
 export interface FooterMenuItem {
   id: string;
@@ -43,37 +44,26 @@ export const AVAILABLE_MENU_ITEMS: FooterMenuItem[] = NAV_ITEMS.map(item => ({
     : item.allowedRoles,
 }));
 
-// Default footer menu configurations per role
-const DEFAULT_FOOTER_SETTINGS: FooterMenuSettings = {
-  gastmitglied: [
-    { id: "dashboard", label: "Home", icon: "Home", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-    { id: "calendar", label: "Kalender", icon: "Calendar", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-    { id: "profile", label: "Profil", icon: "User", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-  ],
-  mitglied: [
-    { id: "dashboard", label: "Home", icon: "Home", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-    { id: "calendar", label: "Kalender", icon: "Calendar", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-    { id: "profile", label: "Profil", icon: "User", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-  ],
-  kranfuehrer: [
-    { id: "dashboard", label: "Home", icon: "Home", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-    { id: "calendar", label: "Kalender", icon: "Calendar", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-    { id: "slots", label: "Slots", icon: "Layers", roles: ["admin", "kranfuehrer", "vorstand"] },
-    { id: "profile", label: "Profil", icon: "User", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-  ],
-  admin: [
-    { id: "dashboard", label: "Home", icon: "Home", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-    { id: "calendar", label: "Kalender", icon: "Calendar", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-    { id: "slots", label: "Slots", icon: "Layers", roles: ["admin", "kranfuehrer", "vorstand"] },
-    { id: "settings", label: "Einstellungen", icon: "Settings", roles: ["admin", "vorstand"] },
-  ],
-  vorstand: [
-    { id: "dashboard", label: "Home", icon: "Home", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-    { id: "calendar", label: "Kalender", icon: "Calendar", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-    { id: "slots", label: "Slots", icon: "Layers", roles: ["admin", "kranfuehrer", "vorstand"] },
-    { id: "settings", label: "Einstellungen", icon: "Settings", roles: ["admin", "vorstand"] },
-  ]
+// ✅ Generate DEFAULT_FOOTER_SETTINGS from NAV_ITEMS
+const generateDefaultFooterSettings = (): FooterMenuSettings => {
+  const roles: UserRole[] = ['gastmitglied', 'mitglied', 'kranfuehrer', 'admin', 'vorstand'];
+  const settings: FooterMenuSettings = {};
+  
+  roles.forEach(role => {
+    settings[role] = getNavItemsForRole(role, 'bottom').map(item => ({
+      id: item.id,
+      label: item.label,
+      icon: item.icon,
+      roles: item.allowedRoles === '*' 
+        ? roles 
+        : item.allowedRoles,
+    }));
+  });
+  
+  return settings;
 };
+
+const DEFAULT_FOOTER_SETTINGS = generateDefaultFooterSettings();
 
 // ✅ Create combined default settings per role
 const getCombinedDefaultSettings = (role: UserRole): CombinedFooterSettings => ({
