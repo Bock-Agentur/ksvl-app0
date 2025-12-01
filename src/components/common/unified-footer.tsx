@@ -127,7 +127,6 @@ export function UnifiedFooter({
     if (itemId === 'file-manager') return currentPath === ROUTES.protected.fileManager.path;
     if (itemId === 'reports') return currentPath === ROUTES.protected.reports.path;
     if (itemId === 'settings') return currentPath === ROUTES.protected.settings.path;
-    if (itemId === 'header-message') return currentPath === ROUTES.protected.headerMessage.path;
     
     // For dashboard items, check active tab
     if (currentPath === '/' && activeTab) {
@@ -151,10 +150,6 @@ export function UnifiedFooter({
     }
     if (itemId === 'settings') {
       navigate(ROUTES.protected.settings.path);
-      return;
-    }
-    if (itemId === 'header-message') {
-      navigate(ROUTES.protected.headerMessage.path);
       return;
     }
     
