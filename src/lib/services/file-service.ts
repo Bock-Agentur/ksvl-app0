@@ -161,8 +161,6 @@ class FileService {
       // Generate storage path
       const { bucket, path: storagePath } = this.generateStoragePath(file, userId, validatedMetadata);
 
-      console.log('📤 Uploading file:', { bucket, storagePath, category: validatedMetadata.category });
-
       // Upload to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from(bucket)
@@ -409,14 +407,6 @@ class FileService {
         bucket = 'login-media';
       }
       
-      console.log('🖼️ Loading preview:', { 
-        bucket, 
-        originalPath: file.storage_path, 
-        cleanedPath: filePath,
-        filename: file.filename,
-        category: file.category 
-      });
-      
       let resultUrl: string | null = null;
 
       // Try to get URL from determined bucket
@@ -426,7 +416,6 @@ class FileService {
           .getPublicUrl(filePath);
         
         if (data?.publicUrl) {
-          console.log('✅ Public URL generated:', data.publicUrl);
           resultUrl = data.publicUrl;
         }
       } else {
@@ -436,29 +425,23 @@ class FileService {
           .createSignedUrl(filePath, 3600);
 
         if (error) {
-          console.error('❌ Error creating signed URL:', error);
-          
           // Fallback to login-media bucket if category matches
           if (file.category === 'login_media') {
-            console.log('🔄 Trying fallback bucket: login-media');
             const { data: fallbackData } = supabase.storage
               .from('login-media')
               .getPublicUrl(filePath);
             
             if (fallbackData?.publicUrl) {
-              console.log('✅ Fallback public URL generated:', fallbackData.publicUrl);
               resultUrl = fallbackData.publicUrl;
             }
           }
         } else if (data?.signedUrl) {
-          console.log('✅ Signed URL generated:', data.signedUrl);
           resultUrl = data.signedUrl;
         }
       }
 
       return resultUrl;
-    } catch (error) {
-      console.error('❌ Error getting file preview URL:', error);
+    } catch {
       return null;
     }
   }
