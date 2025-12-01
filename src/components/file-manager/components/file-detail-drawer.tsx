@@ -167,16 +167,22 @@ export function FileDetailDrawer({
 
   const content = (
     <div className="space-y-4 p-4">
-      {/* Large Preview */}
+      {/* Large Preview - Full Width */}
       <div className="bg-muted rounded-lg overflow-hidden">
         {loadingUrl ? (
-          <div className="w-full h-64 flex items-center justify-center">
+          <div className="w-full aspect-video flex items-center justify-center">
             <div className="h-full w-full animate-pulse bg-muted-foreground/20" />
           </div>
         ) : file.file_type === 'pdf' && fileUrl ? (
           <iframe src={fileUrl} className="w-full h-64" title={file.filename} />
         ) : file.file_type === 'video' && fileUrl ? (
           <video src={fileUrl} controls className="w-full h-auto max-h-64" />
+        ) : file.file_type === 'image' && fileUrl ? (
+          <img 
+            src={fileUrl} 
+            alt={file.filename} 
+            className="w-full h-auto object-contain max-h-80"
+          />
         ) : (
           <div className="flex justify-center py-8">
             <FilePreview file={file} size="large" showFileName={false} />
