@@ -178,29 +178,25 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
         <div className="space-y-6">
           {/* Header Section */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={onClose}
-                className="h-8 w-8"
-              >
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-              <div>
-                <h2 className="text-xl font-bold text-foreground">{editedUser.name}</h2>
-                <p className="text-sm text-muted-foreground">
-                  Mitgliedsnummer: {editedUser.memberNumber}
-                </p>
-              </div>
+            <div>
+              <h2 className="text-xl font-bold text-foreground">{editedUser.name}</h2>
+              <p className="text-sm text-muted-foreground">
+                Mitgliedsnummer: {editedUser.memberNumber}
+              </p>
             </div>
             
-            {!isEditing && (
-              <Button onClick={() => setIsEditing(true)} size="sm">
-                <Edit className="w-4 h-4 mr-2" />
-                Bearbeiten
+            <div className="flex items-center gap-2">
+              {!isEditing && (
+                <Button onClick={() => setIsEditing(true)} size="sm">
+                  <Edit className="w-4 h-4 mr-2" />
+                  Bearbeiten
+                </Button>
+              )}
+              <Button variant="outline" onClick={onClose} size="sm">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Zurück
               </Button>
-            )}
+            </div>
           </div>
 
           {/* Profile Card */}
