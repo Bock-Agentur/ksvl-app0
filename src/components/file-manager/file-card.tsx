@@ -30,6 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 import { ROLE_LABELS } from "@/lib/role-order";
 import { useState, useEffect } from "react";
+import { DeleteConfirmationDialog } from "./components/delete-confirmation-dialog";
 
 interface FileCardProps {
   file: FileMetadata;
@@ -60,6 +61,7 @@ export function FileCard({
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
   const [thumbnailLoading, setThumbnailLoading] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   
   // ✅ Calculate permissions client-side using already-loaded data
   const userId = currentUser?.id;
@@ -95,9 +97,8 @@ export function FileCard({
   }, [file.storage_path, file.file_type, file.filename]);
 
   const handleDelete = async () => {
-    if (window.confirm(`"${file.filename}" wirklich löschen?`)) {
-      await deleteFile(file.id);
-    }
+    await deleteFile(file.id);
+    setDeleteDialogOpen(false);
   };
 
   const handleDownload = () => {
@@ -241,7 +242,7 @@ export function FileCard({
               )}
               {canDeleteFile && (
                 <DropdownMenuItem 
-                  onClick={(e) => { e.stopPropagation(); handleDelete(); }}
+                  onClick={(e) => { e.stopPropagation(); setDeleteDialogOpen(true); }}
                   className="text-destructive"
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
@@ -315,7 +316,7 @@ export function FileCard({
             <Download className="h-4 w-4" />
           </Button>
           {canDeleteFile && (
-            <Button size="icon" variant="destructive" onClick={(e) => { e.stopPropagation(); handleDelete(); }}>
+            <Button size="icon" variant="destructive" onClick={(e) => { e.stopPropagation(); setDeleteDialogOpen(true); }}>
               <Trash2 className="h-4 w-4" />
             </Button>
           )}
@@ -359,6 +360,14 @@ export function FileCard({
           )}
         </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={handleDelete}
+        description={`"${file.filename}" wirklich löschen?`}
+      />
     </div>
   );
 }

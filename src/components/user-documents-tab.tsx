@@ -3,9 +3,7 @@ import { useFileManager, FileMetadata, useToast } from "@/hooks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FileUploadDialog } from "@/components/file-manager/file-upload-dialog";
-import { FileSelectorDialog } from "@/components/file-manager/file-selector-dialog";
-import { FileCard } from "@/components/file-manager/file-card";
+import { FileUploadDialog, FileSelectorDialog, FileCard, DeleteConfirmationDialog } from "@/components/file-manager";
 import { Upload, Eye, Download, Trash2, FolderOpen, FileText } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,14 +41,16 @@ export function UserDocumentsTab({ userId, userName }: UserDocumentsTabProps) {
     fetchFiles();
   }, [userId]);
 
-  const handleDelete = async (fileId: string) => {
-    if (window.confirm('Dokument wirklich löschen?')) {
-      await deleteFile(fileId);
-      toast({
-        title: "Dokument gelöscht",
-        description: "Das Dokument wurde erfolgreich entfernt.",
-      });
-    }
+  const [deleteFileId, setDeleteFileId] = useState<string | null>(null);
+
+  const handleDelete = async () => {
+    if (!deleteFileId) return;
+    await deleteFile(deleteFileId);
+    toast({
+      title: "Dokument gelöscht",
+      description: "Das Dokument wurde erfolgreich entfernt.",
+    });
+    setDeleteFileId(null);
   };
 
   const documentTypeLabels = {
@@ -168,6 +168,14 @@ export function UserDocumentsTab({ userId, userName }: UserDocumentsTabProps) {
         filters={{
           category: 'user_document',
         }}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={!!deleteFileId}
+        onOpenChange={(open) => !open && setDeleteFileId(null)}
+        onConfirm={handleDelete}
+        description="Möchten Sie dieses Dokument wirklich löschen?"
       />
     </div>
   );

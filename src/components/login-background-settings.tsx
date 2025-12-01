@@ -16,7 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-import { FileSelectorDialog } from "@/components/file-manager/file-selector-dialog";
+import { FileSelectorDialog } from "@/components/file-manager";
 import { Badge } from "@/components/ui/badge";
 
 const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB

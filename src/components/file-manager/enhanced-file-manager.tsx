@@ -13,6 +13,7 @@ import { FileCard } from "./file-card";
 import { FileUploadDrawer } from "./components/file-upload-drawer";
 import { FileDetailDrawer } from "./components/file-detail-drawer";
 import { BulkPermissionsDialog } from "./components/bulk-permissions-dialog";
+import { DeleteConfirmationDialog } from "./components/delete-confirmation-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { 
@@ -64,6 +65,7 @@ export function EnhancedFileManager() {
   const [authDebug, setAuthDebug] = useState<{ isLoggedIn: boolean; isAdminUser: boolean; userId: string | null }>();
   const [multiSelectMode, setMultiSelectMode] = useState(false);
   const [bulkPermissionsOpen, setBulkPermissionsOpen] = useState(false);
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
 
   // Debug: Check auth status on mount only
   useEffect(() => {
@@ -93,9 +95,10 @@ export function EnhancedFileManager() {
   };
 
   const handleBulkDelete = async () => {
-    if (window.confirm(`${selectedFiles.length} Dateien wirklich löschen?`)) {
-      await deleteMultipleFiles(selectedFiles);
-    }
+    await deleteMultipleFiles(selectedFiles);
+    setBulkDeleteDialogOpen(false);
+    clearSelection();
+    setMultiSelectMode(false);
   };
 
   const handleBulkPermissions = async (roles: string[]) => {
@@ -400,7 +403,7 @@ export function EnhancedFileManager() {
                 Berechtigungen
               </Button>
             )}
-            <Button size="sm" variant="secondary" onClick={handleBulkDelete}>
+            <Button size="sm" variant="secondary" onClick={() => setBulkDeleteDialogOpen(true)}>
               <Trash2 className="h-4 w-4 mr-1" />
               Löschen
             </Button>
@@ -534,6 +537,14 @@ export function EnhancedFileManager() {
         onOpenChange={setBulkPermissionsOpen}
         selectedCount={selectedFiles.length}
         onApply={handleBulkPermissions}
+      />
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <DeleteConfirmationDialog
+        open={bulkDeleteDialogOpen}
+        onOpenChange={setBulkDeleteDialogOpen}
+        onConfirm={handleBulkDelete}
+        description={`${selectedFiles.length} Dateien wirklich löschen?`}
       />
     </div>
   );
