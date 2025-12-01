@@ -13,13 +13,13 @@ export interface StickyHeaderLayoutSettings {
 }
 
 const DEFAULT_SETTINGS: StickyHeaderLayoutSettings = {
-  enabled: true,
+  enabled: false,
   pages: {
-    calendar: true,
-    slotManagement: true,
-    userManagement: true,
-    profile: true,
-    settings: true,
+    calendar: false,
+    slotManagement: false,
+    userManagement: false,
+    profile: false,
+    settings: false,
   }
 };
 
