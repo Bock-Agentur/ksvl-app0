@@ -44,8 +44,6 @@ export function TestDataManager() {
   const generateTestUsers = async () => {
     setIsGenerating(true);
     try {
-      console.log('Calling create-test-users function...');
-      
       const { data, error } = await supabase.functions.invoke('create-test-users', {
         body: {
           craneOperatorCount,
@@ -54,11 +52,8 @@ export function TestDataManager() {
       });
 
       if (error) {
-        console.error('Error from edge function:', error);
         throw error;
       }
-
-      console.log('Test users created:', data);
 
       toast({
         title: "Test-Benutzer erstellt",
@@ -66,7 +61,6 @@ export function TestDataManager() {
       });
 
     } catch (error) {
-      console.error('Error generating test users:', error);
       toast({
         title: "Fehler",
         description: "Test-Benutzer konnten nicht erstellt werden. Bitte versuchen Sie es erneut.",
@@ -193,16 +187,11 @@ export function TestDataManager() {
 
     setIsDeleting(true);
     try {
-      console.log('Calling delete-test-data function...');
-      
       const { data, error } = await supabase.functions.invoke('delete-test-data');
 
       if (error) {
-        console.error('Error from edge function:', error);
         throw error;
       }
-
-      console.log('Test data deleted:', data);
 
       toast({
         title: "Testdaten gelöscht",
@@ -210,7 +199,6 @@ export function TestDataManager() {
       });
 
     } catch (error) {
-      console.error('Error deleting test data:', error);
       toast({
         title: "Fehler",
         description: "Testdaten konnten nicht gelöscht werden.",

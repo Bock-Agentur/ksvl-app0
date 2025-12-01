@@ -293,9 +293,7 @@ export const useFileManager = () => {
   const getFilePreviewUrl = async (file: FileMetadata): Promise<string | null> => {
     // Check cache first
     if (previewUrlCache.current.has(file.id)) {
-      const cachedUrl = previewUrlCache.current.get(file.id)!;
-      console.log('💾 Using cached preview URL for:', file.filename);
-      return cachedUrl;
+      return previewUrlCache.current.get(file.id)!;
     }
 
     // Get URL from service
