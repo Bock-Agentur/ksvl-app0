@@ -173,8 +173,6 @@ export function AppShell({
                   navigate(ROUTES.protected.reports.path);
                 } else if (item.id === 'settings') {
                   navigate(ROUTES.protected.settings.path);
-                } else if (item.id === 'header-message') {
-                  navigate(ROUTES.protected.headerMessage.path);
                 } else {
                   // ✅ FIX: Für Tab-basierte Items ERST zu / navigieren
                   if (currentPath !== '/') {
