@@ -1,4 +1,4 @@
-import { SettingsFooter } from "@/components/settings-footer";
+import { UnifiedFooter } from "@/components/common/unified-footer";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, BarChart3, TrendingUp, Users, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -97,7 +97,7 @@ export function Reports() {
           </Card>
         </div>
       </div>
-      <SettingsFooter />
+      <UnifiedFooter />
     </>
   );
 }
