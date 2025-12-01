@@ -13,7 +13,6 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Settings } from "./pages/Settings";
 import { Auth } from "./pages/Auth";
-import { HeaderMessage } from "./pages/HeaderMessage";
 import { FileManager } from "./pages/FileManager";
 import { Reports } from "./pages/Reports";
 
@@ -41,9 +40,6 @@ const App = () => {
                   {/* Redirect /dashboard to / */}
                   <Route path="/dashboard" element={<Navigate to="/" replace />} />
                   
-                  {/* Legacy URL Redirects */}
-                  <Route path="/header-message" element={<Navigate to="/header-nachricht" replace />} />
-                  
                   {/* Protected Routes with Role Guards */}
                   <Route 
                     path={ROUTES.protected.dashboard.path} 
@@ -60,16 +56,7 @@ const App = () => {
                   />
                   
                   <Route 
-                    path={ROUTES.protected.headerMessage.path} 
-                    element={
-                      <ProtectedRoute requiredRoles={['admin']}>
-                        <HeaderMessage />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  
-                  <Route 
-                    path={ROUTES.protected.fileManager.path} 
+                    path={ROUTES.protected.fileManager.path}
                     element={
                       <ProtectedRoute requiredRoles={['admin', 'vorstand']}>
                         <FileManager />

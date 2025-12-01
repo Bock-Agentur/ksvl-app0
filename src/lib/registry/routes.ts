@@ -70,14 +70,6 @@ export const ROUTES: RouteRegistry = {
       description: 'App-Einstellungen und Konfiguration'
     },
     
-    headerMessage: {
-      path: '/header-nachricht',
-      label: 'Header-Nachricht',
-      allowedRoles: ['admin'],
-      icon: 'MessageSquare',
-      description: 'Header-Nachricht bearbeiten'
-    },
-    
     reports: {
       path: '/berichte',
       label: 'Berichte',
@@ -97,7 +89,6 @@ export const ROUTE_GUARDS: Record<string, UserRole[]> = {
   '/mitglieder': ['admin', 'vorstand'],
   '/dateimanager': ['admin', 'vorstand'],
   '/settings': ['admin'],
-  '/header-nachricht': ['admin'],
   '/berichte': ['admin', 'vorstand'],
 };
 

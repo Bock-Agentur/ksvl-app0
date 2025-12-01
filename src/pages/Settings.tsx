@@ -15,6 +15,7 @@ import { LoginBackgroundSettings } from "@/components/login-background-settings"
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
 import { StickyHeaderLayoutSettings } from "@/components/sticky-header-layout-settings";
+import { HeaderMessageSettings } from "@/components/header-message-settings";
 import { PageLoader } from "@/components/common/page-loader";
 import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
 import { cn } from "@/lib/utils";
@@ -91,7 +92,7 @@ function SettingsContent() {
 
   const sections: SettingSection[] = [
     { id: "dashboard", label: "Dashboard", description: "Widgets und Layout anpassen", icon: LayoutDashboard, component: DashboardSettings, group: "dashboard" },
-    { id: "headermessage", label: "Header-Nachricht", description: "Dashboard-Überschrift anpassen", icon: Type, route: "/header-message", group: "dashboard" },
+    { id: "headermessage", label: "Header-Nachricht", description: "Dashboard-Überschrift anpassen", icon: Type, component: HeaderMessageSettings, group: "dashboard" },
     { id: "messages", label: "Startnachrichten", description: "Willkommensnachrichten nach Rolle", icon: MessageSquare, component: RoleWelcomeSettings, group: "dashboard" },
     ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
       { id: "aiwelcome", label: "AI-Startnachricht", description: "KI-generierte Begrüßung", icon: Bot, component: AIWelcomeMessageSettings, group: "dashboard" }

@@ -108,7 +108,7 @@ export const APP_MODULES: AppModule[] = [
     description: 'App-Einstellungen (Theme, Design, Menü, Dashboard)',
     type: 'core',
     lifecycle: 'stable',
-    routes: ['/settings', '/header-message'],
+    routes: ['/settings'],
     requiredRoles: ['admin'],
     components: [
       'pages/Settings.tsx',
