@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
+import { useToast, useAppSettings } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, UserCheck, Calendar, Trash2, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -17,61 +17,28 @@ export function TestDataManager() {
   const [slotCount, setSlotCount] = useState(20);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [hideTestData, setHideTestData] = useState(false);
-  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
-  // Load hideTestData setting
-  useEffect(() => {
-    const loadSettings = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+  // ✅ Use centralized useAppSettings instead of direct Supabase calls
+  const { 
+    value: hideTestDataSetting, 
+    setValue: setHideTestDataSetting, 
+    isLoading: isLoadingSettings 
+  } = useAppSettings<{ enabled: boolean }>(
+    'hide_test_data',
+    { enabled: false },
+    true // isGlobal
+  );
 
-      const { data } = await supabase
-        .from('app_settings')
-        .select('setting_value')
-        .eq('setting_key', 'hide_test_data')
-        .eq('is_global', true)
-        .maybeSingle();
+  const hideTestData = hideTestDataSetting.enabled;
 
-      if (data?.setting_value) {
-        setHideTestData((data.setting_value as { enabled: boolean }).enabled || false);
-      }
-      setIsLoadingSettings(false);
-    };
-
-    loadSettings();
-  }, []);
-
-  // Save hideTestData setting
   const handleHideTestDataChange = async (checked: boolean) => {
-    setHideTestData(checked);
-    
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { error } = await supabase
-      .from('app_settings')
-      .upsert({
-        setting_key: 'hide_test_data',
-        setting_value: { enabled: checked },
-        is_global: true
-      });
-
-    if (error) {
-      console.error('Error saving hide_test_data setting:', error);
-      toast({
-        title: "Fehler",
-        description: "Einstellung konnte nicht gespeichert werden.",
-        variant: "destructive"
-      });
-    } else {
-      toast({
-        title: checked ? "Testdaten ausgeblendet" : "Testdaten eingeblendet",
-        description: checked 
-          ? "Testdaten werden in der Anwendung nicht mehr angezeigt." 
-          : "Testdaten werden wieder angezeigt."
-      });
-    }
+    await setHideTestDataSetting({ enabled: checked }, true); // skipToast = true
+    toast({
+      title: checked ? "Testdaten ausgeblendet" : "Testdaten eingeblendet",
+      description: checked 
+        ? "Testdaten werden in der Anwendung nicht mehr angezeigt." 
+        : "Testdaten werden wieder angezeigt."
+    });
   };
 
   const generateTestUsers = async () => {
