@@ -12,29 +12,38 @@ import { ROUTES } from "@/lib/registry/routes";
 import { useMenuSettings } from "@/hooks/use-menu-settings";
 import { FOOTER_ICON_MAP, handleFooterLogout } from "@/lib/footer-utils";
 import { FooterDrawerContent } from "@/components/common/footer-drawer-content";
+import { useRole } from "@/hooks/use-role";
 
 interface UnifiedFooterProps {
-  currentRole: UserRole;
-  currentUser: any;
-  onRoleChange: (role: UserRole) => void;
+  currentRole?: UserRole;
+  currentUser?: any;
+  onRoleChange?: (role: UserRole) => void;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
-  hasAnimated?: boolean; // Flag to prevent re-animation
+  hasAnimated?: boolean;
 }
 
 export function UnifiedFooter({
-  currentRole,
-  currentUser,
-  onRoleChange,
+  currentRole: propsRole,
+  currentUser: propsUser,
+  onRoleChange: propsOnRoleChange,
   activeTab,
   onTabChange,
   hasAnimated = false
-}: UnifiedFooterProps) {
+}: UnifiedFooterProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [forceUpdate, setForceUpdate] = useState(0);
-  const [isReady, setIsReady] = useState(hasAnimated); // Start ready if already animated
+  const [isReady, setIsReady] = useState(hasAnimated);
+  
+  // Use hook as fallback when props not provided
+  const { currentRole: hookRole, currentUser: hookUser, setRole: hookSetRole } = useRole();
+  
+  // Props have priority, otherwise use hook values
+  const currentRole = propsRole ?? hookRole;
+  const currentUser = propsUser ?? hookUser;
+  const onRoleChange = propsOnRoleChange ?? hookSetRole;
   
   const { getMenuItemsForRole, getDisplaySettingsForRole, isLoading: footerLoading } = useFooterMenuSettings(currentRole);
   const { getOrderedHeaderItems } = useMenuSettings();

@@ -24,7 +24,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/lib/registry/routes";
 import { useLoginBackground } from "@/hooks/use-login-background";
-import { SettingsFooter } from "@/components/settings-footer";
+import { UnifiedFooter } from "@/components/common/unified-footer";
 import { toast } from "sonner";
 import { 
   LayoutDashboard, 
@@ -290,7 +290,7 @@ function SettingsContent() {
         </div>
         </div>
       </div>
-      <SettingsFooter />
+      <UnifiedFooter />
       </>
     );
   }
@@ -359,7 +359,7 @@ function SettingsContent() {
         </div>
       </div>
     </div>
-    <SettingsFooter />
+    <UnifiedFooter />
     </>
   );
 }
