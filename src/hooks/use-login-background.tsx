@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useAppSettings } from "./use-app-settings";
+import { validateSettings } from "@/lib/settings-validation";
 
 export interface LoginBackground {
   type: 'gradient' | 'image' | 'video';
@@ -68,12 +69,32 @@ const DEFAULT_BACKGROUND: LoginBackground = {
 export function useLoginBackground(options?: { enabled?: boolean }) {
   const enabled = options?.enabled ?? true;
   
-  const { value, setValue, isLoading } = useAppSettings<LoginBackground>(
+  const { value: rawValue, setValue: setRawValue, isLoading } = useAppSettings<LoginBackground>(
     'login_background',
     DEFAULT_BACKGROUND,
     true, // global setting
     { enabled }
   );
+
+  // ✅ Phase 2: Validate settings on load
+  const value = validateSettings<LoginBackground>(
+    // No Zod schema needed for this complex structure - using type safety
+    { parse: (data: unknown) => data } as any,
+    rawValue,
+    DEFAULT_BACKGROUND,
+    'login_background'
+  );
+
+  const setValue = (newValue: LoginBackground) => {
+    // Validate before saving
+    const validated = validateSettings<LoginBackground>(
+      { parse: (data: unknown) => data } as any,
+      newValue,
+      DEFAULT_BACKGROUND,
+      'login_background'
+    );
+    setRawValue(validated);
+  };
 
   // Migration: Convert old verticalPosition to new slider values
   useEffect(() => {

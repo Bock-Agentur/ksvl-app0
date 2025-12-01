@@ -1,16 +1,17 @@
 /**
  * Dashboard Settings Hook
  * Manages dashboard configuration and widget visibility
- * ✅ Optimized with batch settings loading
+ * ✅ Phase 2: Optimized migration (runs once, not on every render)
  */
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { useSettingsBatch } from "./use-settings-batch";
 import { DashboardSettings, DEFAULT_DASHBOARD_SETTINGS } from "@/lib/dashboard-config";
 import { UserRole } from "@/types/user";
 
 export function useDashboardSettings(userRole: UserRole, options?: { enabled?: boolean }) {
   const enabled = options?.enabled ?? true;
+  const migrationDone = useRef(false);
   
   // ✅ Use batch settings loading
   const storageKey = `dashboard-settings-template-${userRole}`;
@@ -21,13 +22,40 @@ export function useDashboardSettings(userRole: UserRole, options?: { enabled?: b
   
   const rawSettings = getSetting<DashboardSettings>(storageKey, DEFAULT_DASHBOARD_SETTINGS);
 
-  // ✅ Migration: Ensure headerCard is in enabledSections (memoized)
-  const settings = useMemo(() => ({
-    ...rawSettings,
-    enabledSections: rawSettings.enabledSections?.includes('headerCard') 
-      ? rawSettings.enabledSections 
-      : ['headerCard', ...(rawSettings.enabledSections || [])]
-  }), [rawSettings]);
+  // ✅ Phase 2: Ensure settings have all required fields with defaults
+  const validatedSettings = useMemo(() => {
+    // Merge with defaults to ensure all required fields exist
+    return {
+      ...DEFAULT_DASHBOARD_SETTINGS,
+      ...rawSettings,
+    } as DashboardSettings;
+  }, [rawSettings]);
+
+  // ✅ Phase 2: Migration runs ONCE per session (not on every render)
+  const settings = useMemo(() => {
+    const needsMigration = !validatedSettings.enabledSections?.includes('headerCard');
+    
+    if (needsMigration && !migrationDone.current) {
+      return {
+        ...validatedSettings,
+        enabledSections: ['headerCard', ...(validatedSettings.enabledSections || [])]
+      };
+    }
+    
+    return validatedSettings;
+  }, [validatedSettings]);
+
+  // ✅ Save migration to DB (only once)
+  useEffect(() => {
+    if (!migrationDone.current && !settings.enabledSections?.includes('headerCard')) {
+      const migratedSettings = {
+        ...settings,
+        enabledSections: ['headerCard', ...(settings.enabledSections || [])]
+      };
+      updateSetting(storageKey, migratedSettings, true);
+      migrationDone.current = true;
+    }
+  }, [settings, storageKey, updateSetting]);
 
   // Save settings to database
   const saveSettings = async (newSettings: Partial<DashboardSettings>) => {
