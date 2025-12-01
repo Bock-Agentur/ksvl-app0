@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useAppSettings } from "./use-app-settings";
+import { useSettingsBatch } from "./use-settings-batch";
 import { validateSettings } from "@/lib/settings-validation";
 
 export interface LoginBackground {
@@ -67,13 +67,13 @@ const DEFAULT_BACKGROUND: LoginBackground = {
 };
 
 export function useLoginBackground(options?: { enabled?: boolean }) {
-  const enabled = options?.enabled ?? true;
+  const hookEnabled = options?.enabled ?? true;
   
-  const { value: rawValue, setValue: setRawValue, isLoading } = useAppSettings<LoginBackground>(
+  const { getSetting, updateSetting, isLoading } = useSettingsBatch({ enabled: hookEnabled });
+  
+  const rawValue = getSetting<LoginBackground>(
     'login_background',
-    DEFAULT_BACKGROUND,
-    true, // global setting
-    { enabled }
+    DEFAULT_BACKGROUND
   );
 
   // ✅ Phase 2: Validate settings on load
@@ -85,7 +85,7 @@ export function useLoginBackground(options?: { enabled?: boolean }) {
     'login_background'
   );
 
-  const setValue = (newValue: LoginBackground) => {
+  const setValue = async (newValue: LoginBackground) => {
     // Validate before saving
     const validated = validateSettings<LoginBackground>(
       { parse: (data: unknown) => data } as any,
@@ -93,7 +93,7 @@ export function useLoginBackground(options?: { enabled?: boolean }) {
       DEFAULT_BACKGROUND,
       'login_background'
     );
-    setRawValue(validated);
+    await updateSetting('login_background', validated, true);
   };
 
   // Migration: Convert old verticalPosition to new slider values
@@ -118,7 +118,7 @@ export function useLoginBackground(options?: { enabled?: boolean }) {
       
       setValue(migratedValue);
     }
-  }, [value, setValue]);
+  }, [value]);
 
   return {
     background: value,
