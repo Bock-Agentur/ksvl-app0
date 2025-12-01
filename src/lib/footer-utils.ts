@@ -1,0 +1,44 @@
+import { Settings, Palette, TestTube, Users, Calendar, FileText, Layers, FolderOpen } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { logger } from "@/lib/logger";
+import { UserRole } from "@/types";
+
+/**
+ * Icon mapping for dynamic footer menu items
+ */
+export const FOOTER_ICON_MAP = {
+  Palette,
+  TestTube,
+  Users,
+  Calendar,
+  FileText,
+  Settings,
+  Layers,
+  FolderOpen
+} as const;
+
+/**
+ * Role colors for badge styling
+ */
+export const ROLE_COLORS: Record<UserRole, string> = {
+  gastmitglied: "bg-muted text-muted-foreground",
+  mitglied: "bg-accent text-accent-foreground",
+  kranfuehrer: "bg-gradient-ocean text-primary-foreground",
+  admin: "bg-gradient-deep text-primary-foreground",
+  vorstand: "bg-gradient-deep text-primary-foreground"
+};
+
+/**
+ * Handle user logout with navigation
+ */
+export async function handleFooterLogout(navigate: (path: string) => void): Promise<void> {
+  try {
+    await supabase.auth.signOut();
+    toast.success("Erfolgreich abgemeldet");
+    navigate('/auth');
+  } catch (error) {
+    logger.error('AUTH', 'Logout error', error);
+    toast.error("Fehler beim Abmelden");
+  }
+}
