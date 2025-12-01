@@ -4,7 +4,7 @@ import { Menu, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useFooterMenuSettings, useFooterAnimation, useRole } from "@/hooks";
+import { useFooterMenuSettings, useRole } from "@/hooks";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { UserRole } from "@/types";
 import * as LucideIcons from "lucide-react";
@@ -16,24 +16,17 @@ interface UnifiedFooterProps {
   currentRole?: UserRole;
   currentUser?: any;
   onRoleChange?: (role: UserRole) => void;
-  hasAnimated?: boolean;
 }
 
 export function UnifiedFooter({
   currentRole: propsRole,
   currentUser: propsUser,
   onRoleChange: propsOnRoleChange,
-  hasAnimated = false
 }: UnifiedFooterProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [forceUpdate, setForceUpdate] = useState(0);
-  
-  // Use global animation state
-  const { hasAnimated: globalAnimated, markAsAnimated } = useFooterAnimation();
-  const shouldAnimate = hasAnimated || globalAnimated;
-  const [isReady, setIsReady] = useState(shouldAnimate);
   
   // Use hook as fallback when props not provided
   const { currentRole: hookRole, currentUser: hookUser, setRole: hookSetRole } = useRole();
@@ -75,17 +68,6 @@ export function UnifiedFooter({
     };
   }, [refetchFooterSettings]);
 
-  // Trigger animation ONLY if not already animated
-  useEffect(() => {
-    if (!shouldAnimate && !footerLoading) {
-      const timer = setTimeout(() => {
-        setIsReady(true);
-        markAsAnimated();
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [shouldAnimate, footerLoading, markAsAnimated]);
-
   const handleLogout = () => handleFooterLogout(navigate);
 
   // Check if nav item is active based on current route
@@ -105,13 +87,7 @@ export function UnifiedFooter({
   };
 
   return (
-    <nav className={cn(
-      "fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-2 pb-safe-bottom shadow-elevated-maritime z-50",
-      "transform will-change-transform",
-      isReady 
-        ? "translate-y-0 transition-transform duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
-        : "translate-y-full"
-    )}>
+    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-2 pb-safe-bottom shadow-elevated-maritime z-50">
       <div className="flex justify-evenly items-center max-w-md mx-auto">
         {footerItems.map((item, index) => {
           const IconComponent = (LucideIcons as any)[item.icon] || Home;
@@ -124,7 +100,7 @@ export function UnifiedFooter({
               size="sm"
               onClick={() => handleNavigate(item.id)}
               className={cn(
-                "flex flex-col items-center h-auto py-2 px-1 sm:px-3 relative transition-wave min-w-0",
+                "flex flex-col items-center h-auto py-2 px-1 sm:px-3 relative transition-colors min-w-0",
                 showLabels ? "gap-1" : "gap-0",
                 isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}

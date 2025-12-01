@@ -132,10 +132,7 @@ export function HarborChatWidget() {
 
   return (
     <Card 
-      className={cn(
-        "w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] card-shadow-soft-lg",
-        "animate-fade-in"
-      )}
+      className="w-full bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white border-0 rounded-[2rem] card-shadow-soft-lg"
       id="harbor-chat-widget"
     >
       <CardHeader className="pt-12 pb-4 px-[15px]">

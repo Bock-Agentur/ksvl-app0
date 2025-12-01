@@ -3,7 +3,7 @@ import { Calendar, Clock, Users, Anchor, TrendingUp, AlertCircle } from "lucide-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useRole, useUsers, useDashboardSettings, useDashboardAnimations, useIsMobile } from "@/hooks";
+import { useRole, useUsers, useDashboardSettings, useIsMobile } from "@/hooks";
 import { getAllDashboardItems, sortAllItemsByPosition, getColumnClassName } from "@/lib/dashboard-config";
 import { cn } from "@/lib/utils";
 
@@ -47,7 +47,6 @@ export function Dashboard({ onNavigate, displayName }: DashboardProps) {
   const isMobileOrTablet = useIsMobile();
   const dashboardSettingsHook = useDashboardSettings(currentRole);
   const settings = dashboardSettingsHook.settings;
-  const { getAnimationClass, isAnimationEnabled } = useDashboardAnimations();
   
   // Combined loading state
   const isLoading = usersLoading || dashboardSettingsHook.isLoading;
@@ -154,29 +153,6 @@ export function Dashboard({ onNavigate, displayName }: DashboardProps) {
     return getColumnClassName(settings.columnLayout);
   }, [settings.columnLayout, isMobileOrTablet]);
 
-  // Setup scroll animations
-  useEffect(() => {
-    if (!isAnimationEnabled || settings.animationType !== "scrollReveal") return;
-
-    const observerCallback = (entries: IntersectionObserverEntry[]) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("scroll-revealed");
-        }
-      });
-    };
-
-    const observer = new IntersectionObserver(observerCallback, {
-      threshold: 0.1,
-      rootMargin: "-50px"
-    });
-
-    const elements = document.querySelectorAll(".scroll-reveal");
-    elements.forEach(el => observer.observe(el));
-
-    return () => observer.disconnect();
-  }, [isAnimationEnabled, settings.animationType]);
-
   if (isLoading) {
     return (
       <div className="p-4 max-w-7xl mx-auto">
@@ -210,7 +186,7 @@ export function Dashboard({ onNavigate, displayName }: DashboardProps) {
               const isSection = item.itemType === 'section';
               
               return (
-                <div key={item.id} className={getAnimationClass(item.id)}>
+                <div key={item.id}>
                   {isSection ? (
                     item.id === 'headerCard' ? (
                       <Component 

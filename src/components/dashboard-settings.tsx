@@ -606,54 +606,13 @@ export function DashboardSettings() {
         <CardHeader className={isMobile ? "px-4 py-3" : ""}>
           <CardTitle>Anzeigeoptionen</CardTitle>
           <CardDescription>
-            Passen Sie Animationen und Darstellung an
+            Passen Sie die Darstellung an
           </CardDescription>
         </CardHeader>
         <CardContent className={cn(
           "space-y-4",
           isMobile && "px-4 pb-4"
         )}>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Animationen aktivieren</Label>
-              <p className="text-sm text-muted-foreground">
-                Aktiviert Scroll-Animationen für Dashboard-Elemente
-              </p>
-            </div>
-            <Switch
-              checked={settings.animationEnabled}
-              onCheckedChange={(checked) => saveSettings({ animationEnabled: checked })}
-            />
-          </div>
-
-          {settings.animationEnabled && (
-            <>
-              <Separator />
-              <div className="space-y-2">
-                <Label>Animationstyp</Label>
-                <Select
-                  value={settings.animationType}
-                  onValueChange={(value: any) => saveSettings({ animationType: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="fadeIn">Einblenden</SelectItem>
-                    <SelectItem value="dropDown">Von oben</SelectItem>
-                    <SelectItem value="scrollReveal">Scroll-Enthüllung</SelectItem>
-                    <SelectItem value="slideFromSides">Von den Seiten</SelectItem>
-                    <SelectItem value="staggered">Versetzt</SelectItem>
-                    <SelectItem value="bounce">Springen</SelectItem>
-                    <SelectItem value="none">Keine</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </>
-          )}
-
-          <Separator />
-
           <div className="space-y-2">
             <Label>Layout-Stil</Label>
             <Select

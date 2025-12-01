@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth-context";
-import { useRole, useFooterMenuSettings, useFooterAnimation } from "@/hooks";
+import { useRole, useFooterMenuSettings } from "@/hooks";
 import { SlotsProvider } from "@/contexts/slots-context";
 import { TestDataProvider, ConsecutiveSlotsProvider } from "@/hooks";
 import { UnifiedFooter } from "@/components/common/unified-footer";
@@ -10,21 +10,12 @@ import { PageLoader } from "@/components/common/page-loader";
 
 function ProfileContent() {
   const roleContext = useRole();
-  const { hasAnimated, markAsAnimated } = useFooterAnimation();
   const { isLoading: footerLoading } = useFooterMenuSettings(roleContext?.currentRole || 'mitglied');
   
   // Scroll to top on mount
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
-  
-  // Mark footer as animated
-  useEffect(() => {
-    if (!hasAnimated) {
-      const timer = setTimeout(() => markAsAnimated(), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [hasAnimated, markAsAnimated]);
   
   const isFullyLoaded = !footerLoading && !roleContext?.isLoading;
   
@@ -43,7 +34,6 @@ function ProfileContent() {
         currentRole={currentRole}
         currentUser={currentUser}
         onRoleChange={setRole}
-        hasAnimated={hasAnimated}
       />
     </div>
   );

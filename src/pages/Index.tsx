@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth-context";
-import { useRole, useSlotDesign, TestDataProvider, ConsecutiveSlotsProvider, useUsers, useAIAssistantSettings, useAIWelcomeMessage, useHarborChatData, useProfileData, useFooterMenuSettings, useDashboardSettings, useFooterAnimation } from "@/hooks";
+import { useRole, useSlotDesign, TestDataProvider, ConsecutiveSlotsProvider, useUsers, useAIAssistantSettings, useAIWelcomeMessage, useHarborChatData, useProfileData, useFooterMenuSettings, useDashboardSettings } from "@/hooks";
 import { SlotsProvider } from "@/contexts/slots-context";
 import { UnifiedFooter } from "@/components/common/unified-footer";
 import { Dashboard } from "@/components/dashboard";
@@ -18,7 +18,6 @@ import { PageLoader } from "@/components/common/page-loader";
  */
 function AppContent() {
   const roleContext = useRole();
-  const { hasAnimated, markAsAnimated } = useFooterAnimation();
   
   // Load dashboard-related data
   const { loading: usersLoading } = useUsers({ enabled: !!roleContext?.currentRole });
@@ -39,16 +38,6 @@ function AppContent() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
   
-  // Mark footer as animated after first render
-  useEffect(() => {
-    if (!hasAnimated) {
-      const timer = setTimeout(() => {
-        markAsAnimated();
-      }, 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [hasAnimated, markAsAnimated]);
-  
   const isFullyLoaded = !footerLoading && !roleContext?.isLoading;
   
   if (!roleContext || !isFullyLoaded || !roleContext.currentUser) {
@@ -66,7 +55,6 @@ function AppContent() {
         currentRole={currentRole}
         currentUser={currentUser}
         onRoleChange={setRole}
-        hasAnimated={hasAnimated}
       />
     </div>
   );
