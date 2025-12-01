@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Eye, Key, Trash2 } from "lucide-react";
+import { Key, Trash2 } from "lucide-react";
 import { User } from "@/types";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 
@@ -28,7 +28,10 @@ export function UserCardWithCustomFields({
   const phone = user.phone || null;
 
   return (
-    <Card className="bg-white rounded-[2rem] card-shadow-soft border-0 transition-colors hover:bg-muted/50">
+    <Card 
+      className="bg-white rounded-[2rem] card-shadow-soft border-0 cursor-pointer"
+      onClick={() => onViewUser(user)}
+    >
       <CardContent className="p-3 sm:p-4">
         <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0">
           {/* User Info Section */}
@@ -92,16 +95,10 @@ export function UserCardWithCustomFields({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => onViewUser(user)}
-              className="h-8 w-8 p-0"
-            >
-              <Eye className="w-4 h-4" />
-              <span className="sr-only">Ansehen</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onPasswordChange(user.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onPasswordChange(user.id);
+              }}
               className="h-8 w-8 p-0"
             >
               <Key className="w-4 h-4" />
@@ -110,7 +107,10 @@ export function UserCardWithCustomFields({
             <Button
               size="sm"
               variant="outline"
-              onClick={() => onDeleteUser(user.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onDeleteUser(user.id);
+              }}
               className="h-8 w-8 p-0 hover:bg-destructive hover:text-destructive-foreground"
             >
               <Trash2 className="w-4 h-4" />
