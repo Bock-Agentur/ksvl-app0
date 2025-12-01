@@ -72,13 +72,13 @@ class FileService {
   }
 
   /**
-   * Determine storage bucket and path based on category and metadata
+   * Determine storage bucket based on path structure (priority) and category
    */
   private determineBucket(
     category: string,
     storagePath?: string
   ): string {
-    // If path already contains bucket name, extract it
+    // Explicit login-media prefix
     if (storagePath?.startsWith('login-media/')) {
       return 'login-media';
     }
@@ -86,7 +86,12 @@ class FileService {
       return 'documents';
     }
     
-    // Otherwise determine by category
+    // UUID path structure = documents bucket (e.g., "5a7f5773-0c9c-4336-b06b-f2aaaa327764/general/...")
+    if (storagePath?.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//i)) {
+      return 'documents';
+    }
+    
+    // Fallback to category
     if (category === 'login_media') {
       return 'login-media';
     }

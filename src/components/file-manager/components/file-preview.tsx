@@ -52,9 +52,15 @@ export function FilePreview({
   const mimeType = isFileObject ? (file as File).type : (file as FileMetadata).mime_type;
   const isHEIC = mimeType === 'image/heic' || mimeType === 'image/heif' || filename.toLowerCase().endsWith('.heic') || filename.toLowerCase().endsWith('.heif');
 
-  // Determine bucket from storage_path or category
+  // Determine bucket from storage_path structure (priority over category)
   const determineBucket = (storagePath: string, category: string): string => {
+    // Explicit login-media prefix
     if (storagePath.startsWith('login-media/')) return 'login-media';
+    // UUID path structure = documents bucket (e.g., "5a7f5773-0c9c-4336-b06b-f2aaaa327764/general/...")
+    if (storagePath.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\//i)) {
+      return 'documents';
+    }
+    // Fallback to category
     if (category === 'login_media') return 'login-media';
     return 'documents';
   };
