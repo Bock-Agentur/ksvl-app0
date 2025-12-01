@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useSettingsBatch } from "./use-settings-batch";
 import { UserRole } from "@/types";
+import { NAV_ITEMS } from "@/lib/registry/navigation";
 
 export interface MenuItemConfig {
   id: string;
@@ -16,12 +17,18 @@ export interface MenuSettings {
   defaultRole: UserRole;
 }
 
-const DEFAULT_HEADER_ITEMS: MenuItemConfig[] = [
-  { id: "settings", label: "Einstellungen", icon: "Settings", roles: ["admin"], order: 0 },
-  { id: "users", label: "Mitglieder", icon: "Users", roles: ["admin"], order: 1 },
-  { id: "slots", label: "Slot Manager", icon: "Layers", roles: ["admin"], order: 2 },
-  { id: "file-manager", label: "Dateimanager", icon: "FolderOpen", roles: ["admin"], order: 3 },
-];
+// ✅ Generate DEFAULT_HEADER_ITEMS from central NAV_ITEMS registry (drawer position)
+const DEFAULT_HEADER_ITEMS: MenuItemConfig[] = NAV_ITEMS
+  .filter(item => item.position.includes('drawer') && !item.deprecated)
+  .map((item, index) => ({
+    id: item.id,
+    label: item.label,
+    icon: item.icon,
+    roles: item.allowedRoles === '*' 
+      ? ['gastmitglied', 'mitglied', 'kranfuehrer', 'admin', 'vorstand'] 
+      : item.allowedRoles,
+    order: index,
+  }));
 
 const DEFAULT_SETTINGS: MenuSettings = {
   headerItems: DEFAULT_HEADER_ITEMS,
