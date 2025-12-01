@@ -1,7 +1,7 @@
 import { User as UserType, CustomField } from "@/types";
 import { ProfilePersonalCards } from "./profile-personal-cards";
 import { ProfileBoatCards } from "./profile-boat-cards";
-import { ProfileAdminCards } from "./profile-admin-cards";
+import { ProfileAdminCards, ProfileHistoryCard } from "./profile-admin-cards";
 
 interface ProfileFormCardsProps {
   user: UserType;
@@ -76,6 +76,9 @@ export function ProfileFormCards({
         isEditing={isEditing}
         setEditedUser={setEditedUser}
       />
+
+      {/* Historie & Verwaltung - ganz unten, nur für Admins */}
+      {isAdmin && <ProfileHistoryCard user={user} />}
     </>
   );
 }
