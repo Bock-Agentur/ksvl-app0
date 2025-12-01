@@ -12,8 +12,7 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon, Clock, Check, Minus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Slot } from "@/types";
-import { useRole } from "@/hooks/use-role";
-import { useUsers } from "@/hooks/use-users";
+import { useRole, useUsers } from "@/hooks";
 
 // Generate 15-minute interval time slots for mini-slot support
 const generateMiniTimeSlots = () => {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { FileMetadata } from "../types/file-manager.types";
-import { useFileManager } from "@/hooks/use-file-manager";
+import { useFileManager } from "@/hooks";
 import { FileText, Image as ImageIcon, Video, File as FileIcon, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";

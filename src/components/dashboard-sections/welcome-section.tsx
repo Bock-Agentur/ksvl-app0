@@ -3,9 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { useWelcomeMessages } from "@/hooks/use-welcome-messages";
+import { useWelcomeMessages, useProfileData } from "@/hooks";
 import { UserRole } from "@/types/user";
-import { useProfileData } from "@/hooks/use-profile-data";
 
 interface WelcomeSectionProps {
   stats?: {

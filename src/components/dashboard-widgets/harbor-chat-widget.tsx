@@ -6,10 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2, Send, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useRole } from "@/hooks/use-role";
-import { useProfileData } from "@/hooks/use-profile-data";
-import { useHarborChatData } from "@/hooks/use-harbor-chat-data";
+import { useToast, useRole, useProfileData, useHarborChatData } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { apiLogger } from "@/lib/logger";
 

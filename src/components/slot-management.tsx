@@ -1,14 +1,11 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
+import { useStickyHeaderLayout, useToast, useUsers, useRole } from "@/hooks";
 import { format, parse, addMinutes } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
-import { useUsers } from "@/hooks/use-users";
 import { useSlotsContext } from "@/contexts/slots-context";
-import { useRole } from "@/hooks/use-role";
 import { Slot } from "@/types";
 import { SlotForm, SlotFormData as SharedSlotFormData } from "@/components/common/slot-form";
 import { useSlotFilters } from "./slot-management/use-slot-filters";

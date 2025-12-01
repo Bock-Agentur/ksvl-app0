@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks";
 import { ApiResponse } from "@/types";
 import { logger } from "@/lib/logger";
 

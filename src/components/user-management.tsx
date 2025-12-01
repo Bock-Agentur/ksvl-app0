@@ -1,15 +1,10 @@
 import { useState } from "react";
-import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
+import { useStickyHeaderLayout, useUsers, DatabaseUser, useSearchFilter, useCommonFilters, useFormHandler, useCommonFieldConfigs, useRoleBadgeSettings, useToast } from "@/hooks";
 import { Card, CardContent } from "@/components/ui/card";
-import { useUsers, DatabaseUser } from "@/hooks/use-users";
-import { useSearchFilter, useCommonFilters } from "@/hooks/use-search-filter";
-import { useFormHandler, useCommonFieldConfigs } from "@/hooks/use-form-handler";
 import { User, UserRole, generateRolesFromPrimary } from "@/types";
 import { ProfileView } from "./profile-view";
 import { cn } from "@/lib/utils";
-import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
 import { calculateUserStats, convertToCSV, downloadCSV, generateMemberNumber } from "@/lib/business-logic";
-import { useToast } from "@/hooks/use-toast";
 import { userService } from "@/lib/services/user-service";
 import { validatePassword } from "@/lib/password-validation";
 import { UserHeroSection } from "./user-management/user-hero-section";

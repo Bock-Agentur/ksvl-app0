@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { useFileManager } from "@/hooks/use-file-manager";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useFileManager, useIsMobile } from "@/hooks";
 import {
   Drawer,
   DrawerContent,

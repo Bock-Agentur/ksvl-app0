@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks";
 import { UserRole } from "@/types/user";
 import { MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";

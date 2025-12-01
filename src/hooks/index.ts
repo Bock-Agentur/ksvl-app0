@@ -8,6 +8,6 @@
 export * from './core';
 
 // Feature hooks (remain in root)
-export { useConsecutiveSlots } from './use-consecutive-slots';
-export { useTestData } from './use-test-data';
-export { useToast } from './use-toast';
+export { useConsecutiveSlots, ConsecutiveSlotsProvider } from './use-consecutive-slots';
+export { useTestData, TestDataProvider } from './use-test-data';
+export { useToast, toast } from './use-toast';

@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Settings, Eye, EyeOff, RefreshCw } from "lucide-react";
-import { useConsecutiveSlots } from "@/hooks/use-consecutive-slots";
+import { useConsecutiveSlots } from "@/hooks";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
 import { useState } from "react";

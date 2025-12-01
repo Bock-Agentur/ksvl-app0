@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks";
 import { fileService, FileMetadata, UploadMetadata, FileServiceError } from "@/lib/services/file-service";
 
 // Re-export types for backward compatibility

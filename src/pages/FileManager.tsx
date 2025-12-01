@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useRole } from "@/hooks/use-role";
+import { useIsMobile, useRole } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { PageLayout } from "@/components/common/page-layout";
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { useSlotDesign } from "@/hooks/use-slot-design";
+import { useSlotDesign } from "@/hooks";
 
 export type SlotStatus = "available" | "booked" | "blocked";
 

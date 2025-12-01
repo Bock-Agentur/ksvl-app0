@@ -4,7 +4,7 @@
  */
 
 import { useState } from "react";
-import { useSettingsBatch } from "@/hooks/use-settings-batch";
+import { useSettingsBatch } from "@/hooks";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

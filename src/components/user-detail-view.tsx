@@ -10,13 +10,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/hooks/use-toast";
-import { useRole } from "@/hooks/use-role";
+import { useToast, useRole, useRoleBadgeSettings } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { User as UserType, UserRole, generateRolesFromPrimary } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { generateMemberNumber } from "@/lib/business-logic";
-import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 import { userLogger } from "@/lib/logger";
 

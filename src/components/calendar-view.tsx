@@ -4,15 +4,13 @@ import { MonthCalendar } from "./month-calendar";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Calendar, CalendarDays, Home, ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { usePermissions } from "@/hooks/use-permissions";
+import { usePermissions, useStickyHeaderLayout, useIsMobile } from "@/hooks";
 import { SlotFormDialog } from "./slot-form-dialog";
 import { Slot } from "@/types";
 import { format, startOfWeek, addDays, isSameDay, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
 import { useSlotsContext } from "@/contexts/slots-context";
 import { cn } from "@/lib/utils";
-import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CalendarViewProps {
   initialDate?: Date | null;

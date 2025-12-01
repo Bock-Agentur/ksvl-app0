@@ -4,14 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import defaultAvatar from "@/assets/default-avatar.png";
-import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
-import { useRole } from "@/hooks/use-role";
-import { useProfileData } from "@/hooks/use-profile-data";
+import { useDashboardSettings, useRole, useProfileData, useToast, useAIWelcomeMessage } from "@/hooks";
 import { generateAutomaticHeadline } from "@/lib/headline-generator";
 import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { useAIWelcomeMessage } from "@/hooks/use-ai-welcome-message";
 import { useNavigate } from "react-router-dom";
 import { apiLogger, uiLogger } from "@/lib/logger";
 

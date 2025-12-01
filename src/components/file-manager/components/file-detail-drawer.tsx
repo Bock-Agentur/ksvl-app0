@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
-import { useFileManager } from "@/hooks/use-file-manager";
-import { useFilePermissions } from "@/hooks/use-file-permissions";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useFileManager, useFilePermissions, useIsMobile } from "@/hooks";
 import { logger } from "@/lib/logger";
 import {
   Drawer,

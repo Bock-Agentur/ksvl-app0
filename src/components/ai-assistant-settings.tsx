@@ -5,7 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useAIAssistantSettings } from "@/hooks/use-ai-assistant-settings";
+import { useAIAssistantSettings } from "@/hooks";
 import { TONALITY_LABELS, TONALITY_DESCRIPTIONS, RESPONSE_LENGTH_LABELS, RESPONSE_LENGTH_DESCRIPTIONS, Tonality, ResponseLength } from "@/types/ai-assistant";
 import { ROLE_LABELS } from "@/lib/role-order";
 import { UserRole } from "@/types/user";

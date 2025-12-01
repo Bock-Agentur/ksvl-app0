@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Slot } from "@/types";
 import { parseISO, isSameDay } from "date-fns";
-import { useRole } from "@/hooks/use-role";
+import { useRole } from "@/hooks";
 
 export type FilterStatus = "all" | "booked" | "available";
 
