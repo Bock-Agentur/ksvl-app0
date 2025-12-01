@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { useRole } from "./use-role";
+import { useRole } from "../auth/use-role";
 import { supabase } from "@/integrations/supabase/client";
 import { logger } from "@/lib/logger";
 
