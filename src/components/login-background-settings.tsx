@@ -1256,21 +1256,15 @@ export function LoginBackgroundSettings() {
         open={fileSelectorOpen}
         onOpenChange={setFileSelectorOpen}
         onSelect={(file) => {
-          console.log('📁 File selected from File Manager:', file);
-          
-          // All File Manager files are in documents bucket
           const bucket = 'documents';
-          
-          // Generate preview URL
           const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(file.storage_path);
-          console.log('🔗 Generated preview URL:', urlData.publicUrl);
           
           setLocalSettings({
             ...localSettings,
             type: file.file_type === 'video' ? 'video' : 'image',
             bucket: bucket,
             storagePath: file.storage_path,
-            url: urlData.publicUrl, // Temporary for preview
+            url: urlData.publicUrl,
             filename: file.filename
           });
           setFileSelectorOpen(false);
@@ -1290,21 +1284,15 @@ export function LoginBackgroundSettings() {
         open={legacyMediaSelectorOpen}
         onOpenChange={setLegacyMediaSelectorOpen}
         onSelect={(file) => {
-          console.log('📁 File selected from Legacy Media:', file);
-          
-          // All File Manager files are in documents bucket
           const bucket = 'documents';
-          
-          // Generate preview URL
           const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(file.storage_path);
-          console.log('🔗 Generated preview URL:', urlData.publicUrl);
           
           setLocalSettings({
             ...localSettings,
             type: file.file_type === 'video' ? 'video' : 'image',
             bucket: bucket,
             storagePath: file.storage_path,
-            url: urlData.publicUrl, // Temporary for preview
+            url: urlData.publicUrl,
             filename: file.filename
           });
           setLegacyMediaSelectorOpen(false);
