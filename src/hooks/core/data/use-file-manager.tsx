@@ -1,7 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks";
 import { fileService, FileMetadata, UploadMetadata, FileServiceError } from "@/lib/services/file-service";
+import { QUERY_KEYS, FileQueryFilters } from "@/lib/query-keys";
 
 // Re-export types for backward compatibility
 export type { FileMetadata, UploadMetadata };
@@ -21,285 +23,282 @@ export interface FileFilters {
 export type SortBy = 'name' | 'date' | 'size' | 'type';
 export type SortOrder = 'asc' | 'desc';
 
+const ITEMS_PER_PAGE = 20;
+
+/**
+ * Fetch files from Supabase with filters, search, and pagination
+ */
+async function fetchFilesFromDB(params: {
+  filters: FileFilters;
+  searchQuery: string;
+  sortBy: SortBy;
+  sortOrder: SortOrder;
+  page: number;
+}): Promise<{ files: FileMetadata[]; totalCount: number }> {
+  const { filters, searchQuery, sortBy, sortOrder, page } = params;
+  
+  let query = supabase
+    .from('file_metadata')
+    .select('*', { count: 'exact' })
+    .range(page * ITEMS_PER_PAGE, (page + 1) * ITEMS_PER_PAGE - 1);
+
+  // Apply filters
+  if (filters.category) {
+    query = query.eq('category', filters.category);
+  }
+  if (filters.file_type) {
+    query = query.eq('file_type', filters.file_type);
+  }
+  if (filters.linked_user_id) {
+    query = query.eq('linked_user_id', filters.linked_user_id);
+  }
+  if (filters.owner_id) {
+    query = query.eq('owner_id', filters.owner_id);
+  }
+  if (filters.date_from) {
+    query = query.gte('created_at', filters.date_from);
+  }
+  if (filters.date_to) {
+    query = query.lte('created_at', filters.date_to);
+  }
+  if (filters.tags && filters.tags.length > 0) {
+    query = query.contains('tags', filters.tags);
+  }
+
+  // Apply search
+  if (searchQuery) {
+    query = query.or(`filename.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
+  }
+
+  // Apply sorting
+  const orderColumn = sortBy === 'name' ? 'filename' : 
+                     sortBy === 'date' ? 'created_at' :
+                     sortBy === 'size' ? 'file_size' :
+                     'file_type';
+  query = query.order(orderColumn, { ascending: sortOrder === 'asc' });
+
+  const { data, error, count } = await query;
+
+  if (error) throw error;
+
+  return {
+    files: (data || []) as unknown as FileMetadata[],
+    totalCount: count || 0
+  };
+}
+
 /**
  * Main hook for file management
- * Mobile-optimized with pagination and efficient queries
+ * React Query powered with optimistic updates
  */
 export const useFileManager = () => {
   const { toast } = useToast();
-  const [files, setFiles] = useState<FileMetadata[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const queryClient = useQueryClient();
+  
+  // Local UI state
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
-  const [filters, setFilters] = useState<FileFilters>({ category: undefined }); // Start with all files
+  const [filters, setFilters] = useState<FileFilters>({ category: undefined });
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortBy>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
-    // Load from localStorage
+  const [viewMode, setViewModeState] = useState<'grid' | 'list'>(() => {
     return (localStorage.getItem('fileManagerViewMode') as 'grid' | 'list') || 'grid';
   });
   const [page, setPage] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
-  const ITEMS_PER_PAGE = 20;
   
   // Cache for preview URLs
   const previewUrlCache = useRef<Map<string, string>>(new Map());
 
-  /**
-   * Fetch files with filters and pagination
-   * Mobile-optimized with limit
-   */
-  const fetchFiles = useCallback(async (loadMore = false) => {
-    try {
-      setLoading(true);
-      const currentPage = loadMore ? page + 1 : 0;
-      
-      let query = supabase
-        .from('file_metadata')
-        .select('*', { count: 'exact' })
-        .range(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE - 1);
+  // Build query key for caching
+  const queryFilters: FileQueryFilters = {
+    ...filters,
+    searchQuery,
+    sortBy,
+    sortOrder,
+    page
+  };
 
-      // Apply filters
-      if (filters.category) {
-        query = query.eq('category', filters.category);
-      }
-      if (filters.file_type) {
-        query = query.eq('file_type', filters.file_type);
-      }
-      if (filters.linked_user_id) {
-        query = query.eq('linked_user_id', filters.linked_user_id);
-      }
-      if (filters.owner_id) {
-        query = query.eq('owner_id', filters.owner_id);
-      }
-      if (filters.date_from) {
-        query = query.gte('created_at', filters.date_from);
-      }
-      if (filters.date_to) {
-        query = query.lte('created_at', filters.date_to);
-      }
-      if (filters.tags && filters.tags.length > 0) {
-        query = query.contains('tags', filters.tags);
-      }
+  // ============ QUERY: Fetch Files ============
+  const {
+    data: filesData,
+    isLoading: loading,
+    refetch
+  } = useQuery({
+    queryKey: QUERY_KEYS.fileMetadata(queryFilters),
+    queryFn: () => fetchFilesFromDB({ filters, searchQuery, sortBy, sortOrder, page }),
+    staleTime: 30 * 1000, // 30 seconds
+  });
 
-      // Apply search
-      if (searchQuery) {
-        query = query.or(`filename.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`);
-      }
+  const files = filesData?.files || [];
+  const hasMore = filesData ? filesData.totalCount > (page + 1) * ITEMS_PER_PAGE : false;
 
-      // Apply sorting
-      const orderColumn = sortBy === 'name' ? 'filename' : 
-                         sortBy === 'date' ? 'created_at' :
-                         sortBy === 'size' ? 'file_size' :
-                         'file_type';
-      query = query.order(orderColumn, { ascending: sortOrder === 'asc' });
-
-      const { data, error, count } = await query;
-
-      if (error) throw error;
-
-      // Type cast the data to FileMetadata[]
-      const typedData = (data || []) as unknown as FileMetadata[];
-
-      if (loadMore) {
-        setFiles(prev => [...prev, ...typedData]);
-        setPage(currentPage);
-      } else {
-        setFiles(typedData);
-        setPage(0);
-      }
-
-      setHasMore((count || 0) > (currentPage + 1) * ITEMS_PER_PAGE);
-    } catch (error) {
-      console.error('Error fetching files:', error);
-      toast({
-        title: "Fehler",
-        description: "Dateien konnten nicht geladen werden",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, searchQuery, sortBy, sortOrder, toast]);
-
-  /**
-   * Upload single file - delegates to fileService
-   */
-  const uploadFile = async (file: File, metadata: UploadMetadata): Promise<FileMetadata | null> => {
-    setUploading(true);
-    try {
-      const result = await fileService.uploadFile(file, metadata);
-      
-      toast({
-        title: "Erfolg",
-        description: "Datei erfolgreich hochgeladen",
-      });
-
-      // Add to current files list immediately for instant UI update
-      setFiles(prev => [result, ...prev]);
-      
-      return result;
-    } catch (error) {
+  // ============ MUTATION: Upload File ============
+  const uploadMutation = useMutation({
+    mutationFn: async ({ file, metadata }: { file: File; metadata: UploadMetadata }) => {
+      return fileService.uploadFile(file, metadata);
+    },
+    onSuccess: (newFile) => {
+      toast({ title: "Erfolg", description: "Datei erfolgreich hochgeladen" });
+      // Invalidate all file queries to refresh
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.fileMetadataBase });
+    },
+    onError: (error) => {
       const errorMessage = error instanceof FileServiceError 
         ? error.message 
         : "Datei konnte nicht hochgeladen werden";
-      
-      toast({
-        title: "Fehler",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      return null;
-    } finally {
-      setUploading(false);
+      toast({ title: "Fehler", description: errorMessage, variant: "destructive" });
     }
-  };
+  });
 
-  /**
-   * Upload multiple files - delegates to fileService
-   */
-  const uploadMultipleFiles = async (
-    files: File[], 
-    metadata: UploadMetadata
-  ): Promise<FileMetadata[]> => {
-    setUploading(true);
-    try {
-      const results = await fileService.uploadMultipleFiles(files, metadata);
-      
-      // Add to files list
-      setFiles(prev => [...results, ...prev]);
-      
-      toast({
-        title: "Erfolg",
-        description: `${results.length} Datei(en) hochgeladen`,
-      });
-      
-      return results;
-    } catch (error) {
+  // ============ MUTATION: Upload Multiple Files ============
+  const uploadMultipleMutation = useMutation({
+    mutationFn: async ({ files, metadata }: { files: File[]; metadata: UploadMetadata }) => {
+      return fileService.uploadMultipleFiles(files, metadata);
+    },
+    onSuccess: (results) => {
+      toast({ title: "Erfolg", description: `${results.length} Datei(en) hochgeladen` });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.fileMetadataBase });
+    },
+    onError: (error) => {
       const errorMessage = error instanceof FileServiceError 
         ? error.message 
         : "Dateien konnten nicht hochgeladen werden";
-      
-      toast({
-        title: "Fehler",
-        description: errorMessage,
-        variant: "destructive",
-      });
-      return [];
-    } finally {
-      setUploading(false);
+      toast({ title: "Fehler", description: errorMessage, variant: "destructive" });
+    }
+  });
+
+  // ============ MUTATION: Delete File ============
+  const deleteMutation = useMutation({
+    mutationFn: async (fileId: string) => {
+      await fileService.deleteFile(fileId);
+      return fileId;
+    },
+    onSuccess: () => {
+      toast({ title: "Erfolg", description: "Datei gelöscht" });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.fileMetadataBase });
+    },
+    onError: (error) => {
+      const errorMessage = error instanceof FileServiceError 
+        ? error.message 
+        : "Datei konnte nicht gelöscht werden";
+      toast({ title: "Fehler", description: errorMessage, variant: "destructive" });
+    }
+  });
+
+  // ============ MUTATION: Delete Multiple Files ============
+  const deleteMultipleMutation = useMutation({
+    mutationFn: async (fileIds: string[]) => {
+      await fileService.deleteMultipleFiles(fileIds);
+      return fileIds;
+    },
+    onSuccess: (deletedIds) => {
+      toast({ title: "Erfolg", description: `${deletedIds.length} Datei(en) gelöscht` });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.fileMetadataBase });
+      clearSelection();
+    },
+    onError: (error) => {
+      const errorMessage = error instanceof FileServiceError 
+        ? error.message 
+        : "Dateien konnten nicht gelöscht werden";
+      toast({ title: "Fehler", description: errorMessage, variant: "destructive" });
+    }
+  });
+
+  // ============ MUTATION: Update Metadata ============
+  const updateMetadataMutation = useMutation({
+    mutationFn: async ({ fileId, updates }: { 
+      fileId: string; 
+      updates: Partial<Pick<FileMetadata, 'description' | 'tags' | 'is_public' | 'allowed_roles'>>
+    }) => {
+      return fileService.updateMetadata(fileId, updates);
+    },
+    onSuccess: () => {
+      toast({ title: "Erfolg", description: "Metadaten aktualisiert" });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.fileMetadataBase });
+    },
+    onError: (error) => {
+      const errorMessage = error instanceof FileServiceError 
+        ? error.message 
+        : "Metadaten konnten nicht aktualisiert werden";
+      toast({ title: "Fehler", description: errorMessage, variant: "destructive" });
+    }
+  });
+
+  // ============ Helper Functions ============
+
+  /**
+   * Upload single file - wraps mutation
+   */
+  const uploadFile = async (file: File, metadata: UploadMetadata): Promise<FileMetadata | null> => {
+    try {
+      return await uploadMutation.mutateAsync({ file, metadata });
+    } catch {
+      return null;
     }
   };
 
   /**
-   * Delete single file - delegates to fileService
+   * Upload multiple files - wraps mutation
+   */
+  const uploadMultipleFiles = async (files: File[], metadata: UploadMetadata): Promise<FileMetadata[]> => {
+    try {
+      return await uploadMultipleMutation.mutateAsync({ files, metadata });
+    } catch {
+      return [];
+    }
+  };
+
+  /**
+   * Delete single file - wraps mutation
    */
   const deleteFile = async (fileId: string): Promise<boolean> => {
     try {
-      await fileService.deleteFile(fileId);
-      
-      toast({
-        title: "Erfolg",
-        description: "Datei gelöscht",
-      });
-
-      // Refresh files list
-      await fetchFiles();
+      await deleteMutation.mutateAsync(fileId);
       return true;
-    } catch (error) {
-      const errorMessage = error instanceof FileServiceError 
-        ? error.message 
-        : "Datei konnte nicht gelöscht werden";
-      
-      toast({
-        title: "Fehler",
-        description: errorMessage,
-        variant: "destructive",
-      });
+    } catch {
       return false;
     }
   };
 
   /**
-   * Delete multiple files - delegates to fileService
+   * Delete multiple files - wraps mutation
    */
   const deleteMultipleFiles = async (fileIds: string[]): Promise<void> => {
-    try {
-      await fileService.deleteMultipleFiles(fileIds);
-      
-      toast({
-        title: "Erfolg",
-        description: `${fileIds.length} Datei(en) gelöscht`,
-      });
-      
-      await fetchFiles();
-      clearSelection();
-    } catch (error) {
-      const errorMessage = error instanceof FileServiceError 
-        ? error.message 
-        : "Dateien konnten nicht gelöscht werden";
-      
-      toast({
-        title: "Fehler",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    }
+    await deleteMultipleMutation.mutateAsync(fileIds);
   };
 
   /**
-   * Update file metadata - delegates to fileService
+   * Update file metadata - wraps mutation
    */
   const updateFileMetadata = async (
     fileId: string,
     updates: Partial<Pick<FileMetadata, 'description' | 'tags' | 'is_public' | 'allowed_roles'>>
   ): Promise<boolean> => {
     try {
-      await fileService.updateMetadata(fileId, updates);
-      
-      toast({
-        title: "Erfolg",
-        description: "Metadaten aktualisiert",
-      });
-
-      // Refresh files list
-      await fetchFiles();
+      await updateMetadataMutation.mutateAsync({ fileId, updates });
       return true;
-    } catch (error) {
-      const errorMessage = error instanceof FileServiceError 
-        ? error.message 
-        : "Metadaten konnten nicht aktualisiert werden";
-      
-      toast({
-        title: "Fehler",
-        description: errorMessage,
-        variant: "destructive",
-      });
+    } catch {
       return false;
     }
   };
 
   /**
-   * Get download URL for a file - delegates to fileService
+   * Get download URL for a file
    */
   const getFileUrl = async (storagePath: string, category?: string): Promise<string | null> => {
     return fileService.getFileUrl(storagePath, category);
   };
 
   /**
-   * Get preview URL for a file with caching - delegates to fileService
+   * Get preview URL with caching
    */
   const getFilePreviewUrl = async (file: FileMetadata): Promise<string | null> => {
-    // Check cache first
     if (previewUrlCache.current.has(file.id)) {
       return previewUrlCache.current.get(file.id)!;
     }
 
-    // Get URL from service
     const url = await fileService.getPreviewUrl(file);
     
-    // Cache the result
     if (url) {
       previewUrlCache.current.set(file.id, url);
     }
@@ -318,7 +317,6 @@ export const useFileManager = () => {
       const url = await getFileUrl(file.storage_path, file.category);
       if (!url) throw new Error("URL konnte nicht generiert werden");
 
-      // Create download link
       const a = document.createElement('a');
       a.href = url;
       a.download = file.filename;
@@ -326,7 +324,6 @@ export const useFileManager = () => {
       a.click();
       document.body.removeChild(a);
     } catch (error) {
-      console.error('Error downloading file:', error);
       toast({
         title: "Fehler",
         description: "Datei konnte nicht heruntergeladen werden",
@@ -336,7 +333,7 @@ export const useFileManager = () => {
   };
 
   /**
-   * Toggle file selection for multi-select
+   * Toggle file selection
    */
   const toggleFileSelection = (fileId: string) => {
     setSelectedFiles(prev => 
@@ -354,10 +351,10 @@ export const useFileManager = () => {
   };
 
   /**
-   * Update view mode and persist to localStorage
+   * Update view mode with persistence
    */
-  const updateViewMode = (mode: 'grid' | 'list') => {
-    setViewMode(mode);
+  const setViewMode = (mode: 'grid' | 'list') => {
+    setViewModeState(mode);
     localStorage.setItem('fileManagerViewMode', mode);
   };
 
@@ -366,20 +363,23 @@ export const useFileManager = () => {
    */
   const loadMore = () => {
     if (!loading && hasMore) {
-      fetchFiles(true);
+      setPage(prev => prev + 1);
     }
   };
 
-  // Initial load
-  useEffect(() => {
-    fetchFiles();
-  }, [fetchFiles]);
+  /**
+   * Manual refetch
+   */
+  const fetchFiles = useCallback(() => {
+    setPage(0);
+    refetch();
+  }, [refetch]);
 
   return {
     // State
     files,
     loading,
-    uploading,
+    uploading: uploadMutation.isPending || uploadMultipleMutation.isPending,
     selectedFiles,
     filters,
     searchQuery,
@@ -407,6 +407,6 @@ export const useFileManager = () => {
     setSearchQuery,
     setSortBy,
     setSortOrder,
-    setViewMode: updateViewMode,
+    setViewMode,
   };
 };

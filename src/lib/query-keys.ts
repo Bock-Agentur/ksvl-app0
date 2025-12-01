@@ -30,9 +30,25 @@ export const QUERY_KEYS = {
   customFieldValues: (userId: string) => ['custom-field-values', userId] as const,
   
   // Files
-  fileMetadata: ['file-metadata'] as const,
+  fileMetadata: (filters?: FileQueryFilters) => ['file-metadata', filters] as const,
+  fileMetadataBase: ['file-metadata'] as const,
   filePermissions: (fileId: string) => ['file-permissions', fileId] as const,
 } as const;
+
+// File query filters for cache key
+export interface FileQueryFilters {
+  category?: string;
+  file_type?: string;
+  tags?: string[];
+  linked_user_id?: string;
+  date_from?: string;
+  date_to?: string;
+  owner_id?: string;
+  searchQuery?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  page?: number;
+}
 
 // Type helper for query key inference
 export type QueryKeys = typeof QUERY_KEYS;
