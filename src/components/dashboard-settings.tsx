@@ -9,8 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useRole } from "@/hooks/use-role";
-import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
+import { useRole, useDashboardSettings, useIsMobile } from "@/hooks";
 import { getWidgetsForRole, getSectionsForRole, type DashboardItem } from "@/lib/dashboard-config";
 import { UserRole } from "@/types/user";
 import { SettingsSectionLoader } from "@/components/common/settings-section-loader";
@@ -20,7 +19,6 @@ import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, v
 import { CSS } from '@dnd-kit/utilities';
 import { uiLogger } from "@/lib/logger";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { RoleCardGrid } from "@/components/common/role-card-grid";
 
 interface SortableDashboardItemProps {

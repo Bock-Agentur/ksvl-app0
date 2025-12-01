@@ -1,10 +1,10 @@
 import { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { UserRole, RoleContextType, User } from "@/types";
-import { useMenuSettings } from "@/hooks/use-menu-settings";
+import { useMenuSettings } from "../settings/use-menu-settings";
 import { useAuth } from "@/contexts/auth-context";
-import { useUserData, useUsersData } from "@/hooks/use-users-data";
-import { useSettingsBatch } from "@/hooks/use-settings-batch";
+import { useUserData, useUsersData } from "../data/use-users-data";
+import { useSettingsBatch } from "../settings/use-settings-batch";
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 

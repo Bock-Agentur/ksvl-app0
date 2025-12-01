@@ -8,8 +8,8 @@ import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
-import { useLoginBackground, type LoginBackground } from "@/hooks/use-login-background";
+import { useToast, useLoginBackground, useFileManager } from "@/hooks";
+import type { LoginBackground } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, Trash2, Eye, Maximize2, FolderOpen } from "lucide-react";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -18,7 +18,6 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { FileSelectorDialog } from "@/components/file-manager/file-selector-dialog";
 import { Badge } from "@/components/ui/badge";
-import { useFileManager } from "@/hooks/use-file-manager";
 
 const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB
 const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB

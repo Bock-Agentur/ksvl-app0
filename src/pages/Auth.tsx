@@ -5,9 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import { useLoginBackground, LoginBackground } from "@/hooks/use-login-background";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useToast, useLoginBackground, LoginBackground, useIsMobile } from "@/hooks";
 import { z } from "zod";
 
 function Countdown({ endDate, text, showDays, fontSize, fontWeight }: { endDate: string; text: string; showDays?: boolean; fontSize?: number; fontWeight?: number }) {

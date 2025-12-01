@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { ScrollToTop } from "@/components/common/scroll-to-top";
 import { AuthProvider } from "@/contexts/auth-context";
-import { RoleProvider } from "@/hooks/use-role";
+import { RoleProvider } from "@/hooks";
 import { ProtectedRoute } from "@/components/common/protected-route";
 import { ROUTES } from "@/lib/registry/routes";
 import Index from "./pages/Index";

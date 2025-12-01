@@ -3,11 +3,7 @@ import { Calendar, Clock, Users, Anchor, TrendingUp, AlertCircle } from "lucide-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useRole } from "@/hooks/use-role";
-import { useUsers } from "@/hooks/use-users";
-import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
-import { useDashboardAnimations } from "@/hooks/use-dashboard-animations";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useRole, useUsers, useDashboardSettings, useDashboardAnimations, useIsMobile } from "@/hooks";
 import { getAllDashboardItems, sortAllItemsByPosition, getColumnClassName } from "@/lib/dashboard-config";
 import { cn } from "@/lib/utils";
 

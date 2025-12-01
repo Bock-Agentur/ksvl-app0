@@ -6,11 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/hooks/use-toast";
-import { useSlotDesign, SlotDesignSettings } from "@/hooks";
+import { useToast, useSlotDesign, SlotDesignSettings, useIsMobile } from "@/hooks";
 import { StatusLabel } from "@/components/ui/status-label";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks";
 import { uiLogger } from "@/lib/logger";
 import {
   Palette, 

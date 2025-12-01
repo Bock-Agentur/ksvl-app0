@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
+import { useStickyHeaderLayout, useToast, useRole, useCustomFields, useCustomFieldValues, useRoleBadgeSettings } from "@/hooks";
 import { Edit, Save, X } from "lucide-react";
 import { ProfileDocumentsSection } from "@/components/profile/profile-documents-section";
 import { ProfileHeader } from "@/components/profile/profile-header";
@@ -7,13 +7,9 @@ import { ProfileFormCards } from "@/components/profile/profile-form-cards";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { User as UserType, UserRole, CustomField, ProfileViewProps, generateRolesFromPrimary } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { useRole } from "@/hooks/use-role";
-import { useCustomFields, useCustomFieldValues } from "@/hooks/use-custom-fields";
-import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 import { userLogger } from "@/lib/logger";
 

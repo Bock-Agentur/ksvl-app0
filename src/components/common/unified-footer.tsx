@@ -4,14 +4,12 @@ import { Menu, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
-import { useFooterAnimation } from "@/hooks/use-footer-animation";
+import { useFooterMenuSettings, useFooterAnimation, useRole } from "@/hooks";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { UserRole } from "@/types";
 import * as LucideIcons from "lucide-react";
 import { handleFooterLogout } from "@/lib/footer-utils";
 import { FooterDrawerContent } from "@/components/common/footer-drawer-content";
-import { useRole } from "@/hooks/use-role";
 import { getNavItemsForRole, isNavItemActive, getNavItemPath, NAV_ITEMS } from "@/lib/registry/navigation";
 
 interface UnifiedFooterProps {

@@ -7,8 +7,7 @@ import { Edit, Trash2, Clock, User, Mail, CalendarDays, ChevronDown, ChevronUp, 
 import { Slot } from "@/types";
 import { format, parseISO } from "date-fns";
 import { de } from "date-fns/locale";
-import { useConsecutiveSlots } from "@/hooks/use-consecutive-slots";
-import { useSlotDesign } from "@/hooks/use-slot-design";
+import { useConsecutiveSlots, useSlotDesign } from "@/hooks";
 
 interface SlotListItemProps {
   slot: Slot;

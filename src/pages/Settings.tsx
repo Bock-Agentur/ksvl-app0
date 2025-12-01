@@ -18,15 +18,11 @@ import { StickyHeaderLayoutSettings } from "@/components/sticky-header-layout-se
 import { HeaderMessageSettings } from "@/components/header-message-settings";
 import { PageLoader } from "@/components/common/page-loader";
 import { PageLayout } from "@/components/common/page-layout";
-import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
+import { useStickyHeaderLayout, useRole, useIsMobile, useLoginBackground, useConsecutiveSlots, ConsecutiveSlotsProvider } from "@/hooks";
 import { cn } from "@/lib/utils";
-import { useRole } from "@/hooks/use-role";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/lib/registry/routes";
-import { useLoginBackground } from "@/hooks/use-login-background";
 import { toast } from "sonner";
-import { ConsecutiveSlotsProvider } from "@/hooks/use-consecutive-slots";
 import { 
   LayoutDashboard, 
   MessageSquare, 

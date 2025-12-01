@@ -4,13 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useThemeSettings, ThemeSetting } from "@/hooks/use-theme-settings";
-import { useRoleBadgeSettings } from "@/hooks/use-role-badge-settings";
+import { useThemeSettings, ThemeSetting, useRoleBadgeSettings, useToast } from "@/hooks";
 import { Palette, Save, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { HexColorPicker, RgbaColorPicker } from "react-colorful";
 import { 
   Popover, 

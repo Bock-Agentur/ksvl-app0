@@ -7,7 +7,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
-import { CreateSlotData } from "@/hooks/use-slots";
+import { CreateSlotData } from "@/hooks";
 
 export interface SlotUpdateData {
   date?: string;

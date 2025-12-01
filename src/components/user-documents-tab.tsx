@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useFileManager, FileMetadata } from "@/hooks/use-file-manager";
+import { useFileManager, FileMetadata, useToast } from "@/hooks";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +7,6 @@ import { FileUploadDialog } from "@/components/file-manager/file-upload-dialog";
 import { FileSelectorDialog } from "@/components/file-manager/file-selector-dialog";
 import { FileCard } from "@/components/file-manager/file-card";
 import { Upload, Eye, Download, Trash2, FolderOpen, FileText } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 interface UserDocumentsTabProps {

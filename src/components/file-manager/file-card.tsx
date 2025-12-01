@@ -1,8 +1,4 @@
-import { FileMetadata } from "@/hooks/use-file-manager";
-import { useFilePermissions } from "@/hooks/use-file-permissions";
-import { useFileManager } from "@/hooks/use-file-manager";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useRole } from "@/hooks/use-role";
+import { FileMetadata, useFilePermissions, useFileManager, useIsMobile, useRole } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

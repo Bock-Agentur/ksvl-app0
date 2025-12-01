@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-import { FileMetadata, useFileManager } from "@/hooks/use-file-manager";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { FileMetadata, useFileManager, useIsMobile } from "@/hooks";
 import {
   Dialog,
   DialogContent,

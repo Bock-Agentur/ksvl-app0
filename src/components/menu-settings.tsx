@@ -3,12 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { useMenuSettings, MenuItemConfig } from "@/hooks/use-menu-settings";
+import { useMenuSettings, MenuItemConfig, useToast, useIsMobile } from "@/hooks";
 import { UserRole } from "@/types";
 import { GripVertical, RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { uiLogger } from "@/lib/logger";
 
 export function MenuSettings() {

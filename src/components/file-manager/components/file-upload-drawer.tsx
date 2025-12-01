@@ -1,8 +1,5 @@
 import { useState } from "react";
-import { useFileManager, UploadMetadata } from "@/hooks/use-file-manager";
-import { useFilePermissions } from "@/hooks/use-file-permissions";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useUsers } from "@/hooks/use-users";
+import { useFileManager, UploadMetadata, useFilePermissions, useIsMobile, useUsers } from "@/hooks";
 import {
   Drawer,
   DrawerContent,
