@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/auth-context";
 import { RoleProvider } from "@/hooks";
 import { ProtectedRoute } from "@/components/common/protected-route";
 import { ROUTES } from "@/lib/registry/routes";
+import { TabRedirect } from "@/components/common/tab-redirect";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Settings } from "./pages/Settings";
@@ -16,6 +17,9 @@ import { Auth } from "./pages/Auth";
 import { FileManager } from "./pages/FileManager";
 import { Reports } from "./pages/Reports";
 import { Users } from "./pages/Users";
+import { Calendar } from "./pages/Calendar";
+import { Profile } from "./pages/Profile";
+import { Slots } from "./pages/Slots";
 import SettingsManager from "./pages/SettingsManager";
 
 const queryClient = new QueryClient();
@@ -35,18 +39,40 @@ const App = () => {
                 v7_relativeSplatPath: true 
               }}>
                 <ScrollToTop />
+                <TabRedirect />
                 <Routes>
                   {/* Public Routes */}
                   <Route path={ROUTES.public.auth.path} element={<Auth />} />
                   
-                  {/* Redirects */}
+                  {/* Legacy Redirects for backward compatibility */}
                   <Route path="/login" element={<Navigate to="/auth" replace />} />
                   <Route path="/dashboard" element={<Navigate to="/" replace />} />
+                  <Route path="/settings" element={<Navigate to={ROUTES.protected.settings.path} replace />} />
                   
-                  {/* Protected Routes with Role Guards */}
+                  {/* Protected Routes - Core Pages (All Users) */}
                   <Route 
                     path={ROUTES.protected.dashboard.path} 
                     element={<Index />} 
+                  />
+                  
+                  <Route 
+                    path={ROUTES.protected.calendar.path} 
+                    element={<Calendar />} 
+                  />
+                  
+                  <Route 
+                    path={ROUTES.protected.profile.path} 
+                    element={<Profile />} 
+                  />
+                  
+                  {/* Protected Routes - Role-Restricted */}
+                  <Route 
+                    path={ROUTES.protected.slots.path} 
+                    element={
+                      <ProtectedRoute requiredRoles={['admin', 'kranfuehrer', 'vorstand']}>
+                        <Slots />
+                      </ProtectedRoute>
+                    } 
                   />
                   
                   <Route 
@@ -86,7 +112,7 @@ const App = () => {
                   />
                   
                   <Route 
-                    path="/einstellungen/settings-manager" 
+                    path={ROUTES.protected.settingsManager.path} 
                     element={
                       <ProtectedRoute requiredRoles={['admin']}>
                         <SettingsManager />
