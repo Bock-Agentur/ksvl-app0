@@ -16,6 +16,7 @@ import { Auth } from "./pages/Auth";
 import { FileManager } from "./pages/FileManager";
 import { Reports } from "./pages/Reports";
 import { Users } from "./pages/Users";
+import SettingsManager from "./pages/SettingsManager";
 
 const queryClient = new QueryClient();
 
@@ -80,6 +81,15 @@ const App = () => {
                     element={
                       <ProtectedRoute requiredRoles={['admin', 'vorstand']}>
                         <Reports />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  
+                  <Route 
+                    path="/einstellungen/settings-manager" 
+                    element={
+                      <ProtectedRoute requiredRoles={['admin']}>
+                        <SettingsManager />
                       </ProtectedRoute>
                     } 
                   />
