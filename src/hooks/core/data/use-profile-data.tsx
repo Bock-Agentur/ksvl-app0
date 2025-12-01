@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useRole } from "./use-role";
+import { useRole } from "../auth/use-role";
 import { useUserData } from "./use-users-data";
 
 export function useProfileData(options?: { enabled?: boolean }) {
