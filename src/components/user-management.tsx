@@ -228,6 +228,16 @@ export function UserManagementRefactored() {
         return;
       }
 
+      const validation = validatePassword(password);
+      if (!validation.isValid) {
+        toast({
+          title: "Fehler",
+          description: validation.error,
+          variant: "destructive"
+        });
+        return;
+      }
+
       await userService.createUser({
         email: data.email,
         password: password,

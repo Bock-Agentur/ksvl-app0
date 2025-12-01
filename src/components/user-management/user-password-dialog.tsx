@@ -38,7 +38,7 @@ export function UserPasswordDialog({
               type="password"
               value={password}
               onChange={(e) => onPasswordChange(e.target.value)}
-              placeholder="Mindestens 6 Zeichen"
+              placeholder="Mind. 8 Zeichen, Groß-/Kleinbuchstabe, Zahl"
             />
           </div>
           
