@@ -5,30 +5,13 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { Separator } from "@/components/ui/separator";
+import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { UserRole } from "@/types";
 import * as LucideIcons from "lucide-react";
-import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
-import { Settings, Palette, TestTube, Users, Calendar, FileText, Layers, FolderOpen, LogOut } from "lucide-react";
 import { ROUTES } from "@/lib/registry/routes";
 import { useMenuSettings } from "@/hooks/use-menu-settings";
-import { uiLogger } from "@/lib/logger";
-
-// Icon mapping for dynamic menu items
-const iconMap = {
-  Palette,
-  TestTube,
-  Users,
-  Calendar,
-  FileText,
-  Settings,
-  Layers,
-  FolderOpen
-};
+import { FOOTER_ICON_MAP, handleFooterLogout } from "@/lib/footer-utils";
+import { FooterDrawerContent } from "@/components/common/footer-drawer-content";
 
 interface UnifiedFooterProps {
   currentRole: UserRole;
@@ -65,7 +48,7 @@ export function UnifiedFooter({
   const availableHeaderItems = menuItems.filter(item => item.roles.includes(currentRole)).map(item => ({
     id: item.id,
     label: item.label,
-    icon: iconMap[item.icon as keyof typeof iconMap] || Settings,
+    icon: FOOTER_ICON_MAP[item.icon as keyof typeof FOOTER_ICON_MAP] || FOOTER_ICON_MAP.Settings,
     roles: item.roles,
     badge: item.badge
   }));
@@ -93,32 +76,7 @@ export function UnifiedFooter({
     }
   }, [hasAnimated, footerLoading]);
 
-  const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-      toast.success("Erfolgreich abgemeldet");
-      navigate('/auth');
-    } catch (error) {
-      uiLogger.error('Logout error', error);
-      toast.error("Fehler beim Abmelden");
-    }
-  };
-
-  const roleLabels: Record<UserRole, string> = {
-    gastmitglied: "Gastmitglied",
-    mitglied: "Mitglied",
-    kranfuehrer: "Kranführer",
-    admin: "Admin",
-    vorstand: "Vorstand"
-  };
-
-  const roleColors: Record<UserRole, string> = {
-    gastmitglied: "bg-muted text-muted-foreground",
-    mitglied: "bg-accent text-accent-foreground",
-    kranfuehrer: "bg-gradient-ocean text-primary-foreground",
-    admin: "bg-gradient-deep text-primary-foreground",
-    vorstand: "bg-gradient-deep text-primary-foreground"
-  };
+  const handleLogout = () => handleFooterLogout(navigate);
 
   const isItemActive = (itemId: string) => {
     const currentPath = location.pathname;
@@ -217,115 +175,16 @@ export function UnifiedFooter({
             </DrawerTrigger>
             
             <DrawerContent className="max-h-[90vh]">
-              <DrawerHeader className="pb-2">
-                <DrawerTitle className="text-base">Menü</DrawerTitle>
-              </DrawerHeader>
-              
-              <div className="overflow-y-auto px-3 pb-4 space-y-3">
-                {/* User Info & Assigned Roles */}
-                <div className="space-y-2">
-                  <h3 className="text-xs font-medium text-muted-foreground">Zugewiesene Rollen</h3>
-                  <div className="flex flex-col gap-1.5">
-                    {currentUser?.roles && currentUser.roles.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {sortRoles(currentUser.roles).map((role: UserRole) => (
-                          <Badge 
-                            key={role} 
-                            className={cn(
-                              "text-[10px] px-1.5 py-0 h-5", 
-                              role === currentRole ? roleColors[role] : "bg-muted text-muted-foreground"
-                            )}
-                          >
-                            {ROLE_LABELS[role] || roleLabels[role]}
-                            {role === currentRole && " (aktiv)"}
-                          </Badge>
-                        ))}
-                      </div>
-                    ) : (
-                      <Badge variant="outline" className="text-[10px] w-fit px-1.5 py-0 h-5">
-                        Keine Rollen
-                      </Badge>
-                    )}
-                    {currentUser && (
-                      <p className="text-xs text-muted-foreground">{currentUser.name}</p>
-                    )}
-                  </div>
-                </div>
-
-                <Separator className="my-2" />
-
-                {/* Role Switcher */}
-                <div className="space-y-2">
-                  <h3 className="text-xs font-medium text-muted-foreground">Rolle wechseln</h3>
-                  <Select value={currentRole} onValueChange={(value: UserRole) => onRoleChange(value)}>
-                    <SelectTrigger className="w-full h-8 text-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="gastmitglied" className="text-sm">👋 Gastmitglied</SelectItem>
-                      <SelectItem value="mitglied" className="text-sm">👤 Mitglied</SelectItem>
-                      <SelectItem value="kranfuehrer" className="text-sm">⚓ Kranführer</SelectItem>
-                      <SelectItem value="admin" className="text-sm">🔧 Admin</SelectItem>
-                      <SelectItem value="vorstand" className="text-sm">🏛️ Vorstand</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Separator className="my-2" />
-
-                {/* Admin Functions */}
-                {availableHeaderItems.length > 0 && (
-                  <>
-                    <div className="space-y-3">
-                      <h3 className="text-sm font-medium text-muted-foreground">Verwaltung</h3>
-                      <div className="space-y-1">
-                        {availableHeaderItems.map(item => {
-                          const Icon = item.icon;
-                          const isActive = isItemActive(item.id);
-                          
-                          const handleClick = () => {
-                            setIsMenuOpen(false);
-                            handleNavigate(item.id);
-                          };
-                          
-                          return (
-                            <Button 
-                              key={item.id} 
-                              variant={isActive ? "secondary" : "ghost"} 
-                              className="w-full justify-start relative" 
-                              onClick={handleClick}
-                            >
-                              <Icon className="w-4 h-4 mr-2" />
-                              <span>{item.label}</span>
-                              {item.badge && (
-                                <Badge variant="destructive" className="ml-auto h-5 w-5 text-xs p-0 flex items-center justify-center">
-                                  {item.badge}
-                                </Badge>
-                              )}
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    <Separator className="my-2" />
-                  </>
-                )}
-
-                {/* Logout Button */}
-                <div className="pt-1">
-                  <Button 
-                    variant="destructive" 
-                    className="w-full gap-2 h-8 text-sm" 
-                    onClick={() => {
-                      handleLogout();
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    <LogOut className="w-3.5 h-3.5" />
-                    Abmelden
-                  </Button>
-                </div>
-              </div>
+              <FooterDrawerContent
+                currentRole={currentRole}
+                currentUser={currentUser}
+                availableHeaderItems={availableHeaderItems}
+                onRoleChange={onRoleChange}
+                onLogout={handleLogout}
+                onNavigate={handleNavigate}
+                isItemActive={isItemActive}
+                onClose={() => setIsMenuOpen(false)}
+              />
             </DrawerContent>
           </Drawer>
         )}
