@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QUERY_KEYS } from "@/lib/query-keys";
 
 interface RoleBadgeSettings {
   bgColor: string;
@@ -8,7 +9,7 @@ interface RoleBadgeSettings {
 
 export function useRoleBadgeSettings() {
   const { data: settings, isLoading } = useQuery({
-    queryKey: ["role-badge-settings"],
+    queryKey: QUERY_KEYS.roleBadgeSettings,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("role_badge_settings")

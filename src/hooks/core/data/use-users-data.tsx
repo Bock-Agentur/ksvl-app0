@@ -13,6 +13,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { DatabaseUser } from "./use-users";
+import { QUERY_KEYS } from "@/lib/query-keys";
 
 export interface UserWithRoles {
   id: string;
@@ -46,7 +47,7 @@ export function useUsersData(options: UseUsersDataOptions = {}) {
   const { enabled = true, userId } = options;
 
   const query = useQuery({
-    queryKey: ['users-with-roles', userId],
+    queryKey: userId ? QUERY_KEYS.userById(userId) : QUERY_KEYS.users,
     queryFn: async () => {
       // Build profiles query
       let profilesQuery = supabase

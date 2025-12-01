@@ -10,6 +10,7 @@
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { QUERY_KEYS } from "@/lib/query-keys";
 import type { UserRole } from "@/types/user";
 
 interface SettingEntry {
@@ -80,7 +81,7 @@ export function useSettingsBatch(options: UseSettingsBatchOptions = {}) {
   const settingKeys = getSettingKeys(userRole, loadAll);
 
   const query = useQuery({
-    queryKey: loadAll ? ['app-settings-all'] : ['app-settings-batch', userRole, userId],
+    queryKey: loadAll ? QUERY_KEYS.settingsAll : QUERY_KEYS.settingsBatch(userRole, userId),
     queryFn: async () => {
       let query = supabase.from('app_settings').select('*');
 
@@ -143,7 +144,7 @@ export function useSettingsBatch(options: UseSettingsBatchOptions = {}) {
     }
 
     // Invalidate cache to refetch
-    await queryClient.invalidateQueries({ queryKey: ['app-settings-batch'] });
+    await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.settingsBatch() });
   };
 
   return {
