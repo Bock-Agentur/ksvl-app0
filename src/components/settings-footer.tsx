@@ -125,14 +125,6 @@ export function SettingsFooter() {
       navigate(ROUTES.protected.settings.path);
       return;
     }
-    if (id === 'header-message') {
-      navigate(ROUTES.protected.headerMessage.path);
-      return;
-    }
-    if (id === 'desktop-background') {
-      navigate(ROUTES.protected.desktopBackground.path);
-      return;
-    }
     
     // For all other items, navigate to dashboard first
     navigate('/');
@@ -150,7 +142,6 @@ export function SettingsFooter() {
     if (itemId === 'file-manager') return currentPath === ROUTES.protected.fileManager.path;
     if (itemId === 'reports') return currentPath === ROUTES.protected.reports.path;
     if (itemId === 'settings') return currentPath === ROUTES.protected.settings.path;
-    if (itemId === 'header-message') return currentPath === ROUTES.protected.headerMessage.path;
     
     // For dashboard items, check if we're on the main page
     if (currentPath === '/') return itemId === 'dashboard';
@@ -288,8 +279,6 @@ export function SettingsFooter() {
                               navigate(ROUTES.protected.fileManager.path);
                             } else if (item.id === 'settings') {
                               navigate(ROUTES.protected.settings.path);
-                            } else if (item.id === 'header-message') {
-                              navigate(ROUTES.protected.headerMessage.path);
                             } else {
                               navigate('/');
                               setTimeout(() => {
