@@ -45,8 +45,6 @@ export const DashboardSettingsSchema = z.object({
   showStatsGrid: z.boolean().default(true),
   showQuickActions: z.boolean().default(true),
   showActivityFeed: z.boolean().default(true),
-  animationEnabled: z.boolean().default(true),
-  animationType: z.enum(['fadeIn', 'dropDown', 'scrollReveal', 'slideFromSides', 'staggered', 'bounce', 'none']).default('fadeIn'),
   widgetOrder: z.array(z.string()).optional(),
   widgetPositions: z.record(z.string(), z.object({ column: z.union([z.literal(1), z.literal(2), z.literal(3)]), order: z.number() })).optional(),
   allItemsPositions: z.record(z.string(), z.object({ column: z.number(), order: z.number() })).optional(),
@@ -54,7 +52,6 @@ export const DashboardSettingsSchema = z.object({
   headlineMode: z.enum(['manual', 'automatic']).default('automatic'),
   customHeadline: z.string().optional(),
   // Legacy/deprecated fields (keep for backward compatibility)
-  animationsEnabled: z.boolean().optional(),
   headlineType: z.enum(['auto', 'custom']).optional(),
 }).passthrough(); // Allow additional fields for backward compatibility
 

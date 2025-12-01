@@ -18,7 +18,7 @@ import { StickyHeaderLayoutSettings } from "@/components/sticky-header-layout-se
 import { HeaderMessageSettings } from "@/components/header-message-settings";
 import { PageLoader } from "@/components/common/page-loader";
 import { PageLayout } from "@/components/common/page-layout";
-import { useStickyHeaderLayout, useRole, useIsMobile, useLoginBackground, useConsecutiveSlots, ConsecutiveSlotsProvider } from "@/hooks";
+import { useStickyHeaderLayout, useRole, useIsMobile, useLoginBackground, ConsecutiveSlotsProvider } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/lib/registry/routes";
@@ -147,7 +147,7 @@ function SettingsContent() {
       <PageLayout>
       <div
         className={cn(
-          "min-h-screen pb-20 bg-background animate-fade-in",
+          "min-h-screen pb-20 bg-background",
           isMobile ? "pt-4" : "p-6"
         )}
         style={showBackground ? {
@@ -299,7 +299,7 @@ function SettingsContent() {
     <PageLayout>
     <div
       className={cn(
-        "min-h-screen pb-20 bg-background animate-fade-in",
+        "min-h-screen pb-20 bg-background",
         isMobile ? "pt-4" : "p-6",
         isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : ""
       )}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/auth-context";
-import { useRole, useSlotDesign, useFooterMenuSettings, useFooterAnimation } from "@/hooks";
+import { useRole, useSlotDesign, useFooterMenuSettings } from "@/hooks";
 import { SlotsProvider } from "@/contexts/slots-context";
 import { TestDataProvider, ConsecutiveSlotsProvider } from "@/hooks";
 import { UnifiedFooter } from "@/components/common/unified-footer";
@@ -13,7 +13,6 @@ function CalendarContent() {
   const [searchParams] = useSearchParams();
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   
-  const { hasAnimated, markAsAnimated } = useFooterAnimation();
   const { isLoading: footerLoading } = useFooterMenuSettings(roleContext?.currentRole || 'mitglied');
   
   useSlotDesign();
@@ -34,14 +33,6 @@ function CalendarContent() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
   
-  // Mark footer as animated
-  useEffect(() => {
-    if (!hasAnimated) {
-      const timer = setTimeout(() => markAsAnimated(), 1000);
-      return () => clearTimeout(timer);
-    }
-  }, [hasAnimated, markAsAnimated]);
-  
   const isFullyLoaded = !footerLoading && !roleContext?.isLoading;
   
   if (!roleContext || !isFullyLoaded || !roleContext.currentUser) {
@@ -59,7 +50,6 @@ function CalendarContent() {
         currentRole={currentRole}
         currentUser={currentUser}
         onRoleChange={setRole}
-        hasAnimated={hasAnimated}
       />
     </div>
   );

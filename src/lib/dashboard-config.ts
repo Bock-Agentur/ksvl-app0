@@ -65,9 +65,6 @@ export interface DashboardSettings {
   showStatsGrid: boolean;
   showQuickActions: boolean;
   showActivityFeed: boolean;
-  // Animation Settings
-  animationEnabled: boolean;
-  animationType: "fadeIn" | "dropDown" | "scrollReveal" | "slideFromSides" | "staggered" | "bounce" | "none";
   // Widget Order and Positions
   widgetOrder?: string[];
   widgetPositions?: Record<string, { column: 1 | 2 | 3; order: number }>;
@@ -277,9 +274,6 @@ export const DEFAULT_DASHBOARD_SETTINGS: DashboardSettings = {
   showStatsGrid: true,
   showQuickActions: true,
   showActivityFeed: true,
-  // Animation Settings - disabled by default for better performance
-  animationEnabled: false,
-  animationType: "none",
   // Header-Card Headline Settings
   headlineMode: "automatic",
   customHeadline: "Where do you want to sail?"
