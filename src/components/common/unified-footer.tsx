@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
+import { useFooterAnimation } from "@/hooks/use-footer-animation";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { UserRole } from "@/types";
 import * as LucideIcons from "lucide-react";
@@ -34,7 +35,11 @@ export function UnifiedFooter({
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [forceUpdate, setForceUpdate] = useState(0);
-  const [isReady, setIsReady] = useState(hasAnimated);
+  
+  // ✅ Use global animation state
+  const { hasAnimated: globalAnimated, markAsAnimated } = useFooterAnimation();
+  const shouldAnimate = hasAnimated || globalAnimated;
+  const [isReady, setIsReady] = useState(shouldAnimate);
   
   // Use hook as fallback when props not provided
   const { currentRole: hookRole, currentUser: hookUser, setRole: hookSetRole } = useRole();
@@ -79,13 +84,14 @@ export function UnifiedFooter({
 
   // Trigger animation ONLY if not already animated
   useEffect(() => {
-    if (!hasAnimated && !footerLoading) {
+    if (!shouldAnimate && !footerLoading) {
       const timer = setTimeout(() => {
         setIsReady(true);
+        markAsAnimated();
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [hasAnimated, footerLoading]);
+  }, [shouldAnimate, footerLoading, markAsAnimated]);
 
   const handleLogout = () => handleFooterLogout(navigate);
 

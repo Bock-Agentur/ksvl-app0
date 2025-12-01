@@ -14,6 +14,7 @@ import { useHarborChatData } from "@/hooks/use-harbor-chat-data";
 import { useProfileData } from "@/hooks/use-profile-data";
 import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
 import { useDashboardSettings } from "@/hooks/use-dashboard-settings";
+import { useFooterAnimation } from "@/hooks/use-footer-animation";
 import { UnifiedFooter } from "@/components/common/unified-footer";
 import { Dashboard } from "@/components/dashboard";
 import { UserManagementRefactored as UserManagement } from "@/components/user-management";
@@ -38,7 +39,9 @@ function AppContent() {
   );
   
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
-  const [footerAnimated, setFooterAnimated] = useState(false);
+  
+  // ✅ Global footer animation state
+  const { hasAnimated, markAsAnimated } = useFooterAnimation();
   
   // ✅ Alle Daten immer laden (kein conditional enabled basierend auf activeTab)
   const { loading: usersLoading } = useUsers({ enabled: !!roleContext?.currentRole });
@@ -83,11 +86,13 @@ function AppContent() {
   
   // Mark footer as animated after first render
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setFooterAnimated(true);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (!hasAnimated) {
+      const timer = setTimeout(() => {
+        markAsAnimated();
+      }, 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [hasAnimated, markAsAnimated]);
   
   // ✅ Synchronize all loading states
   const isFullyLoaded = !settingsLoading && !footerLoading && !roleContext?.isLoading;
@@ -144,7 +149,7 @@ function AppContent() {
           onRoleChange={setRole}
           activeTab={activeTab}
           onTabChange={setActiveTab}
-          hasAnimated={footerAnimated}
+          hasAnimated={hasAnimated}
         />
       </div>
     </>
