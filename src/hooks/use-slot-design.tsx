@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useAppSettings } from "./use-app-settings";
+import { useSettingsBatch } from "./use-settings-batch";
 
 export interface SlotDesignSettings {
   available: {
@@ -52,10 +52,11 @@ const DEFAULT_SLOT_DESIGN_STATE: SlotDesignState = {
 };
 
 export function useSlotDesign() {
-  const { value: designState, setValue: setDesignState, isLoading } = useAppSettings<SlotDesignState>(
+  const { getSetting, updateSetting, isLoading } = useSettingsBatch();
+  
+  const designState = getSetting<SlotDesignState>(
     "slot-design-settings",
-    DEFAULT_SLOT_DESIGN_STATE,
-    true // Global
+    DEFAULT_SLOT_DESIGN_STATE
   );
 
   // Get current active settings - always trendy now
@@ -86,18 +87,18 @@ export function useSlotDesign() {
     }
   }, [settings, isLoading]);
 
-  const saveSettings = (newSettings: Partial<SlotDesignSettings>) => {
+  const saveSettings = async (newSettings: Partial<SlotDesignSettings>) => {
     const updatedSettings = { 
       ...designState.settings, 
       ...newSettings 
     };
-    setDesignState({
+    await updateSetting("slot-design-settings", {
       ...designState,
       settings: updatedSettings
-    });
+    }, true);
   };
 
-  const updateSlotType = (slotType: keyof SlotDesignSettings, colorType: keyof SlotDesignSettings['available'], color: string) => {
+  const updateSlotType = async (slotType: keyof SlotDesignSettings, colorType: keyof SlotDesignSettings['available'], color: string) => {
     const updatedSettings = {
       ...designState.settings,
       [slotType]: {
@@ -106,21 +107,21 @@ export function useSlotDesign() {
       }
     };
     
-    setDesignState({
+    await updateSetting("slot-design-settings", {
       ...designState,
       settings: updatedSettings
-    });
+    }, true);
   };
 
-  const resetToDefaults = () => {
-    setDesignState(DEFAULT_SLOT_DESIGN_STATE);
+  const resetToDefaults = async () => {
+    await updateSetting("slot-design-settings", DEFAULT_SLOT_DESIGN_STATE, true);
   };
 
-  const resetToOriginalDefaults = () => {
+  const resetToOriginalDefaults = async () => {
     const originalDefaults = {
       settings: DEFAULT_TRENDY_DESIGN
     };
-    setDesignState(originalDefaults);
+    await updateSetting("slot-design-settings", originalDefaults, true);
   };
 
   return {
