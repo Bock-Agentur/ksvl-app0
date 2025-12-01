@@ -55,7 +55,7 @@ export const APP_MODULES: AppModule[] = [
     description: 'User/Profile-Management, CRUD-Operationen für Mitglieder',
     type: 'core',
     lifecycle: 'stable',
-    routes: ['/users', '/profile'],
+    routes: ['/mitglieder'],
     requiredRoles: ['admin', 'vorstand'],
     components: [
       'user-management.tsx',
@@ -148,9 +148,9 @@ export const APP_MODULES: AppModule[] = [
     lifecycle: 'stable',
     routes: ['/'],
     components: [
-      'app-shell.tsx',
       'dashboard-header.tsx',
       'common/unified-footer.tsx',
+      'common/footer-drawer-content.tsx',
       'common/scroll-to-top.tsx'
     ],
     hooks: [],
@@ -234,7 +234,7 @@ export const APP_MODULES: AppModule[] = [
     description: 'Dokumenten-Upload, Verwaltung, RBAC-System',
     type: 'support',
     lifecycle: 'stable',
-    routes: ['/file-manager'],
+    routes: ['/dateimanager'],
     requiredRoles: ['admin', 'vorstand', 'mitglied'],
     components: [
       'pages/FileManager.tsx',

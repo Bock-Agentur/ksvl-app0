@@ -1,5 +1,6 @@
 import { useSettingsBatch } from "./use-settings-batch";
 import { UserRole } from "@/types/user";
+import { NAV_ITEMS, getAllNavItemsForRole } from "@/lib/registry/navigation";
 
 export interface FooterMenuItem {
   id: string;
@@ -32,26 +33,15 @@ const DEFAULT_DISPLAY_SETTINGS: FooterDisplaySettings = {
   vorstand: { showLabels: false }
 };
 
-// All available menu items (from navigation + header items)
-export const AVAILABLE_MENU_ITEMS: FooterMenuItem[] = [
-  // Core navigation items
-  { id: "dashboard", label: "Dashboard", icon: "Home", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-  { id: "calendar", label: "Kalender", icon: "Calendar", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-  { id: "profile", label: "Profil", icon: "User", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-  
-  // Admin/management items
-  { id: "users", label: "Mitglieder", icon: "Users", roles: ["admin", "vorstand"] },
-  { id: "slots", label: "Slot Manager", icon: "Layers", roles: ["admin", "kranfuehrer", "vorstand"] },
-  { id: "settings", label: "Einstellungen", icon: "Settings", roles: ["admin", "vorstand"] },
-  
-  // Additional useful items
-  { id: "reports", label: "Berichte", icon: "BarChart3", roles: ["admin", "kranfuehrer", "vorstand"] },
-  { id: "notifications", label: "Hinweise", icon: "Bell", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-  { id: "help", label: "Hilfe", icon: "HelpCircle", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-  { id: "weather", label: "Wetter", icon: "Cloud", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-  { id: "harbor", label: "Hafenstatus", icon: "Anchor", roles: ["gastmitglied", "mitglied", "kranfuehrer", "admin", "vorstand"] },
-  { id: "file-manager", label: "Dateien", icon: "FolderOpen", roles: ["admin", "vorstand"] },
-];
+// ✅ Generate AVAILABLE_MENU_ITEMS from central NAV_ITEMS registry
+export const AVAILABLE_MENU_ITEMS: FooterMenuItem[] = NAV_ITEMS.map(item => ({
+  id: item.id,
+  label: item.label,
+  icon: item.icon,
+  roles: item.allowedRoles === '*' 
+    ? ['gastmitglied', 'mitglied', 'kranfuehrer', 'admin', 'vorstand'] 
+    : item.allowedRoles,
+}));
 
 // Default footer menu configurations per role
 const DEFAULT_FOOTER_SETTINGS: FooterMenuSettings = {

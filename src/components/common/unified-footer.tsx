@@ -8,11 +8,11 @@ import { useFooterMenuSettings } from "@/hooks/use-footer-menu-settings";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { UserRole } from "@/types";
 import * as LucideIcons from "lucide-react";
-import { ROUTES } from "@/lib/registry/routes";
 import { useMenuSettings } from "@/hooks/use-menu-settings";
 import { FOOTER_ICON_MAP, handleFooterLogout } from "@/lib/footer-utils";
 import { FooterDrawerContent } from "@/components/common/footer-drawer-content";
 import { useRole } from "@/hooks/use-role";
+import { getNavItemsForRole, isNavItemActive, getNavItemPath, NAV_ITEMS } from "@/lib/registry/navigation";
 
 interface UnifiedFooterProps {
   currentRole?: UserRole;
@@ -45,14 +45,17 @@ export function UnifiedFooter({
   const currentUser = propsUser ?? hookUser;
   const onRoleChange = propsOnRoleChange ?? hookSetRole;
   
-  const { getMenuItemsForRole, getDisplaySettingsForRole, isLoading: footerLoading } = useFooterMenuSettings(currentRole);
+  const { getDisplaySettingsForRole, isLoading: footerLoading } = useFooterMenuSettings(currentRole);
   const { getOrderedHeaderItems } = useMenuSettings();
   
-  const footerItems = getMenuItemsForRole(currentRole);
+  // ✅ Use central navigation registry
+  const footerItems = getNavItemsForRole(currentRole, 'bottom');
+  const drawerItems = getNavItemsForRole(currentRole, 'drawer');
+  
   const currentDisplaySettings = getDisplaySettingsForRole(currentRole);
   const showLabels = currentDisplaySettings?.showLabels ?? false;
 
-  // Get dynamic header navigation items
+  // Get dynamic header navigation items for drawer (backward compatibility)
   const menuItems = getOrderedHeaderItems();
   const availableHeaderItems = menuItems.filter(item => item.roles.includes(currentRole)).map(item => ({
     id: item.id,
@@ -87,44 +90,30 @@ export function UnifiedFooter({
 
   const handleLogout = () => handleFooterLogout(navigate);
 
-  const isItemActive = (itemId: string) => {
-    const currentPath = location.pathname;
-    
-    // Check route-based items
-    if (itemId === 'file-manager') return currentPath === ROUTES.protected.fileManager.path;
-    if (itemId === 'reports') return currentPath === ROUTES.protected.reports.path;
-    if (itemId === 'settings') return currentPath === ROUTES.protected.settings.path;
-    
-    // For dashboard items, check active tab
-    if (currentPath === '/' && activeTab) {
-      return activeTab === itemId;
-    }
-    
-    return false;
+  // ✅ Use registry-based active state check
+  const checkIsActive = (itemId: string) => {
+    const item = NAV_ITEMS.find(i => i.id === itemId);
+    return item ? isNavItemActive(item, location.pathname, activeTab) : false;
   };
 
+  // ✅ Use registry-based navigation
   const handleNavigate = (itemId: string) => {
-    const currentPath = location.pathname;
+    const item = NAV_ITEMS.find(i => i.id === itemId);
+    if (!item) return;
     
     // Navigate to route-based items
-    if (itemId === 'file-manager') {
-      navigate(ROUTES.protected.fileManager.path);
-      return;
-    }
-    if (itemId === 'reports') {
-      navigate(ROUTES.protected.reports.path);
-      return;
-    }
-    if (itemId === 'settings') {
-      navigate(ROUTES.protected.settings.path);
+    if (item.routeId && item.routeId !== 'dashboard') {
+      navigate(getNavItemPath(item));
       return;
     }
     
-    // For tab-based items: use URL parameter for immediate navigation
-    if (currentPath !== '/') {
-      navigate(`/?tab=${itemId}`);
-    } else if (onTabChange) {
-      onTabChange(itemId);
+    // For tab-based items (dashboard)
+    if (item.tabId) {
+      if (location.pathname !== '/') {
+        navigate(`/?tab=${item.tabId}`);
+      } else if (onTabChange) {
+        onTabChange(item.tabId);
+      }
     }
   };
 
@@ -139,7 +128,7 @@ export function UnifiedFooter({
       <div className="flex justify-evenly items-center max-w-md mx-auto">
         {footerItems.map((item, index) => {
           const IconComponent = (LucideIcons as any)[item.icon] || Home;
-          const isActive = isItemActive(item.id);
+          const isActive = checkIsActive(item.id);
           
           return (
             <Button
@@ -191,7 +180,7 @@ export function UnifiedFooter({
                 onRoleChange={onRoleChange}
                 onLogout={handleLogout}
                 onNavigate={handleNavigate}
-                isItemActive={isItemActive}
+                isItemActive={checkIsActive}
                 onClose={() => setIsMenuOpen(false)}
               />
             </DrawerContent>
