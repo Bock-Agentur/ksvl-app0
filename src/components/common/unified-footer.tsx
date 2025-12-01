@@ -16,8 +16,6 @@ interface UnifiedFooterProps {
   currentRole?: UserRole;
   currentUser?: any;
   onRoleChange?: (role: UserRole) => void;
-  activeTab?: string;
-  onTabChange?: (tab: string) => void;
   hasAnimated?: boolean;
 }
 
@@ -25,8 +23,6 @@ export function UnifiedFooter({
   currentRole: propsRole,
   currentUser: propsUser,
   onRoleChange: propsOnRoleChange,
-  activeTab,
-  onTabChange,
   hasAnimated = false
 }: UnifiedFooterProps = {}) {
   const navigate = useNavigate();
@@ -34,7 +30,7 @@ export function UnifiedFooter({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [forceUpdate, setForceUpdate] = useState(0);
   
-  // ✅ Use global animation state
+  // Use global animation state
   const { hasAnimated: globalAnimated, markAsAnimated } = useFooterAnimation();
   const shouldAnimate = hasAnimated || globalAnimated;
   const [isReady, setIsReady] = useState(shouldAnimate);
@@ -49,17 +45,17 @@ export function UnifiedFooter({
   
   const { getDisplaySettingsForRole, getMenuItemsForRole, isLoading: footerLoading, refetch: refetchFooterSettings } = useFooterMenuSettings(currentRole);
   
-  // ✅ Use user-configured menu items (merge custom order with NAV_ITEMS structure)
+  // Use user-configured menu items (merge custom order with NAV_ITEMS structure)
   const customFooterItems = getMenuItemsForRole(currentRole);
   const footerItems = customFooterItems.length > 0 
     ? customFooterItems.map(customItem => {
-        // Find matching NavItem to preserve routeId/tabId
+        // Find matching NavItem to preserve routeId
         const navItem = NAV_ITEMS.find(n => n.id === customItem.id);
         return navItem || customItem;
       })
     : getNavItemsForRole(currentRole, 'bottom');
   
-  // ✅ Use NAV_ITEMS for drawer instead of useMenuSettings
+  // Use NAV_ITEMS for drawer
   const drawerItems = getNavItemsForRole(currentRole, 'drawer');
   
   const currentDisplaySettings = getDisplaySettingsForRole(currentRole);
@@ -68,7 +64,6 @@ export function UnifiedFooter({
   // Listen for footer and menu settings changes
   useEffect(() => {
     const handleSettingsChange = async () => {
-      // Force refetch from database
       await refetchFooterSettings();
       setForceUpdate(prev => prev + 1);
     };
@@ -93,31 +88,20 @@ export function UnifiedFooter({
 
   const handleLogout = () => handleFooterLogout(navigate);
 
-  // ✅ Use registry-based active state check
+  // Check if nav item is active based on current route
   const checkIsActive = (itemId: string) => {
     const item = NAV_ITEMS.find(i => i.id === itemId);
-    return item ? isNavItemActive(item, location.pathname, activeTab) : false;
+    return item ? isNavItemActive(item, location.pathname) : false;
   };
 
-  // ✅ Use registry-based navigation
+  // Navigate to route
   const handleNavigate = (itemId: string) => {
     const item = NAV_ITEMS.find(i => i.id === itemId);
     if (!item) return;
     
-    // Navigate to route-based items
-    if (item.routeId && item.routeId !== 'dashboard') {
-      navigate(getNavItemPath(item));
-      return;
-    }
-    
-    // For tab-based items (dashboard)
-    if (item.tabId) {
-      if (location.pathname !== '/') {
-        navigate(`/?tab=${item.tabId}`);
-      } else if (onTabChange) {
-        onTabChange(item.tabId);
-      }
-    }
+    const path = getNavItemPath(item);
+    navigate(path);
+    setIsMenuOpen(false);
   };
 
   return (

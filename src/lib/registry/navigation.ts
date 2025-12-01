@@ -13,7 +13,6 @@ export interface NavItem {
   label: string;
   icon: string; // Lucide icon name
   routeId: keyof typeof ROUTES.protected | null;
-  tabId?: string; // For dashboard tabs (on Index.tsx)
   allowedRoles: UserRole[] | '*';
   position: ('bottom' | 'drawer')[];
   order: number;
@@ -26,6 +25,8 @@ export interface NavItem {
  * 
  * This is the SINGLE SOURCE OF TRUTH for all navigation items.
  * All menus (footer, drawer) derive from this configuration.
+ * 
+ * NOTE: tabId removed - all navigation now uses independent routes
  */
 export const NAV_ITEMS: NavItem[] = [
   // === BOTTOM NAV - All Roles (Core Navigation) ===
@@ -34,7 +35,6 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Home', 
     icon: 'Home', 
     routeId: 'dashboard', 
-    tabId: 'dashboard',
     allowedRoles: '*', 
     position: ['bottom'], 
     order: 0 
@@ -43,8 +43,7 @@ export const NAV_ITEMS: NavItem[] = [
     id: 'calendar', 
     label: 'Kalender', 
     icon: 'Calendar', 
-    routeId: 'dashboard', 
-    tabId: 'calendar',
+    routeId: 'calendar', 
     allowedRoles: '*', 
     position: ['bottom'], 
     order: 1 
@@ -53,8 +52,7 @@ export const NAV_ITEMS: NavItem[] = [
     id: 'profile', 
     label: 'Profil', 
     icon: 'User', 
-    routeId: 'dashboard', 
-    tabId: 'profile',
+    routeId: 'profile', 
     allowedRoles: '*', 
     position: ['bottom'], 
     order: 2 
@@ -65,8 +63,7 @@ export const NAV_ITEMS: NavItem[] = [
     id: 'slots', 
     label: 'Slots', 
     icon: 'Layers', 
-    routeId: 'dashboard', 
-    tabId: 'slots',
+    routeId: 'slots',
     allowedRoles: ['admin', 'kranfuehrer', 'vorstand'], 
     position: ['bottom', 'drawer'], 
     order: 3 
@@ -121,7 +118,7 @@ export const ROUTE_VISIBILITY = {
   hideFooter: ['/auth'],
   
   // Routes where drawer is available (admin/vorstand only)
-  showDrawer: ['/', '/settings', '/dateimanager', '/berichte', '/mitglieder', '/einstellungen/settings-manager'],
+  showDrawer: ['/', '/kalender', '/profil', '/slots', '/einstellungen', '/dateimanager', '/berichte', '/mitglieder', '/einstellungen/settings-manager'],
 };
 
 // ========================================
@@ -163,26 +160,16 @@ export function getNavItemPath(item: NavItem): string {
  * 
  * @param item - Navigation item
  * @param currentPath - Current route path
- * @param activeTab - Active dashboard tab (if on dashboard)
  * @returns True if item is active
  */
 export function isNavItemActive(
   item: NavItem, 
-  currentPath: string, 
-  activeTab?: string
+  currentPath: string
 ): boolean {
-  // Route-based items (not dashboard)
-  if (item.routeId && item.routeId !== 'dashboard') {
-    const routePath = ROUTES.protected[item.routeId]?.path;
-    return currentPath === routePath;
-  }
+  if (!item.routeId) return false;
   
-  // Tab-based items (dashboard)
-  if (currentPath === '/' && item.tabId) {
-    return activeTab === item.tabId;
-  }
-  
-  return false;
+  const routePath = ROUTES.protected[item.routeId]?.path;
+  return currentPath === routePath;
 }
 
 /**

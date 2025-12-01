@@ -24,6 +24,7 @@ export interface RouteRegistry {
  * App Route Registry
  * 
  * Defines all routes in the application with metadata and access control.
+ * All URLs are SEO-friendly speaking URLs in German.
  */
 export const ROUTES: RouteRegistry = {
   // Public routes (no authentication required)
@@ -41,9 +42,33 @@ export const ROUTES: RouteRegistry = {
     dashboard: {
       path: '/',
       label: 'Dashboard',
-      allowedRoles: '*', // All authenticated users
+      allowedRoles: '*',
       icon: 'LayoutDashboard',
       description: 'Startseite mit Übersicht'
+    },
+    
+    calendar: {
+      path: '/kalender',
+      label: 'Kalender',
+      allowedRoles: '*',
+      icon: 'Calendar',
+      description: 'Krankalender mit Terminübersicht'
+    },
+    
+    profile: {
+      path: '/profil',
+      label: 'Profil',
+      allowedRoles: '*',
+      icon: 'User',
+      description: 'Persönliches Profil'
+    },
+    
+    slots: {
+      path: '/slots',
+      label: 'Slots',
+      allowedRoles: ['admin', 'kranfuehrer', 'vorstand'],
+      icon: 'Layers',
+      description: 'Slot-Verwaltung'
     },
     
     users: {
@@ -63,7 +88,7 @@ export const ROUTES: RouteRegistry = {
     },
     
     settings: {
-      path: '/settings',
+      path: '/einstellungen',
       label: 'Einstellungen',
       allowedRoles: ['admin'],
       icon: 'Settings',
