@@ -1,4 +1,5 @@
 import { UserManagementRefactored } from "@/components/user-management";
+import { PageLayout } from "@/components/common/page-layout";
 
 /**
  * Mitgliederverwaltung Page
@@ -7,5 +8,9 @@ import { UserManagementRefactored } from "@/components/user-management";
  * Zugriff nur für Admin und Vorstand.
  */
 export function Users() {
-  return <UserManagementRefactored />;
+  return (
+    <PageLayout>
+      <UserManagementRefactored />
+    </PageLayout>
+  );
 }

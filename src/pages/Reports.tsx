@@ -1,4 +1,4 @@
-import { UnifiedFooter } from "@/components/common/unified-footer";
+import { PageLayout } from "@/components/common/page-layout";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, BarChart3, TrendingUp, Users, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ export function Reports() {
   const navigate = useNavigate();
 
   return (
-    <>
+    <PageLayout>
       <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-muted/20">
         <div className="max-w-7xl mx-auto p-4 md:p-8">
           {/* Header */}
@@ -97,7 +97,6 @@ export function Reports() {
           </Card>
         </div>
       </div>
-      <UnifiedFooter />
-    </>
+    </PageLayout>
   );
 }

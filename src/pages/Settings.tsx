@@ -17,6 +17,7 @@ import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settin
 import { StickyHeaderLayoutSettings } from "@/components/sticky-header-layout-settings";
 import { HeaderMessageSettings } from "@/components/header-message-settings";
 import { PageLoader } from "@/components/common/page-loader";
+import { PageLayout } from "@/components/common/page-layout";
 import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
 import { cn } from "@/lib/utils";
 import { useRole } from "@/hooks/use-role";
@@ -24,7 +25,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/lib/registry/routes";
 import { useLoginBackground } from "@/hooks/use-login-background";
-import { UnifiedFooter } from "@/components/common/unified-footer";
 import { toast } from "sonner";
 import { 
   LayoutDashboard, 
@@ -144,8 +144,8 @@ function SettingsContent() {
 
   if (isOverview) {
     return (
-      <>
-      <div 
+      <PageLayout>
+      <div
         className={cn(
           "min-h-screen pb-20 bg-background animate-fade-in",
           isMobile ? "pt-4" : "p-6"
@@ -290,15 +290,14 @@ function SettingsContent() {
         </div>
         </div>
       </div>
-      <UnifiedFooter />
-      </>
+      </PageLayout>
     );
   }
 
   // Detail View
   return (
-    <>
-    <div 
+    <PageLayout>
+    <div
       className={cn(
         "min-h-screen pb-20 bg-background animate-fade-in",
         isMobile ? "pt-4" : "p-6",
@@ -359,8 +358,7 @@ function SettingsContent() {
         </div>
       </div>
     </div>
-    <UnifiedFooter />
-    </>
+    </PageLayout>
   );
 }
 

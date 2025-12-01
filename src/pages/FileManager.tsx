@@ -6,40 +6,37 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useRole } from "@/hooks/use-role";
 import { cn } from "@/lib/utils";
-import { UnifiedFooter } from "@/components/common/unified-footer";
+import { PageLayout } from "@/components/common/page-layout";
 
 export function FileManager() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const { currentRole, currentUser, setRole, isLoading } = useRole();
+  const { isLoading } = useRole();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col relative z-0 pt-safe bg-background">
-        <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
-          <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-muted/20">
-            <div className="max-w-7xl mx-auto p-4">
-              <Card className="animate-pulse">
-                <CardHeader>
-                  <div className="h-8 bg-muted rounded w-1/3 mb-2" />
-                  <div className="h-4 bg-muted rounded w-1/2" />
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="h-24 bg-muted rounded" />
-                  ))}
-                </CardContent>
-              </Card>
-            </div>
+      <PageLayout>
+        <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-muted/20">
+          <div className="max-w-7xl mx-auto p-4">
+            <Card className="animate-pulse">
+              <CardHeader>
+                <div className="h-8 bg-muted rounded w-1/3 mb-2" />
+                <div className="h-4 bg-muted rounded w-1/2" />
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="h-24 bg-muted rounded" />
+                ))}
+              </CardContent>
+            </Card>
           </div>
-        </main>
-      </div>
+        </div>
+      </PageLayout>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col relative z-0 pt-safe bg-background">
-      <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
+    <PageLayout>
         <div className="min-h-screen pb-20 bg-gradient-to-br from-background via-background to-muted/20">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
@@ -82,15 +79,6 @@ export function FileManager() {
             </div>
           </div>
         </div>
-      </main>
-
-      {/* Unified Footer - always shown, no re-animation */}
-      <UnifiedFooter
-        currentRole={currentRole}
-        currentUser={currentUser}
-        onRoleChange={setRole}
-        hasAnimated={true}
-      />
-    </div>
+    </PageLayout>
   );
 }
