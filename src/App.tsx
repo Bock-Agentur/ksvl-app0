@@ -15,6 +15,7 @@ import { Settings } from "./pages/Settings";
 import { Auth } from "./pages/Auth";
 import { FileManager } from "./pages/FileManager";
 import { Reports } from "./pages/Reports";
+import { Users } from "./pages/Users";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,15 @@ const App = () => {
                   <Route 
                     path={ROUTES.protected.dashboard.path} 
                     element={<Index />} 
+                  />
+                  
+                  <Route 
+                    path={ROUTES.protected.users.path} 
+                    element={
+                      <ProtectedRoute requiredRoles={['admin', 'vorstand']}>
+                        <Users />
+                      </ProtectedRoute>
+                    } 
                   />
                   
                   <Route 
