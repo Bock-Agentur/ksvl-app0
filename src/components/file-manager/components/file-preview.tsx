@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
 import { FileMetadata } from "../types/file-manager.types";
-import { useFileManager } from "@/hooks";
+import { supabase } from "@/integrations/supabase/client";
 import { FileText, Image as ImageIcon, Video, File as FileIcon, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { logger } from "@/lib/logger";
 
 interface FilePreviewProps {
   file: File | FileMetadata;
@@ -14,9 +13,13 @@ interface FilePreviewProps {
   className?: string;
 }
 
+// Cache for signed URLs (1 hour TTL)
+const previewUrlCache = new Map<string, { url: string; expires: number }>();
+
 /**
  * Reusable File Preview Component
  * Displays thumbnails for images or fallback icons for other file types
+ * Uses signed URLs for private buckets
  */
 export function FilePreview({
   file,
@@ -25,7 +28,6 @@ export function FilePreview({
   onError,
   className,
 }: FilePreviewProps) {
-  const { getFilePreviewUrl } = useFileManager();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -50,6 +52,13 @@ export function FilePreview({
   const mimeType = isFileObject ? (file as File).type : (file as FileMetadata).mime_type;
   const isHEIC = mimeType === 'image/heic' || mimeType === 'image/heif' || filename.toLowerCase().endsWith('.heic') || filename.toLowerCase().endsWith('.heif');
 
+  // Determine bucket from storage_path or category
+  const determineBucket = (storagePath: string, category: string): string => {
+    if (storagePath.startsWith('login-media/')) return 'login-media';
+    if (category === 'login_media') return 'login-media';
+    return 'documents';
+  };
+
   useEffect(() => {
     let isMounted = true;
 
@@ -67,17 +76,61 @@ export function FilePreview({
           return () => URL.revokeObjectURL(url);
         }
       } else if (!isFileObject && fileType === 'image') {
-        // For FileMetadata, use getFilePreviewUrl
-        setLoading(true);
-        try {
-          const url = await getFilePreviewUrl(file as FileMetadata);
+        const fileMetadata = file as FileMetadata;
+        const bucket = determineBucket(fileMetadata.storage_path, fileMetadata.category);
+        
+        // Clean path
+        let cleanPath = fileMetadata.storage_path;
+        if (cleanPath.startsWith(`${bucket}/`)) {
+          cleanPath = cleanPath.substring(bucket.length + 1);
+        } else if (cleanPath.startsWith('login-media/')) {
+          cleanPath = cleanPath.substring('login-media/'.length);
+        }
+
+        // Check cache first
+        const cacheKey = `${bucket}/${cleanPath}`;
+        const cached = previewUrlCache.get(cacheKey);
+        if (cached && cached.expires > Date.now()) {
           if (isMounted) {
-            setPreviewUrl(url);
-            setError(!url);
+            setPreviewUrl(cached.url);
+            setLoading(false);
+          }
+          return;
+        }
+
+        setLoading(true);
+
+        try {
+          let url: string | null = null;
+
+          // For public bucket (login-media), use getPublicUrl
+          if (bucket === 'login-media') {
+            const { data } = supabase.storage.from(bucket).getPublicUrl(cleanPath);
+            if (data?.publicUrl) {
+              url = data.publicUrl;
+            }
+          } else {
+            // For private buckets (documents), use createSignedUrl
+            const { data, error: signError } = await supabase.storage
+              .from(bucket)
+              .createSignedUrl(cleanPath, 3600); // 1 hour
+
+            if (data?.signedUrl) {
+              url = data.signedUrl;
+            }
+          }
+
+          if (isMounted) {
+            if (url) {
+              setPreviewUrl(url);
+              previewUrlCache.set(cacheKey, { url, expires: Date.now() + 3500000 }); // Cache 58 min
+            } else {
+              setError(true);
+              onError?.();
+            }
             setLoading(false);
           }
         } catch (err) {
-          logger.error('FILE', 'Error loading preview', err);
           if (isMounted) {
             setError(true);
             setLoading(false);

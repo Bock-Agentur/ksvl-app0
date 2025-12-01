@@ -41,9 +41,13 @@ interface FileCardProps {
   multiSelectActive: boolean;
 }
 
+// Cache for signed URLs (1 hour TTL)
+const signedUrlCache = new Map<string, { url: string; expires: number }>();
+
 /**
  * File Card Component
  * Adaptive design for mobile and desktop
+ * Uses signed URLs for private buckets
  */
 export function FileCard({
   file,
@@ -68,7 +72,14 @@ export function FileCard({
   const canEditFile = isAdmin || file.owner_id === userId;
   const canDeleteFile = isAdmin || file.owner_id === userId;
 
-  // ✅ Generate thumbnail URL directly (no async request needed)
+  // ✅ Determine bucket from storage_path or category
+  const determineBucket = (storagePath: string, category: string): string => {
+    if (storagePath.startsWith('login-media/')) return 'login-media';
+    if (category === 'login_media') return 'login-media';
+    return 'documents';
+  };
+
+  // ✅ Generate thumbnail URL with signed URLs for private buckets
   useEffect(() => {
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'];
     const isImage = file.file_type === 'image' || 
@@ -78,23 +89,56 @@ export function FileCard({
       setThumbnailUrl(null);
       return;
     }
+
+    const bucket = determineBucket(file.storage_path, file.category);
     
-    // Determine bucket from storage_path
-    const bucket = file.storage_path.startsWith('login-media/') 
-      ? 'login-media' 
-      : 'documents';
-    
-    const cleanPath = bucket === 'login-media' 
-      ? file.storage_path.replace('login-media/', '')
-      : file.storage_path;
-    
-    const { data } = supabase.storage
+    // Clean path - remove bucket prefix if present
+    let cleanPath = file.storage_path;
+    if (cleanPath.startsWith(`${bucket}/`)) {
+      cleanPath = cleanPath.substring(bucket.length + 1);
+    } else if (cleanPath.startsWith('login-media/')) {
+      cleanPath = cleanPath.substring('login-media/'.length);
+    }
+
+    // Check cache first
+    const cacheKey = `${bucket}/${cleanPath}`;
+    const cached = signedUrlCache.get(cacheKey);
+    if (cached && cached.expires > Date.now()) {
+      setThumbnailUrl(cached.url);
+      setThumbnailLoading(false);
+      return;
+    }
+
+    // For public bucket (login-media), use getPublicUrl
+    if (bucket === 'login-media') {
+      const { data } = supabase.storage.from(bucket).getPublicUrl(cleanPath);
+      if (data?.publicUrl) {
+        setThumbnailUrl(data.publicUrl);
+        signedUrlCache.set(cacheKey, { url: data.publicUrl, expires: Date.now() + 3600000 });
+      }
+      setThumbnailLoading(false);
+      return;
+    }
+
+    // For private buckets (documents), use createSignedUrl
+    setThumbnailLoading(true);
+    supabase.storage
       .from(bucket)
-      .getPublicUrl(cleanPath);
-    
-    setThumbnailUrl(data.publicUrl);
-    setThumbnailLoading(false);
-  }, [file.storage_path, file.file_type, file.filename]);
+      .createSignedUrl(cleanPath, 3600) // 1 hour
+      .then(({ data, error }) => {
+        if (data?.signedUrl) {
+          setThumbnailUrl(data.signedUrl);
+          signedUrlCache.set(cacheKey, { url: data.signedUrl, expires: Date.now() + 3500000 }); // Cache 58 min
+        } else {
+          setThumbnailUrl(null);
+        }
+        setThumbnailLoading(false);
+      })
+      .catch(() => {
+        setThumbnailUrl(null);
+        setThumbnailLoading(false);
+      });
+  }, [file.storage_path, file.file_type, file.filename, file.category]);
 
   const handleDelete = async () => {
     await deleteFile(file.id);
@@ -104,8 +148,6 @@ export function FileCard({
   const handleDownload = () => {
     downloadFile(file.id);
   };
-
-  // Long-press removed - multi-select now via explicit toggle button
 
   // File type icon
   const FileIcon = file.file_type === 'image' ? ImageIcon :
@@ -144,6 +186,17 @@ export function FileCard({
     return "Privat - Nur für Besitzer";
   };
 
+  // ✅ Click handler: Always open detail view, multi-select only via checkbox
+  const handleCardClick = () => {
+    if (multiSelectActive) {
+      // In multi-select mode, clicking card still opens detail
+      // Use checkbox for selection
+      onView();
+    } else {
+      onView();
+    }
+  };
+
   // List View (Horizontal Layout)
   if (viewMode === 'list') {
     return (
@@ -152,15 +205,9 @@ export function FileCard({
           "flex items-center gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer",
           isSelected && "ring-2 ring-primary bg-accent"
         )}
-        onClick={(e) => {
-          if (multiSelectActive) {
-            onSelect();
-          } else {
-            onView();
-          }
-        }}
+        onClick={handleCardClick}
       >
-        {/* Checkbox (Multi-Select Mode) */}
+        {/* Checkbox (Multi-Select Mode) - Click only selects */}
         {multiSelectActive && (
           <Checkbox
             checked={isSelected}
@@ -263,15 +310,9 @@ export function FileCard({
         "group relative rounded-lg border bg-card overflow-hidden hover:shadow-lg transition-all cursor-pointer",
         isSelected && "ring-2 ring-primary"
       )}
-      onClick={(e) => {
-        if (multiSelectActive) {
-          onSelect();
-        } else {
-          onView();
-        }
-      }}
+      onClick={handleCardClick}
     >
-      {/* Checkbox (Top Left) */}
+      {/* Checkbox (Top Left) - Click only selects */}
       {multiSelectActive && (
         <div className="absolute top-2 left-2 z-10">
           <Checkbox
