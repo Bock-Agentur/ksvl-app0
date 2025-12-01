@@ -26,16 +26,24 @@ interface UseSettingsBatchOptions {
   enabled?: boolean;
   userRole?: UserRole;
   userId?: string | null;
+  loadAll?: boolean; // Phase 3: Load ALL settings (for Admin UI)
 }
 
 /**
  * Generate all possible setting keys that might be needed
+ * Phase 3: Extended to optionally load ALL settings
  */
-function getSettingKeys(userRole?: UserRole): string[] {
+function getSettingKeys(userRole?: UserRole, loadAll?: boolean): string[] {
+  // Phase 3: If loadAll=true, return empty array to fetch all settings
+  if (loadAll) {
+    return []; // Will be handled in query with no .in() filter
+  }
+
   const keys = [
     'marina-menu-settings-template',
     'login_background',
     'header-message',
+    'sticky_header_layout',
   ];
 
   // Add role-specific dashboard settings
@@ -56,23 +64,27 @@ function getSettingKeys(userRole?: UserRole): string[] {
 
 /**
  * Fetches all app_settings in a single batch query
+ * Phase 3: Extended to optionally load ALL settings
  * @param options Configuration options
  * @returns Query result with settings map, loading state, and refetch function
  */
 export function useSettingsBatch(options: UseSettingsBatchOptions = {}) {
-  const { enabled = true, userRole, userId } = options;
+  const { enabled = true, userRole, userId, loadAll = false } = options;
   const queryClient = useQueryClient();
 
-  const settingKeys = getSettingKeys(userRole);
+  const settingKeys = getSettingKeys(userRole, loadAll);
 
   const query = useQuery({
-    queryKey: ['app-settings-batch', userRole, userId],
+    queryKey: loadAll ? ['app-settings-all'] : ['app-settings-batch', userRole, userId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('app_settings')
-        .select('*')
-        .in('setting_key', settingKeys);
+      let query = supabase.from('app_settings').select('*');
 
+      // Phase 3: If loadAll=false, filter by specific keys
+      if (!loadAll && settingKeys.length > 0) {
+        query = query.in('setting_key', settingKeys);
+      }
+
+      const { data, error } = await query;
       if (error) throw error;
 
       // Convert array to map for easy lookup
@@ -84,7 +96,7 @@ export function useSettingsBatch(options: UseSettingsBatchOptions = {}) {
       return settingsMap;
     },
     enabled,
-    staleTime: 2 * 60 * 1000, // 2 minutes - settings change less frequently
+    staleTime: loadAll ? 30 * 1000 : 2 * 60 * 1000, // 30s for all, 2min for batch
     gcTime: 5 * 60 * 1000, // 5 minutes in cache
   });
 
