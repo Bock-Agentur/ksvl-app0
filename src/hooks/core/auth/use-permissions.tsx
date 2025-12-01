@@ -1,4 +1,4 @@
-import { useRole } from '@/hooks/use-role';
+import { useRole } from './use-role';
 
 export function usePermissions() {
   const { currentRole, currentUser } = useRole();

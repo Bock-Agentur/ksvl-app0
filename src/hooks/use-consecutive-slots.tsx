@@ -1,7 +1,7 @@
 import { createContext, useContext, ReactNode, useMemo } from "react";
 import { parseISO, addMinutes } from "date-fns";
 import { Slot, ConsecutiveSlotsContextType, SlotStatus } from "@/types";
-import { useSettingsBatch } from "./use-settings-batch";
+import { useSettingsBatch } from "./core/settings/use-settings-batch";
 
 const ConsecutiveSlotsContext = createContext<ConsecutiveSlotsContextType | undefined>(undefined);
 
