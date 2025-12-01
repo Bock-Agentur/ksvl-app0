@@ -240,7 +240,7 @@ if (!result.success) {
 ## 9. Anhang: Alle Setting-Keys (Übersicht)
 
 ```typescript
-// Aktive Settings (Stand 2025-01-31 nach Phase 2)
+// Aktive Settings (Stand 2025-02-01 nach Phase 3)
 const ACTIVE_SETTINGS = [
   'login_background',                       // ✅ Validiert
   'header-message',                         // ⏳ Todo
@@ -255,14 +255,21 @@ const ACTIVE_SETTINGS = [
   'dashboard-settings-template-vorstand',   // ✅ Validiert + Migration optimiert
   'dashboard-settings-template-kranfuehrer',// ✅ Validiert + Migration optimiert
   'dashboard-settings-template-mitglied',   // ✅ Validiert + Migration optimiert
-  'dashboard-settings-template-gastmitglied'// ✅ Validiert + Migration optimiert
+  'dashboard-settings-template-gastmitglied',// ✅ Validiert + Migration optimiert
+  'slot-design-settings',                   // ✅ Hinzugefügt zu useSettingsBatch (Phase 3)
+  'aiAssistantSettings',                    // ⏳ Todo (AI-Chat Konfiguration pro Rolle)
+  'aiWelcomeMessage',                       // ⏳ Todo (AI-generierte Willkommensnachricht)
+  'consecutiveSlotsEnabled',                // ✅ Feature aktiv (Slot-Buchungslogik)
+  'roleWelcomeMessages',                    // ⏳ Todo (Willkommensnachrichten pro Rolle)
+  'footerMenuActiveRole',                   // ⏳ Todo (Aktive Rolle für Footer-Menü-Settings)
 ];
 
-// Gelöschte Settings (Phase 1)
+// Gelöschte Settings (Phase 1 + Phase 3)
 const DELETED_SETTINGS = [
-  'footer-menu-template-*',
-  'footerMenuSettings',
-  'desktop_background',
+  'footer-menu-template-*',              // Phase 1: Ersetzt durch footer-settings-template-{role}
+  'footerMenuSettings',                  // Phase 1: Alte Footer-Struktur
+  'desktop_background',                  // Phase 1: Feature deaktiviert
+  'activeTab',                           // Phase 3: 70 Duplikate mit user_id=NULL bereinigt (2025-02-01)
   // + 4 doppelte dashboard-settings-template-* (is_global=false)
 ];
 ```

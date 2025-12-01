@@ -49,6 +49,12 @@ const KNOWN_SETTINGS = [
   'dashboard-settings-template-kranfuehrer',
   'dashboard-settings-template-mitglied',
   'dashboard-settings-template-gastmitglied',
+  'slot-design-settings',
+  'aiAssistantSettings',
+  'aiWelcomeMessage',
+  'consecutiveSlotsEnabled',
+  'roleWelcomeMessages',
+  'footerMenuActiveRole',
 ];
 
 export default function SettingsManager() {
