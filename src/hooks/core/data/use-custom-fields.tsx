@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { CustomField } from '@/types';
+import { CustomField as CustomFieldType } from '@/types';
+
+// Re-export CustomField for backwards compatibility
+export type CustomField = CustomFieldType;
 
 export function useCustomFields() {
   const [customFields, setCustomFields] = useState<CustomField[]>([]);

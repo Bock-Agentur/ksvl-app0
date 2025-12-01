@@ -3,5 +3,5 @@
  * Central authentication and authorization logic
  */
 
-export { useRole } from './use-role';
+export { useRole, RoleProvider } from './use-role';
 export { usePermissions } from './use-permissions';

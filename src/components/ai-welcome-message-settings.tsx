@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { useAIWelcomeMessage } from "@/hooks/use-ai-welcome-message";
+import { useAIWelcomeMessage } from "@/hooks";
 import { Loader2, MessageSquare } from "lucide-react";
 import { useState } from "react";
 

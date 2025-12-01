@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import { useCrudOperations } from "@/hooks/use-crud-operations";
+import { useCrudOperations } from "@/hooks";
 
 export interface CrudManagerProps<T extends { id: string }> {
   data: T[];

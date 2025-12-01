@@ -12,6 +12,9 @@ export interface MenuItemConfig {
   order: number;
 }
 
+// Alias for backwards compatibility
+export type MenuItem = MenuItemConfig;
+
 export interface MenuSettings {
   headerItems: MenuItemConfig[];
   defaultRole: UserRole;

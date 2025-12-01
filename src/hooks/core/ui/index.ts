@@ -6,4 +6,4 @@
 export { useIsMobile } from './use-mobile';
 export { useDashboardAnimations } from './use-dashboard-animations';
 export { useFooterAnimation } from './use-footer-animation';
-export { useSearchFilter } from './use-search-filter';
+export { useSearchFilter, useCommonFilters, type FilterConfig } from './use-search-filter';

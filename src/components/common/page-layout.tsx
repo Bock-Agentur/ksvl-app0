@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
 import { UnifiedFooter } from "./unified-footer";
-import { useFooterAnimation } from "@/hooks/use-footer-animation";
+import { useFooterAnimation } from "@/hooks";
 
 interface PageLayoutProps {
   children: ReactNode;

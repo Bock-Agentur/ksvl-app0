@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useSearchFilter, FilterConfig } from "@/hooks/use-search-filter";
+import { useSearchFilter, FilterConfig } from "@/hooks";
 
 export interface SearchableListProps<T> {
   data: T[];

@@ -8,8 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { UserRole } from "@/types/user";
 import { MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useWelcomeMessages } from "@/hooks/use-welcome-messages";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useWelcomeMessages, useIsMobile } from "@/hooks";
 import { RoleCardGrid } from "@/components/common/role-card-grid";
 
 // Emoji-Kategorien für den einfachen Emoji-Picker
