@@ -44,6 +44,7 @@ function getSettingKeys(userRole?: UserRole, loadAll?: boolean): string[] {
     'login_background',
     'header-message',
     'sticky_header_layout',
+    'slot-design-settings',
   ];
 
   // Add role-specific dashboard settings
