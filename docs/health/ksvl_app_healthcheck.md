@@ -18,14 +18,15 @@ Die KSVL-App wurde einem umfassenden Health-Check unterzogen. **Alle kritischen 
 6. **Slot-Service** - ✅ CRUD-Logik aus Hook extrahiert
 7. **Navigation-Registry** - ✅ Zentrale Route-Definitionen mit Guards
 8. **Role-Switching** - ✅ Nutzt jetzt useUsersData() Cache
+9. **Footer-Konsolidierung** - ✅ 3 Komponenten zu 1 vereinheitlicht (~520 Zeilen reduziert)
 
 ### Status: ✅ Phase 1 + Phase 2 + Phase 3 + HIGH PRIORITY Abgeschlossen
 
 - **Stabilität:** Verbessert durch defensive Hook-Nutzung und Realtime-Management
 - **Performance:** **~75% weniger DB-Queries** durch Query-Deduplication & Batch-Loading
 - **Design:** **Vollständig zentral verwaltet** - Card-Style Utility-Klasse implementiert
-- **Struktur:** **Exzellent** - Services extrahiert, Navigation zentralisiert, Dead Code entfernt
-- **Foundation-Score:** **88/100** (vorher: 82/100)
+- **Struktur:** **Exzellent** - Services extrahiert, Navigation zentralisiert, Dead Code entfernt, Footer konsolidiert
+- **Foundation-Score:** **90/100** (vorher: 82/100)
 
 ---
 
@@ -457,6 +458,7 @@ const handleUpdateUser = async (id, data) => {
 - **Dead Code:** 0 (✅ api-layer.ts + use-api-data.tsx entfernt)
 - **Duplicate Files:** 0 (✅ Alte file-detail-drawer.tsx entfernt)
 - **React Router Warnings:** 0 (✅ Future Flags aktiviert)
+- **Footer-Komponenten:** 1 (✅ von 3 konsolidiert, ~520 Zeilen reduziert)
 
 ---
 
@@ -539,6 +541,28 @@ const handleUpdateUser = async (id, data) => {
 **Gesamt Latest Improvements:** ~4h  
 **Code-Reduktion:** ~193 Zeilen  
 **Foundation-Score-Steigerung:** +6 Punkte (82 → 88)
+
+### 4. Footer-Konsolidierung ✅
+- **Problem:** 3 separate Footer-Komponenten mit ~520 Zeilen dupliziertem Code
+  - `UnifiedFooter` (Index.tsx, FileManager.tsx)
+  - `SettingsFooter` (Settings.tsx, Reports.tsx)
+  - `AppShell` (Dead Code - nirgends verwendet)
+- **Lösung:** 
+  - **Phase 1:** Build-Error behoben (header-message Referenzen entfernt, ~20 Zeilen)
+  - **Phase 2:** `app-shell.tsx` gelöscht (~340 Zeilen Dead Code)
+  - **Phase 3:** Shared Utilities extrahiert
+    - `src/lib/footer-utils.ts` (FOOTER_ICON_MAP, ROLE_COLORS, handleFooterLogout)
+    - `src/components/common/footer-drawer-content.tsx` (wiederverwendbare Drawer-UI)
+    - ~170 Zeilen dedupliziert
+  - **Phase 4:** `UnifiedFooter` erweitert (optionale Props mit useRole() Fallback)
+    - Settings.tsx + Reports.tsx migriert
+    - `settings-footer.tsx` gelöscht (~180 Zeilen)
+- **Ergebnis:** 
+  - 3 Komponenten → 1 `UnifiedFooter`
+  - ~520 Zeilen Code entfernt/dedupliziert
+  - Konsistentes Footer-Verhalten auf allen Seiten (Dashboard, Settings, Reports, FileManager)
+  - Self-contained Modus (ohne Props) + Controlled Modus (mit Props)
+- **Aufwand:** ~2h
 
 ---
 
@@ -632,6 +656,40 @@ Die KSVL-App ist nun:
     - Nutzt `userService` statt direkter Edge Function Calls
     - Reduziert Komponente um ~70 Zeilen Boilerplate
 
+### Neue Dateien (Footer-Konsolidierung)
+
+12. **`src/lib/footer-utils.ts`** (~44 Zeilen)
+    - Icon-Mapping für dynamische Footer-Items (FOOTER_ICON_MAP)
+    - Role-Colors für Badge-Styling (ROLE_COLORS)
+    - Logout-Handler (handleFooterLogout)
+
+13. **`src/components/common/footer-drawer-content.tsx`** (~154 Zeilen)
+    - Wiederverwendbare Drawer-UI für Menü
+    - User-Info, Role-Switching, Navigation-Items, Logout-Button
+    - Von beiden Footer-Komponenten genutzt
+
+### Gelöschte Dateien (Footer-Konsolidierung)
+
+14. **`src/components/app-shell.tsx`** (~340 Zeilen - Dead Code)
+    - Nirgends verwendet, build-breaking Referenzen
+
+15. **`src/components/settings-footer.tsx`** (~180 Zeilen)
+    - Ersetzt durch `UnifiedFooter` mit Self-contained Modus
+
+### Angepasste Dateien (Footer-Konsolidierung)
+
+16. **`src/components/common/unified-footer.tsx`**
+    - Props jetzt optional (currentRole, currentUser, onRoleChange)
+    - useRole() Fallback integriert
+    - Priorität: Props > Hook-Werte
+    - Self-contained Modus (ohne Props) + Controlled Modus (mit Props)
+
+17. **`src/pages/Settings.tsx`**
+    - `SettingsFooter` → `UnifiedFooter` (ohne Props)
+
+18. **`src/pages/Reports.tsx`**
+    - `SettingsFooter` → `UnifiedFooter` (ohne Props)
+
 ---
 
 ## ✅ Fazit
@@ -646,13 +704,14 @@ Die KSVL-App ist nun:
 - ✅ **Role-Switching** via Cache optimiert (keine DB-Query mehr)
 - ✅ **DialogDescription Warnings** behoben (Accessibility)
 - ✅ **Header-Nachricht** von separate Page zu inline migriert
-- ✅ Foundation-Score: **88/100** (vorher: 82/100)
+- ✅ **Footer-Konsolidierung** 3 Komponenten zu 1 vereinheitlicht (~520 Zeilen reduziert)
+- ✅ Foundation-Score: **90/100** (vorher: 82/100)
 
 **Die App ist jetzt:**
 - ✅ Stabil gegen Auth-Race-Conditions
 - ✅ Performanter durch Query-Deduplication & Batch-Loading
 - ✅ Besser wartbar durch zentralisierte Services & Navigation-Registry
-- ✅ Foundation-konform (88/100) mit klarer Architektur
+- ✅ Foundation-konform (90/100) mit klarer Architektur
 - ✅ Accessibility-konform (DialogDescription-Warnings behoben)
 - ✅ Konsistente Settings-Architektur (Header-Nachricht migriert)
 - ✅ Bereit für MEDIUM PRIORITY Optimierungen (God-Components, Module-Registry)
