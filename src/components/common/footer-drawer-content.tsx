@@ -8,19 +8,13 @@ import { cn } from "@/lib/utils";
 import { UserRole } from "@/types";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 import { ROLE_COLORS } from "@/lib/footer-utils";
-
-interface MenuItem {
-  id: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  roles: UserRole[];
-  badge?: string;
-}
+import { NavItem } from "@/lib/registry/navigation";
+import * as LucideIcons from "lucide-react";
 
 interface FooterDrawerContentProps {
   currentRole: UserRole;
   currentUser: any;
-  availableHeaderItems: MenuItem[];
+  drawerItems: NavItem[];
   onRoleChange: (role: UserRole) => void;
   onLogout: () => void;
   onNavigate: (itemId: string) => void;
@@ -31,7 +25,7 @@ interface FooterDrawerContentProps {
 export function FooterDrawerContent({
   currentRole,
   currentUser,
-  availableHeaderItems,
+  drawerItems,
   onRoleChange,
   onLogout,
   onNavigate,
@@ -97,13 +91,13 @@ export function FooterDrawerContent({
         <Separator className="my-2" />
 
         {/* Admin Functions */}
-        {availableHeaderItems.length > 0 && (
+        {drawerItems.length > 0 && (
           <>
             <div className="space-y-3">
               <h3 className="text-sm font-medium text-muted-foreground">Verwaltung</h3>
               <div className="space-y-1">
-                {availableHeaderItems.map(item => {
-                  const Icon = item.icon;
+                {drawerItems.map(item => {
+                  const IconComponent = (LucideIcons as any)[item.icon] || LucideIcons.Home;
                   const isActive = isItemActive(item.id);
                   
                   const handleClick = () => {
@@ -118,7 +112,7 @@ export function FooterDrawerContent({
                       className="w-full justify-start relative" 
                       onClick={handleClick}
                     >
-                      <Icon className="w-4 h-4 mr-2" />
+                      <IconComponent className="w-4 h-4 mr-2" />
                       <span>{item.label}</span>
                       {item.badge && (
                         <Badge variant="destructive" className="ml-auto h-5 w-5 text-xs p-0 flex items-center justify-center">
