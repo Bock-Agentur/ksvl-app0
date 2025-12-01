@@ -1,78 +1,112 @@
-import { useState, useEffect } from "react";
-import { Cloud, Wind, Thermometer, Droplets, Sun, CloudRain } from "lucide-react";
+import { Cloud, Wind, Thermometer, Droplets, Sun, CloudRain, CloudSnow, CloudLightning, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useWeather, type CurrentWeather } from "@/hooks";
 
-interface WeatherData {
-  temperature: number;
-  humidity: number;
-  windSpeed: number;
-  windDirection: string;
-  waterTemp: number;
-  condition: "sunny" | "cloudy" | "rainy" | "windy";
-  description: string;
-  suitable: boolean;
+function getWeatherIcon(condition: CurrentWeather['condition'], isDay: boolean) {
+  const iconClass = "h-6 w-6";
+  
+  switch (condition) {
+    case 'sunny':
+      return <Sun className={`${iconClass} text-yellow-500`} />;
+    case 'rainy':
+      return <CloudRain className={`${iconClass} text-blue-500`} />;
+    case 'snowy':
+      return <CloudSnow className={`${iconClass} text-blue-300`} />;
+    case 'stormy':
+      return <CloudLightning className={`${iconClass} text-purple-500`} />;
+    case 'windy':
+      return <Wind className={`${iconClass} text-cyan-500`} />;
+    default:
+      return <Cloud className={`${iconClass} text-gray-500`} />;
+  }
+}
+
+function WeatherWidgetSkeleton() {
+  return (
+    <Card className="bg-card rounded-[2rem] card-shadow-soft border-0">
+      <CardHeader className="pb-3">
+        <Skeleton className="h-6 w-40" />
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-8 w-16" />
+            <Skeleton className="h-4 w-24" />
+          </div>
+          <Skeleton className="h-6 w-20" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <Skeleton className="h-5 w-full" />
+          <Skeleton className="h-5 w-full" />
+          <Skeleton className="h-5 w-full" />
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function WeatherWidgetError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <Card className="bg-card rounded-[2rem] card-shadow-soft border-0">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base flex items-center gap-2">
+          <Cloud className="h-6 w-6 text-muted-foreground" />
+          Wetter & Bedingungen
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <p className="text-sm text-muted-foreground">
+          Wetterdaten konnten nicht geladen werden.
+        </p>
+        <Button variant="outline" size="sm" onClick={onRetry} className="gap-2">
+          <RefreshCw className="h-4 w-4" />
+          Erneut versuchen
+        </Button>
+      </CardContent>
+    </Card>
+  );
 }
 
 export function WeatherWidget() {
-  const [weather, setWeather] = useState<WeatherData>({
-    temperature: 0,
-    humidity: 0,
-    windSpeed: 0,
-    windDirection: "-",
-    waterTemp: 0,
-    condition: "cloudy",
-    description: "Keine Wetterdaten",
-    suitable: false
-  });
+  const { weather, isLoading, error, refetch, isSuitableForSailing, sailingConditionsText } = useWeather();
 
-  // Mock weather updates
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setWeather(prev => ({
-        ...prev,
-        temperature: prev.temperature + (Math.random() - 0.5) * 2,
-        windSpeed: Math.max(0, prev.windSpeed + (Math.random() - 0.5) * 5),
-      }));
-    }, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  if (isLoading) {
+    return <WeatherWidgetSkeleton />;
+  }
 
-  const getWeatherIcon = () => {
-    switch (weather.condition) {
-      case "sunny": return <Sun className="h-6 w-6 text-yellow-500" />;
-      case "rainy": return <CloudRain className="h-6 w-6 text-blue-500" />;
-      case "windy": return <Wind className="h-6 w-6 text-cyan-500" />;
-      default: return <Cloud className="h-6 w-6 text-gray-500" />;
-    }
-  };
+  if (error || !weather) {
+    return <WeatherWidgetError onRetry={() => refetch()} />;
+  }
 
   return (
-    <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
+    <Card className="bg-card rounded-[2rem] card-shadow-soft border-0">
       <CardHeader className="pb-3">
         <CardTitle className="text-base flex items-center gap-2">
-          {getWeatherIcon()}
+          {getWeatherIcon(weather.condition, weather.isDay)}
           Wetter & Bedingungen
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-2xl font-bold">{Math.round(weather.temperature)}°C</p>
+            <p className="text-2xl font-bold">{weather.temperature}°C</p>
             <p className="text-sm text-muted-foreground">{weather.description}</p>
           </div>
           <Badge 
-            variant={weather.suitable ? "default" : "destructive"}
+            variant={isSuitableForSailing ? "default" : "destructive"}
             className="text-xs"
           >
-            {weather.suitable ? "Geeignet" : "Ungünstig"}
+            {sailingConditionsText}
           </Badge>
         </div>
         
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div className="flex items-center gap-2">
             <Wind className="h-4 w-4 text-muted-foreground" />
-            <span>{Math.round(weather.windSpeed)} km/h {weather.windDirection}</span>
+            <span>{weather.windSpeed} km/h {weather.windDirectionText}</span>
           </div>
           <div className="flex items-center gap-2">
             <Droplets className="h-4 w-4 text-muted-foreground" />
@@ -80,7 +114,7 @@ export function WeatherWidget() {
           </div>
           <div className="flex items-center gap-2">
             <Thermometer className="h-4 w-4 text-muted-foreground" />
-            <span>{weather.waterTemp}°C Wasser</span>
+            <span>Wörthersee</span>
           </div>
         </div>
       </CardContent>
