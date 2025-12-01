@@ -163,20 +163,31 @@ export function EnhancedFileManager() {
 
   return (
     <div className="space-y-4">
-      {/* Search & Filter Card - Collapsible on Mobile */}
-      <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen} className="sm:hidden">
-        <CollapsibleTrigger asChild>
-          <Button 
-            variant="outline" 
-            className="w-full flex items-center justify-between bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 hover:bg-white/90 px-6 py-4 h-auto"
-          >
-            <div className="flex items-center gap-2">
-              <SlidersHorizontal className="h-4 w-4" />
-              <span className="font-semibold text-sm">Suche & Filter</span>
-            </div>
-            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
-          </Button>
-        </CollapsibleTrigger>
+      {/* Mobile: Multi-Select Toggle & Filter Toggle */}
+      <div className="sm:hidden flex gap-2">
+        <Button
+          variant={multiSelectMode ? 'default' : 'outline'}
+          size="sm"
+          onClick={toggleMultiSelectMode}
+          className="flex items-center gap-2 bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 hover:bg-white/90 px-4 py-4 h-auto"
+        >
+          <CheckSquare className="h-4 w-4" />
+          {multiSelectMode ? 'Fertig' : 'Auswählen'}
+        </Button>
+        
+        <Collapsible open={isFilterOpen} onOpenChange={setIsFilterOpen} className="flex-1">
+          <CollapsibleTrigger asChild>
+            <Button 
+              variant="outline" 
+              className="w-full flex items-center justify-between bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 hover:bg-white/90 px-6 py-4 h-auto"
+            >
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4" />
+                <span className="font-semibold text-sm">Filter</span>
+              </div>
+              <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isFilterOpen ? 'rotate-180' : ''}`} />
+            </Button>
+          </CollapsibleTrigger>
         <CollapsibleContent className="mt-2">
           <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
             <CardContent className="pt-4 space-y-4">
@@ -278,7 +289,8 @@ export function EnhancedFileManager() {
             </CardContent>
           </Card>
         </CollapsibleContent>
-      </Collapsible>
+        </Collapsible>
+      </div>
 
       {/* Search & Filter Card - Desktop */}
       <Card className="hidden sm:block bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
@@ -392,23 +404,24 @@ export function EnhancedFileManager() {
         </CardContent>
       </Card>
 
-      {/* Multi-Select Actions Bar */}
+      {/* Multi-Select Actions Bar - Responsive */}
       {isMultiSelectActive && (
-        <div className="sticky top-[180px] z-10 bg-primary text-primary-foreground p-3 flex items-center justify-between shadow-lg">
+        <div className="sticky top-[60px] sm:top-[180px] z-10 bg-primary text-primary-foreground p-3 rounded-lg flex items-center justify-between shadow-lg">
           <span className="text-sm font-medium">{selectedFiles.length} ausgewählt</span>
-          <div className="flex gap-2">
+          <div className="flex gap-1 sm:gap-2">
             {isAdmin && (
-              <Button size="sm" variant="secondary" onClick={() => setBulkPermissionsOpen(true)}>
-                <Shield className="h-4 w-4 mr-1" />
-                Berechtigungen
+              <Button size="sm" variant="secondary" onClick={() => setBulkPermissionsOpen(true)} className="px-2 sm:px-3">
+                <Shield className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Berechtigungen</span>
               </Button>
             )}
-            <Button size="sm" variant="secondary" onClick={() => setBulkDeleteDialogOpen(true)}>
-              <Trash2 className="h-4 w-4 mr-1" />
-              Löschen
+            <Button size="sm" variant="secondary" onClick={() => setBulkDeleteDialogOpen(true)} className="px-2 sm:px-3">
+              <Trash2 className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Löschen</span>
             </Button>
-            <Button size="sm" variant="secondary" onClick={clearSelection}>
-              Abbrechen
+            <Button size="sm" variant="secondary" onClick={clearSelection} className="px-2 sm:px-3">
+              <span className="hidden sm:inline">Abbrechen</span>
+              <span className="sm:hidden">×</span>
             </Button>
           </div>
         </div>
