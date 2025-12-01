@@ -6,6 +6,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useRealtimeSubscription } from '@/lib/realtime-manager';
 import { slotService } from '@/lib/services/slot-service';
 import { logger } from '@/lib/logger';
+import { QUERY_KEYS } from '@/lib/query-keys';
 
 interface SlotsContextValue {
   slots: Slot[];
@@ -33,7 +34,7 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
     isLoading: slotsLoading,
     refetch: refetchSlots
   } = useQuery({
-    queryKey: ['slots', allUsers.length],
+    queryKey: [...QUERY_KEYS.slots, allUsers.length],
     queryFn: async () => {
       const slotsData = await slotService.fetchSlots();
 
@@ -115,7 +116,7 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
       } as Slot;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['slots'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.slots });
     },
     onError: () => {
       toast({
@@ -145,7 +146,7 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
       })) as Slot[];
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['slots'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.slots });
     },
     onError: () => {
       toast({
@@ -169,7 +170,7 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['slots'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.slots });
     },
     onError: () => {
       toast({
@@ -185,7 +186,7 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
       await slotService.deleteSlot(id);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['slots'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.slots });
     },
     onError: () => {
       toast({
@@ -203,7 +204,7 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['slots'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.slots });
     },
     onError: () => {
       toast({
@@ -220,7 +221,7 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['slots'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.slots });
     },
     onError: () => {
       toast({
@@ -236,7 +237,7 @@ export function SlotsProvider({ children }: { children: ReactNode }) {
     { table: 'slots', event: '*' },
     'slots-context-realtime',
     () => {
-      queryClient.invalidateQueries({ queryKey: ['slots'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.slots });
     },
     300,
     true

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { QUERY_KEYS } from "@/lib/query-keys";
 
 export interface ThemeSetting {
   id: string;
@@ -17,7 +18,7 @@ export function useThemeSettings() {
   const queryClient = useQueryClient();
 
   const { data: settings, isLoading } = useQuery({
-    queryKey: ["theme-settings"],
+    queryKey: QUERY_KEYS.themeSettings,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("theme_settings")
@@ -41,7 +42,7 @@ export function useThemeSettings() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["theme-settings"] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.themeSettings });
       toast.success("Design-Einstellung gespeichert");
     },
     onError: (error: Error) => {
@@ -58,7 +59,7 @@ export function useThemeSettings() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["theme-settings"] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.themeSettings });
       toast.success("Neue Farbe hinzugefügt");
     },
     onError: (error: Error) => {
@@ -76,7 +77,7 @@ export function useThemeSettings() {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["theme-settings"] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.themeSettings });
       toast.success("Farbe gelöscht");
     },
     onError: (error: Error) => {
