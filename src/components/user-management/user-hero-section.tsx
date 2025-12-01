@@ -23,7 +23,7 @@ export function UserHeroSection({ stats, onAddUser, onExport }: UserHeroSectionP
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold">Mitgliederverwaltung</h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground hidden sm:block">
               {stats.total} Mitglieder • {stats.active} aktiv • {stats.roleCount.admin} Admins • {stats.activeRate}% Aktivitätsrate
             </p>
           </div>
