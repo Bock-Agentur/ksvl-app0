@@ -1,4 +1,4 @@
-import { useAppSettings } from "./use-app-settings";
+import { useSettingsBatch } from "./use-settings-batch";
 import { UserRole } from "@/types/user";
 
 const DEFAULT_MESSAGES: Record<UserRole, string> = {
@@ -10,19 +10,20 @@ const DEFAULT_MESSAGES: Record<UserRole, string> = {
 };
 
 export function useWelcomeMessages() {
-  const { value: messages, setValue: setMessages } = useAppSettings<Record<UserRole, string>>(
+  const { getSetting, updateSetting } = useSettingsBatch();
+  
+  const messages = getSetting<Record<UserRole, string>>(
     "roleWelcomeMessages",
-    DEFAULT_MESSAGES,
-    true // Global
+    DEFAULT_MESSAGES
   );
 
   const getWelcomeMessage = (role: UserRole): string => {
     return messages[role] || DEFAULT_MESSAGES[role];
   };
 
-  const updateMessage = (role: UserRole, message: string) => {
+  const updateMessage = async (role: UserRole, message: string) => {
     const newMessages = { ...messages, [role]: message };
-    setMessages(newMessages);
+    await updateSetting("roleWelcomeMessages", newMessages, true);
   };
 
   return {

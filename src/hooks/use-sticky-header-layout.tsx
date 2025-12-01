@@ -1,4 +1,4 @@
-import { useAppSettings } from "./use-app-settings";
+import { useSettingsBatch } from "./use-settings-batch";
 
 export interface StickyHeaderLayoutSettings {
   enabled: boolean; // Master-Schalter
@@ -23,13 +23,13 @@ const DEFAULT_SETTINGS: StickyHeaderLayoutSettings = {
 };
 
 export function useStickyHeaderLayout(options?: { enabled?: boolean }) {
-  const enabled = options?.enabled ?? true;
+  const hookEnabled = options?.enabled ?? true;
   
-  const { value, setValue, isLoading } = useAppSettings<StickyHeaderLayoutSettings>(
+  const { getSetting, updateSetting, isLoading } = useSettingsBatch({ enabled: hookEnabled });
+  
+  const value = getSetting<StickyHeaderLayoutSettings>(
     'sticky_header_layout',
-    DEFAULT_SETTINGS,
-    true, // global setting
-    { enabled }
+    DEFAULT_SETTINGS
   );
 
   // Migration: Ensure pages object exists (for backward compatibility)
@@ -50,19 +50,23 @@ export function useStickyHeaderLayout(options?: { enabled?: boolean }) {
   };
 
   // Helper: Einzelne Seite togglen
-  const togglePage = (page: keyof StickyHeaderLayoutSettings['pages'], enabled: boolean) => {
-    setValue({
+  const togglePage = async (page: keyof StickyHeaderLayoutSettings['pages'], enabled: boolean) => {
+    await updateSetting('sticky_header_layout', {
       ...settings,
       pages: {
         ...settings.pages,
         [page]: enabled,
       }
-    });
+    }, true);
+  };
+
+  const setSettings = async (newSettings: StickyHeaderLayoutSettings) => {
+    await updateSetting('sticky_header_layout', newSettings, true);
   };
 
   return {
     settings,
-    setSettings: setValue,
+    setSettings,
     isPageSticky,
     togglePage,
     isLoading

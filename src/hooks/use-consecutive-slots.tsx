@@ -1,16 +1,21 @@
 import { createContext, useContext, ReactNode, useMemo } from "react";
 import { parseISO, addMinutes } from "date-fns";
 import { Slot, ConsecutiveSlotsContextType, SlotStatus } from "@/types";
-import { useAppSettings } from "./use-app-settings";
+import { useSettingsBatch } from "./use-settings-batch";
 
 const ConsecutiveSlotsContext = createContext<ConsecutiveSlotsContextType | undefined>(undefined);
 
 export function ConsecutiveSlotsProvider({ children }: { children: ReactNode }) {
-  const { value: consecutiveSlotsEnabled, setValue: setConsecutiveSlotsEnabled } = useAppSettings<boolean>(
+  const { getSetting, updateSetting } = useSettingsBatch();
+  
+  const consecutiveSlotsEnabled = getSetting<boolean>(
     "consecutiveSlotsEnabled",
-    true,
-    true // Global
+    true
   );
+  
+  const setConsecutiveSlotsEnabled = async (enabled: boolean) => {
+    await updateSetting("consecutiveSlotsEnabled", enabled, true);
+  };
 
   // Memoized slot blocks calculation - ALL slots of same crane operator on same day form a block
   const getSlotBlocks = useMemo(() => (slots: Slot[]) => {

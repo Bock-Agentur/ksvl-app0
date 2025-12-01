@@ -1,4 +1,4 @@
-import { useAppSettings } from "./use-app-settings";
+import { useSettingsBatch } from "./use-settings-batch";
 import { AIAssistantSettings, Tonality } from "@/types/ai-assistant";
 import { UserRole } from "@/types/user";
 
@@ -16,16 +16,16 @@ const DEFAULT_SETTINGS: AIAssistantSettings = {
 };
 
 export function useAIAssistantSettings(options?: { enabled?: boolean }) {
-  const enabled = options?.enabled ?? true;
+  const hookEnabled = options?.enabled ?? true;
   
-  const { value: settings, setValue: setSettings, isLoading } = useAppSettings<AIAssistantSettings>(
+  const { getSetting, updateSetting, isLoading } = useSettingsBatch({ enabled: hookEnabled });
+  
+  const settings = getSetting<AIAssistantSettings>(
     "aiAssistantSettings",
-    DEFAULT_SETTINGS,
-    true, // Global setting
-    { enabled }
+    DEFAULT_SETTINGS
   );
 
-  const updateTonality = (role: UserRole, tonality: Tonality) => {
+  const updateTonality = async (role: UserRole, tonality: Tonality) => {
     const newSettings = {
       ...settings,
       tonality: {
@@ -33,28 +33,32 @@ export function useAIAssistantSettings(options?: { enabled?: boolean }) {
         [role]: tonality
       }
     };
-    setSettings(newSettings);
+    await updateSetting("aiAssistantSettings", newSettings, true);
   };
 
-  const updateResponseLength = (length: AIAssistantSettings['responseLength']) => {
-    setSettings({
+  const updateResponseLength = async (length: AIAssistantSettings['responseLength']) => {
+    await updateSetting("aiAssistantSettings", {
       ...settings,
       responseLength: length
-    });
+    }, true);
   };
 
-  const updateSystemPrompt = (prompt: string) => {
-    setSettings({
+  const updateSystemPrompt = async (prompt: string) => {
+    await updateSetting("aiAssistantSettings", {
       ...settings,
       customSystemPrompt: prompt
-    });
+    }, true);
   };
 
-  const updateAgentName = (name: string) => {
-    setSettings({
+  const updateAgentName = async (name: string) => {
+    await updateSetting("aiAssistantSettings", {
       ...settings,
       agentName: name
-    });
+    }, true);
+  };
+
+  const setSettings = async (newSettings: AIAssistantSettings) => {
+    await updateSetting("aiAssistantSettings", newSettings, true);
   };
 
   return {

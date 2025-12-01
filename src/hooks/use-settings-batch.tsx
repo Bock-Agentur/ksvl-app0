@@ -45,6 +45,10 @@ function getSettingKeys(userRole?: UserRole, loadAll?: boolean): string[] {
     'header-message',
     'sticky_header_layout',
     'slot-design-settings',
+    'aiAssistantSettings',
+    'aiWelcomeMessage',
+    'consecutiveSlotsEnabled',
+    'roleWelcomeMessages',
   ];
 
   // Add role-specific dashboard settings
