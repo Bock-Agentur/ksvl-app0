@@ -2,7 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { UserRole } from "@/types/user";
 import { UserCircle, Shield, Wrench, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks";
 
 interface RoleCardGridProps {
   activeRole?: UserRole | null;

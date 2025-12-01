@@ -4,4 +4,4 @@
  */
 
 export { useCrudOperations } from './use-crud-operations';
-export { useFormHandler } from './use-form-handler';
+export { useFormHandler, useCommonFieldConfigs } from './use-form-handler';

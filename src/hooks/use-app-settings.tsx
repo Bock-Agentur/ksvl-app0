@@ -2,4 +2,4 @@
  * Bridge file for backwards compatibility
  * Re-exports from core/settings
  */
-export { useAIWelcomeMessage } from './core/settings/use-ai-welcome-message';
+export { useAppSettings } from './core/settings/use-app-settings';

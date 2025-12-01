@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { useStickyHeaderLayout } from "@/hooks/use-sticky-header-layout";
+import { useStickyHeaderLayout } from "@/hooks";
 import { toast } from "sonner";
 
 export function StickyHeaderLayoutSettings() {
