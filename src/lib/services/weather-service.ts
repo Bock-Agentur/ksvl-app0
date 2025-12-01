@@ -18,6 +18,10 @@ export interface CurrentWeather {
   description: string;        // German description
   isDay: boolean;
   time: string;               // ISO timestamp
+  sunrise: string;            // "06:45" format
+  sunset: string;             // "20:30" format
+  uvIndex: number;            // 0-11+
+  uvIndexText: string;        // German UV description
 }
 
 export interface WeatherConfig {
@@ -48,6 +52,30 @@ interface OpenMeteoResponse {
     weather_code: number;
     is_day: number;
   };
+  daily: {
+    sunrise: string[];
+    sunset: string[];
+    uv_index_max: number[];
+  };
+}
+
+/**
+ * Converts UV index to German description and risk level
+ */
+function getUvIndexText(uvIndex: number): string {
+  if (uvIndex <= 2) return 'Niedrig';
+  if (uvIndex <= 5) return 'Mäßig';
+  if (uvIndex <= 7) return 'Hoch';
+  if (uvIndex <= 10) return 'Sehr hoch';
+  return 'Extrem';
+}
+
+/**
+ * Extracts time from ISO datetime string
+ */
+function formatTime(isoString: string): string {
+  const date = new Date(isoString);
+  return date.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 }
 
 /**
@@ -133,8 +161,10 @@ class WeatherService {
       latitude: config.latitude.toString(),
       longitude: config.longitude.toString(),
       current: 'temperature_2m,apparent_temperature,relative_humidity_2m,wind_speed_10m,wind_gusts_10m,wind_direction_10m,weather_code,is_day',
+      daily: 'sunrise,sunset,uv_index_max',
       timezone: 'Europe/Vienna',
-      wind_speed_unit: 'kmh'
+      wind_speed_unit: 'kmh',
+      forecast_days: '1'
     });
 
     const response = await fetch(`${this.baseUrl}?${params}`);
@@ -145,6 +175,7 @@ class WeatherService {
 
     const data: OpenMeteoResponse = await response.json();
     const current = data.current;
+    const daily = data.daily;
     const isDay = current.is_day === 1;
     
     let { condition, description } = mapWeatherCode(current.weather_code, isDay);
@@ -156,6 +187,7 @@ class WeatherService {
 
     const windSpeed = Math.round(current.wind_speed_10m);
     const { beaufort, text: beaufortText } = windSpeedToBeaufort(windSpeed);
+    const uvIndex = Math.round(daily.uv_index_max[0] * 10) / 10;
 
     return {
       temperature: Math.round(current.temperature_2m * 10) / 10,
@@ -171,7 +203,11 @@ class WeatherService {
       condition,
       description,
       isDay,
-      time: current.time
+      time: current.time,
+      sunrise: formatTime(daily.sunrise[0]),
+      sunset: formatTime(daily.sunset[0]),
+      uvIndex,
+      uvIndexText: getUvIndexText(uvIndex)
     };
   }
 }

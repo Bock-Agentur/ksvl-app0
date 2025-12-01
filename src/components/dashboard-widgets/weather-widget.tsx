@@ -1,4 +1,4 @@
-import { Cloud, Wind, Thermometer, Droplets, Sun, CloudRain, CloudSnow, CloudLightning, RefreshCw } from "lucide-react";
+import { Cloud, Wind, Thermometer, Droplets, Sun, CloudRain, CloudSnow, CloudLightning, RefreshCw, Sunrise, Sunset } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -112,6 +112,25 @@ export function WeatherWidget() {
             <Droplets className="h-4 w-4 text-muted-foreground" />
             <span>{weather.humidity}% Luftf.</span>
           </div>
+          <div className="flex items-center gap-2">
+            <Sunrise className="h-4 w-4 text-orange-400" />
+            <span>{weather.sunrise}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Sunset className="h-4 w-4 text-orange-600" />
+            <span>{weather.sunset}</span>
+          </div>
+          {weather.uvIndex > 0 && (
+            <div className="flex items-center gap-2">
+              <Sun className={`h-4 w-4 ${
+                weather.uvIndex <= 2 ? 'text-green-500' :
+                weather.uvIndex <= 5 ? 'text-yellow-500' :
+                weather.uvIndex <= 7 ? 'text-orange-500' :
+                'text-red-500'
+              }`} />
+              <span>UV {weather.uvIndex} ({weather.uvIndexText})</span>
+            </div>
+          )}
           {Math.abs(weather.temperature - weather.apparentTemperature) > 2 && (
             <div className="flex items-center gap-2">
               <Thermometer className="h-4 w-4 text-muted-foreground" />
