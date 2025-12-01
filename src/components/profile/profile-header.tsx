@@ -1,4 +1,4 @@
-import { Edit, Save, X } from "lucide-react";
+import { Edit, Save, X, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ interface ProfileHeaderProps {
   onEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
+  onBack?: () => void;
 }
 
 export function ProfileHeader({
@@ -29,6 +30,7 @@ export function ProfileHeader({
   onEdit,
   onSave,
   onCancel,
+  onBack,
 }: ProfileHeaderProps) {
   return (
     <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
@@ -74,6 +76,12 @@ export function ProfileHeader({
                 <Edit className="w-3 h-3 mr-1.5" />
                 Bearbeiten
               </Button>
+              {onBack && (
+                <Button variant="outline" onClick={onBack} size="sm" className="h-8">
+                  <ArrowLeft className="w-3 h-3 mr-1.5" />
+                  Zurück
+                </Button>
+              )}
             </>
           ) : (
             <>

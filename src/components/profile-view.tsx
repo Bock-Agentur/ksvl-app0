@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useStickyHeaderLayout, useToast, useRole, useCustomFields, useCustomFieldValues, useRoleBadgeSettings } from "@/hooks";
-import { Edit, Save, X } from "lucide-react";
+import { Edit, Save, X, ArrowLeft } from "lucide-react";
 import { ProfileDocumentsSection } from "@/components/profile/profile-documents-section";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { ProfileFormCards } from "@/components/profile/profile-form-cards";
@@ -457,6 +457,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
             setEditedUser(user);
             setEditedCustomValues(customValues);
           }}
+          onBack={onBack}
         />
       )}
 
@@ -551,6 +552,12 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
                       <Edit className="w-3 h-3 mr-1.5" />
                       Bearbeiten
                     </Button>
+                    {onBack && (
+                      <Button variant="outline" onClick={onBack} size="sm" className="h-8">
+                        <ArrowLeft className="w-3 h-3 mr-1.5" />
+                        Zurück
+                      </Button>
+                    )}
                   </>
                 ) : (
                   <>
