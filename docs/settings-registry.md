@@ -264,12 +264,21 @@ const ACTIVE_SETTINGS = [
   'footerMenuActiveRole',                   // ⏳ Todo (Aktive Rolle für Footer-Menü-Settings)
 ];
 
+// Deprecated / Removed Settings (Phase 3)
+const REMOVED_SETTINGS = {
+  'activeTab': {
+    reason: 'UI routing state - not persistent data',
+    migration: 'Moved to URL search params (?tab=dashboard)',
+    removedIn: 'Phase G (2025-02-01)',
+  }
+};
+
 // Gelöschte Settings (Phase 1 + Phase 3)
 const DELETED_SETTINGS = [
   'footer-menu-template-*',              // Phase 1: Ersetzt durch footer-settings-template-{role}
   'footerMenuSettings',                  // Phase 1: Alte Footer-Struktur
   'desktop_background',                  // Phase 1: Feature deaktiviert
-  'activeTab',                           // Phase 3: 70 Duplikate mit user_id=NULL bereinigt (2025-02-01)
+  'activeTab',                           // Phase 3: Removed - now URL-based (?tab=dashboard). 70 Duplikate bereinigt (2025-02-01)
   // + 4 doppelte dashboard-settings-template-* (is_global=false)
 ];
 ```
