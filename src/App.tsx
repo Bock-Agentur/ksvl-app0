@@ -38,7 +38,8 @@ const App = () => {
                   {/* Public Routes */}
                   <Route path={ROUTES.public.auth.path} element={<Auth />} />
                   
-                  {/* Redirect /dashboard to / */}
+                  {/* Redirects */}
+                  <Route path="/login" element={<Navigate to="/auth" replace />} />
                   <Route path="/dashboard" element={<Navigate to="/" replace />} />
                   
                   {/* Protected Routes with Role Guards */}
