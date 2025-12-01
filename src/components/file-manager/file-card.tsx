@@ -351,7 +351,7 @@ export function FileCard({
       </Badge>
 
       {/* Thumbnail */}
-      <div className="aspect-video bg-muted flex items-center justify-center relative">
+      <div className="aspect-video bg-muted flex items-center justify-center">
         {thumbnailLoading ? (
           <div className="h-full w-full animate-pulse bg-muted-foreground/20" />
         ) : thumbnailUrl && !imageError ? (
@@ -365,21 +365,6 @@ export function FileCard({
         ) : (
           <FileIcon className="h-12 w-12 text-muted-foreground" />
         )}
-
-        {/* Hover Actions (Desktop Only) */}
-        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-          <Button size="icon" variant="secondary" onClick={(e) => { e.stopPropagation(); onView(); }}>
-            <Eye className="h-4 w-4" />
-          </Button>
-          <Button size="icon" variant="secondary" onClick={(e) => { e.stopPropagation(); handleDownload(); }}>
-            <Download className="h-4 w-4" />
-          </Button>
-          {canDeleteFile && (
-            <Button size="icon" variant="destructive" onClick={(e) => { e.stopPropagation(); setDeleteDialogOpen(true); }}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
       </div>
 
       {/* Info */}
@@ -391,7 +376,7 @@ export function FileCard({
         </div>
         
         {/* Badges */}
-        <div className="flex gap-1 flex-wrap">
+        <div className="flex gap-1 flex-wrap mb-3">
           {((file.allowed_roles && file.allowed_roles.length > 0) || file.is_public) && (
             <TooltipProvider>
               <Tooltip>
@@ -407,17 +392,35 @@ export function FileCard({
               </Tooltip>
             </TooltipProvider>
           )}
-          {file.tags.slice(0, 3).map((tag) => (
+          {file.tags.slice(0, 2).map((tag) => (
             <Badge key={tag} variant="outline" className="text-xs h-5">
               {tag}
             </Badge>
           ))}
-          {file.tags.length > 3 && (
+          {file.tags.length > 2 && (
             <Badge variant="outline" className="text-xs h-5">
-              +{file.tags.length - 3}
+              +{file.tags.length - 2}
             </Badge>
           )}
         </div>
+
+        {/* Action Buttons */}
+        {!multiSelectActive && (
+          <div className="flex gap-2 pt-2 border-t border-border">
+            <Button size="sm" variant="ghost" className="flex-1 h-8" onClick={(e) => { e.stopPropagation(); onView(); }}>
+              <Eye className="h-4 w-4 mr-1" />
+              Ansehen
+            </Button>
+            <Button size="sm" variant="ghost" className="h-8 px-2" onClick={(e) => { e.stopPropagation(); handleDownload(); }}>
+              <Download className="h-4 w-4" />
+            </Button>
+            {canDeleteFile && (
+              <Button size="sm" variant="ghost" className="h-8 px-2 text-destructive hover:text-destructive" onClick={(e) => { e.stopPropagation(); setDeleteDialogOpen(true); }}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Delete Confirmation Dialog */}
