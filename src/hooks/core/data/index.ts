@@ -11,3 +11,4 @@ export { useCustomFields, useCustomFieldValues, type CustomField } from './use-c
 export { useFileManager, type FileMetadata, type UploadMetadata } from './use-file-manager';
 export { useFilePermissions } from './use-file-permissions';
 export { useHarborChatData } from './use-harbor-chat-data';
+export { useWeather, type CurrentWeather, type WeatherConfig, DEFAULT_WEATHER_CONFIG } from './use-weather';
