@@ -6,7 +6,6 @@ import { useSlotDesign } from "@/hooks/use-slot-design";
 import { TestDataProvider } from "@/hooks/use-test-data";
 import { ConsecutiveSlotsProvider } from "@/hooks/use-consecutive-slots";
 import { SlotsProvider } from "@/contexts/slots-context";
-import { useAppSettings } from "@/hooks/use-app-settings";
 import { useUsers } from "@/hooks/use-users";
 import { useAIAssistantSettings } from "@/hooks/use-ai-assistant-settings";
 import { useAIWelcomeMessage } from "@/hooks/use-ai-welcome-message";
@@ -31,12 +30,8 @@ function AppContent() {
   const roleContext = useRole();
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // ✅ No local state - use activeTab directly after loading
-  const { value: activeTab, setValue: setActiveTabRaw, isLoading: settingsLoading } = useAppSettings<string>(
-    "activeTab",
-    "dashboard",
-    false
-  );
+  // ✅ Read activeTab from URL (UI state, not database)
+  const activeTab = searchParams.get('tab') || 'dashboard';
   
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<Date | null>(null);
   
@@ -58,26 +53,18 @@ function AppContent() {
   useSlotDesign();
   
   // ✅ ALLE useEffect Hooks VOR dem Early Return (React Rules of Hooks)
-  // Verarbeite URL-Parameter für Tab- und Datumsnavigation
+  // Verarbeite URL-Parameter für Datumsnavigation
   useEffect(() => {
-    const tabParam = searchParams.get('tab');
     const dateParam = searchParams.get('date');
-    
-    if (tabParam) {
-      setActiveTabRaw(tabParam, true);
-      setSearchParams({});
-      return;
-    }
     
     if (dateParam) {
       const date = new Date(dateParam + 'T12:00:00');
       if (!isNaN(date.getTime())) {
         setSelectedCalendarDate(date);
-        setActiveTabRaw('calendar', true);
-        setSearchParams({});
+        setSearchParams({ tab: 'calendar' }); // Navigate to calendar with date
       }
     }
-  }, [searchParams, setSearchParams, setActiveTabRaw]);
+  }, [searchParams, setSearchParams]);
   
   // Scroll to top when tab changes
   useEffect(() => {
@@ -95,19 +82,19 @@ function AppContent() {
   }, [hasAnimated, markAsAnimated]);
   
   // ✅ Synchronize all loading states
-  const isFullyLoaded = !settingsLoading && !footerLoading && !roleContext?.isLoading;
+  const isFullyLoaded = !footerLoading && !roleContext?.isLoading;
   
   // ✅ JETZT erst Early Return (nach ALLEN Hooks) - Wait until everything is loaded
-  if (!roleContext || !isFullyLoaded || !roleContext.currentUser || !activeTab) {
+  if (!roleContext || !isFullyLoaded || !roleContext.currentUser) {
     return <PageLoader />;
   }
   
   // Ab hier normaler Code mit sicheren Werten
   const { currentRole, currentUser, setRole } = roleContext;
   
-  // ✅ Tab change handler
+  // ✅ Tab change handler - updates URL instead of database
   const setActiveTab = (tab: string) => {
-    setActiveTabRaw(tab, true);
+    setSearchParams({ tab });
   };
 
   const renderContent = () => {
