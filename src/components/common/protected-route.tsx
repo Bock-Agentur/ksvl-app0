@@ -7,7 +7,7 @@
 
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useRole } from '@/hooks/use-role';
+import { useRole } from '@/hooks';
 import { UserRole } from '@/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ShieldAlert } from 'lucide-react';

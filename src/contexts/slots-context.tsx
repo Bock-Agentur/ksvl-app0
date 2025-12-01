@@ -1,12 +1,10 @@
 import React, { createContext, useContext, ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Slot } from '@/types';
-import { useToast } from '@/hooks/use-toast';
+import { useToast, useUsersData, CreateSlotData } from '@/hooks';
 import { useAuth } from '@/contexts/auth-context';
 import { useRealtimeSubscription } from '@/lib/realtime-manager';
-import { useUsersData } from '@/hooks/use-users-data';
 import { slotService } from '@/lib/services/slot-service';
-import { CreateSlotData } from '@/hooks/use-slots';
 import { logger } from '@/lib/logger';
 
 interface SlotsContextValue {
