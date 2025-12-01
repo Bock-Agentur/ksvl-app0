@@ -1,82 +1,37 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { AlertCircle, Clock, Settings, Eye, EyeOff, RefreshCw } from "lucide-react";
+import { AlertCircle, Settings, Eye, EyeOff, RefreshCw } from "lucide-react";
 import { useConsecutiveSlots } from "@/hooks/use-consecutive-slots";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks";
+import { useIsMobile, useAppSettings } from "@/hooks";
 
 export function ConsecutiveSlotsSettings() {
   const { consecutiveSlotsEnabled, setConsecutiveSlotsEnabled } = useConsecutiveSlots();
-  const [roleSwitchingEnabled, setRoleSwitchingEnabled] = useState(true);
-  const [loading, setLoading] = useState(true);
   const isMobile = useIsMobile();
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  
+  // ✅ Use centralized useAppSettings instead of direct Supabase calls
+  const { 
+    value: roleSwitchingSetting, 
+    setValue: setRoleSwitchingSetting, 
+    isLoading: loading 
+  } = useAppSettings<{ enabled: boolean }>(
+    'role_switching_enabled',
+    { enabled: true },
+    true // isGlobal
+  );
 
-  useEffect(() => {
-    loadRoleSwitchingSetting();
-  }, []);
-
-  const loadRoleSwitchingSetting = async () => {
-    try {
-      const { data } = await supabase
-        .from('app_settings')
-        .select('setting_value')
-        .eq('setting_key', 'role_switching_enabled')
-        .eq('is_global', true)
-        .single();
-
-      if (data) {
-        const settingValue = data.setting_value as { enabled?: boolean };
-        setRoleSwitchingEnabled(settingValue.enabled ?? true);
-      }
-    } catch (error) {
-      console.error('Error loading role switching setting:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const roleSwitchingEnabled = roleSwitchingSetting.enabled;
 
   const handleRoleSwitchingChange = async (enabled: boolean) => {
-    try {
-      const { data: existing } = await supabase
-        .from('app_settings')
-        .select('id')
-        .eq('setting_key', 'role_switching_enabled')
-        .eq('is_global', true)
-        .single();
-
-      const settingValue = { enabled };
-
-      if (existing) {
-        const { error } = await supabase
-          .from('app_settings')
-          .update({ setting_value: settingValue })
-          .eq('id', existing.id);
-
-        if (error) throw error;
-      } else {
-        const { error } = await supabase
-          .from('app_settings')
-          .insert({
-            setting_key: 'role_switching_enabled',
-            setting_value: settingValue,
-            is_global: true
-          });
-
-        if (error) throw error;
-      }
-
-      setRoleSwitchingEnabled(enabled);
-      toast.success(enabled ? 'Rollenwechsel aktiviert' : 'Rollenwechsel deaktiviert');
-    } catch (error) {
-      console.error('Error saving role switching setting:', error);
-      toast.error('Fehler beim Speichern der Einstellung');
-    }
+    await setRoleSwitchingSetting({ enabled }, true); // skipToast = true
+    toast.success(enabled ? 'Rollenwechsel aktiviert' : 'Rollenwechsel deaktiviert');
   };
 
   const regenerateRoleUsers = async () => {
@@ -85,7 +40,7 @@ export function ConsecutiveSlotsSettings() {
     }
     
     try {
-      setLoading(true);
+      setIsRegenerating(true);
       const { data, error } = await supabase.functions.invoke('regenerate-role-users');
 
       if (error) throw error;
@@ -96,7 +51,7 @@ export function ConsecutiveSlotsSettings() {
       console.error('Error regenerating role users:', error);
       toast.error('Fehler beim Generieren der Rollen-Nutzer');
     } finally {
-      setLoading(false);
+      setIsRegenerating(false);
     }
   };
 
@@ -149,7 +104,7 @@ export function ConsecutiveSlotsSettings() {
           
           <Button 
             onClick={regenerateRoleUsers} 
-            disabled={loading}
+            disabled={loading || isRegenerating}
             variant="outline"
             className="w-full"
           >
