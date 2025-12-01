@@ -1,4 +1,4 @@
-import { useAIAssistantSettings } from "@/hooks/core/settings/use-ai-assistant-settings";
+import { useAIAssistantSettings } from "@/hooks";
 
 /**
  * Bridge-Hook for Harbor Chat data
