@@ -26,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/lib/registry/routes";
 import { useLoginBackground } from "@/hooks/use-login-background";
 import { toast } from "sonner";
+import { ConsecutiveSlotsProvider } from "@/hooks/use-consecutive-slots";
 import { 
   LayoutDashboard, 
   MessageSquare, 
@@ -363,5 +364,9 @@ function SettingsContent() {
 }
 
 export function Settings() {
-  return <SettingsContent />;
+  return (
+    <ConsecutiveSlotsProvider>
+      <SettingsContent />
+    </ConsecutiveSlotsProvider>
+  );
 }
