@@ -46,9 +46,7 @@ export function ConsecutiveSlotsSettings() {
       if (error) throw error;
 
       toast.success(`${data.created} Rollen-Nutzer wurden neu generiert`);
-      console.log('Role users regenerated:', data);
-    } catch (error) {
-      console.error('Error regenerating role users:', error);
+    } catch {
       toast.error('Fehler beim Generieren der Rollen-Nutzer');
     } finally {
       setIsRegenerating(false);
