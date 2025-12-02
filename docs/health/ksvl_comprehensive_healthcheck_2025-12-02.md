@@ -286,8 +286,8 @@ file-manager/
 
 | Datei | Problem | Schweregrad | Empfehlung |
 |-------|---------|-------------|------------|
-| calendar-view.tsx | ~400 LOC | Low | Optional: Navigation in eigene Komponente |
-| file-card.tsx | ~380 LOC | Low | Optional: Grid/List Varianten trennen |
+| calendar-view.tsx | ~210 LOC | ✅ OK | Navigation extrahiert |
+| file-card.tsx | ~40 LOC | ✅ OK | In Grid/List/Shared aufgeteilt (war ~430) |
 | user-management.tsx | ~467 LOC | Low | Bereits mit Subkomponenten, OK |
 
 ### 8.4 Debug-Code
@@ -347,8 +347,8 @@ file-manager/
 
 | # | Task | Impact | Aufwand | Beschreibung |
 |---|------|--------|---------|--------------|
-| 4 | Calendar Navigation Extract | Medium | 2-3h | CalendarView Navigation in eigene Komponente auslagern |
-| 5 | FileCard Split | Medium | 2-3h | file-card.tsx in Grid/List Varianten trennen |
+| 4 | ✅ ERLEDIGT | - | - | CalendarNavigation.tsx extrahiert (~170 LOC) |
+| 5 | ✅ ERLEDIGT | - | - | FileCard in Grid/List + Shared Logic aufgeteilt |
 | 6 | Settings Cleanup | Medium | 1-2h | Ungenutzte Login-Background-Optionen identifizieren |
 
 ### Priorität: Niedrig (Optional, Nice-to-have)
