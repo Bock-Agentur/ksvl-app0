@@ -1,11 +1,9 @@
 /**
  * LoginBackgroundSettings Component (Orchestrator)
  * 
- * Refactored from ~1323 lines to ~200 lines.
- * Coordinates all login background settings through subcomponents.
+ * Simplified version - removed preview, card styling, and legacy media selector.
  */
 
-import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { FileSelectorDialog } from "@/components/file-manager";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,9 +16,7 @@ import {
   MediaUploadCard,
   OverlaySettingsCard,
   LoginBlockPositionCard,
-  CardStyleCard,
   CountdownSettingsCard,
-  LoginPreviewCard,
   ActionButtons,
 } from "./components";
 
@@ -40,68 +36,6 @@ const getPreviewUrl = (settings: LoginBackground): string | null => {
   }
   return null;
 };
-
-// Legacy Media Selector Dialog
-function LegacyMediaSelectorDialog({ 
-  open, 
-  onOpenChange, 
-  onSelect 
-}: { 
-  open: boolean; 
-  onOpenChange: (open: boolean) => void; 
-  onSelect: (filename: string) => void;
-}) {
-  const [files, setFiles] = useState<{ name: string }[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (open) {
-      setLoading(true);
-      supabase.storage.from('login-media').list()
-        .then(({ data }) => {
-          setFiles(data || []);
-          setLoading(false);
-        });
-    }
-  }, [open]);
-
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md max-h-[80vh] overflow-hidden">
-        <CardHeader>
-          <CardTitle>Gespeicherte Dateien</CardTitle>
-        </CardHeader>
-        <CardContent className="overflow-y-auto max-h-[60vh]">
-          {loading ? (
-            <p className="text-muted-foreground">Lädt...</p>
-          ) : files.length === 0 ? (
-            <p className="text-muted-foreground">Keine Dateien gefunden</p>
-          ) : (
-            <div className="grid grid-cols-2 gap-2">
-              {files.map((file) => (
-                <button
-                  key={file.name}
-                  onClick={() => onSelect(file.name)}
-                  className="p-2 border rounded hover:bg-muted text-left truncate text-sm"
-                >
-                  {file.name}
-                </button>
-              ))}
-            </div>
-          )}
-          <button 
-            onClick={() => onOpenChange(false)}
-            className="mt-4 w-full p-2 border rounded hover:bg-muted"
-          >
-            Schließen
-          </button>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
 
 export function LoginBackgroundSettings() {
   const form = useLoginBackgroundForm();
@@ -140,7 +74,6 @@ export function LoginBackgroundSettings() {
               previewUrl={previewUrl}
               onFileUpload={form.handleFileUpload}
               onOpenFileSelector={() => form.setFileSelectorOpen(true)}
-              onOpenLegacySelector={() => form.setLegacyMediaSelectorOpen(true)}
             />
           )}
 
@@ -171,14 +104,6 @@ export function LoginBackgroundSettings() {
             onLoginBlockWidthMobileChange={form.handleLoginBlockWidthMobileChange}
           />
 
-          {/* Card Styling */}
-          <CardStyleCard
-            localSettings={form.localSettings}
-            onBorderRadiusChange={form.handleBorderRadiusChange}
-            onOpacityChange={form.handleOpacityChange}
-            onBorderBlurChange={form.handleBorderBlurChange}
-          />
-
           {/* Countdown Settings */}
           <CountdownSettingsCard
             localSettings={form.localSettings}
@@ -193,12 +118,6 @@ export function LoginBackgroundSettings() {
             onCountdownVerticalPositionMobileChange={form.handleCountdownVerticalPositionMobileChange}
           />
 
-          {/* Preview */}
-          <LoginPreviewCard
-            localSettings={form.localSettings}
-            previewUrl={previewUrl}
-          />
-
           {/* Action Buttons */}
           <ActionButtons
             hasUnsavedChanges={form.hasUnsavedChanges}
@@ -208,17 +127,11 @@ export function LoginBackgroundSettings() {
         </CardContent>
       </Card>
 
-      {/* Dialogs */}
+      {/* File Selector Dialog */}
       <FileSelectorDialog
         open={form.fileSelectorOpen}
         onOpenChange={form.setFileSelectorOpen}
         onSelect={form.handleSelectFromFileManager}
-      />
-
-      <LegacyMediaSelectorDialog
-        open={form.legacyMediaSelectorOpen}
-        onOpenChange={form.setLegacyMediaSelectorOpen}
-        onSelect={form.handleSelectFromLegacyMedia}
       />
     </div>
   );
