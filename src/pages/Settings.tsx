@@ -38,7 +38,6 @@ import {
   ChevronRight, 
   ArrowLeft,
   Type,
-  FolderOpen,
   type LucideIcon
 } from "lucide-react";
 
@@ -101,9 +100,6 @@ function SettingsContent() {
     { id: "theme", label: "Theme", description: "Hell/Dunkel-Modus", icon: Brush, component: ThemeManager, group: "design" },
     ...(userIsAdminOrVorstand ? [
       { id: "loginpage", label: "Login-Seite", description: "Hintergrundbild anpassen", icon: Image, component: LoginBackgroundSettings, group: "design" }
-    ] : []),
-    ...(userIsAdminOrVorstand ? [
-      { id: "filemanager", label: "Dateimanager", description: "Medien und Dateien verwalten", icon: FolderOpen, route: ROUTES.protected.fileManager.path, group: "advanced" }
     ] : []),
     { id: "customfields", label: "Custom Fields", description: "Benutzerdefinierte Felder", icon: ListChecks, component: CustomFieldsManager, group: "advanced" },
     ...(userIsAdminOrVorstand ? [
