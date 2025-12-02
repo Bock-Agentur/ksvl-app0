@@ -1,0 +1,388 @@
+# KSVL App – Comprehensive Health Check Report
+
+**Datum:** 2025-12-02  
+**Analyse-Typ:** Read-Only Health Check (keine Code-Änderungen)  
+**Fokus:** Architektur, Stabilität, Datenflüsse, Settings, Performance, Dead Code
+
+---
+
+## 1. Summary (Executive Overview)
+
+Die KSVL App ist eine **gut strukturierte Vereins-App** mit ausgereifter Architektur:
+
+- ✅ **Saubere /core Hook-Struktur** mit klarer Trennung (auth, data, settings, ui, forms)
+- ✅ **Konsolidierter Service-Layer** (user-service, slot-service, file-service, weather-service)
+- ✅ **Zentrales Query-Key-Registry** für React Query Konsistenz
+- ✅ **Einheitliche Navigation Registry** (ROUTES + NAV_ITEMS)
+- ✅ **Logger-Standardisierung** abgeschlossen (keine rohen console.* mehr)
+- ⚠️ **Keine kritischen Probleme**, nur Optimierungspotenzial
+- ⚠️ **Settings-Komplexität** ist beherrschbar, aber umfangreich
+- 📊 **Foundation Score:** 95/100 (nach letztem Health Check)
+
+---
+
+## 2. Routing & Navigation
+
+### 2.1 Routing-Struktur (ROUTES Registry)
+
+| Route | Path | Rollen | Status |
+|-------|------|--------|--------|
+| Dashboard | `/` | `*` (alle) | ✅ OK |
+| Kalender | `/kalender` | `*` (alle) | ✅ OK |
+| Profil | `/profil` | `*` (alle) | ✅ OK |
+| Mitglieder | `/mitglieder` | admin, vorstand | ✅ OK |
+| Dateimanager | `/dateimanager` | admin, vorstand | ✅ OK |
+| Einstellungen | `/einstellungen` | admin | ✅ OK |
+| Berichte | `/berichte` | admin, vorstand | ✅ OK |
+| Settings Manager | `/einstellungen/settings-manager` | admin | ✅ OK |
+| Auth | `/auth` | public | ✅ OK |
+
+### 2.2 Navigation (NAV_ITEMS)
+
+| Position | Items | Rollen |
+|----------|-------|--------|
+| Bottom Nav | Home, Kalender, Profil, Einstellungen | Alle / Admin |
+| Drawer | Mitglieder, Dateien, Berichte | Admin, Vorstand |
+
+### 2.3 Befunde
+
+| Problem | Schweregrad | Beschreibung |
+|---------|-------------|--------------|
+| ✅ BEHOBEN | - | settingsManager jetzt in ROUTES Registry |
+| ✅ Konsistent | - | Alle Routen nutzen ROUTES.protected.* |
+| ✅ Legacy Redirects | - | /login, /dashboard, /slots korrekt umgeleitet |
+
+**Navigation Status: ✅ Vollständig konsistent**
+
+---
+
+## 3. Kernmodule & Abhängigkeiten
+
+### 3.1 Module-Übersicht
+
+| Modul | Hauptkomponenten | Hooks | Service | Status |
+|-------|------------------|-------|---------|--------|
+| **Auth** | Auth.tsx, protected-route | useRole, usePermissions | - | ✅ Stabil |
+| **Dashboard** | dashboard.tsx, widgets/* | useDashboardSettings | - | ✅ Stabil |
+| **Kalender/Slots** | calendar-view, week/month-calendar | useSlots, SlotsContext | slot-service | ✅ Stabil |
+| **User Management** | user-management.tsx, profile-view | useUsers, useProfileData | user-service | ✅ Stabil |
+| **File Manager** | enhanced-file-manager.tsx | useFileManager | file-service | ✅ Stabil |
+| **Settings** | Settings.tsx, *-settings.tsx | useSettingsBatch, useAppSettings | - | ✅ Komplex |
+| **Harbor Chat** | harbor-chat-widget.tsx | useHarborChatData | harbor-chat Edge Fn | ✅ Stabil |
+| **Weather** | weather-widget.tsx | useWeather | weather-service | ✅ Stabil |
+
+### 3.2 Komponentengrößen (Lines of Code)
+
+| Komponente | LOC | Status | Empfehlung |
+|------------|-----|--------|------------|
+| calendar-view.tsx | ~400 | ⚠️ Grenzwertig | Könnte in Subkomponenten aufgeteilt werden |
+| user-management.tsx | ~467 | ⚠️ Grenzwertig | Bereits mit Subkomponenten, OK |
+| profile-view.tsx | ~150 | ✅ OK | Nach Refactoring gut |
+| enhanced-file-manager.tsx | ~207 | ✅ OK | Nach Refactoring gut |
+| dashboard.tsx | ~218 | ✅ OK | Gut strukturiert |
+| login-background-settings.tsx | ~200 | ✅ OK | Nach Refactoring gut |
+
+### 3.3 Abhängigkeits-Analyse
+
+```
+Dashboard
+  └── useUsers (Mitglieder-Count)
+  └── useDashboardSettings (Layout)
+  └── Widgets (Harbor Chat, Weather, etc.)
+        └── useProfileData
+        └── useAIAssistantSettings
+
+Kalender
+  └── SlotsContext (Single Source of Truth)
+  └── usePermissions
+  └── useStickyHeaderLayout
+
+Profile/Users
+  └── useUsers / useProfileData
+  └── useCustomFields
+  └── userService
+
+FileManager
+  └── useFileManager
+  └── useFilePermissions
+  └── fileService
+```
+
+**Befund: Keine zirkulären Abhängigkeiten, klare Hierarchie**
+
+---
+
+## 4. Settings & Konfigurationssystem
+
+### 4.1 Settings-Tabellen
+
+| Tabelle | Zweck | Aktiv genutzt | Komplexität |
+|---------|-------|---------------|-------------|
+| `app_settings` | Key-Value Store | ✅ Ja | **High** |
+| `theme_settings` | Farben/Theme | ✅ Ja | Low |
+| `role_badge_settings` | Rollen-Badge Farben | ✅ Ja | Low |
+| `dashboard_section_definitions` | Dashboard Sections | ✅ Ja | Medium |
+| `dashboard_widget_definitions` | Dashboard Widgets | ✅ Ja | Medium |
+| `menu_item_definitions` | Menü Items | ✅ Ja | Medium |
+
+### 4.2 app_settings Keys (aktiv genutzt)
+
+| Key Pattern | Beschreibung | Komplexität |
+|-------------|--------------|-------------|
+| `marina-menu-settings-template` | Globale Menü-Settings | Medium |
+| `login_background` | Login-Hintergrund Config | High |
+| `header-message` | Header-Nachricht | Low |
+| `sticky_header_layout` | Sticky Header Config | Low |
+| `slot-design-settings` | Slot-Farben | Medium |
+| `aiAssistantSettings` | AI Assistant Config | Medium |
+| `aiWelcomeMessage` | AI Welcome Message | Low |
+| `consecutiveSlotsEnabled` | Konsekutive Slots | Low |
+| `roleWelcomeMessages` | Rollen-Willkommensnachrichten | Medium |
+| `dashboard-settings-template-{role}` | Dashboard Layout pro Rolle | High |
+| `footer-settings-template-{role}` | Footer Layout pro Rolle | Medium |
+| `weather_config` | Wetter-Widget Config | Low |
+
+### 4.3 Settings-Risiken & Vereinfachungspotenzial
+
+| Setting | Risiko | Empfehlung |
+|---------|--------|------------|
+| `login_background` | Medium | Viele Optionen (Mode, Overlay, Position, Countdown) - evtl. vereinfachen |
+| `dashboard-settings-template-{role}` | Medium | 5 Rollen × viele Optionen - OK, aber komplex |
+| `consecutiveSlotsEnabled` | Low | Könnte als konstante True/False entschieden werden |
+
+**Empfehlung:** Settings-System ist funktional, aber umfangreich. Keine akute Vereinfachung nötig, aber bei Login-Background könnten selten genutzte Optionen entfernt werden.
+
+---
+
+## 5. Datenflüsse & Queries
+
+### 5.1 React Query Nutzung
+
+| Domain | Query Key | Caching | Status |
+|--------|-----------|---------|--------|
+| Users | `QUERY_KEYS.users` | ✅ Zentralisiert | OK |
+| Slots | `QUERY_KEYS.slots` | ✅ Via SlotsContext | OK |
+| Settings | `QUERY_KEYS.settingsBatch` | ✅ Batch-Loading | OK |
+| Files | `QUERY_KEYS.fileMetadata` | ✅ Zentralisiert | OK |
+| Theme | `QUERY_KEYS.themeSettings` | ✅ Zentralisiert | OK |
+
+### 5.2 Doppelte Queries - Analyse
+
+| Potentielles Problem | Status | Kommentar |
+|----------------------|--------|-----------|
+| Profile mehrfach geladen | ✅ BEHOBEN | useProfileData konsolidiert |
+| Slots doppelt subscribed | ✅ BEHOBEN | SlotsContext als Single Source |
+| Settings mehrfach abgefragt | ✅ BEHOBEN | useSettingsBatch konsolidiert |
+| Users in Index.tsx geladen | ⚠️ OK | Für Dashboard Stats benötigt |
+
+### 5.3 Index.tsx Hook-Loading
+
+```typescript
+// Aktueller Stand - alle Hooks werden geladen:
+useRole()
+useUsers({ enabled: !!currentRole })
+useAIAssistantSettings({ enabled: !!currentRole })
+useAIWelcomeMessage({ enabled: !!currentRole })
+useHarborChatData({ enabled: !!currentRole })
+useProfileData({ enabled: !!currentRole })
+useFooterMenuSettings(currentRole)
+useDashboardSettings(currentRole)
+useSlotDesign()
+```
+
+**Befund:** Conditional Loading mit `enabled` bereits implementiert. Weitere Optimierung möglich durch Lazy Loading basierend auf Widget-Sichtbarkeit.
+
+---
+
+## 6. Performance & Animationen
+
+### 6.1 Animationen-Audit
+
+| Animation | Datei | Typ | Status |
+|-----------|-------|-----|--------|
+| `animate-pulse` | page-loader, loading states | Funktional | ✅ Behalten |
+| `animate-spin` | Loader2 icons | Funktional | ✅ Behalten |
+| `animate-in/out` | Dialog, Sheet, Select | UI Library | ✅ Behalten |
+| `card-shadow-soft` | Cards | Design | ✅ Standardisiert |
+
+### 6.2 Entfernte Animationen (bereits bereinigt)
+
+- ❌ `animate-fade-in` auf Pages
+- ❌ Dashboard Animationen (use-dashboard-animations)
+- ❌ Footer Animationen (use-footer-animation)
+- ❌ ~270 Zeilen CSS Keyframes
+
+### 6.3 Performance-Empfehlungen
+
+| Bereich | Status | Empfehlung |
+|---------|--------|------------|
+| Bundle Size | ⚠️ Nicht gemessen | Tree-shaking für Lucide Icons prüfen |
+| Initial Load | ✅ OK | PageLoader verhindert Layout Shifts |
+| React Query | ✅ OK | staleTime/gcTime konfiguriert |
+| Realtime | ✅ OK | Single Subscription via SlotsContext |
+
+---
+
+## 7. File Manager – Spezialanalyse
+
+### 7.1 Struktur
+
+```
+file-manager/
+├── enhanced-file-manager.tsx (~207 LOC) - Orchestrator
+├── file-card.tsx (~380 LOC) - Einzelne Datei-Karte ⚠️
+├── components/
+│   ├── file-manager-filters.tsx
+│   ├── file-manager-grid.tsx
+│   ├── file-manager-actions-bar.tsx
+│   ├── file-detail-drawer.tsx
+│   ├── file-upload-drawer.tsx
+│   ├── file-preview.tsx
+│   ├── bulk-permissions-dialog.tsx
+│   └── delete-confirmation-dialog.tsx
+├── hooks/
+│   └── use-file-manager-actions.ts
+└── types/
+    └── file-manager.types.ts
+```
+
+### 7.2 Befunde
+
+| Problem | Schweregrad | Beschreibung |
+|---------|-------------|--------------|
+| file-card.tsx | ⚠️ Medium | 380 LOC - könnte in Grid/List Varianten gesplittet werden |
+| RBAC funktional | ✅ OK | allowed_roles + RLS funktioniert |
+| Mobile UX | ✅ OK | FAB Button, Touch-freundlich |
+| Image-Only | ✅ OK | PDF-Support entfernt wie geplant |
+
+### 7.3 Empfehlungen
+
+1. **file-card.tsx aufteilen:** FileCardList + FileCardGrid Varianten
+2. **Thumbnail-Caching:** Bereits client-side implementiert
+3. **Permissions-Berechnung:** Client-side statt DB-Calls - ✅ bereits optimiert
+
+---
+
+## 8. Code-Qualität & Technische Schulden
+
+### 8.1 Keine God Components mehr
+
+| Datei | LOC vorher | LOC nachher | Status |
+|-------|------------|-------------|--------|
+| login-background-settings.tsx | 1324 | ~200 | ✅ Refactored |
+| profile-view.tsx | 597 | ~150 | ✅ Refactored |
+| enhanced-file-manager.tsx | 564 | ~207 | ✅ Refactored |
+
+### 8.2 Dead Code Status
+
+| Typ | Status | Details |
+|-----|--------|---------|
+| Alte Komponenten | ✅ Bereinigt | Keine *-old.tsx Dateien |
+| Ungenutzte Hooks | ✅ Bereinigt | Animation-Hooks entfernt |
+| Bridge Files | ✅ Bereinigt | 29 Bridge-Dateien entfernt |
+| Debug Console.log | ✅ Standardisiert | Nur in logger.ts |
+
+### 8.3 Verbleibende Optimierungsmöglichkeiten
+
+| Datei | Problem | Schweregrad | Empfehlung |
+|-------|---------|-------------|------------|
+| calendar-view.tsx | ~400 LOC | Low | Optional: Navigation in eigene Komponente |
+| file-card.tsx | ~380 LOC | Low | Optional: Grid/List Varianten trennen |
+| user-management.tsx | ~467 LOC | Low | Bereits mit Subkomponenten, OK |
+
+### 8.4 Debug-Code
+
+| Typ | Vorkommen | Status |
+|-----|-----------|--------|
+| console.log | 0 (außer logger.ts) | ✅ Bereinigt |
+| console.error | 0 (außer logger.ts) | ✅ Bereinigt |
+| TODO Kommentare | Wenige, dokumentiert | ✅ OK |
+
+---
+
+## 9. Security & RLS – Überblick
+
+### 9.1 Auth-System
+
+| Aspekt | Implementation | Status |
+|--------|----------------|--------|
+| Auth Provider | Supabase Auth + AuthContext | ✅ OK |
+| Session Handling | useAuth Hook | ✅ OK |
+| Role Management | RoleProvider + user_roles Tabelle | ✅ OK |
+| Protected Routes | ProtectedRoute Component | ✅ OK |
+
+### 9.2 RLS Policies
+
+| Tabelle | RLS | Status |
+|---------|-----|--------|
+| profiles | ✅ Enabled | Eingeschränkt auf eigenes Profil + Admin |
+| slots | ✅ Enabled | Mit UNIQUE INDEX gegen Double-Booking |
+| file_metadata | ✅ Enabled | RBAC mit allowed_roles |
+| app_settings | ✅ Enabled | Admin-only für globale Settings |
+| user_roles | ✅ Enabled | Nur lesend für User |
+
+### 9.3 Storage Security
+
+| Bucket | Public | RLS | Status |
+|--------|--------|-----|--------|
+| login-media | ✅ Ja | - | OK für Login-Hintergründe |
+| member-documents | ❌ Nein | ✅ can_access_file() | OK |
+| documents | ❌ Nein | ✅ can_access_file() | OK |
+
+**Security Status: ✅ Keine kritischen Lücken identifiziert**
+
+---
+
+## 10. Prio-Liste – Konkreter Optimierungsplan
+
+### Priorität: Hoch (Impact: Hoch, Aufwand: Niedrig)
+
+| # | Task | Impact | Aufwand | Beschreibung |
+|---|------|--------|---------|--------------|
+| 1 | ✅ ERLEDIGT | - | - | AlertDialog Migration |
+| 2 | ✅ ERLEDIGT | - | - | Card-Styles Standardisierung |
+| 3 | ✅ ERLEDIGT | - | - | Logger Standardisierung |
+
+### Priorität: Mittel (Impact: Mittel, Aufwand: Mittel)
+
+| # | Task | Impact | Aufwand | Beschreibung |
+|---|------|--------|---------|--------------|
+| 4 | Calendar Navigation Extract | Medium | 2-3h | CalendarView Navigation in eigene Komponente auslagern |
+| 5 | FileCard Split | Medium | 2-3h | file-card.tsx in Grid/List Varianten trennen |
+| 6 | Settings Cleanup | Medium | 1-2h | Ungenutzte Login-Background-Optionen identifizieren |
+
+### Priorität: Niedrig (Optional, Nice-to-have)
+
+| # | Task | Impact | Aufwand | Beschreibung |
+|---|------|--------|---------|--------------|
+| 7 | Bundle Analysis | Low | 1h | Lucide Icons Tree-Shaking prüfen |
+| 8 | Dashboard Widget Lazy Loading | Low | 2-3h | Widgets nur laden wenn sichtbar |
+| 9 | E2E Tests | Low | 8h+ | Playwright Tests für kritische Flows |
+
+---
+
+## Fazit
+
+Die KSVL App befindet sich in einem **sehr guten, stabilen Zustand**:
+
+- **Architektur:** Sauber und konsistent
+- **Datenflüsse:** Optimiert, keine doppelten Queries
+- **Code-Qualität:** God Components aufgelöst, Logger standardisiert
+- **Security:** RLS aktiv, keine kritischen Lücken
+- **Performance:** Animationen bereinigt, React Query optimiert
+
+**Keine dringenden Maßnahmen erforderlich.** Die optionalen Tasks (4-9) können bei Bedarf umgesetzt werden, sind aber keine Blocker für den produktiven Betrieb.
+
+**Empfehlung:** App kann als Feature-ready betrachtet werden. Fokus auf Testing und User-Feedback.
+
+---
+
+**Foundation Score: 95/100** ✅
+
+| Kategorie | Score | Kommentar |
+|-----------|-------|-----------|
+| Architektur | 19/20 | Sehr gut strukturiert |
+| Code-Qualität | 18/20 | Keine God Components mehr |
+| Performance | 18/20 | Optimiert, leichte Verbesserungen möglich |
+| Security | 20/20 | Vollständig abgesichert |
+| Wartbarkeit | 20/20 | Klare Patterns, gute Dokumentation |
