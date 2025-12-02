@@ -163,16 +163,16 @@ export const APP_MODULES: AppModule[] = [
   // ========================================
   {
     id: 'slots',
-    name: 'Krantermin-Buchung',
-    description: 'Slot-Management, Kran-Buchungen, Kalender-Ansicht',
+    name: 'Krankalender & Slots',
+    description: 'Kalender-Ansichten (Tag/Woche/Monat/Liste), Slot-Buchungen',
     type: 'domain',
     lifecycle: 'stable',
-    routes: ['/slots'],
+    routes: ['/kalender'],
     requiredRoles: ['admin', 'kranfuehrer', 'mitglied'],
     components: [
-      'slot-management.tsx',
-      'slot-form-dialog.tsx',
       'calendar-view.tsx',
+      'calendar/slot-list-view.tsx',
+      'slot-form-dialog.tsx',
       'month-calendar.tsx',
       'week-calendar.tsx',
       'common/slot-form.tsx'

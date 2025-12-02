@@ -22,7 +22,6 @@ export function StickyHeaderLayoutSettings() {
   const handlePageToggle = (page: keyof typeof settings.pages, enabled: boolean) => {
     const pageNames = {
       calendar: 'Kalender',
-      slotManagement: 'Slot Management',
       userManagement: 'Mitgliederverwaltung',
       profile: 'Profilseite',
       settings: 'Einstellungsseite'
@@ -85,18 +84,6 @@ export function StickyHeaderLayoutSettings() {
               />
             </div>
 
-            {/* Slot Management */}
-            <div className="flex items-center justify-between">
-              <Label htmlFor="sticky-slots" className="text-sm font-normal">
-                🎯 Slot Management
-              </Label>
-              <Switch
-                id="sticky-slots"
-                checked={settings.pages.slotManagement}
-                onCheckedChange={(checked) => handlePageToggle('slotManagement', checked)}
-              />
-            </div>
-
             {/* Mitgliederverwaltung */}
             <div className="flex items-center justify-between">
               <Label htmlFor="sticky-users" className="text-sm font-normal">
@@ -144,7 +131,6 @@ export function StickyHeaderLayoutSettings() {
               </p>
               <ul className="list-disc list-inside space-y-1">
                 {settings.pages.calendar && <li>📅 Kalender-Seite</li>}
-                {settings.pages.slotManagement && <li>🎯 Slot Management</li>}
                 {settings.pages.userManagement && <li>👥 Mitgliederverwaltung</li>}
                 {settings.pages.profile && <li>👤 Profilseite</li>}
                 {settings.pages.settings && <li>⚙️ Einstellungsseite</li>}
