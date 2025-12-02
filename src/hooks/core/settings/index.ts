@@ -14,5 +14,4 @@ export { useRoleBadgeSettings } from './use-role-badge-settings';
 export { useAIAssistantSettings } from './use-ai-assistant-settings';
 export { useAIWelcomeMessage } from './use-ai-welcome-message';
 export { useWelcomeMessages } from './use-welcome-messages';
-export { useStickyHeaderLayout } from './use-sticky-header-layout';
 export { useSlotDesign, type SlotDesignSettings } from './use-slot-design';

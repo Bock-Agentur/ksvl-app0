@@ -3,8 +3,6 @@
  * 
  * Orchestrator for calendar display with multiple view modes.
  * Navigation extracted to CalendarNavigation component.
- * 
- * Refactored: Navigation logic moved to calendar/calendar-navigation.tsx
  */
 
 import { useState, useEffect, useMemo } from "react";
@@ -12,7 +10,7 @@ import { WeekCalendar } from "./week-calendar";
 import { MonthCalendar } from "./month-calendar";
 import { SlotListView } from "./calendar/slot-list-view";
 import { Card, CardHeader, CardContent } from "@/components/ui/card";
-import { usePermissions, useStickyHeaderLayout, useIsMobile } from "@/hooks";
+import { usePermissions, useIsMobile } from "@/hooks";
 import { SlotFormDialog } from "./slot-form-dialog";
 import { Slot } from "@/types";
 import { startOfWeek, addDays, isSameDay, parseISO } from "date-fns";
@@ -32,9 +30,6 @@ export function CalendarView({
     slots,
     isLoading: slotsLoading
   } = useSlotsContext();
-  const { isPageSticky, isLoading: stickyLoading } = useStickyHeaderLayout();
-  const isStickyEnabled = isPageSticky('calendar');
-  const isLoading = slotsLoading || stickyLoading;
   
   const isMobile = useIsMobile();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -126,11 +121,9 @@ export function CalendarView({
     setSelectedDate(day);
   };
 
-  if (isLoading) {
+  if (slotsLoading) {
     return (
-      <div className={cn(
-        isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
-      )}>
+      <div className="space-y-6">
         <div className="pt-4 pb-0 my-0 p-4">
           <Card className="animate-pulse">
             <CardHeader>
@@ -153,14 +146,9 @@ export function CalendarView({
   }
 
   return (
-    <div className={cn(
-      isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
-    )}>
+    <div className="space-y-6">
       {/* Navigation Card */}
-      <div className={cn(
-        "pt-4 pb-0 my-0 p-4",
-        isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
-      )}>
+      <div className="pt-4 pb-0 my-0 p-4">
         <CalendarNavigation
           viewMode={viewMode}
           onViewModeChange={setViewMode}
@@ -178,10 +166,7 @@ export function CalendarView({
       </div>
 
       {/* Calendar Content */}
-      <div className={cn(
-        viewMode !== "list" ? "px-4" : "",
-        isStickyEnabled ? "flex-1 overflow-y-auto overflow-x-hidden pb-6" : ""
-      )}>
+      <div className={viewMode !== "list" ? "px-4" : ""}>
         {(viewMode === "day" || viewMode === "week") && (
           <WeekCalendar 
             selectedDate={selectedDate} 

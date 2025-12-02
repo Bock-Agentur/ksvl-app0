@@ -1,17 +1,15 @@
 /**
  * Profile View Component
  * 
- * Refactored: Uses useProfileLoader hook and ProfileStickyHeader subcomponent.
- * Reduced from ~600 lines to ~300 lines.
+ * Refactored: Uses useProfileLoader hook.
+ * Simplified: Removed sticky header feature.
  */
 import { useState, useEffect } from "react";
-import { useStickyHeaderLayout, useToast, useRole, useCustomFields, useCustomFieldValues, useRoleBadgeSettings } from "@/hooks";
+import { useToast, useRole, useCustomFields, useCustomFieldValues, useRoleBadgeSettings } from "@/hooks";
 import { ProfileDocumentsSection } from "@/components/profile/profile-documents-section";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { ProfileFormCards } from "@/components/profile/profile-form-cards";
-import { ProfileStickyHeader } from "@/components/profile/profile-sticky-header";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { User as UserType, UserRole, ProfileViewProps } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { userLogger } from "@/lib/logger";
@@ -38,8 +36,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const targetUserId = userId || roleCurrentUser?.id;
   const { customValues, saveCustomValue, saveAllCustomValues } = useCustomFieldValues(targetUserId || '');
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
-  const { isPageSticky } = useStickyHeaderLayout();
-  const isStickyEnabled = isPageSticky('profile');
 
   // Sync editedUser with user
   useEffect(() => {
@@ -56,10 +52,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   
   if (loading) {
     return (
-      <div className={cn(
-        "p-4 max-w-7xl mx-auto",
-        isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
-      )}>
+      <div className="p-4 max-w-7xl mx-auto space-y-6">
         <Card className="animate-pulse">
           <CardHeader>
             <div className="flex items-center gap-4">
@@ -273,18 +266,15 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
 
   const content = (
     <div className="space-y-6">
-      {/* Hero Card - nur anzeigen wenn sticky NICHT enabled ist */}
-      {!isStickyEnabled && (
-        <ProfileHeader
-          user={user}
-          isEditing={isEditing}
-          getRoleBadgeInlineStyle={getRoleBadgeInlineStyle}
-          onEdit={handleStartEditing}
-          onSave={handleSaveProfile}
-          onCancel={handleCancelEditing}
-          onBack={onBack}
-        />
-      )}
+      <ProfileHeader
+        user={user}
+        isEditing={isEditing}
+        getRoleBadgeInlineStyle={getRoleBadgeInlineStyle}
+        onEdit={handleStartEditing}
+        onSave={handleSaveProfile}
+        onCancel={handleCancelEditing}
+        onBack={onBack}
+      />
 
       <ProfileFormCards
         user={user}
@@ -322,31 +312,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   }
 
   return (
-    <div className={cn(
-      "container mx-auto p-4 max-w-4xl",
-      isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : ""
-    )}>
-      {/* Sticky Header - nur im Sticky-Modus anzeigen */}
-      {isStickyEnabled && (
-        <ProfileStickyHeader
-          user={user}
-          isEditing={isEditing}
-          customValues={customValues}
-          getRoleBadgeInlineStyle={getRoleBadgeInlineStyle}
-          onEdit={handleStartEditing}
-          onSave={handleSaveProfile}
-          onCancel={handleCancelEditing}
-          onBack={onBack}
-        />
-      )}
-
-      {/* Scrollable Content */}
-      <div className={cn(
-        "space-y-6",
-        isStickyEnabled ? "flex-1 overflow-y-auto pt-6 pb-12" : "pb-8"
-      )}>
-        {content}
-      </div>
+    <div className="container mx-auto p-4 max-w-4xl pb-8">
+      {content}
     </div>
   );
 }

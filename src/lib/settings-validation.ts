@@ -113,27 +113,6 @@ export const HeaderMessageSettingsSchema = z.object({
 export type HeaderMessageSettingsValidated = z.infer<typeof HeaderMessageSettingsSchema>;
 
 // ============================================================================
-// STICKY HEADER LAYOUT SETTINGS
-// ============================================================================
-
-export const StickyHeaderLayoutSettingsSchema = z.object({
-  enabled: z.boolean().default(false),
-  pages: z.object({
-    calendar: z.boolean().default(false),
-    userManagement: z.boolean().default(false),
-    profile: z.boolean().default(false),
-    settings: z.boolean().default(false),
-  }).default({
-    calendar: false,
-    userManagement: false,
-    profile: false,
-    settings: false,
-  }),
-}).passthrough();
-
-export type StickyHeaderLayoutSettingsValidated = z.infer<typeof StickyHeaderLayoutSettingsSchema>;
-
-// ============================================================================
 // AI ASSISTANT SETTINGS
 // ============================================================================
 
