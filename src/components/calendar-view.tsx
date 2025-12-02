@@ -200,16 +200,18 @@ export function CalendarView({
                   <Calendar className="h-4 w-4" />
                   {!isMobile && <span className="ml-1">Tag</span>}
                 </Button>
-                <Button 
-                  variant={viewMode === "week" ? "default" : "outline"} 
-                  size={isMobile ? "icon" : "sm"}
-                  onClick={() => setViewMode("week")}
-                  title="Wochenansicht"
-                  className="h-9"
-                >
-                  <CalendarDays className="h-4 w-4" />
-                  {!isMobile && <span className="ml-1">Woche</span>}
-                </Button>
+                {!isMobile && (
+                  <Button 
+                    variant={viewMode === "week" ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => setViewMode("week")}
+                    title="Wochenansicht"
+                    className="h-9"
+                  >
+                    <CalendarDays className="h-4 w-4" />
+                    <span className="ml-1">Woche</span>
+                  </Button>
+                )}
                 <Button 
                   variant={viewMode === "month" ? "default" : "outline"} 
                   size={isMobile ? "icon" : "sm"}
