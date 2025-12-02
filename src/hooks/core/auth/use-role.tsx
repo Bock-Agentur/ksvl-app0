@@ -5,6 +5,7 @@ import { useMenuSettings } from "../settings/use-menu-settings";
 import { useAuth } from "@/contexts/auth-context";
 import { useUserData, useUsersData } from "../data/use-users-data";
 import { useSettingsBatch } from "../settings/use-settings-batch";
+import { logger } from "@/lib/logger";
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
@@ -20,7 +21,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     authLoading = auth.isLoading;
   } catch (error) {
     // Fallback when AuthContext is not available
-    console.warn("AuthContext not available in RoleProvider:", error);
+    logger.warn('AUTH', 'AuthContext not available in RoleProvider', error);
   }
   
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -62,7 +63,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     
     // ✅ FIX: Beende Loading auch wenn kein Profil gefunden wurde
     if (!profileData) {
-      console.warn('No profile data found for user');
+      logger.warn('AUTH', 'No profile data found for user');
       setIsInitialLoad(false);
       return;
     }
@@ -172,7 +173,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       });
     } else {
       // If no role user exists, keep current user but change role
-      console.warn(`No role user found for ${role}`);
+      logger.warn('AUTH', `No role user found for ${role}`);
     }
   };
   

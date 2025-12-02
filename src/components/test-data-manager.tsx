@@ -9,6 +9,7 @@ import { useToast, useAppSettings } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, UserCheck, Calendar, Trash2, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { logger } from "@/lib/logger";
 
 export function TestDataManager() {
   const { toast } = useToast();
@@ -169,7 +170,7 @@ export function TestDataManager() {
       });
 
     } catch (error) {
-      console.error('Error generating test slots:', error);
+      logger.error('SLOT', 'Error generating test slots', error);
       toast({
         title: "Fehler",
         description: "Test-Slots konnten nicht erstellt werden.",
