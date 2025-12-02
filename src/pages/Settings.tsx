@@ -13,11 +13,10 @@ import { CustomFieldsManager } from "@/components/custom-fields-manager";
 import { LoginBackgroundSettings } from "@/components/settings/login-background";
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
-import { StickyHeaderLayoutSettings } from "@/components/sticky-header-layout-settings";
 import { HeaderMessageSettings } from "@/components/header-message-settings";
 import { PageLoader } from "@/components/common/page-loader";
 import { PageLayout } from "@/components/common/page-layout";
-import { useStickyHeaderLayout, useRole, useIsMobile, useLoginBackground, ConsecutiveSlotsProvider } from "@/hooks";
+import { useRole, useIsMobile, useLoginBackground, ConsecutiveSlotsProvider } from "@/hooks";
 import { UserRole } from "@/types";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -39,7 +38,6 @@ import {
   ChevronRight, 
   ArrowLeft,
   Type,
-  StickyNote,
   FolderOpen,
   type LucideIcon
 } from "lucide-react";
@@ -63,8 +61,6 @@ function SettingsContent() {
   
   // ✅ Nur laden wenn Overview sichtbar (Background benötigt)
   const { background, isLoading: bgLoading } = useLoginBackground({ enabled: isOverview });
-  const { isPageSticky } = useStickyHeaderLayout({ enabled: isOverview });
-  const isStickyEnabled = isPageSticky('settings');
   
   const showBackground = false; // Desktop background feature removed
   const isPageLoading = roleLoading || (isOverview && bgLoading);
@@ -104,8 +100,7 @@ function SettingsContent() {
     { id: "design", label: "Design", description: "Farben und Stile", icon: Palette, component: DesignSettings, group: "design" },
     { id: "theme", label: "Theme", description: "Hell/Dunkel-Modus", icon: Brush, component: ThemeManager, group: "design" },
     ...(userIsAdminOrVorstand ? [
-      { id: "loginpage", label: "Login-Seite", description: "Hintergrundbild anpassen", icon: Image, component: LoginBackgroundSettings, group: "design" },
-      { id: "stickyheader", label: "Fixierte Ansicht", description: "Header-Cards fixieren", icon: StickyNote, component: StickyHeaderLayoutSettings, group: "design" }
+      { id: "loginpage", label: "Login-Seite", description: "Hintergrundbild anpassen", icon: Image, component: LoginBackgroundSettings, group: "design" }
     ] : []),
     ...(userIsAdminOrVorstand ? [
       { id: "filemanager", label: "Dateimanager", description: "Medien und Dateien verwalten", icon: FolderOpen, route: ROUTES.protected.fileManager.path, group: "advanced" }
@@ -305,8 +300,7 @@ function SettingsContent() {
     <div
       className={cn(
         "min-h-screen pb-20 bg-background",
-        isMobile ? "pt-4" : "p-6",
-        isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : ""
+        isMobile ? "pt-4" : "p-6"
       )}
       style={showBackground ? {
         backgroundImage: `url(${background})`,
@@ -316,49 +310,39 @@ function SettingsContent() {
         backgroundAttachment: 'fixed'
       } : undefined}
     >
-      <div className={cn(
-        "max-w-4xl mx-auto",
-        isStickyEnabled ? "flex flex-col h-full overflow-hidden" : ""
-      )}>
-        {/* Sticky Header */}
-        <div className={cn(
-          isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <Card className={cn(
+          "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
+          isMobile && "mx-4"
         )}>
-          <Card className={cn(
-            "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
-            isMobile && "mx-4"
-          )}>
-            <CardHeader>
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={handleBack}
-                  className={cn(
-                    "rounded-full bg-white flex items-center justify-center hover:bg-white/90 transition-colors shadow-md",
-                    isMobile ? "w-8 h-8" : "w-10 h-10"
-                  )}
-                >
-                  <ArrowLeft className={cn(
-                    "text-foreground",
-                    isMobile ? "h-4 w-4" : "h-5 w-5"
-                  )} />
-                </button>
-                <CardTitle className={cn(
-                  "font-bold flex-1 text-center text-white",
-                  isMobile ? "text-xl" : "text-2xl"
-                )}>
-                  {activeLabel}
-                </CardTitle>
-                <div className="w-10" />
-              </div>
-            </CardHeader>
-          </Card>
-        </div>
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleBack}
+                className={cn(
+                  "rounded-full bg-white flex items-center justify-center hover:bg-white/90 transition-colors shadow-md",
+                  isMobile ? "w-8 h-8" : "w-10 h-10"
+                )}
+              >
+                <ArrowLeft className={cn(
+                  "text-foreground",
+                  isMobile ? "h-4 w-4" : "h-5 w-5"
+                )} />
+              </button>
+              <CardTitle className={cn(
+                "font-bold flex-1 text-center text-white",
+                isMobile ? "text-xl" : "text-2xl"
+              )}>
+                {activeLabel}
+              </CardTitle>
+              <div className="w-10" />
+            </div>
+          </CardHeader>
+        </Card>
 
-        {/* Scrollable Settings Content */}
-        <div className={cn(
-          isMobile ? "px-4" : "",
-          isStickyEnabled ? "flex-1 overflow-y-auto" : ""
-        )}>
+        {/* Settings Content */}
+        <div className={isMobile ? "px-4" : ""}>
           {ActiveComponent && <ActiveComponent />}
         </div>
       </div>

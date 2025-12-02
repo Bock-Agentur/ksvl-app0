@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useStickyHeaderLayout, useUsers, DatabaseUser, useSearchFilter, useCommonFilters, useFormHandler, useCommonFieldConfigs, useRoleBadgeSettings, useToast } from "@/hooks";
+import { useUsers, DatabaseUser, useSearchFilter, useCommonFilters, useFormHandler, useCommonFieldConfigs, useRoleBadgeSettings, useToast } from "@/hooks";
 import { Card, CardContent } from "@/components/ui/card";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { User, UserRole, generateRolesFromPrimary } from "@/types";
@@ -22,8 +22,6 @@ export function UserManagementRefactored() {
   const { users: dbUsers, loading, deleteUser: deleteDbUser, refreshUsers } = useUsers();
   const { toast } = useToast();
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
-  const { isPageSticky } = useStickyHeaderLayout();
-  const isStickyEnabled = isPageSticky('userManagement');
   const [sortBy, setSortBy] = useState<'name' | 'email' | 'memberNumber' | 'role'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   
@@ -334,10 +332,7 @@ export function UserManagementRefactored() {
 
   if (loading) {
     return (
-      <div className={cn(
-        "p-4 max-w-7xl mx-auto",
-        isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
-      )}>
+      <div className="p-4 max-w-7xl mx-auto space-y-6">
         <Card className="animate-pulse">
           <CardContent className="space-y-4">
             {[1, 2, 3, 4, 5].map((i) => (
@@ -368,15 +363,9 @@ export function UserManagementRefactored() {
   }
 
   return (
-    <div className={cn(
-      "p-4 max-w-7xl mx-auto",
-      isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
-    )}>
-      {/* Fixed Header Area */}
-      <div className={cn(
-        "space-y-2",
-        isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
-      )}>
+    <div className="p-4 max-w-7xl mx-auto space-y-6">
+      {/* Header Area */}
+      <div className="space-y-2">
         <UserHeroSection 
           stats={stats} 
           onAddUser={handleAddUser}
@@ -404,11 +393,8 @@ export function UserManagementRefactored() {
         />
       </div>
 
-      {/* Scrollable Content Area */}
-      <div className={cn(
-        "space-y-6",
-        isStickyEnabled ? "flex-1 overflow-y-auto" : ""
-      )}>
+      {/* Content Area */}
+      <div className="space-y-6">
         <UserListSection
           users={sortedUsers}
           searchTerm={searchFilter.searchTerm}
