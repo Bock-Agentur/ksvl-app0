@@ -1,215 +1,53 @@
 /**
  * Profile View Component
  * 
- * TODO: REFACTORING CANDIDATE (God Component ~587 Zeilen)
- * Empfohlene Aufteilung in Subkomponenten:
- * - ProfileEditForm: Bearbeitungs-Formular-Logik
- * - ProfileLoadingState: Lade-/Fehlerzustände
- * - ProfileStickyHeader: Sticky-Header-Variante
- * - useProfileLoader: Custom Hook für Datenladung
+ * Refactored: Uses useProfileLoader hook and ProfileStickyHeader subcomponent.
+ * Reduced from ~600 lines to ~300 lines.
  */
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useStickyHeaderLayout, useToast, useRole, useCustomFields, useCustomFieldValues, useRoleBadgeSettings } from "@/hooks";
-import { Edit, Save, X, ArrowLeft } from "lucide-react";
 import { ProfileDocumentsSection } from "@/components/profile/profile-documents-section";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { ProfileFormCards } from "@/components/profile/profile-form-cards";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { ProfileStickyHeader } from "@/components/profile/profile-sticky-header";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { User as UserType, UserRole, CustomField, ProfileViewProps, generateRolesFromPrimary } from "@/types";
+import { User as UserType, UserRole, ProfileViewProps } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
-import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 import { userLogger } from "@/lib/logger";
 import { userService } from "@/lib/services/user-service";
-
-// ProfileViewProps is now imported from @/types
-
-const roleLabels: Record<UserRole, string> = {
-  gastmitglied: "Gastmitglied",
-  mitglied: "Mitglied",
-  kranfuehrer: "Kranführer",
-  admin: "Admin",
-  vorstand: "Vorstand"
-};
-
+import { useProfileLoader } from "@/components/profile/hooks/use-profile-loader";
 
 interface ProfileComponentProps {
   currentRole?: UserRole;
-  userId?: string; // Optional: Wenn gesetzt, zeigt es das Profil eines anderen Benutzers (für Admin)
-  onUpdate?: () => void; // Optional: Callback nach Update
-  isDialog?: boolean; // Optional: Zeigt an, ob es in einem Dialog angezeigt wird
-  onBack?: () => void; // Optional: Callback zum Zurück-Button
+  userId?: string;
+  onUpdate?: () => void;
+  isDialog?: boolean;
+  onBack?: () => void;
 }
 
 export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, onBack }: ProfileComponentProps = {}) {
-  const [user, setUser] = useState<UserType | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading, isAdmin, aiInfoEnabled, setAiInfoEnabled, reload } = useProfileLoader({ userId });
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<UserType | null>(null);
   const [editedCustomValues, setEditedCustomValues] = useState<Record<string, any>>({});
-  const [aiInfoEnabled, setAiInfoEnabled] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
   const { toast } = useToast();
   const { currentUser: roleCurrentUser, currentRole: roleCurrentRole } = useRole();
   
-  // Load custom fields from database
   const { customFields, loading: fieldsLoading, addCustomField, deleteCustomField } = useCustomFields();
-  
-  // Load custom field values for the user
   const targetUserId = userId || roleCurrentUser?.id;
   const { customValues, saveCustomValue, saveAllCustomValues } = useCustomFieldValues(targetUserId || '');
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
   const { isPageSticky } = useStickyHeaderLayout();
   const isStickyEnabled = isPageSticky('profile');
 
-  // Function definitions BEFORE useEffect to avoid Temporal Dead Zone
-  const checkAdminStatus = useCallback(async () => {
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
-    if (currentUser) {
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', currentUser.id);
-      
-      // Admin or Vorstand can edit restricted fields
-      setIsAdmin(roles?.some(r => r.role === 'admin' || r.role === 'vorstand') || false);
-    }
-  }, []);
-
-  const loadCurrentUser = useCallback(async () => {
-    try {
-      setLoading(true);
-      
-      // If userId is provided, load that user's profile (admin view)
-      // Otherwise, use the current user from RoleContext (respects role switching)
-      let targetUserId: string;
-      
-      if (userId) {
-        targetUserId = userId;
-      } else if (roleCurrentUser) {
-        // Use the current user from RoleContext (role switching aware)
-        targetUserId = roleCurrentUser.id;
-      } else {
-        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
-        if (authError || !authUser) {
-          throw new Error('Nicht angemeldet');
-        }
-        targetUserId = authUser.id;
-      }
-
-      // Fetch user profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', targetUserId)
-        .single();
-
-      if (profileError) throw profileError;
-
-      // Fetch user roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', targetUserId);
-
-      if (rolesError) throw rolesError;
-
-      const roles = userRoles?.map(r => r.role as UserRole) || [];
-      const primaryRole = roles.find(r => r !== 'mitglied') || roles[0] || 'mitglied';
-
-      const userData: UserType = {
-        id: profile.id,
-        name: profile.name || '',
-        firstName: profile.first_name || undefined,
-        lastName: profile.last_name || undefined,
-        username: profile.username || undefined,
-        email: profile.email,
-        phone: profile.phone || '',
-        boatName: profile.boat_name || '',
-        memberNumber: profile.member_number || '',
-        streetAddress: profile.street_address || undefined,
-        postalCode: profile.postal_code || undefined,
-        city: profile.city || undefined,
-        roles: roles,
-        role: primaryRole as UserRole,
-        status: (profile.status === 'active' ? 'active' : 'inactive') as 'active' | 'inactive',
-        joinDate: profile.entry_date || profile.created_at || '',
-        joinedAt: profile.entry_date || profile.created_at || '',
-        isActive: profile.status === 'active',
-        
-        // Existing fields
-        oesvNumber: profile.oesv_number || '',
-        address: profile.address || '',
-        berthNumber: profile.berth_number || '',
-        berthType: profile.berth_type || '',
-        birthDate: profile.birth_date || '',
-        entryDate: profile.entry_date || '',
-        dinghyBerthNumber: profile.dinghy_berth_number || '',
-        boatType: profile.boat_type || '',
-        boatLength: profile.boat_length || undefined,
-        boatWidth: profile.boat_width || undefined,
-        parkingPermitNumber: profile.parking_permit_number || '',
-        parkingPermitIssueDate: profile.parking_permit_issue_date || '',
-        beverageChipNumber: profile.beverage_chip_number || '',
-        beverageChipIssueDate: profile.beverage_chip_issue_date || '',
-        emergencyContact: profile.emergency_contact || '',
-        notes: profile.notes || '',
-        vorstandFunktion: profile.vorstand_funktion || '',
-        dataPublicInKsvl: profile.data_public_in_ksvl === true,
-        contactPublicInKsvl: profile.contact_public_in_ksvl === true,
-        
-        // New fields
-        passwordChangeRequired: profile.password_change_required || false,
-        twoFactorMethod: profile.two_factor_method || 'Aus',
-        membershipType: profile.membership_type || undefined,
-        membershipStatus: profile.membership_status || 'Aktiv',
-        boardPositionStartDate: profile.board_position_start_date || undefined,
-        boardPositionEndDate: profile.board_position_end_date || undefined,
-        boatColor: profile.boat_color || undefined,
-        berthLength: profile.berth_length || undefined,
-        berthWidth: profile.berth_width || undefined,
-        buoyRadius: profile.buoy_radius || undefined,
-        hasDinghyBerth: profile.has_dinghy_berth || false,
-        beverageChipStatus: profile.beverage_chip_status || 'Aktiv',
-        statuteAccepted: profile.statute_accepted || false,
-        privacyAccepted: profile.privacy_accepted || false,
-        newsletterOptin: profile.newsletter_optin || false,
-        emergencyContactName: profile.emergency_contact_name || undefined,
-        emergencyContactPhone: profile.emergency_contact_phone || undefined,
-        emergencyContactRelationship: profile.emergency_contact_relationship || undefined,
-        documentBfa: profile.document_bfa || undefined,
-        documentInsurance: profile.document_insurance || undefined,
-        documentBerthContract: profile.document_berth_contract || undefined,
-        documentMemberPhoto: profile.document_member_photo || undefined,
-        membershipStatusHistory: profile.membership_status_history || [],
-        boardPositionHistory: profile.board_position_history || [],
-        createdBy: profile.created_by || undefined,
-        modifiedBy: profile.modified_by || undefined,
-        ai_info_enabled: profile.ai_info_enabled || false
-      } as any;
-
-      setUser(userData);
-      setEditedUser(userData);
-      setAiInfoEnabled(profile.ai_info_enabled === true);
-    } catch (error) {
-      userLogger.error('Error loading user profile', error);
-      toast({
-        title: "Fehler",
-        description: "Profil konnte nicht geladen werden.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [userId, roleCurrentUser?.id, toast]);
-
+  // Sync editedUser with user
   useEffect(() => {
-    loadCurrentUser();
-    checkAdminStatus();
-  }, [loadCurrentUser, checkAdminStatus]);
-  
+    if (user) {
+      setEditedUser(user);
+    }
+  }, [user]);
+
   useEffect(() => {
     if (customValues) {
       setEditedCustomValues(customValues);
@@ -245,19 +83,25 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     );
   }
 
+  if (!user) {
+    return (
+      <div className="p-4 text-center">
+        <p className="text-destructive">Profil konnte nicht geladen werden.</p>
+      </div>
+    );
+  }
 
   const handleSaveProfile = async () => {
     if (!editedUser) return;
     
     try {
-      // Use userId if provided (admin mode), otherwise use current user
-      let targetUserId: string;
+      let targetId: string;
       if (userId) {
-        targetUserId = userId;
+        targetId = userId;
       } else {
         const { data: { user: authUser } } = await supabase.auth.getUser();
         if (!authUser) throw new Error('Nicht angemeldet');
-        targetUserId = authUser.id;
+        targetId = authUser.id;
       }
 
       // If admin is editing another user and roles changed, use manage-user function
@@ -273,7 +117,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           },
           body: JSON.stringify({
             action: 'update',
-            userId: targetUserId,
+            userId: targetId,
             userData: {
               name: editedUser.name,
               firstName: editedUser.firstName,
@@ -335,9 +179,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           throw new Error(result.error || 'Benutzer konnte nicht aktualisiert werden');
         }
       } else {
-        // Regular profile update without role changes - use service layer
+        // Regular profile update - use service layer
         await userService.updateProfile({
-          id: targetUserId,
+          id: targetId,
           name: editedUser.name,
           firstName: editedUser.firstName,
           lastName: editedUser.lastName,
@@ -390,8 +234,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         });
       }
 
-      setUser(editedUser);
-      
       // Save custom field values to database
       if (Object.keys(editedCustomValues).length > 0) {
         await saveAllCustomValues(customFields, editedCustomValues);
@@ -405,12 +247,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         userRole: roleCurrentRole
       });
       
-      loadCurrentUser(); // Reload to ensure fresh data
-      
-      // Call onUpdate callback if provided
-      if (onUpdate) {
-        onUpdate();
-      }
+      reload();
+      onUpdate?.();
     } catch (error: any) {
       userLogger.error('Error saving profile', error);
       toast({
@@ -421,21 +259,17 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     }
   };
 
-  if (loading) {
-    return (
-      <div className="p-4 text-center">
-        <p className="text-muted-foreground">Lade Profil...</p>
-      </div>
-    );
-  }
+  const handleStartEditing = () => {
+    setIsEditing(true);
+    setEditedUser(user);
+    setEditedCustomValues(customValues);
+  };
 
-  if (!user) {
-    return (
-      <div className="p-4 text-center">
-        <p className="text-destructive">Profil konnte nicht geladen werden.</p>
-      </div>
-    );
-  }
+  const handleCancelEditing = () => {
+    setIsEditing(false);
+    setEditedUser(user);
+    setEditedCustomValues(customValues);
+  };
 
   const content = (
     <div className="space-y-6">
@@ -445,17 +279,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           user={user}
           isEditing={isEditing}
           getRoleBadgeInlineStyle={getRoleBadgeInlineStyle}
-          onEdit={() => {
-            setIsEditing(true);
-            setEditedUser(user);
-            setEditedCustomValues(customValues);
-          }}
+          onEdit={handleStartEditing}
           onSave={handleSaveProfile}
-          onCancel={() => {
-            setIsEditing(false);
-            setEditedUser(user);
-            setEditedCustomValues(customValues);
-          }}
+          onCancel={handleCancelEditing}
           onBack={onBack}
         />
       )}
@@ -485,7 +311,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         isEditing={isEditing}
         onDocumentUpload={(field, url) => {
           setEditedUser(prev => prev ? { ...prev, [field]: url } as any : null);
-          loadCurrentUser();
+          reload();
         }}
       />
     </div>
@@ -502,87 +328,16 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     )}>
       {/* Sticky Header - nur im Sticky-Modus anzeigen */}
       {isStickyEnabled && (
-        <div className="flex-shrink-0 relative z-10">
-          {/* Hero Card wird als Header behandelt */}
-          <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div className="flex-1 space-y-2">
-                  <h1 className="text-xl md:text-3xl font-bold text-foreground">
-                    {user.firstName && user.lastName 
-                      ? `${user.firstName} ${user.lastName}` 
-                      : user.name}
-                  </h1>
-                  {user?.roles?.includes('vorstand') && (user as any).vorstandFunktion && (
-                    <p className="text-sm text-muted-foreground">
-                      {(user as any).vorstandFunktion}
-                    </p>
-                  )}
-                  <div className="flex flex-wrap gap-1.5">
-                    {sortRoles(user.roles || []).map((role) => (
-                      <Badge 
-                        key={role} 
-                        className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5" 
-                        style={getRoleBadgeInlineStyle(role)}
-                      >
-                        {ROLE_LABELS[role] || roleLabels[role]}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full bg-gradient-ocean flex items-center justify-center text-primary-foreground text-2xl md:text-3xl font-bold shrink-0">
-                  {user.name.charAt(0).toUpperCase()}
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                {!isEditing ? (
-                  <>
-                    <Button 
-                      onClick={() => {
-                        setIsEditing(true);
-                        setEditedUser(user);
-                        setEditedCustomValues(customValues);
-                      }} 
-                      size="sm" 
-                      className="h-8"
-                    >
-                      <Edit className="w-3 h-3 mr-1.5" />
-                      Bearbeiten
-                    </Button>
-                    {onBack && (
-                      <Button variant="outline" onClick={onBack} size="sm" className="h-8">
-                        <ArrowLeft className="w-3 h-3 mr-1.5" />
-                        Zurück
-                      </Button>
-                    )}
-                  </>
-                ) : (
-                  <>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-8"
-                      onClick={() => {
-                        setIsEditing(false);
-                        setEditedUser(user);
-                        setEditedCustomValues(customValues);
-                      }}
-                    >
-                      <X className="w-3 h-3 mr-1.5" />
-                      Abbrechen
-                    </Button>
-                    <Button size="sm" className="h-8" onClick={handleSaveProfile}>
-                      <Save className="w-3 h-3 mr-1.5" />
-                      Speichern
-                    </Button>
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <ProfileStickyHeader
+          user={user}
+          isEditing={isEditing}
+          customValues={customValues}
+          getRoleBadgeInlineStyle={getRoleBadgeInlineStyle}
+          onEdit={handleStartEditing}
+          onSave={handleSaveProfile}
+          onCancel={handleCancelEditing}
+          onBack={onBack}
+        />
       )}
 
       {/* Scrollable Content */}
