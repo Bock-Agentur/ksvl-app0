@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAppSettings, useToast, useFooterMenuSettings, FooterMenuItem, useIsMobile } from "@/hooks";
 import { Button } from "@/components/ui/button";
@@ -32,7 +32,8 @@ import {
   Layers,
   Eye,
   EyeOff,
-  Palette
+  Palette,
+  FolderOpen
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -62,7 +63,8 @@ const ICON_MAP = {
   Cloud,
   Anchor,
   Layers,
-  Palette
+  Palette,
+  FolderOpen
 };
 
 export function FooterMenuSettings() {
@@ -79,9 +81,15 @@ export function FooterMenuSettings() {
     resetToDefaults,
     getAvailableItemsForRole,
     saveDisplaySettings,
-    getDisplaySettingsForRole
+    getDisplaySettingsForRole,
+    refetch
   } = useFooterMenuSettings(activeRole);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  // Refetch settings when role changes
+  useEffect(() => {
+    refetch?.();
+  }, [activeRole, refetch]);
 
   // Get current role's display settings
   const currentRoleDisplaySettings = getDisplaySettingsForRole(activeRole);

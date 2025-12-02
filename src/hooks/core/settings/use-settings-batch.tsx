@@ -143,8 +143,12 @@ export function useSettingsBatch(options: UseSettingsBatchOptions = {}) {
       if (error) throw error;
     }
 
-    // Invalidate cache to refetch
-    await queryClient.invalidateQueries({ queryKey: QUERY_KEYS.settingsBatch() });
+    // Invalidate ALL settings caches (batch and settingsAll)
+    await queryClient.invalidateQueries({ 
+      predicate: (query) => 
+        query.queryKey[0] === 'app-settings-batch' || 
+        query.queryKey[0] === 'app-settings-all'
+    });
   };
 
   return {
