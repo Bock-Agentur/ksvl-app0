@@ -156,7 +156,7 @@ export function CalendarView({
           <CardHeader>
             <CardTitle>Kalender</CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
+          <CardContent className="p-4 pt-0 space-y-4">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               {/* Week Navigation */}
               <div className="flex items-center gap-1">
@@ -235,101 +235,99 @@ export function CalendarView({
                 </Button>
               )}
             </div>
+
+            {/* Mobile Day Selector - Only for week/day views */}
+            {(viewMode === "day" || viewMode === "week") && (
+              <div className="md:hidden">
+                <div className="grid grid-cols-7 gap-1 w-full">
+                  {weekDays.map((day, index) => {
+                    const daySlots = weekSlots.filter(slot => {
+                      const slotDate = parseISO(slot.date);
+                      return isSameDay(day, slotDate);
+                    });
+                    const hasSlots = daySlots.length > 0;
+                    return (
+                      <div key={index} className="relative">
+                        <Button 
+                          variant={isSameDay(day, selectedDay) ? "default" : "outline"} 
+                          size="sm" 
+                          onClick={() => {
+                            setSelectedDay(day);
+                            setSelectedDate(day);
+                          }} 
+                          className="text-xs px-1 py-2 h-auto flex-col w-full"
+                        >
+                          <div className="text-center">
+                            <div className="text-xs">
+                              {format(day, "EEE", { locale: de })}
+                            </div>
+                            <div className="font-semibold">
+                              {format(day, "dd")}
+                            </div>
+                          </div>
+                        </Button>
+                        
+                        {/* Day indicator below button */}
+                        <div className="flex justify-center mt-1">
+                          <div className={cn(
+                            "w-2 h-2 rounded-full border transition-colors", 
+                            hasSlots ? "bg-pink-500 border-pink-500" : "bg-white border-gray-300"
+                          )} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Desktop Day Selector - Only for day view */}
+            {viewMode === "day" && (
+              <div className="hidden md:block">
+                <div className="grid grid-cols-7 gap-2">
+                  {weekDays.map((day, index) => {
+                    const daySlots = weekSlots.filter(slot => {
+                      const slotDate = parseISO(slot.date);
+                      return isSameDay(day, slotDate);
+                    });
+                    const hasSlots = daySlots.length > 0;
+                    const isSelectedDay = isSameDay(day, selectedDay);
+                    return (
+                      <Button 
+                        key={index} 
+                        variant={isSelectedDay ? "default" : "outline"} 
+                        size="sm" 
+                        onClick={() => {
+                          setSelectedDay(day);
+                          setSelectedDate(day);
+                        }} 
+                        className="relative flex flex-col h-auto py-3"
+                      >
+                        <div className="text-xs mb-1">
+                          {format(day, "EEE", { locale: de })}
+                        </div>
+                        <div className="text-base font-semibold">
+                          {format(day, "dd")}
+                        </div>
+                        
+                        {/* Day indicator */}
+                        {hasSlots && (
+                          <div className="absolute bottom-1 left-1/2 -translate-x-1/2">
+                            <div className={cn(
+                              "w-2 h-2 rounded-full", 
+                              isSelectedDay ? "bg-primary-foreground" : "bg-pink-500"
+                            )} />
+                          </div>
+                        )}
+                      </Button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
-
-      {/* Mobile Day Selector - Only for week/day views */}
-      {(viewMode === "day" || viewMode === "week") && (
-        <div className="md:hidden px-4">
-          <div className="grid grid-cols-7 gap-1 w-full">
-            {weekDays.map((day, index) => {
-              // Check if this day has slots
-              const daySlots = weekSlots.filter(slot => {
-                const slotDate = parseISO(slot.date);
-                return isSameDay(day, slotDate);
-              });
-              const hasSlots = daySlots.length > 0;
-              return (
-                <div key={index} className="relative">
-                  <Button 
-                    variant={isSameDay(day, selectedDay) ? "default" : "outline"} 
-                    size="sm" 
-                    onClick={() => {
-                      setSelectedDay(day);
-                      setSelectedDate(day);
-                    }} 
-                    className="text-xs px-1 py-2 h-auto flex-col w-full"
-                  >
-                    <div className="text-center">
-                      <div className="text-xs">
-                        {format(day, "EEE", { locale: de })}
-                      </div>
-                      <div className="font-semibold">
-                        {format(day, "dd")}
-                      </div>
-                    </div>
-                  </Button>
-                  
-                  {/* Day indicator below button */}
-                  <div className="flex justify-center mt-1">
-                    <div className={cn(
-                      "w-2 h-2 rounded-full border transition-colors", 
-                      hasSlots ? "bg-pink-500 border-pink-500" : "bg-white border-gray-300"
-                    )} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      )}
-
-      {/* Desktop Day Selector - Only for day view */}
-      {viewMode === "day" && (
-        <div className="hidden md:block px-4">
-          <div className="grid grid-cols-7 gap-2">
-            {weekDays.map((day, index) => {
-              // Check if this day has slots
-              const daySlots = weekSlots.filter(slot => {
-                const slotDate = parseISO(slot.date);
-                return isSameDay(day, slotDate);
-              });
-              const hasSlots = daySlots.length > 0;
-              const isSelectedDay = isSameDay(day, selectedDay);
-              return (
-                <Button 
-                  key={index} 
-                  variant={isSelectedDay ? "default" : "outline"} 
-                  size="sm" 
-                  onClick={() => {
-                    setSelectedDay(day);
-                    setSelectedDate(day);
-                  }} 
-                  className="relative flex flex-col h-auto py-3"
-                >
-                  <div className="text-xs mb-1">
-                    {format(day, "EEE", { locale: de })}
-                  </div>
-                  <div className="text-base font-semibold">
-                    {format(day, "dd")}
-                  </div>
-                  
-                  {/* Day indicator */}
-                  {hasSlots && (
-                    <div className="absolute bottom-1 left-1/2 -translate-x-1/2">
-                      <div className={cn(
-                        "w-2 h-2 rounded-full", 
-                        isSelectedDay ? "bg-primary-foreground" : "bg-pink-500"
-                      )} />
-                    </div>
-                  )}
-                </Button>
-              );
-            })}
-          </div>
-        </div>
-      )}
 
       {/* Calendar Content */}
       <div className={cn(
