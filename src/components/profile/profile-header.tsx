@@ -33,7 +33,7 @@ export function ProfileHeader({
   onBack,
 }: ProfileHeaderProps) {
   return (
-    <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+    <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
       <CardContent className="p-6">
         {/* Mobile: Avatar rechts, Name links */}
         <div className="flex items-start justify-between gap-4 mb-4">

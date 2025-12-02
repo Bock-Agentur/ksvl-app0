@@ -22,7 +22,7 @@ export function UserListSection({
 }: UserListSectionProps) {
   if (users.length === 0) {
     return (
-      <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+      <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
         <CardContent className="pt-6 text-center">
           <Users className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
           <p className="text-muted-foreground">Keine Benutzer gefunden.</p>

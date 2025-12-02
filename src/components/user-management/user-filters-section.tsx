@@ -57,7 +57,7 @@ export function UserFiltersSection({
         <CollapsibleTrigger asChild>
           <Button 
             variant="outline" 
-            className="w-full flex items-center justify-between bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 hover:bg-white/90 px-6 py-4 h-auto"
+            className="w-full flex items-center justify-between bg-white rounded-[2rem] card-shadow-soft border-0 hover:bg-white/90 px-6 py-4 h-auto"
           >
             <div className="flex items-center gap-2">
               <Filter className="h-4 w-4" />
@@ -67,7 +67,7 @@ export function UserFiltersSection({
           </Button>
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-2">
-          <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+          <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
             <CardContent className="pt-4 space-y-4">
               <div className="flex flex-col gap-4">
                 <div className="flex-1">
@@ -160,7 +160,7 @@ export function UserFiltersSection({
       </Collapsible>
 
       {/* Desktop Card */}
-      <Card className="hidden sm:block bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+      <Card className="hidden sm:block bg-white rounded-[2rem] card-shadow-soft border-0">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
