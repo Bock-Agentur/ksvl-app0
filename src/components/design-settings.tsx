@@ -286,7 +286,7 @@ export function DesignSettings() {
             Slot Design-Einstellungen
           </CardTitle>
           <CardDescription>
-            Passen Sie die Farben der Slots in der Wochenansicht und Slot-Verwaltung an. Alle Farben unterstützen Transparenz (Alpha-Kanal).
+            Passen Sie die Farben der Slots in der Wochenansicht und Listenansicht an. Alle Farben unterstützen Transparenz (Alpha-Kanal).
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-8">

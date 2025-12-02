@@ -101,7 +101,10 @@ export function useFooterMenuSettings(userRole: UserRole) {
   };
 
   const getMenuItemsForRole = (role: UserRole): FooterMenuItem[] => {
-    return combinedSettings.menu || DEFAULT_FOOTER_SETTINGS[role] || [];
+    const menuItems = combinedSettings.menu || DEFAULT_FOOTER_SETTINGS[role] || [];
+    // Filter out items that no longer exist in NAV_ITEMS (e.g., removed slots)
+    const validIds = AVAILABLE_MENU_ITEMS.map(item => item.id);
+    return menuItems.filter(item => validIds.includes(item.id));
   };
 
   const getDisplaySettingsForRole = (role: UserRole) => {
