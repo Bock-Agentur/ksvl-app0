@@ -14,6 +14,7 @@ import {
 import { useToast } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
 import { validatePassword } from "@/lib/password-validation";
+import { logger } from "@/lib/logger";
 
 interface PasswordChangeDialogProps {
   userId?: string;
@@ -91,7 +92,7 @@ export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
       setNewPassword("");
       setConfirmPassword("");
     } catch (error: any) {
-      console.error("Error changing password:", error);
+      logger.error('AUTH', 'Error changing password', error);
       toast({
         title: "Fehler",
         description: error.message || "Passwort konnte nicht geändert werden.",

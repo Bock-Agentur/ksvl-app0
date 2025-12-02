@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks';
 import { useUsersData } from './use-users-data';
 import { useRealtimeSubscription } from '@/lib/realtime-manager';
+import { logger } from '@/lib/logger';
 
 export interface DatabaseUser {
   id: string;
@@ -205,7 +206,7 @@ export function useUsers(options?: { enabled?: boolean }) {
 
       refetch();
     } catch (error) {
-      console.error('Error deleting user:', error);
+      logger.error('USER', 'Error deleting user', error);
       toast({
         title: "Fehler",
         description: "Benutzer konnte nicht gelöscht werden.",

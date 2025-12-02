@@ -2,6 +2,7 @@ import { useSettingsBatch } from "./use-settings-batch";
 import { UserRole } from "@/types/user";
 import { getNavItemsForRole } from "@/lib/registry/navigation";
 import { NAV_ITEMS } from "@/lib/registry/navigation";
+import { logger } from "@/lib/logger";
 
 export interface FooterMenuItem {
   id: string;
@@ -90,7 +91,7 @@ export function useFooterMenuSettings(userRole: UserRole) {
       await updateSetting(storageKey, { menu, display }, true);
       window.dispatchEvent(new CustomEvent('footerSettingsChanged'));
     } catch (error) {
-      console.error('Failed to save footer settings:', error);
+      logger.error('FOOTER_SETTINGS', 'Failed to save footer settings', error);
       throw error;
     }
   };

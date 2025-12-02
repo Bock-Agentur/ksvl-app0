@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { ROLE_LABELS } from "@/lib/role-order";
 import { useState, useEffect } from "react";
 import { DeleteConfirmationDialog } from "./components/delete-confirmation-dialog";
+import { logger } from "@/lib/logger";
 
 interface FileCardProps {
   file: FileMetadata;
@@ -132,7 +133,7 @@ export function FileCard({
       .createSignedUrl(cleanPath, 3600) // 1 hour
       .then(({ data, error }) => {
         if (error) {
-          console.error('[FileCard] Signed URL error:', error, { bucket, cleanPath, storagePath: file.storage_path });
+          logger.error('FILE_CARD', 'Signed URL error', { error, bucket, cleanPath, storagePath: file.storage_path });
           setThumbnailUrl(null);
           setThumbnailLoading(false);
           return;
@@ -151,7 +152,7 @@ export function FileCard({
         setThumbnailLoading(false);
       })
       .catch((err) => {
-        console.error('[FileCard] createSignedUrl catch:', err);
+        logger.error('FILE_CARD', 'createSignedUrl catch', err);
         setThumbnailUrl(null);
         setThumbnailLoading(false);
       });
