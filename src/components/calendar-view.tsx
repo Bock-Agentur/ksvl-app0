@@ -3,7 +3,7 @@ import { WeekCalendar } from "./week-calendar";
 import { MonthCalendar } from "./month-calendar";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Calendar, CalendarDays, Home, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Calendar, CalendarDays, CircleDot, Grid3x3, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { usePermissions, useStickyHeaderLayout, useIsMobile } from "@/hooks";
 import { SlotFormDialog } from "./slot-form-dialog";
 import { Slot } from "@/types";
@@ -114,6 +114,7 @@ export function CalendarView({
     const today = new Date();
     setCurrentWeek(today);
     setSelectedDate(today);
+    setSelectedDay(today);
   };
 
   if (isLoading) {
@@ -175,7 +176,7 @@ export function CalendarView({
                   onClick={handleToday} 
                   className="h-9 px-3"
                 >
-                  {isMobile ? <Home className="h-4 w-4" /> : "Heute"}
+                  {isMobile ? <CircleDot className="h-4 w-4" /> : "Heute"}
                 </Button>
                 <Button 
                   variant="outline" 
@@ -219,7 +220,7 @@ export function CalendarView({
                   title="Monatsansicht"
                   className="h-9"
                 >
-                  <Home className="h-4 w-4" />
+                  <Grid3x3 className="h-4 w-4" />
                   {!isMobile && <span className="ml-1">Monat</span>}
                 </Button>
               </div>
