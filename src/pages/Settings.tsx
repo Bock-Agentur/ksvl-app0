@@ -9,7 +9,6 @@ import { MenuSettings } from "@/components/menu-settings";
 import { DesignSettings } from "@/components/design-settings";
 import { ThemeManager } from "@/components/theme-manager";
 import { TestDataManager } from "@/components/test-data-manager";
-import { CustomFieldsManager } from "@/components/custom-fields-manager";
 import { LoginBackgroundSettings } from "@/components/settings/login-background";
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
@@ -30,8 +29,6 @@ import {
   Palette, 
   Brush, 
   Image, 
-  Monitor, 
-  ListChecks, 
   Bot, 
   Settings as SettingsIcon, 
   Database, 
@@ -101,7 +98,6 @@ function SettingsContent() {
     ...(userIsAdminOrVorstand ? [
       { id: "loginpage", label: "Login-Seite", description: "Hintergrundbild anpassen", icon: Image, component: LoginBackgroundSettings, group: "design" }
     ] : []),
-    { id: "customfields", label: "Custom Fields", description: "Benutzerdefinierte Felder", icon: ListChecks, component: CustomFieldsManager, group: "advanced" },
     ...(userIsAdminOrVorstand ? [
       { id: "aiassistant", label: "AI-Assistent", description: "KI-Einstellungen", icon: Bot, component: AIAssistantSettings, group: "advanced" }
     ] : []),

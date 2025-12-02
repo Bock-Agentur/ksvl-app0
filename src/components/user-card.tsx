@@ -13,7 +13,7 @@ interface UserCardProps {
   onDeleteUser: (userId: string) => void;
 }
 
-export function UserCardWithCustomFields({
+export function UserCard({
   user,
   getRoleBadgeInlineStyle,
   onViewUser,

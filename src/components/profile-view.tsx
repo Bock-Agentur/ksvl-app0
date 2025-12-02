@@ -2,10 +2,10 @@
  * Profile View Component
  * 
  * Refactored: Uses useProfileLoader hook.
- * Simplified: Removed sticky header feature.
+ * Simplified: Removed sticky header feature and custom fields.
  */
 import { useState, useEffect } from "react";
-import { useToast, useRole, useCustomFields, useCustomFieldValues, useRoleBadgeSettings } from "@/hooks";
+import { useToast, useRole, useRoleBadgeSettings } from "@/hooks";
 import { ProfileDocumentsSection } from "@/components/profile/profile-documents-section";
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { ProfileFormCards } from "@/components/profile/profile-form-cards";
@@ -28,13 +28,8 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const { user, loading, isAdmin, aiInfoEnabled, setAiInfoEnabled, reload } = useProfileLoader({ userId });
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<UserType | null>(null);
-  const [editedCustomValues, setEditedCustomValues] = useState<Record<string, any>>({});
   const { toast } = useToast();
   const { currentUser: roleCurrentUser, currentRole: roleCurrentRole } = useRole();
-  
-  const { customFields, loading: fieldsLoading, addCustomField, deleteCustomField } = useCustomFields();
-  const targetUserId = userId || roleCurrentUser?.id;
-  const { customValues, saveCustomValue, saveAllCustomValues } = useCustomFieldValues(targetUserId || '');
   const { getRoleBadgeInlineStyle } = useRoleBadgeSettings();
 
   // Sync editedUser with user
@@ -43,12 +38,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
       setEditedUser(user);
     }
   }, [user]);
-
-  useEffect(() => {
-    if (customValues) {
-      setEditedCustomValues(customValues);
-    }
-  }, [customValues]);
   
   if (loading) {
     return (
@@ -226,11 +215,6 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           documentMemberPhoto: (editedUser as any).documentMemberPhoto
         });
       }
-
-      // Save custom field values to database
-      if (Object.keys(editedCustomValues).length > 0) {
-        await saveAllCustomValues(customFields, editedCustomValues);
-      }
       
       setIsEditing(false);
       toast({
@@ -255,13 +239,11 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
   const handleStartEditing = () => {
     setIsEditing(true);
     setEditedUser(user);
-    setEditedCustomValues(customValues);
   };
 
   const handleCancelEditing = () => {
     setIsEditing(false);
     setEditedUser(user);
-    setEditedCustomValues(customValues);
   };
 
   const content = (
@@ -283,16 +265,9 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         isAdmin={isAdmin}
         userId={userId}
         aiInfoEnabled={aiInfoEnabled}
-        customFields={customFields}
-        customValues={customValues}
-        editedCustomValues={editedCustomValues}
-        fieldsLoading={fieldsLoading}
         getRoleBadgeInlineStyle={getRoleBadgeInlineStyle}
         setEditedUser={setEditedUser}
         setAiInfoEnabled={setAiInfoEnabled}
-        setEditedCustomValues={setEditedCustomValues}
-        addCustomField={addCustomField}
-        deleteCustomField={deleteCustomField}
       />
 
       <ProfileDocumentsSection

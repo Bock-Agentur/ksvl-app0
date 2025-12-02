@@ -1,4 +1,4 @@
-import { User as UserType, CustomField } from "@/types";
+import { User as UserType } from "@/types";
 import { ProfileLoginCard } from "./profile-login-card";
 import { ProfileMasterDataCard } from "./profile-master-data-card";
 import { ProfileMembershipCard } from "./profile-membership-card";
@@ -11,15 +11,8 @@ interface ProfilePersonalCardsProps {
   isAdmin: boolean;
   userId?: string;
   aiInfoEnabled: boolean;
-  customFields: CustomField[];
-  customValues: Record<string, any>;
-  editedCustomValues: Record<string, any>;
-  fieldsLoading: boolean;
   setEditedUser: React.Dispatch<React.SetStateAction<UserType | null>>;
   setAiInfoEnabled: (enabled: boolean) => void;
-  setEditedCustomValues: React.Dispatch<React.SetStateAction<Record<string, any>>>;
-  addCustomField: (field: Omit<CustomField, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
-  deleteCustomField: (fieldId: string) => Promise<void>;
 }
 
 export function ProfilePersonalCards({
@@ -29,15 +22,8 @@ export function ProfilePersonalCards({
   isAdmin,
   userId,
   aiInfoEnabled,
-  customFields,
-  customValues,
-  editedCustomValues,
-  fieldsLoading,
   setEditedUser,
   setAiInfoEnabled,
-  setEditedCustomValues,
-  addCustomField,
-  deleteCustomField,
 }: ProfilePersonalCardsProps) {
   return (
     <>
@@ -55,14 +41,7 @@ export function ProfilePersonalCards({
         editedUser={editedUser}
         isEditing={isEditing}
         isAdmin={isAdmin}
-        customFields={customFields}
-        customValues={customValues}
-        editedCustomValues={editedCustomValues}
-        fieldsLoading={fieldsLoading}
         setEditedUser={setEditedUser}
-        setEditedCustomValues={setEditedCustomValues}
-        addCustomField={addCustomField}
-        deleteCustomField={deleteCustomField}
       />
 
       <ProfileMembershipCard

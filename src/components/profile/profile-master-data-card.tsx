@@ -1,22 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User as UserType, CustomField } from "@/types";
-import { CustomFieldsSection } from "./custom-fields-section";
+import { User as UserType } from "@/types";
 
 interface ProfileMasterDataCardProps {
   user: UserType;
   editedUser: UserType | null;
   isEditing: boolean;
   isAdmin: boolean;
-  customFields: CustomField[];
-  customValues: Record<string, any>;
-  editedCustomValues: Record<string, any>;
-  fieldsLoading: boolean;
   setEditedUser: React.Dispatch<React.SetStateAction<UserType | null>>;
-  setEditedCustomValues: React.Dispatch<React.SetStateAction<Record<string, any>>>;
-  addCustomField: (field: Omit<CustomField, 'id' | 'created_at' | 'updated_at'>) => Promise<void>;
-  deleteCustomField: (fieldId: string) => Promise<void>;
 }
 
 export function ProfileMasterDataCard({
@@ -24,14 +16,7 @@ export function ProfileMasterDataCard({
   editedUser,
   isEditing,
   isAdmin,
-  customFields,
-  customValues,
-  editedCustomValues,
-  fieldsLoading,
   setEditedUser,
-  setEditedCustomValues,
-  addCustomField,
-  deleteCustomField,
 }: ProfileMasterDataCardProps) {
   return (
     <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
@@ -166,21 +151,6 @@ export function ProfileMasterDataCard({
               <p className="text-sm text-muted-foreground">{user.city || '-'}</p>
             )}
           </div>
-
-          {/* Custom Fields Section */}
-          <CustomFieldsSection
-            isAdmin={isAdmin}
-            customFields={customFields}
-            customValues={customValues}
-            editedCustomValues={editedCustomValues}
-            isEditing={isEditing}
-            fieldsLoading={fieldsLoading}
-            onValueChange={(field, value) =>
-              setEditedCustomValues((prev) => ({ ...prev, [field]: value }))
-            }
-            onAddField={addCustomField}
-            onDeleteField={deleteCustomField}
-          />
         </div>
       </CardContent>
     </Card>
