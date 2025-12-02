@@ -61,7 +61,7 @@ export const APP_MODULES: AppModule[] = [
       'user-management.tsx',
       'profile-view.tsx',
       'user-detail-view.tsx',
-      'user-card-with-custom-fields.tsx',
+      'user-card.tsx',
       'profile/*'
     ],
     hooks: [
@@ -114,7 +114,6 @@ export const APP_MODULES: AppModule[] = [
       'design-settings.tsx',
       'dashboard-settings.tsx',
       'ai-assistant-settings.tsx',
-      'custom-fields-manager.tsx',
       'footer-menu-settings.tsx',
       'header-message-settings.tsx',
       'login-background-settings.tsx',
@@ -129,7 +128,6 @@ export const APP_MODULES: AppModule[] = [
       'use-footer-menu-settings.tsx',
       'use-login-background.tsx',
       'use-sticky-header-layout.tsx',
-      'use-custom-fields.tsx',
       'use-consecutive-slots.tsx',
       'use-ai-assistant-settings.tsx',
       'use-ai-welcome-message.tsx',

@@ -1,6 +1,6 @@
 import { Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { UserCardWithCustomFields } from "@/components/user-card-with-custom-fields";
+import { UserCard } from "@/components/user-card";
 import { User } from "@/types";
 
 interface UserListSectionProps {
@@ -39,7 +39,7 @@ export function UserListSection({
   return (
     <div className="space-y-3">
       {users.map((user) => (
-        <UserCardWithCustomFields
+        <UserCard
           key={user.id}
           user={user}
           getRoleBadgeInlineStyle={getRoleBadgeInlineStyle}
