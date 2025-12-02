@@ -92,17 +92,22 @@ export function UnifiedFooter({
         {footerItems.map((item, index) => {
           const IconComponent = (LucideIcons as any)[item.icon] || Home;
           const isActive = checkIsActive(item.id);
+          const isLogout = item.id === 'logout';
           
           return (
             <Button
               key={`${item.id}-${index}-${forceUpdate}`}
               variant="ghost"
               size="sm"
-              onClick={() => handleNavigate(item.id)}
+              onClick={() => isLogout ? handleLogout() : handleNavigate(item.id)}
               className={cn(
                 "flex flex-col items-center h-auto py-2 px-1 sm:px-3 relative transition-colors min-w-0",
                 showLabels ? "gap-1" : "gap-0",
-                isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                isLogout 
+                  ? "text-destructive hover:text-destructive hover:bg-destructive/10"
+                  : isActive 
+                    ? "text-primary bg-primary/10" 
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
               )}
             >
               <IconComponent className="h-5 w-5 flex-shrink-0" />

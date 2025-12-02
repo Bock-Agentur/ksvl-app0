@@ -33,7 +33,8 @@ import {
   Eye,
   EyeOff,
   Palette,
-  FolderOpen
+  FolderOpen,
+  LogOut
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -64,7 +65,8 @@ const ICON_MAP = {
   Anchor,
   Layers,
   Palette,
-  FolderOpen
+  FolderOpen,
+  LogOut
 };
 
 export function FooterMenuSettings() {
