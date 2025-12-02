@@ -86,8 +86,13 @@ export function useFooterMenuSettings(userRole: UserRole) {
 
   // ✅ Save both menu and display in one atomic operation
   const saveSettings = async (menu: FooterMenuItem[], display: { showLabels: boolean }) => {
-    await updateSetting(storageKey, { menu, display }, true);
-    window.dispatchEvent(new CustomEvent('footerSettingsChanged'));
+    try {
+      await updateSetting(storageKey, { menu, display }, true);
+      window.dispatchEvent(new CustomEvent('footerSettingsChanged'));
+    } catch (error) {
+      console.error('Failed to save footer settings:', error);
+      throw error;
+    }
   };
 
   const saveDisplaySettings = (role: UserRole, display: { showLabels: boolean }) => {
