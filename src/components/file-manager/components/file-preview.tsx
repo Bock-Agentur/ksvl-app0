@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { FileMetadata } from "../types/file-manager.types";
 import { supabase } from "@/integrations/supabase/client";
-import { FileText, Image as ImageIcon, Video, File as FileIcon, AlertCircle } from "lucide-react";
+import { Image as ImageIcon, Video, File as FileIcon, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -36,13 +36,12 @@ export function FilePreview({
   const isFileObject = file instanceof File;
   
   // Get file type and check for HEIC
-  const getFileType = (): 'image' | 'pdf' | 'video' | 'other' => {
+  const getFileType = (): 'image' | 'video' => {
     if (isFileObject) {
       const f = file as File;
       if (f.type.startsWith('image/')) return 'image';
-      if (f.type === 'application/pdf') return 'pdf';
       if (f.type.startsWith('video/')) return 'video';
-      return 'other';
+      return 'image'; // Default to image for this image-only manager
     }
     return (file as FileMetadata).file_type;
   };
@@ -177,7 +176,6 @@ export function FilePreview({
 
   // File icon
   const IconComponent = fileType === 'image' ? ImageIcon :
-                        fileType === 'pdf' ? FileText :
                         fileType === 'video' ? Video :
                         FileIcon;
 

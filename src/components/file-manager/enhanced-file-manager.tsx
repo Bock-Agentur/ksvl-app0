@@ -231,18 +231,18 @@ export function EnhancedFileManager() {
                 </Select>
               </div>
 
-              {/* File Type Filter */}
+              {/* File Type Filter - Images only */}
               <div>
                 <Label>Dateityp</Label>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {['all', 'image', 'pdf', 'video'].map((type) => (
+                  {['all', 'image'].map((type) => (
                     <Button
                       key={type}
                       variant={filters.file_type === (type === 'all' ? undefined : type) ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFilters({ ...filters, file_type: type === 'all' ? undefined : type })}
                     >
-                      {type === 'all' ? 'Alle' : type.toUpperCase()}
+                      {type === 'all' ? 'Alle' : 'Bilder'}
                     </Button>
                   ))}
                 </div>
@@ -367,18 +367,18 @@ export function EnhancedFileManager() {
             </Tabs>
           </div>
 
-          {/* File Type Filter */}
+          {/* File Type Filter - Images only */}
           <div>
             <Label>Dateityp</Label>
             <div className="flex flex-wrap gap-2 mt-2">
-              {['all', 'image', 'pdf', 'video'].map((type) => (
+              {['all', 'image'].map((type) => (
                 <Button
                   key={type}
                   variant={filters.file_type === (type === 'all' ? undefined : type) ? "default" : "outline"}
                   size="sm"
                   onClick={() => setFilters({ ...filters, file_type: type === 'all' ? undefined : type })}
                 >
-                  {type === 'all' ? 'Alle' : type.toUpperCase()}
+                  {type === 'all' ? 'Alle' : 'Bilder'}
                 </Button>
               ))}
             </div>
