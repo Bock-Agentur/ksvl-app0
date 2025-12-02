@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { useCrudOperations } from "@/hooks";
+import { DeleteConfirmationDialog } from "@/components/file-manager/components/delete-confirmation-dialog";
+import { logger } from "@/lib/logger";
 
 export interface CrudManagerProps<T extends { id: string }> {
   data: T[];
@@ -66,6 +68,10 @@ export function CrudManager<T extends { id: string }>({
 
   const [showDialog, setShowDialog] = useState(false);
   const [editingItem, setEditingItem] = useState<T | null>(null);
+  
+  // ✅ State für Delete-Bestätigung (ersetzt window.confirm)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; name: string } | null>(null);
 
   const handleAdd = () => {
     setEditingItem(null);
@@ -82,12 +88,21 @@ export function CrudManager<T extends { id: string }>({
       const item = data.find(d => d.id === id);
       const itemName = (item as any)?.name || (item as any)?.title || id;
       
-      if (!window.confirm(`Möchtest du "${itemName}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`)) {
-        return;
-      }
+      // ✅ Öffne AlertDialog statt window.confirm
+      setItemToDelete({ id, name: itemName });
+      setDeleteDialogOpen(true);
+      return;
     }
     
     await crud.remove(id);
+  };
+
+  const confirmDeleteAction = async () => {
+    if (itemToDelete) {
+      await crud.remove(itemToDelete.id);
+      setDeleteDialogOpen(false);
+      setItemToDelete(null);
+    }
   };
 
   const handleDuplicate = (item: T) => {
@@ -119,7 +134,7 @@ export function CrudManager<T extends { id: string }>({
       
       return success;
     } catch (error) {
-      console.error('CRUD operation failed:', error);
+      logger.error('CRUD', 'CRUD operation failed', error);
       return false;
     }
   };
@@ -186,6 +201,14 @@ export function CrudManager<T extends { id: string }>({
           })}
         </DialogContent>
       </Dialog>
+
+      {/* ✅ Delete Confirmation Dialog (ersetzt window.confirm) */}
+      <DeleteConfirmationDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDeleteAction}
+        description={`Möchtest du "${itemToDelete?.name}" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.`}
+      />
     </div>
   );
 }
