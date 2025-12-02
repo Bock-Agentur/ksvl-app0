@@ -1,14 +1,13 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
 import { useStickyHeaderLayout, useToast, useUsers, useRole } from "@/hooks";
 import { format, parse, addMinutes } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { useSlotsContext } from "@/contexts/slots-context";
 import { Slot } from "@/types";
 import { SlotForm, SlotFormData as SharedSlotFormData } from "@/components/common/slot-form";
 import { useSlotFilters } from "./slot-management/use-slot-filters";
+import { SlotHeroSection } from "./slot-management/slot-hero-section";
 import { SlotStatsSection } from "./slot-management/slot-stats-section";
 import { SlotFiltersSection } from "./slot-management/slot-filters-section";
 import { SlotListItem } from "./slot-management/slot-list-item";
@@ -25,8 +24,6 @@ export function SlotManagement() {
   const [isEditing, setIsEditing] = useState(false);
   const [editingSlot, setEditingSlot] = useState<Slot | null>(null);
   const [selectedSlotForDetails, setSelectedSlotForDetails] = useState<Slot | null>(null);
-  const [isStatsOpen, setIsStatsOpen] = useState(false);
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
 
   const { currentUser } = useRole();
 
@@ -214,19 +211,28 @@ export function SlotManagement() {
       <div
         className={cn(
           "bg-background max-w-7xl mx-auto",
-          isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
+          isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-2"
         )}
       >
-        <div className="pt-4 pb-0 my-0 px-4">
-          <Card className="animate-pulse">
-            <CardHeader>
-              <div className="h-6 bg-muted rounded w-1/3 mb-2" />
-              <div className="h-4 bg-muted rounded w-1/2" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-24 bg-muted rounded" />
-              ))}
+        <div className="pt-4 pb-0 my-0 px-4 space-y-2">
+          <Card className="animate-pulse card-maritime-hero">
+            <CardContent className="p-6">
+              <div className="h-8 bg-muted rounded w-1/3" />
+            </CardContent>
+          </Card>
+          <Card className="animate-pulse card-maritime-hero">
+            <CardContent className="p-4">
+              <div className="h-6 bg-muted rounded w-1/4 mb-3" />
+              <div className="grid grid-cols-3 gap-3">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="h-16 bg-muted rounded" />
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="animate-pulse card-maritime-hero">
+            <CardContent className="p-4">
+              <div className="h-10 bg-muted rounded" />
             </CardContent>
           </Card>
         </div>
@@ -238,82 +244,65 @@ export function SlotManagement() {
     <div
       className={cn(
         "bg-background max-w-7xl mx-auto",
-        isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-6"
+        isStickyEnabled ? "flex flex-col h-screen overflow-hidden" : "space-y-2"
       )}
     >
-      {/* Fixed Top Card */}
+      {/* Hero Section */}
       <div
         className={cn(
-          "pt-4 pb-0 my-0 px-4",
+          "pt-4 pb-0 my-0 px-4 space-y-2",
           isStickyEnabled ? "flex-shrink-0 relative z-10" : ""
         )}
       >
-        <Card className="card-maritime-hero">
-          <CardHeader>
-            <CardTitle>Slot-Verwaltung</CardTitle>
-            <CardDescription>Verwalten Sie alle Kranführer-Slots</CardDescription>
-          </CardHeader>
+        {!isEditing && (
+          <SlotHeroSection onAddSlot={() => handleOpenForm()} />
+        )}
 
-          <CardContent className="space-y-4">
-            {!isEditing && (
-              <Button onClick={() => handleOpenForm()} size="sm" className="w-full sm:w-auto">
-                <Plus className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Neuer Slot</span>
-                <span className="sm:hidden">Slot</span>
-              </Button>
-            )}
-
-            {/* Slot Form */}
-            {isEditing && (
-              <div className="space-y-4">
-                <div>
-                  <h2 className="text-lg font-semibold">
-                    {editingSlot ? "Slot bearbeiten" : "Neuen Slot erstellen"}
-                  </h2>
-                  <p className="text-sm text-muted-foreground">
-                    {editingSlot
-                      ? "Bearbeiten Sie die Slot-Informationen"
-                      : "Erstellen Sie einen neuen Kranführer-Slot"}
-                  </p>
-                </div>
-
-                <SlotForm
-                  slot={editingSlot || undefined}
-                  onSubmit={handleFormSubmit}
-                  onCancel={() => {
-                    setIsEditing(false);
-                    setEditingSlot(null);
-                  }}
-                />
+        {/* Slot Form Card */}
+        {isEditing && (
+          <Card className="card-maritime-hero">
+            <CardContent className="p-6 space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold">
+                  {editingSlot ? "Slot bearbeiten" : "Neuen Slot erstellen"}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  {editingSlot
+                    ? "Bearbeiten Sie die Slot-Informationen"
+                    : "Erstellen Sie einen neuen Kranführer-Slot"}
+                </p>
               </div>
-            )}
 
-            {/* Show stats and filters only when not editing */}
-            {!isEditing && (
-              <>
-                {/* Stats Cards */}
-                <SlotStatsSection
-                  stats={stats}
-                  activeFilter={activeFilter}
-                  onFilterChange={setActiveFilter}
-                  isOpen={isStatsOpen}
-                  onOpenChange={setIsStatsOpen}
-                />
+              <SlotForm
+                slot={editingSlot || undefined}
+                onSubmit={handleFormSubmit}
+                onCancel={() => {
+                  setIsEditing(false);
+                  setEditingSlot(null);
+                }}
+              />
+            </CardContent>
+          </Card>
+        )}
 
-                {/* Filters */}
-                <SlotFiltersSection
-                  selectedDate={selectedDate}
-                  onDateChange={setSelectedDate}
-                  selectedCraneOperator={selectedCraneOperator}
-                  onCraneOperatorChange={setSelectedCraneOperator}
-                  craneOperators={craneOperators.map((op) => ({ id: op.id, name: op.name }))}
-                  isOpen={isFiltersOpen}
-                  onOpenChange={setIsFiltersOpen}
-                />
-              </>
-            )}
-          </CardContent>
-        </Card>
+        {/* Stats and Filters - only when not editing */}
+        {!isEditing && (
+          <>
+            <SlotStatsSection
+              stats={stats}
+              activeFilter={activeFilter}
+              onFilterChange={setActiveFilter}
+            />
+
+            <SlotFiltersSection
+              selectedDate={selectedDate}
+              onDateChange={setSelectedDate}
+              selectedCraneOperator={selectedCraneOperator}
+              onCraneOperatorChange={setSelectedCraneOperator}
+              craneOperators={craneOperators.map((op) => ({ id: op.id, name: op.name }))}
+            />
+          </>
+        )}
       </div>
 
       {/* Scrollable Content Area */}
