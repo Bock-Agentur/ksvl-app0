@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks';
 import { CustomField as CustomFieldType } from '@/types';
+import { logger } from '@/lib/logger';
 
 // Re-export CustomField for backwards compatibility
 export type CustomField = CustomFieldType;
@@ -36,7 +37,7 @@ export function useCustomFields() {
 
       setCustomFields(fields);
     } catch (error) {
-      console.error('Error fetching custom fields:', error);
+      logger.error('CUSTOM_FIELDS', 'Error fetching custom fields', error);
       toast({
         title: "Fehler",
         description: "Custom Fields konnten nicht geladen werden.",
@@ -89,7 +90,7 @@ export function useCustomFields() {
 
       fetchCustomFields();
     } catch (error: any) {
-      console.error('Error adding custom field:', error);
+      logger.error('CUSTOM_FIELDS', 'Error adding custom field', error);
       toast({
         title: "Fehler",
         description: error.message || "Custom Field konnte nicht hinzugefügt werden.",
@@ -182,7 +183,7 @@ export function useCustomFields() {
 
       fetchCustomFields();
     } catch (error: any) {
-      console.error('Error deleting custom field:', error);
+      logger.error('CUSTOM_FIELDS', 'Error deleting custom field', error);
       toast({
         title: "Fehler",
         description: error.message || "Custom Field konnte nicht gelöscht werden.",
@@ -230,7 +231,7 @@ export function useCustomFieldValues(userId: string) {
 
       setCustomValues(values);
     } catch (error) {
-      console.error('Error fetching custom values:', error);
+      logger.error('CUSTOM_FIELDS', 'Error fetching custom values', error);
     } finally {
       setLoading(false);
     }
@@ -256,7 +257,7 @@ export function useCustomFieldValues(userId: string) {
 
       setCustomValues(prev => ({ ...prev, [fieldName]: value }));
     } catch (error: any) {
-      console.error('Error saving custom value:', error);
+      logger.error('CUSTOM_FIELDS', 'Error saving custom value', error);
       toast({
         title: "Fehler",
         description: "Wert konnte nicht gespeichert werden.",
@@ -288,7 +289,7 @@ export function useCustomFieldValues(userId: string) {
         description: "Alle Werte wurden gespeichert."
       });
     } catch (error: any) {
-      console.error('Error saving all custom values:', error);
+      logger.error('CUSTOM_FIELDS', 'Error saving all custom values', error);
       toast({
         title: "Fehler",
         description: "Werte konnten nicht gespeichert werden.",

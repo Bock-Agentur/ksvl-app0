@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks";
 import { useAuth } from "@/contexts/auth-context";
+import { logger } from "@/lib/logger";
 
 export interface AppSetting {
   id: string;
@@ -87,7 +88,7 @@ export function useAppSettings<T = any>(
       setValue(defaultValue);
       
     } catch (error) {
-      console.error(`Error loading setting ${settingKey}:`, error);
+      logger.error('SETTINGS', `Error loading setting ${settingKey}`, error);
       setValue(defaultValue);
     } finally {
       setIsLoading(false);
@@ -151,7 +152,7 @@ export function useAppSettings<T = any>(
         });
       }
     } catch (error) {
-      console.error(`Error saving setting ${settingKey}:`, error);
+      logger.error('SETTINGS', `Error saving setting ${settingKey}`, error);
       
       if (!skipToast) {
         toast({
@@ -188,7 +189,7 @@ export function useAppSettings<T = any>(
       setValue(defaultValue);
       localStorage.removeItem(settingKey);
     } catch (error) {
-      console.error(`Error deleting setting ${settingKey}:`, error);
+      logger.error('SETTINGS', `Error deleting setting ${settingKey}`, error);
       localStorage.removeItem(settingKey);
       setValue(defaultValue);
     }

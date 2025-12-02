@@ -14,6 +14,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 // File metadata type
 export interface FileMetadata {
@@ -212,7 +213,7 @@ class FileService {
       if (error instanceof FileServiceError) {
         throw error;
       }
-      console.error('Error uploading file:', error);
+      logger.error('FILE_SERVICE', 'Error uploading file', error);
       throw new FileServiceError("Datei konnte nicht hochgeladen werden", "UPLOAD_FAILED");
     }
   }
@@ -277,7 +278,7 @@ class FileService {
         .remove([cleanPath]);
 
       if (storageError) {
-        console.error('Storage deletion error:', storageError);
+        logger.error('FILE_SERVICE', 'Storage deletion error', storageError);
         // Continue to delete metadata even if storage deletion fails
       }
 
@@ -292,7 +293,7 @@ class FileService {
       if (error instanceof FileServiceError) {
         throw error;
       }
-      console.error('Error deleting file:', error);
+      logger.error('FILE_SERVICE', 'Error deleting file', error);
       throw new FileServiceError("Datei konnte nicht gelöscht werden", "DELETE_FAILED");
     }
   }
@@ -342,7 +343,7 @@ class FileService {
       if (error instanceof FileServiceError) {
         throw error;
       }
-      console.error('Error updating metadata:', error);
+      logger.error('FILE_SERVICE', 'Error updating metadata', error);
       throw new FileServiceError("Metadaten konnten nicht aktualisiert werden", "UPDATE_FAILED");
     }
   }
@@ -388,7 +389,7 @@ class FileService {
 
       return url;
     } catch (error) {
-      console.error('Error getting file URL:', error);
+      logger.error('FILE_SERVICE', 'Error getting file URL', error);
       return null;
     }
   }

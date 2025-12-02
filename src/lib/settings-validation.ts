@@ -5,6 +5,7 @@
  */
 
 import { z } from "zod";
+import { logger } from "@/lib/logger";
 
 // ============================================================================
 // LOGIN BACKGROUND SETTINGS
@@ -194,7 +195,7 @@ export function validateSettings<T>(
     return schema.parse(data);
   } catch (error) {
     if (settingKey) {
-      console.warn(`[Settings Validation] Invalid data for "${settingKey}":`, error);
+      logger.warn('SETTINGS', `Invalid data for "${settingKey}"`, error);
     }
     return fallback;
   }

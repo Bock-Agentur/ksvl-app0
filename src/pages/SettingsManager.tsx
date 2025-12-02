@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Trash2, RefreshCw, AlertTriangle, CheckCircle2, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { logger } from "@/lib/logger";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -89,7 +90,7 @@ export default function SettingsManager() {
       toast.success(`Setting "${deleteTarget.setting_key}" gelöscht`);
       refetch();
     } catch (error) {
-      console.error('Error deleting setting:', error);
+      logger.error('SETTINGS', 'Error deleting setting', error);
       toast.error('Fehler beim Löschen');
     } finally {
       setDeleteTarget(null);

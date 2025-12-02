@@ -3,6 +3,8 @@
  * Robuste Fehlerbehandlung und Type-Safety
  */
 
+import { logger } from "@/lib/logger";
+
 export enum StorageType {
   LOCAL = 'localStorage',
   SESSION = 'sessionStorage',
@@ -79,13 +81,10 @@ class SafeStorage {
       
       storage.setItem(key, serialized);
       
-      // Simple console log for development
-      if (!import.meta.env.PROD) {
-        console.log(`[STORAGE] Stored item: ${key}`);
-      }
+      logger.debug('STORAGE', `Stored item: ${key}`);
       return true;
     } catch (error) {
-      console.error(`[STORAGE] Failed to store item: ${key}`, error);
+      logger.error('STORAGE', `Failed to store item: ${key}`, error);
       return false;
     }
   }
@@ -106,19 +105,15 @@ class SafeStorage {
       
       // Check expiry
       if (this.isItemExpired(item)) {
-        if (!import.meta.env.PROD) {
-          console.log(`[STORAGE] Item expired: ${key}`);
-        }
+        logger.debug('STORAGE', `Item expired: ${key}`);
         this.removeItem(key, type);
         return defaultValue || null;
       }
 
-      if (!import.meta.env.PROD) {
-        console.log(`[STORAGE] Retrieved item: ${key}`);
-      }
+      logger.debug('STORAGE', `Retrieved item: ${key}`);
       return item.value;
     } catch (error) {
-      console.error(`[STORAGE] Failed to retrieve item: ${key}`, error);
+      logger.error('STORAGE', `Failed to retrieve item: ${key}`, error);
       return defaultValue || null;
     }
   }
@@ -131,12 +126,10 @@ class SafeStorage {
       const storage = this.getStorage(type);
       storage.removeItem(key);
       
-      if (!import.meta.env.PROD) {
-        console.log(`[STORAGE] Removed item: ${key}`);
-      }
+      logger.debug('STORAGE', `Removed item: ${key}`);
       return true;
     } catch (error) {
-      console.error(`[STORAGE] Failed to remove item: ${key}`, error);
+      logger.error('STORAGE', `Failed to remove item: ${key}`, error);
       return false;
     }
   }
@@ -161,12 +154,10 @@ class SafeStorage {
       const storage = this.getStorage(type);
       storage.clear();
       
-      if (!import.meta.env.PROD) {
-        console.log(`[STORAGE] Cleared all items`);
-      }
+      logger.debug('STORAGE', 'Cleared all items');
       return true;
     } catch (error) {
-      console.error(`[STORAGE] Failed to clear storage`, error);
+      logger.error('STORAGE', 'Failed to clear storage', error);
       return false;
     }
   }
@@ -186,7 +177,7 @@ class SafeStorage {
       
       return keys;
     } catch (error) {
-      console.error(`[STORAGE] Failed to get all keys`, error);
+      logger.error('STORAGE', 'Failed to get all keys', error);
       return [];
     }
   }
@@ -215,11 +206,11 @@ class SafeStorage {
         }
       }
       
-      if (cleanedCount > 0 && !import.meta.env.PROD) {
-        console.log(`[STORAGE] Cleaned up ${cleanedCount} expired items`);
+      if (cleanedCount > 0) {
+        logger.debug('STORAGE', `Cleaned up ${cleanedCount} expired items`);
       }
     } catch (error) {
-      console.error(`[STORAGE] Failed to cleanup expired items`, error);
+      logger.error('STORAGE', 'Failed to cleanup expired items', error);
     }
     
     return cleanedCount;

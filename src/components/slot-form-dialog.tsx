@@ -12,6 +12,7 @@ import { de } from "date-fns/locale";
 import { Calendar, Clock, User, Trash2, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SlotForm, SlotFormData } from "@/components/common/slot-form";
+import { logger } from "@/lib/logger";
 
 export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, onClose }: SlotFormDialogProps) {
   const { toast } = useToast();
@@ -209,7 +210,7 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
         }
       }
     } catch (error) {
-      console.error('Error in handleFormSubmit:', error);
+      logger.error('SLOTS', 'Error in handleFormSubmit', error);
       // Error toast already shown by use-slots hook
     }
   };
@@ -245,7 +246,7 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
       // Close dialog immediately - the optimistic update will show the change
       onClose();
     } catch (error) {
-      console.error('Error booking slot:', error);
+      logger.error('SLOTS', 'Error booking slot', error);
     }
   };
 
@@ -272,7 +273,7 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
       // Close dialog immediately
       onClose();
     } catch (error) {
-      console.error('Error rebooking slot:', error);
+      logger.error('SLOTS', 'Error rebooking slot', error);
       toast({
         title: "Fehler",
         description: "Die Umbuchung konnte nicht durchgeführt werden.",
@@ -299,7 +300,7 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
       // Close dialog immediately - the optimistic update will show the change
       onClose();
     } catch (error) {
-      console.error('Error canceling slot:', error);
+      logger.error('SLOTS', 'Error canceling slot', error);
     }
   };
 
@@ -314,7 +315,7 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
       });
       onClose();
     } catch (error) {
-      console.error('Error deleting slot:', error);
+      logger.error('SLOTS', 'Error deleting slot', error);
     }
   };
 
