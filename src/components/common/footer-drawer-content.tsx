@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { DrawerHeader, DrawerTitle } from "@/components/ui/drawer";
 import { LogOut } from "lucide-react";
@@ -15,7 +14,6 @@ interface FooterDrawerContentProps {
   currentRole: UserRole;
   currentUser: any;
   drawerItems: NavItem[];
-  onRoleChange: (role: UserRole) => void;
   onLogout: () => void;
   onNavigate: (itemId: string) => void;
   isItemActive: (itemId: string) => boolean;
@@ -26,7 +24,6 @@ export function FooterDrawerContent({
   currentRole,
   currentUser,
   drawerItems,
-  onRoleChange,
   onLogout,
   onNavigate,
   isItemActive,
@@ -67,25 +64,6 @@ export function FooterDrawerContent({
               <p className="text-xs text-muted-foreground">{currentUser.name}</p>
             )}
           </div>
-        </div>
-
-        <Separator className="my-2" />
-
-        {/* Role Switcher */}
-        <div className="space-y-2">
-          <h3 className="text-xs font-medium text-muted-foreground">Rolle wechseln</h3>
-          <Select value={currentRole} onValueChange={(value: UserRole) => onRoleChange(value)}>
-            <SelectTrigger className="w-full h-8 text-sm">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="gastmitglied" className="text-sm">👋 Gastmitglied</SelectItem>
-              <SelectItem value="mitglied" className="text-sm">👤 Mitglied</SelectItem>
-              <SelectItem value="kranfuehrer" className="text-sm">⚓ Kranführer</SelectItem>
-              <SelectItem value="admin" className="text-sm">🔧 Admin</SelectItem>
-              <SelectItem value="vorstand" className="text-sm">🏛️ Vorstand</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
 
         <Separator className="my-2" />

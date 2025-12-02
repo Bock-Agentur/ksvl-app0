@@ -33,7 +33,7 @@ function AppContent() {
     return <PageLoader />;
   }
   
-  const { currentRole, currentUser, setRole } = roleContext;
+  const { currentRole, currentUser } = roleContext;
 
   return (
     <div className="min-h-screen flex flex-col relative z-0 pt-safe bg-background">
@@ -43,7 +43,6 @@ function AppContent() {
       <UnifiedFooter
         currentRole={currentRole}
         currentUser={currentUser}
-        onRoleChange={setRole}
       />
     </div>
   );
