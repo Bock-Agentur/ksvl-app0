@@ -3,8 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { UserRole, RoleContextType, User } from "@/types";
 import { useMenuSettings } from "../settings/use-menu-settings";
 import { useAuth } from "@/contexts/auth-context";
-import { useUserData, useUsersData } from "../data/use-users-data";
-import { useSettingsBatch } from "../settings/use-settings-batch";
+import { useUserData } from "../data/use-users-data";
 import { logger } from "@/lib/logger";
 
 const RoleContext = createContext<RoleContextType | undefined>(undefined);
@@ -26,25 +25,19 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const { settings } = useMenuSettings({ enabled: !authLoading && !!authUser });
-  const { getSetting } = useSettingsBatch({ enabled: !authLoading && !!authUser });
   const [currentRole, setCurrentRole] = useState<UserRole>("mitglied");
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [originalUser, setOriginalUser] = useState<User | null>(null);
   
   // ✅ Use centralized user data hook instead of direct queries
   const { user: profileData, isLoading: profileLoading } = useUserData(authUser?.id, { 
     enabled: !authLoading && !!authUser && isInitialLoad 
   });
 
-  // ✅ Load all users for role-switching (cached via useUsersData)
-  const { users: allUsers } = useUsersData({ enabled: !authLoading && !!authUser });
-
   // ✅ Reset state when auth user changes (login/logout)
   useEffect(() => {
     // Reset state when user ID changes
     setIsInitialLoad(true);
     setCurrentUser(null);
-    setOriginalUser(null);
     setCurrentRole("mitglied");
     
     // Invalidate user-specific caches
@@ -72,7 +65,7 @@ export function RoleProvider({ children }: { children: ReactNode }) {
       // ✅ Use cached profile data from useUserData
       let roles = profileData.roles as UserRole[];
       
-      // Ensure admin and kranfuehrer also have mitglied role for role switching
+      // Ensure admin and kranfuehrer also have mitglied role
       if ((roles.includes('admin') || roles.includes('kranfuehrer')) && !roles.includes('mitglied')) {
         roles = [...roles, 'mitglied'];
       }
@@ -98,7 +91,6 @@ export function RoleProvider({ children }: { children: ReactNode }) {
         isActive: profileData.status === 'active'
       };
 
-      setOriginalUser(user);
       setCurrentUser(user);
       
       // Only use defaultRole if it's one of the user's roles
@@ -112,69 +104,9 @@ export function RoleProvider({ children }: { children: ReactNode }) {
     loadUser();
   }, [authUser, authLoading, isInitialLoad, profileData, profileLoading, settings.defaultRole]);
   
+  // ✅ Simplified setRole - just changes the displayed role without switching users
   const setRole = async (role: UserRole) => {
-    // ✅ Use cached settings instead of DB query
-    const roleSwitchingSetting = getSetting<{ enabled?: boolean }>('role_switching_enabled', { enabled: true });
-    const isRoleSwitchingEnabled = roleSwitchingSetting?.enabled !== false;
-    
     setCurrentRole(role);
-    
-    // If role switching is disabled, just change the role but keep the current user
-    if (!isRoleSwitchingEnabled) {
-      return;
-    }
-    
-    // If switching back to a role the original user has, restore the original user
-    if (originalUser && originalUser.roles.includes(role)) {
-      setCurrentUser(originalUser);
-      // Invalidate queries to refresh data for the restored user
-      queryClient.invalidateQueries({ 
-        predicate: (query) => {
-          const key = query.queryKey[0];
-          return key === 'profile' || key === 'slots' || key === 'users';
-        }
-      });
-      return;
-    }
-    
-    // ✅ Try to find the role user from cached users data
-    const roleUserEmail = `${role}-rolle@ksvl.test`;
-    const roleProfile = allUsers.find(u => 
-      u.email === roleUserEmail && u.is_role_user === true
-    );
-    
-    if (roleProfile) {
-      const roles = roleProfile.roles as UserRole[] || [role];
-      const roleUser: User = {
-        id: roleProfile.id,
-        name: roleProfile.name || '',
-        firstName: roleProfile.first_name || undefined,
-        lastName: roleProfile.last_name || undefined,
-        email: roleProfile.email,
-        phone: roleProfile.phone || undefined,
-        boatName: roleProfile.boat_name || undefined,
-        memberNumber: roleProfile.member_number || '',
-        streetAddress: roleProfile.street_address || undefined,
-        postalCode: roleProfile.postal_code || undefined,
-        city: roleProfile.city || undefined,
-        roles,
-        role: role,
-        status: roleProfile.status === 'active' ? 'active' : 'inactive',
-        joinDate: roleProfile.entry_date || '',
-        isActive: roleProfile.status === 'active'
-      };
-      setCurrentUser(roleUser);
-      // Invalidate queries to refresh data for the role user
-      queryClient.invalidateQueries({ 
-        predicate: (query) => {
-          const key = query.queryKey[0];
-          return key === 'profile' || key === 'slots' || key === 'users';
-        }
-      });
-    } else {
-      // If no role user exists, keep current user but change role
-      logger.warn('AUTH', `No role user found for ${role}`);
-    }
   };
   
   const handleSetCurrentUser = (user: User | null) => {

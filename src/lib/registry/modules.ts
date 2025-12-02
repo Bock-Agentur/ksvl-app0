@@ -74,9 +74,7 @@ export const APP_MODULES: AppModule[] = [
       'manage-user',
       'manage-user-password',
       'reset-password-admin',
-      'create-test-users',
-      'create-role-users',
-      'regenerate-role-users'
+      'create-test-users'
     ],
     docsPath: 'docs/modules/ksvl_modules_overview.md'
   },

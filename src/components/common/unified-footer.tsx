@@ -16,13 +16,11 @@ import { getNavItemsForRole, isNavItemActive, getNavItemPath, NAV_ITEMS } from "
 interface UnifiedFooterProps {
   currentRole?: UserRole;
   currentUser?: any;
-  onRoleChange?: (role: UserRole) => void;
 }
 
 export function UnifiedFooter({
   currentRole: propsRole,
   currentUser: propsUser,
-  onRoleChange: propsOnRoleChange,
 }: UnifiedFooterProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,12 +29,11 @@ export function UnifiedFooter({
   const [forceUpdate, setForceUpdate] = useState(0);
   
   // Use hook as fallback when props not provided
-  const { currentRole: hookRole, currentUser: hookUser, setRole: hookSetRole } = useRole();
+  const { currentRole: hookRole, currentUser: hookUser } = useRole();
   
   // Props have priority, otherwise use hook values
   const currentRole = propsRole ?? hookRole;
   const currentUser = propsUser ?? hookUser;
-  const onRoleChange = propsOnRoleChange ?? hookSetRole;
   
   const { getDisplaySettingsForRole, getMenuItemsForRole, isLoading: footerLoading, refetch: refetchFooterSettings } = useFooterMenuSettings(currentRole);
   
@@ -143,7 +140,6 @@ export function UnifiedFooter({
                 currentRole={currentRole}
                 currentUser={currentUser}
                 drawerItems={drawerItems}
-                onRoleChange={onRoleChange}
                 onLogout={handleLogout}
                 onNavigate={handleNavigate}
                 isItemActive={checkIsActive}
