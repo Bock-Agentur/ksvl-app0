@@ -2,7 +2,7 @@
  * useLoginBackgroundForm Hook
  * 
  * Manages all form state and handlers for login background settings.
- * Extracted from LoginBackgroundSettings to reduce component complexity.
+ * Simplified version - removed card styling and legacy media handlers.
  */
 
 import { useState, useEffect } from "react";
@@ -23,7 +23,6 @@ export function useLoginBackgroundForm() {
   const [isInputBgColorOpen, setIsInputBgColorOpen] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [fileSelectorOpen, setFileSelectorOpen] = useState(false);
-  const [legacyMediaSelectorOpen, setLegacyMediaSelectorOpen] = useState(false);
 
   // Update local state when background changes from server
   useEffect(() => {
@@ -145,18 +144,6 @@ export function useLoginBackgroundForm() {
     setLocalSettings({ ...localSettings, videoOnMobile: checked });
   };
 
-  const handleOpacityChange = (value: number[]) => {
-    setLocalSettings({ ...localSettings, cardOpacity: value[0] });
-  };
-
-  const handleBorderBlurChange = (value: number[]) => {
-    setLocalSettings({ ...localSettings, cardBorderBlur: value[0] });
-  };
-
-  const handleBorderRadiusChange = (value: number[]) => {
-    setLocalSettings({ ...localSettings, cardBorderRadius: value[0] });
-  };
-
   const handleOverlayColorChange = (color: string) => {
     setLocalSettings({ ...localSettings, overlayColor: color });
   };
@@ -257,25 +244,6 @@ export function useLoginBackgroundForm() {
     });
   };
 
-  const handleSelectFromLegacyMedia = async (filename: string) => {
-    const { data: urlData } = supabase.storage.from('login-media').getPublicUrl(filename);
-    const isVideo = filename.endsWith('.mp4') || filename.endsWith('.webm');
-    const newSettings = {
-      ...localSettings,
-      type: isVideo ? 'video' as const : 'image' as const,
-      bucket: 'login-media' as const,
-      storagePath: filename,
-      filename,
-      url: urlData.publicUrl
-    };
-    setLocalSettings(newSettings);
-    setLegacyMediaSelectorOpen(false);
-    toast({
-      title: "Datei ausgewählt",
-      description: `${filename} wurde ausgewählt. Klicke auf "Speichern" um die Änderungen zu übernehmen.`
-    });
-  };
-
   return {
     // State
     localSettings,
@@ -289,8 +257,6 @@ export function useLoginBackgroundForm() {
     setIsInputBgColorOpen,
     fileSelectorOpen,
     setFileSelectorOpen,
-    legacyMediaSelectorOpen,
-    setLegacyMediaSelectorOpen,
     
     // Handlers
     handleFileUpload,
@@ -298,9 +264,6 @@ export function useLoginBackgroundForm() {
     handleSave,
     handleTypeChange,
     handleVideoOnMobileChange,
-    handleOpacityChange,
-    handleBorderBlurChange,
-    handleBorderRadiusChange,
     handleOverlayColorChange,
     handleOverlayOpacityChange,
     handleMediaBlurChange,
@@ -322,6 +285,5 @@ export function useLoginBackgroundForm() {
     handleCountdownFontSizeChange,
     handleCountdownFontWeightChange,
     handleSelectFromFileManager,
-    handleSelectFromLegacyMedia,
   };
 }

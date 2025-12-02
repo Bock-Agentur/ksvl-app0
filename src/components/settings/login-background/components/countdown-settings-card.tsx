@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import type { LoginBackground } from "@/hooks";
-import { CountdownPreview } from "./countdown-preview";
 
 interface CountdownSettingsCardProps {
   localSettings: LoginBackground;
@@ -67,20 +66,6 @@ export function CountdownSettingsCard({
               placeholder="z.B. bis zum Saisonstart"
             />
           </div>
-
-          {/* Countdown Preview */}
-          {localSettings.countdownEndDate && (
-            <div className="p-4 bg-black/80 rounded-lg">
-              <CountdownPreview 
-                endDate={localSettings.countdownEndDate}
-                text={localSettings.countdownText}
-                small
-                showDays={localSettings.countdownShowDays}
-                fontSize={localSettings.countdownFontSize}
-                fontWeight={localSettings.countdownFontWeight}
-              />
-            </div>
-          )}
 
           <div className="flex items-center justify-between">
             <Label htmlFor="countdown-show-days">Tage anzeigen</Label>

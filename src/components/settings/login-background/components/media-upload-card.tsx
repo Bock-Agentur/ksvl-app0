@@ -2,6 +2,7 @@
  * MediaUploadCard Component
  * 
  * Handles file upload and file manager selection for login background media.
+ * Simplified: removed legacy media selector tab.
  */
 
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,6 @@ interface MediaUploadCardProps {
   previewUrl: string | null;
   onFileUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onOpenFileSelector: () => void;
-  onOpenLegacySelector: () => void;
 }
 
 export function MediaUploadCard({
@@ -26,13 +26,11 @@ export function MediaUploadCard({
   previewUrl,
   onFileUpload,
   onOpenFileSelector,
-  onOpenLegacySelector,
 }: MediaUploadCardProps) {
   return (
     <Tabs defaultValue="upload" className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-2">
         <TabsTrigger value="upload">Hochladen</TabsTrigger>
-        <TabsTrigger value="manager">Gespeichert</TabsTrigger>
         <TabsTrigger value="file-manager">Dateimanager</TabsTrigger>
       </TabsList>
       
@@ -87,41 +85,6 @@ export function MediaUploadCard({
         {uploading && (
           <div className="text-sm text-muted-foreground">
             Wird hochgeladen...
-          </div>
-        )}
-      </TabsContent>
-      
-      <TabsContent value="manager" className="mt-4">
-        <Button 
-          variant="outline" 
-          className="w-full"
-          onClick={onOpenLegacySelector}
-        >
-          <FolderOpen className="h-4 w-4 mr-2" />
-          Gespeicherte Dateien durchsuchen
-        </Button>
-        {localSettings.filename && previewUrl && (
-          <div className="mt-4 p-3 border rounded-lg bg-muted/50">
-            <p className="text-sm font-medium">Ausgewählte Datei:</p>
-            <p className="text-xs text-muted-foreground truncate mt-1">{localSettings.filename}</p>
-            <div className="relative w-full h-40 rounded border overflow-hidden mt-2">
-              {localSettings.type === 'video' ? (
-                <video
-                  src={previewUrl}
-                  className="w-full h-full object-cover"
-                  muted
-                  loop
-                  playsInline
-                  autoPlay
-                />
-              ) : (
-                <img
-                  src={previewUrl}
-                  alt="Vorschau"
-                  className="w-full h-full object-cover"
-                />
-              )}
-            </div>
           </div>
         )}
       </TabsContent>
