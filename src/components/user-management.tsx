@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useStickyHeaderLayout, useUsers, DatabaseUser, useSearchFilter, useCommonFilters, useFormHandler, useCommonFieldConfigs, useRoleBadgeSettings, useToast } from "@/hooks";
 import { Card, CardContent } from "@/components/ui/card";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { User, UserRole, generateRolesFromPrimary } from "@/types";
 import { ProfileView } from "./profile-view";
 import { cn } from "@/lib/utils";
@@ -188,6 +189,8 @@ export function UserManagementRefactored() {
   const [password, setPassword] = useState("");
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [passwordUserId, setPasswordUserId] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   
   // Statistiken mit Business Logic
@@ -208,10 +211,16 @@ export function UserManagementRefactored() {
     setSelectedUserId(null);
   };
 
-  const handleDeleteUser = async (userId: string) => {
-    if (confirm("Benutzer wirklich löschen?")) {
-      await deleteDbUser(userId);
-    }
+  const handleDeleteClick = (userId: string) => {
+    setUserToDelete(userId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!userToDelete) return;
+    await deleteDbUser(userToDelete);
+    setDeleteDialogOpen(false);
+    setUserToDelete(null);
   };
 
   const handleFormSubmit = async () => {
@@ -409,8 +418,25 @@ export function UserManagementRefactored() {
             setPasswordUserId(userId);
             setShowPasswordDialog(true);
           }}
-          onDeleteUser={handleDeleteUser}
+          onDeleteUser={handleDeleteClick}
         />
+
+        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Benutzer löschen?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Möchten Sie diesen Benutzer wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Löschen
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <UserAddDialog
           open={showAddDialog}
