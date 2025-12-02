@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useFileManager, UploadMetadata, useFilePermissions, useIsMobile, useUsers } from "@/hooks";
+import { logger } from "@/lib/logger";
 import {
   Drawer,
   DrawerContent,
@@ -106,7 +107,7 @@ export function FileUploadDrawer({
       setLinkedUserId(undefined);
       onOpenChange(false);
     } catch (error) {
-      console.error('Upload error:', error);
+      logger.error('FILE', 'Upload error', error);
     }
   };
 
