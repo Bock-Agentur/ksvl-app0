@@ -116,19 +116,17 @@ export type HeaderMessageSettingsValidated = z.infer<typeof HeaderMessageSetting
 // ============================================================================
 
 export const StickyHeaderLayoutSettingsSchema = z.object({
-  enabled: z.boolean().default(true),
+  enabled: z.boolean().default(false),
   pages: z.object({
-    calendar: z.boolean().default(true),
-    slotManagement: z.boolean().default(true),
-    userManagement: z.boolean().default(true),
-    profile: z.boolean().default(true),
-    settings: z.boolean().default(true),
+    calendar: z.boolean().default(false),
+    userManagement: z.boolean().default(false),
+    profile: z.boolean().default(false),
+    settings: z.boolean().default(false),
   }).default({
-    calendar: true,
-    slotManagement: true,
-    userManagement: true,
-    profile: true,
-    settings: true,
+    calendar: false,
+    userManagement: false,
+    profile: false,
+    settings: false,
   }),
 }).passthrough();
 

@@ -5,7 +5,6 @@ export interface StickyHeaderLayoutSettings {
   enabled: boolean; // Master-Schalter
   pages: {
     calendar: boolean;
-    slotManagement: boolean;
     userManagement: boolean;
     profile: boolean;
     settings: boolean;
@@ -16,7 +15,6 @@ const DEFAULT_SETTINGS: StickyHeaderLayoutSettings = {
   enabled: false,
   pages: {
     calendar: false,
-    slotManagement: false,
     userManagement: false,
     profile: false,
     settings: false,
