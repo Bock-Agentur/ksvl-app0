@@ -19,6 +19,7 @@ import { HeaderMessageSettings } from "@/components/header-message-settings";
 import { PageLoader } from "@/components/common/page-loader";
 import { PageLayout } from "@/components/common/page-layout";
 import { useStickyHeaderLayout, useRole, useIsMobile, useLoginBackground, ConsecutiveSlotsProvider } from "@/hooks";
+import { UserRole } from "@/types";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/lib/registry/routes";
@@ -57,7 +58,7 @@ type SettingSection = {
 function SettingsContent() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [isOverview, setIsOverview] = useState(true);
-  const { currentRole, isLoading: roleLoading } = useRole();
+  const { currentRole, currentUser, isLoading: roleLoading } = useRole();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   
@@ -69,8 +70,8 @@ function SettingsContent() {
   const showBackground = false; // Desktop background feature removed
   const isPageLoading = roleLoading || (isOverview && bgLoading);
 
-  // KRITISCH: Nur Admins und Vorstand haben Zugriff auf Settings
-  const isAdmin = currentRole === "admin" || currentRole === "vorstand";
+  // KRITISCH: Prüfe TATSÄCHLICHE Rollen, nicht die ausgewählte Role-Switch-Rolle
+  const isAdmin = currentUser?.roles?.includes('admin') || currentUser?.roles?.includes('vorstand');
   
   // Access control - redirect if not authorized
   useEffect(() => {
@@ -87,29 +88,34 @@ function SettingsContent() {
     return <PageLoader />;
   }
 
+  // Helper: prüft ob User die tatsächliche Rolle hat (nicht die ausgewählte)
+  const userHasRole = (role: UserRole) => currentUser?.roles?.includes(role) ?? false;
+  const userIsAdminOrVorstand = userHasRole('admin') || userHasRole('vorstand');
+  const userIsAdmin = userHasRole('admin');
+
   const sections: SettingSection[] = [
     { id: "dashboard", label: "Dashboard", description: "Widgets und Layout anpassen", icon: LayoutDashboard, component: DashboardSettings, group: "dashboard" },
     { id: "headermessage", label: "Header-Nachricht", description: "Dashboard-Überschrift anpassen", icon: Type, component: HeaderMessageSettings, group: "dashboard" },
     { id: "messages", label: "Startnachrichten", description: "Willkommensnachrichten nach Rolle", icon: MessageSquare, component: RoleWelcomeSettings, group: "dashboard" },
-    ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
+    ...(userIsAdminOrVorstand ? [
       { id: "aiwelcome", label: "AI-Startnachricht", description: "KI-generierte Begrüßung", icon: Bot, component: AIWelcomeMessageSettings, group: "dashboard" }
     ] : []),
     { id: "menu", label: "Drawer-Menü", description: "Navigation anpassen", icon: Menu, component: MenuSettings, group: "navigation" },
     { id: "footer", label: "Footer-Menü", description: "Fußzeile konfigurieren", icon: List, component: FooterMenuSettings, group: "navigation" },
     { id: "design", label: "Design", description: "Farben und Stile", icon: Palette, component: DesignSettings, group: "design" },
     { id: "theme", label: "Theme", description: "Hell/Dunkel-Modus", icon: Brush, component: ThemeManager, group: "design" },
-    ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
+    ...(userIsAdminOrVorstand ? [
       { id: "loginpage", label: "Login-Seite", description: "Hintergrundbild anpassen", icon: Image, component: LoginBackgroundSettings, group: "design" },
       { id: "stickyheader", label: "Fixierte Ansicht", description: "Header-Cards fixieren", icon: StickyNote, component: StickyHeaderLayoutSettings, group: "design" }
     ] : []),
-    ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
+    ...(userIsAdminOrVorstand ? [
       { id: "filemanager", label: "Dateimanager", description: "Medien und Dateien verwalten", icon: FolderOpen, route: ROUTES.protected.fileManager.path, group: "advanced" }
     ] : []),
     { id: "customfields", label: "Custom Fields", description: "Benutzerdefinierte Felder", icon: ListChecks, component: CustomFieldsManager, group: "advanced" },
-    ...(currentRole === 'admin' || currentRole === 'vorstand' ? [
+    ...(userIsAdminOrVorstand ? [
       { id: "aiassistant", label: "AI-Assistent", description: "KI-Einstellungen", icon: Bot, component: AIAssistantSettings, group: "advanced" }
     ] : []),
-    ...(currentRole === 'admin' ? [
+    ...(userIsAdmin ? [
       { id: "settingsmanager", label: "Settings Manager", description: "Alle Settings verwalten", icon: Database, route: "/einstellungen/settings-manager", group: "advanced" }
     ] : []),
     { id: "system", label: "System", description: "Systemeinstellungen", icon: SettingsIcon, component: ConsecutiveSlotsSettings, group: "advanced" },

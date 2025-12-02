@@ -118,8 +118,8 @@ export function UnifiedFooter({
           );
         })}
 
-        {/* Burger Menu - Always visible for admin/vorstand */}
-        {(currentRole === 'admin' || currentRole === 'vorstand') && (
+        {/* Burger Menu - Always visible for admin/vorstand (check actual roles, not selected role) */}
+        {(currentUser?.roles?.includes('admin') || currentUser?.roles?.includes('vorstand')) && (
           <Drawer open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <DrawerTrigger asChild>
               <Button 
