@@ -61,7 +61,7 @@ export function FileManagerFilters({
           variant={multiSelectMode ? 'default' : 'outline'}
           size="sm"
           onClick={onMultiSelectToggle}
-          className="flex items-center gap-2 bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 hover:bg-white/90 px-4 py-4 h-auto"
+          className="flex items-center gap-2 bg-white rounded-[2rem] card-shadow-soft border-0 hover:bg-white/90 px-4 py-4 h-auto"
         >
           <CheckSquare className="h-4 w-4" />
           {multiSelectMode ? 'Fertig' : 'Auswählen'}
@@ -71,7 +71,7 @@ export function FileManagerFilters({
           <CollapsibleTrigger asChild>
             <Button 
               variant="outline" 
-              className="w-full flex items-center justify-between bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 hover:bg-white/90 px-6 py-4 h-auto"
+              className="w-full flex items-center justify-between bg-white rounded-[2rem] card-shadow-soft border-0 hover:bg-white/90 px-6 py-4 h-auto"
             >
               <div className="flex items-center gap-2">
                 <SlidersHorizontal className="h-4 w-4" />
@@ -81,7 +81,7 @@ export function FileManagerFilters({
             </Button>
           </CollapsibleTrigger>
           <CollapsibleContent className="mt-2">
-            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+            <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
               <CardContent className="pt-4 space-y-4">
                 {/* Search */}
                 <div>
@@ -181,7 +181,7 @@ export function FileManagerFilters({
 
   // Desktop Layout
   return (
-    <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0">
+    <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
       <CardContent className="pt-6 space-y-4">
         {/* View Mode Toggle & Multi-Select Toggle */}
         <div className="flex items-center justify-between gap-2">
