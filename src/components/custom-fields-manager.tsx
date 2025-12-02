@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useCustomFields, useToast } from "@/hooks";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -95,6 +96,8 @@ export function CustomFieldsManager() {
   const { toast } = useToast();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingField, setEditingField] = useState<CustomField | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [fieldToDelete, setFieldToDelete] = useState<string | null>(null);
   const [formData, setFormData] = useState<Partial<CustomField>>({
     name: '',
     label: '',
@@ -146,13 +149,16 @@ export function CustomFieldsManager() {
     }
   };
 
-  const handleDelete = async (fieldId: string) => {
-    if (!confirm("Möchten Sie dieses Custom Field wirklich löschen? Alle zugehörigen Daten gehen verloren.")) {
-      return;
-    }
+  const handleDeleteClick = (fieldId: string) => {
+    setFieldToDelete(fieldId);
+    setDeleteDialogOpen(true);
+  };
 
+  const handleDeleteConfirm = async () => {
+    if (!fieldToDelete) return;
+    
     try {
-      await deleteCustomField(fieldId);
+      await deleteCustomField(fieldToDelete);
       toast({
         title: "Erfolg",
         description: "Custom Field wurde gelöscht",
@@ -164,6 +170,9 @@ export function CustomFieldsManager() {
         description: "Custom Field konnte nicht gelöscht werden",
         variant: "destructive",
       });
+    } finally {
+      setDeleteDialogOpen(false);
+      setFieldToDelete(null);
     }
   };
 
@@ -348,7 +357,7 @@ export function CustomFieldsManager() {
                         <SortableFieldItem
                           key={field.id}
                           field={field}
-                          onDelete={handleDelete}
+                          onDelete={handleDeleteClick}
                         />
                       ))}
                     </div>
@@ -359,6 +368,23 @@ export function CustomFieldsManager() {
           );
         })}
       </div>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Custom Field löschen?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Möchten Sie dieses Custom Field wirklich löschen? Alle zugehörigen Daten gehen verloren.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Löschen
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {customFields.length === 0 && (
         <Card>
