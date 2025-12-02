@@ -224,24 +224,66 @@ export function useLoginBackgroundForm() {
     setLocalSettings({ ...localSettings, countdownFontWeight: value[0] });
   };
 
-  const handleSelectFromFileManager = (file: any) => {
+  const handleSelectFromFileManager = async (file: any) => {
     const isVideo = file.mime_type?.startsWith('video/');
-    const newSettings = {
-      ...localSettings,
-      type: isVideo ? 'video' as const : 'image' as const,
-      bucket: file.storage_path?.includes('/') 
-        ? file.storage_path.split('/')[0] as 'documents' | 'login-media'
-        : 'login-media' as const,
-      storagePath: file.storage_path,
-      filename: file.filename,
-      url: null
-    };
-    setLocalSettings(newSettings);
-    setFileSelectorOpen(false);
-    toast({
-      title: "Datei ausgewählt",
-      description: `${file.filename} wurde ausgewählt. Klicke auf "Speichern" um die Änderungen zu übernehmen.`
-    });
+    
+    // Files from file manager are in 'documents' bucket (private)
+    // For login backgrounds, we need public access, so copy to 'login-media' bucket
+    try {
+      // Download the file from documents bucket
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from('documents')
+        .download(file.storage_path);
+      
+      if (downloadError || !fileData) {
+        toast({
+          title: "Fehler beim Laden",
+          description: "Die Datei konnte nicht geladen werden.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      // Upload to login-media bucket (public)
+      const newFileName = `background-${Date.now()}-${file.filename}`;
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('login-media')
+        .upload(newFileName, fileData, {
+          contentType: file.mime_type,
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (uploadError) {
+        toast({
+          title: "Fehler beim Kopieren",
+          description: "Die Datei konnte nicht in den öffentlichen Bereich kopiert werden.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const newSettings = {
+        ...localSettings,
+        type: isVideo ? 'video' as const : 'image' as const,
+        bucket: 'login-media' as const,
+        storagePath: uploadData.path,
+        filename: newFileName,
+        url: null
+      };
+      setLocalSettings(newSettings);
+      setFileSelectorOpen(false);
+      toast({
+        title: "Datei ausgewählt",
+        description: `${file.filename} wurde in den öffentlichen Bereich kopiert. Klicke auf "Speichern" um die Änderungen zu übernehmen.`
+      });
+    } catch (error: any) {
+      toast({
+        title: "Fehler",
+        description: error.message || "Ein unbekannter Fehler ist aufgetreten.",
+        variant: "destructive"
+      });
+    }
   };
 
   return {

@@ -166,17 +166,17 @@ export function Auth() {
   const { background, isLoading } = useLoginBackground();
   const isMobile = useIsMobile();
 
-  const getMediaUrl = (background: LoginBackground): string | null => {
+  const getMediaUrl = (): string | null => {
     if (!background.storagePath || !background.bucket) {
       return null;
     }
-    
     const { data } = supabase.storage
       .from(background.bucket)
       .getPublicUrl(background.storagePath);
-    
     return data.publicUrl;
   };
+
+  const mediaUrl = getMediaUrl();
 
   // Determine countdown position based on screen size
   const getCountdownPosition = () => {
@@ -356,8 +356,6 @@ export function Auth() {
     };
 
     if (background.type === 'image') {
-      const mediaUrl = getMediaUrl(background);
-      
       if (mediaUrl) {
         return (
           <>
@@ -381,7 +379,6 @@ export function Auth() {
     }
     
     if (background.type === 'video') {
-      const mediaUrl = getMediaUrl(background);
       const shouldShowVideo = !isMobile || background.videoOnMobile;
       
       return (
