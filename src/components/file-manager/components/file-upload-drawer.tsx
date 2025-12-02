@@ -143,7 +143,7 @@ export function FileUploadDrawer({
             multiple
             className="hidden"
             onChange={handleFileSelect}
-            accept="image/*,application/pdf,video/*"
+            accept="image/*"
           />
         </div>
       </div>
@@ -321,7 +321,7 @@ export function FileUploadDrawer({
         <DrawerHeader>
           <DrawerTitle>Dateien hochladen</DrawerTitle>
           <DrawerDescription>
-            Laden Sie Bilder, PDFs oder Videos hoch
+            Laden Sie Bilder hoch (JPG, PNG, GIF, WebP)
           </DrawerDescription>
         </DrawerHeader>
         <div className="overflow-y-auto">

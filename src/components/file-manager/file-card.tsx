@@ -21,12 +21,10 @@ import {
   Edit,
   Trash2,
   MoreVertical,
-  FileText,
   Image as ImageIcon,
   Video,
   File,
   Shield,
-  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ROLE_LABELS } from "@/lib/role-order";
@@ -168,34 +166,8 @@ export function FileCard({
     downloadFile(file.id);
   };
 
-  // Open PDF in new tab
-  const handleOpenPdf = async () => {
-    if (file.file_type !== 'pdf') return;
-    
-    const bucket = determineBucket(file.storage_path, file.category);
-    let cleanPath = file.storage_path;
-    if (cleanPath.startsWith(`${bucket}/`)) {
-      cleanPath = cleanPath.substring(bucket.length + 1);
-    }
-    
-    try {
-      const { data, error } = await supabase.storage
-        .from(bucket)
-        .createSignedUrl(cleanPath, 3600);
-      
-      if (error || !data?.signedUrl) {
-        console.error('[FileCard] PDF URL error:', error);
-        return;
-      }
-      window.open(data.signedUrl, '_blank');
-    } catch (err) {
-      console.error('[FileCard] PDF open error:', err);
-    }
-  };
-
   // File type icon
   const FileIcon = file.file_type === 'image' ? ImageIcon :
-                   file.file_type === 'pdf' ? FileText :
                    file.file_type === 'video' ? Video :
                    File;
 
@@ -321,12 +293,6 @@ export function FileCard({
                 <Eye className="h-4 w-4 mr-2" />
                 Ansehen
               </DropdownMenuItem>
-              {file.file_type === 'pdf' && (
-                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleOpenPdf(); }}>
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  PDF öffnen
-                </DropdownMenuItem>
-              )}
               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDownload(); }}>
                 <Download className="h-4 w-4 mr-2" />
                 Herunterladen
@@ -443,11 +409,6 @@ export function FileCard({
               <Eye className="h-4 w-4 mr-1" />
               Ansehen
             </Button>
-            {file.file_type === 'pdf' && (
-              <Button size="sm" variant="ghost" className="h-8 px-2" onClick={(e) => { e.stopPropagation(); handleOpenPdf(); }} title="PDF öffnen">
-                <ExternalLink className="h-4 w-4" />
-              </Button>
-            )}
             <Button size="sm" variant="ghost" className="h-8 px-2" onClick={(e) => { e.stopPropagation(); handleDownload(); }}>
               <Download className="h-4 w-4" />
             </Button>

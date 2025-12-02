@@ -20,7 +20,7 @@ export interface FileMetadata {
   id: string;
   filename: string;
   storage_path: string;
-  file_type: 'image' | 'pdf' | 'video' | 'other';
+  file_type: 'image' | 'video';
   mime_type: string;
   file_size: number;
   owner_id: string | null;
@@ -106,13 +106,11 @@ class FileService {
     if (mimeType.startsWith('image/') || mimeType === 'image/webp') {
       return 'image';
     }
-    if (mimeType === 'application/pdf') {
-      return 'pdf';
-    }
     if (mimeType.startsWith('video/')) {
       return 'video';
     }
-    return 'other';
+    // Default to image for this image-focused manager
+    return 'image';
   }
 
   /**

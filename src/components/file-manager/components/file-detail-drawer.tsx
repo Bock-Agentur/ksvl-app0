@@ -27,7 +27,6 @@ import {
   User,
   Link as LinkIcon,
   Check,
-  ExternalLink,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
@@ -173,21 +172,6 @@ export function FileDetailDrawer({
         {loadingUrl ? (
           <div className="w-full aspect-video flex items-center justify-center">
             <div className="h-full w-full animate-pulse bg-muted-foreground/20" />
-          </div>
-        ) : file.file_type === 'pdf' && fileUrl ? (
-          <div className="space-y-2">
-            <iframe src={fileUrl} className="w-full h-96 border-0" title={file.filename} />
-            <div className="p-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="w-full"
-                onClick={() => window.open(fileUrl, '_blank')}
-              >
-                <ExternalLink className="h-4 w-4 mr-2" />
-                PDF in neuem Tab öffnen
-              </Button>
-            </div>
           </div>
         ) : file.file_type === 'video' && fileUrl ? (
           <video src={fileUrl} controls className="w-full h-auto max-h-64" />

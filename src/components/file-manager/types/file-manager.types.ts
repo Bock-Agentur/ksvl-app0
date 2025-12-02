@@ -4,7 +4,7 @@ export interface FileMetadata {
   id: string;
   filename: string;
   storage_path: string;
-  file_type: 'image' | 'pdf' | 'video' | 'other';
+  file_type: 'image' | 'video';
   mime_type: string;
   file_size: number;
   owner_id: string | null;
