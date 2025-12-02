@@ -9,7 +9,6 @@ import { MenuSettings } from "@/components/menu-settings";
 import { DesignSettings } from "@/components/design-settings";
 import { ThemeManager } from "@/components/theme-manager";
 import { TestDataManager } from "@/components/test-data-manager";
-import { UserListDatabase } from "@/components/user-list-database";
 import { CustomFieldsManager } from "@/components/custom-fields-manager";
 import { LoginBackgroundSettings } from "@/components/login-background-settings";
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";

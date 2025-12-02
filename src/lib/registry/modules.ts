@@ -60,7 +60,6 @@ export const APP_MODULES: AppModule[] = [
     components: [
       'user-management.tsx',
       'profile-view.tsx',
-      'user-list-database.tsx',
       'user-detail-view.tsx',
       'user-card-with-custom-fields.tsx',
       'profile/*'

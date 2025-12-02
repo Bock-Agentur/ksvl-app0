@@ -57,6 +57,59 @@ export interface UpdatePasswordData {
   password: string;
 }
 
+export interface UpdateProfileData {
+  id: string;
+  name?: string;
+  firstName?: string;
+  lastName?: string;
+  phone?: string;
+  memberNumber?: string;
+  boatName?: string;
+  streetAddress?: string;
+  postalCode?: string;
+  city?: string;
+  oesvNumber?: string;
+  address?: string;
+  berthNumber?: string;
+  berthType?: string;
+  birthDate?: string;
+  entryDate?: string;
+  dinghyBerthNumber?: string;
+  boatType?: string;
+  boatLength?: number;
+  boatWidth?: number;
+  boatColor?: string;
+  berthLength?: number;
+  berthWidth?: number;
+  buoyRadius?: number;
+  hasDinghyBerth?: boolean;
+  parkingPermitNumber?: string;
+  parkingPermitIssueDate?: string;
+  beverageChipNumber?: string;
+  beverageChipIssueDate?: string;
+  beverageChipStatus?: string;
+  emergencyContact?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  emergencyContactRelationship?: string;
+  notes?: string;
+  vorstandFunktion?: string;
+  membershipType?: string;
+  membershipStatus?: string;
+  boardPositionStartDate?: string;
+  boardPositionEndDate?: string;
+  passwordChangeRequired?: boolean;
+  twoFactorMethod?: string;
+  dataPublicInKsvl?: boolean;
+  contactPublicInKsvl?: boolean;
+  newsletterOptin?: boolean;
+  aiInfoEnabled?: boolean;
+  documentBfa?: string;
+  documentInsurance?: string;
+  documentBerthContract?: string;
+  documentMemberPhoto?: string;
+}
+
 /**
  * User Service Class
  */
@@ -269,6 +322,79 @@ class UserService {
    */
   async resetPassword(userId: string, newPassword: string) {
     return this.updatePassword({ userId, password: newPassword });
+  }
+
+  /**
+   * Update own profile directly (without Edge Function)
+   * For regular users updating their own profile without role changes
+   * 
+   * @param data Profile data to update
+   */
+  async updateProfile(data: UpdateProfileData) {
+    const toNullIfEmpty = (value: any) => {
+      if (value === '' || value === undefined) return null;
+      return value;
+    };
+
+    const updateData: Record<string, any> = {
+      name: data.name,
+      first_name: toNullIfEmpty(data.firstName),
+      last_name: toNullIfEmpty(data.lastName),
+      phone: toNullIfEmpty(data.phone),
+      member_number: toNullIfEmpty(data.memberNumber),
+      boat_name: toNullIfEmpty(data.boatName),
+      street_address: toNullIfEmpty(data.streetAddress),
+      postal_code: toNullIfEmpty(data.postalCode),
+      city: toNullIfEmpty(data.city),
+      oesv_number: toNullIfEmpty(data.oesvNumber),
+      address: toNullIfEmpty(data.address),
+      berth_number: toNullIfEmpty(data.berthNumber),
+      berth_type: toNullIfEmpty(data.berthType),
+      birth_date: toNullIfEmpty(data.birthDate),
+      entry_date: toNullIfEmpty(data.entryDate),
+      dinghy_berth_number: toNullIfEmpty(data.dinghyBerthNumber),
+      boat_type: toNullIfEmpty(data.boatType),
+      boat_length: toNullIfEmpty(data.boatLength),
+      boat_width: toNullIfEmpty(data.boatWidth),
+      boat_color: toNullIfEmpty(data.boatColor),
+      berth_length: toNullIfEmpty(data.berthLength),
+      berth_width: toNullIfEmpty(data.berthWidth),
+      buoy_radius: toNullIfEmpty(data.buoyRadius),
+      has_dinghy_berth: data.hasDinghyBerth === true,
+      parking_permit_number: toNullIfEmpty(data.parkingPermitNumber),
+      parking_permit_issue_date: toNullIfEmpty(data.parkingPermitIssueDate),
+      beverage_chip_number: toNullIfEmpty(data.beverageChipNumber),
+      beverage_chip_issue_date: toNullIfEmpty(data.beverageChipIssueDate),
+      beverage_chip_status: toNullIfEmpty(data.beverageChipStatus),
+      emergency_contact: toNullIfEmpty(data.emergencyContact),
+      emergency_contact_name: toNullIfEmpty(data.emergencyContactName),
+      emergency_contact_phone: toNullIfEmpty(data.emergencyContactPhone),
+      emergency_contact_relationship: toNullIfEmpty(data.emergencyContactRelationship),
+      notes: toNullIfEmpty(data.notes),
+      vorstand_funktion: toNullIfEmpty(data.vorstandFunktion),
+      membership_type: toNullIfEmpty(data.membershipType),
+      membership_status: toNullIfEmpty(data.membershipStatus),
+      board_position_start_date: toNullIfEmpty(data.boardPositionStartDate),
+      board_position_end_date: toNullIfEmpty(data.boardPositionEndDate),
+      password_change_required: data.passwordChangeRequired === true,
+      two_factor_method: toNullIfEmpty(data.twoFactorMethod),
+      data_public_in_ksvl: data.dataPublicInKsvl === true,
+      contact_public_in_ksvl: data.contactPublicInKsvl === true,
+      newsletter_optin: data.newsletterOptin === true,
+      ai_info_enabled: data.aiInfoEnabled === true,
+      document_bfa: toNullIfEmpty(data.documentBfa),
+      document_insurance: toNullIfEmpty(data.documentInsurance),
+      document_berth_contract: toNullIfEmpty(data.documentBerthContract),
+      document_member_photo: toNullIfEmpty(data.documentMemberPhoto)
+    };
+
+    const { error } = await supabase
+      .from('profiles')
+      .update(updateData)
+      .eq('id', data.id);
+
+    if (error) throw error;
+    return { success: true };
   }
 }
 
