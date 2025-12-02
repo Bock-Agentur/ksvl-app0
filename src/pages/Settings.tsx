@@ -10,7 +10,7 @@ import { DesignSettings } from "@/components/design-settings";
 import { ThemeManager } from "@/components/theme-manager";
 import { TestDataManager } from "@/components/test-data-manager";
 import { CustomFieldsManager } from "@/components/custom-fields-manager";
-import { LoginBackgroundSettings } from "@/components/login-background-settings";
+import { LoginBackgroundSettings } from "@/components/settings/login-background";
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
 import { StickyHeaderLayoutSettings } from "@/components/sticky-header-layout-settings";
