@@ -1,3 +1,13 @@
+/**
+ * Profile View Component
+ * 
+ * TODO: REFACTORING CANDIDATE (God Component ~587 Zeilen)
+ * Empfohlene Aufteilung in Subkomponenten:
+ * - ProfileEditForm: Bearbeitungs-Formular-Logik
+ * - ProfileLoadingState: Lade-/Fehlerzustände
+ * - ProfileStickyHeader: Sticky-Header-Variante
+ * - useProfileLoader: Custom Hook für Datenladung
+ */
 import { useState, useEffect, useCallback } from "react";
 import { useStickyHeaderLayout, useToast, useRole, useCustomFields, useCustomFieldValues, useRoleBadgeSettings } from "@/hooks";
 import { Edit, Save, X, ArrowLeft } from "lucide-react";
@@ -12,6 +22,7 @@ import { User as UserType, UserRole, CustomField, ProfileViewProps, generateRole
 import { supabase } from "@/integrations/supabase/client";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 import { userLogger } from "@/lib/logger";
+import { userService } from "@/lib/services/user-service";
 
 // ProfileViewProps is now imported from @/types
 
@@ -324,71 +335,59 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
           throw new Error(result.error || 'Benutzer konnte nicht aktualisiert werden');
         }
       } else {
-        // Regular profile update without role changes
-        // Helper function to convert empty strings and undefined to null
-        const toNullIfEmpty = (value: any) => {
-          if (value === '' || value === undefined) return null;
-          return value;
-        };
-
-        const updateData: any = {
+        // Regular profile update without role changes - use service layer
+        await userService.updateProfile({
+          id: targetUserId,
           name: editedUser.name,
-          first_name: toNullIfEmpty(editedUser.firstName),
-          last_name: toNullIfEmpty(editedUser.lastName),
-          phone: toNullIfEmpty(editedUser.phone),
-          member_number: toNullIfEmpty(editedUser.memberNumber),
-          boat_name: toNullIfEmpty(editedUser.boatName),
-          street_address: toNullIfEmpty(editedUser.streetAddress),
-          postal_code: toNullIfEmpty(editedUser.postalCode),
-          city: toNullIfEmpty(editedUser.city),
-          oesv_number: toNullIfEmpty((editedUser as any).oesvNumber),
-          address: toNullIfEmpty((editedUser as any).address),
-          berth_number: toNullIfEmpty((editedUser as any).berthNumber),
-          berth_type: toNullIfEmpty((editedUser as any).berthType),
-          birth_date: toNullIfEmpty((editedUser as any).birthDate),
-          entry_date: toNullIfEmpty((editedUser as any).entryDate),
-          dinghy_berth_number: toNullIfEmpty((editedUser as any).dinghyBerthNumber),
-          boat_type: toNullIfEmpty((editedUser as any).boatType),
-          boat_length: toNullIfEmpty((editedUser as any).boatLength),
-          boat_width: toNullIfEmpty((editedUser as any).boatWidth),
-          boat_color: toNullIfEmpty((editedUser as any).boatColor),
-          berth_length: toNullIfEmpty((editedUser as any).berthLength),
-          berth_width: toNullIfEmpty((editedUser as any).berthWidth),
-          buoy_radius: toNullIfEmpty((editedUser as any).buoyRadius),
-          has_dinghy_berth: (editedUser as any).hasDinghyBerth === true,
-          parking_permit_number: toNullIfEmpty((editedUser as any).parkingPermitNumber),
-          parking_permit_issue_date: toNullIfEmpty((editedUser as any).parkingPermitIssueDate),
-          beverage_chip_number: toNullIfEmpty((editedUser as any).beverageChipNumber),
-          beverage_chip_issue_date: toNullIfEmpty((editedUser as any).beverageChipIssueDate),
-          beverage_chip_status: toNullIfEmpty((editedUser as any).beverageChipStatus),
-          emergency_contact: toNullIfEmpty((editedUser as any).emergencyContact),
-          emergency_contact_name: toNullIfEmpty((editedUser as any).emergencyContactName),
-          emergency_contact_phone: toNullIfEmpty((editedUser as any).emergencyContactPhone),
-          emergency_contact_relationship: toNullIfEmpty((editedUser as any).emergencyContactRelationship),
-          notes: toNullIfEmpty((editedUser as any).notes),
-          vorstand_funktion: toNullIfEmpty((editedUser as any).vorstandFunktion),
-          membership_type: toNullIfEmpty((editedUser as any).membershipType),
-          membership_status: toNullIfEmpty((editedUser as any).membershipStatus),
-          board_position_start_date: toNullIfEmpty((editedUser as any).boardPositionStartDate),
-          board_position_end_date: toNullIfEmpty((editedUser as any).boardPositionEndDate),
-          password_change_required: (editedUser as any).passwordChangeRequired === true,
-          two_factor_method: toNullIfEmpty((editedUser as any).twoFactorMethod),
-          data_public_in_ksvl: (editedUser as any).dataPublicInKsvl === true,
-          contact_public_in_ksvl: (editedUser as any).contactPublicInKsvl === true,
-          newsletter_optin: (editedUser as any).newsletterOptin === true,
-          ai_info_enabled: aiInfoEnabled,
-          document_bfa: toNullIfEmpty((editedUser as any).documentBfa),
-          document_insurance: toNullIfEmpty((editedUser as any).documentInsurance),
-          document_berth_contract: toNullIfEmpty((editedUser as any).documentBerthContract),
-          document_member_photo: toNullIfEmpty((editedUser as any).documentMemberPhoto)
-        };
-
-        const { error } = await supabase
-          .from('profiles')
-          .update(updateData)
-          .eq('id', targetUserId);
-
-        if (error) throw error;
+          firstName: editedUser.firstName,
+          lastName: editedUser.lastName,
+          phone: editedUser.phone,
+          memberNumber: editedUser.memberNumber,
+          boatName: editedUser.boatName,
+          streetAddress: editedUser.streetAddress,
+          postalCode: editedUser.postalCode,
+          city: editedUser.city,
+          oesvNumber: (editedUser as any).oesvNumber,
+          address: (editedUser as any).address,
+          berthNumber: (editedUser as any).berthNumber,
+          berthType: (editedUser as any).berthType,
+          birthDate: (editedUser as any).birthDate,
+          entryDate: (editedUser as any).entryDate,
+          dinghyBerthNumber: (editedUser as any).dinghyBerthNumber,
+          boatType: (editedUser as any).boatType,
+          boatLength: (editedUser as any).boatLength,
+          boatWidth: (editedUser as any).boatWidth,
+          boatColor: (editedUser as any).boatColor,
+          berthLength: (editedUser as any).berthLength,
+          berthWidth: (editedUser as any).berthWidth,
+          buoyRadius: (editedUser as any).buoyRadius,
+          hasDinghyBerth: (editedUser as any).hasDinghyBerth,
+          parkingPermitNumber: (editedUser as any).parkingPermitNumber,
+          parkingPermitIssueDate: (editedUser as any).parkingPermitIssueDate,
+          beverageChipNumber: (editedUser as any).beverageChipNumber,
+          beverageChipIssueDate: (editedUser as any).beverageChipIssueDate,
+          beverageChipStatus: (editedUser as any).beverageChipStatus,
+          emergencyContact: (editedUser as any).emergencyContact,
+          emergencyContactName: (editedUser as any).emergencyContactName,
+          emergencyContactPhone: (editedUser as any).emergencyContactPhone,
+          emergencyContactRelationship: (editedUser as any).emergencyContactRelationship,
+          notes: (editedUser as any).notes,
+          vorstandFunktion: (editedUser as any).vorstandFunktion,
+          membershipType: (editedUser as any).membershipType,
+          membershipStatus: (editedUser as any).membershipStatus,
+          boardPositionStartDate: (editedUser as any).boardPositionStartDate,
+          boardPositionEndDate: (editedUser as any).boardPositionEndDate,
+          passwordChangeRequired: (editedUser as any).passwordChangeRequired,
+          twoFactorMethod: (editedUser as any).twoFactorMethod,
+          dataPublicInKsvl: (editedUser as any).dataPublicInKsvl,
+          contactPublicInKsvl: (editedUser as any).contactPublicInKsvl,
+          newsletterOptin: (editedUser as any).newsletterOptin,
+          aiInfoEnabled: aiInfoEnabled,
+          documentBfa: (editedUser as any).documentBfa,
+          documentInsurance: (editedUser as any).documentInsurance,
+          documentBerthContract: (editedUser as any).documentBerthContract,
+          documentMemberPhoto: (editedUser as any).documentMemberPhoto
+        });
       }
 
       setUser(editedUser);

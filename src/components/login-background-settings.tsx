@@ -1,3 +1,14 @@
+/**
+ * Login Background Settings Component
+ * 
+ * TODO: REFACTORING CANDIDATE (God Component ~1312 Zeilen)
+ * Empfohlene Aufteilung in Subkomponenten:
+ * - CountdownSettings: Countdown-Konfiguration
+ * - MediaUpload: Bild/Video-Upload-Logik
+ * - PositionSettings: Positionierungs-Steuerung
+ * - PreviewCard: Vorschau-Komponente
+ * - CardStyleSettings: Card-Styling-Optionen
+ */
 import { useState, useEffect } from "react";
 import { HexColorPicker } from "react-colorful";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
