@@ -97,6 +97,17 @@ export const NAV_ITEMS: NavItem[] = [
     position: ['drawer'], 
     order: 12 
   },
+  
+  // === SPECIAL - Logout Action (available for all roles in footer settings) ===
+  { 
+    id: 'logout', 
+    label: 'Abmelden', 
+    icon: 'LogOut', 
+    routeId: null, // Action, not a route
+    allowedRoles: '*', 
+    position: ['bottom'], 
+    order: 99 
+  },
 ];
 
 /**

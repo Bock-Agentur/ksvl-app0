@@ -1,4 +1,4 @@
-import { Settings, Palette, TestTube, Users, Calendar, FileText, Layers, FolderOpen } from "lucide-react";
+import { Settings, Palette, TestTube, Users, Calendar, FileText, Layers, FolderOpen, LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
@@ -16,7 +16,8 @@ export const FOOTER_ICON_MAP = {
   FileText,
   Settings,
   Layers,
-  FolderOpen
+  FolderOpen,
+  LogOut
 } as const;
 
 /**
