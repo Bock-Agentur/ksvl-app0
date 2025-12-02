@@ -9,5 +9,4 @@ export * from './core';
 
 // Feature hooks (remain in root)
 export { useConsecutiveSlots, ConsecutiveSlotsProvider } from './use-consecutive-slots';
-export { useTestData, TestDataProvider } from './use-test-data';
 export { useToast, toast } from './use-toast';

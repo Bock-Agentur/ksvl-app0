@@ -18,7 +18,7 @@ import { de } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useTestData, usePermissions, useConsecutiveSlots } from "@/hooks";
+import { usePermissions, useConsecutiveSlots } from "@/hooks";
 import { useSlotsContext } from "@/contexts/slots-context";
 import { cn } from "@/lib/utils";
 import { Slot, MonthCalendarProps, DayStats } from "@/types";
