@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { Menu, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ export function UnifiedFooter({
 }: UnifiedFooterProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [forceUpdate, setForceUpdate] = useState(0);
   
@@ -68,7 +70,8 @@ export function UnifiedFooter({
     };
   }, [refetchFooterSettings]);
 
-  const handleLogout = () => handleFooterLogout(navigate);
+  // ✅ Pass queryClient to clear caches on logout
+  const handleLogout = () => handleFooterLogout(navigate, queryClient);
 
   // Check if nav item is active based on current route
   const checkIsActive = (itemId: string) => {

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
 import { UserRole } from "@/types";
+import { QueryClient } from "@tanstack/react-query";
 
 /**
  * Icon mapping for dynamic footer menu items
@@ -30,10 +31,18 @@ export const ROLE_COLORS: Record<UserRole, string> = {
 };
 
 /**
- * Handle user logout with navigation
+ * Handle user logout with navigation and cache clearing
  */
-export async function handleFooterLogout(navigate: (path: string) => void): Promise<void> {
+export async function handleFooterLogout(
+  navigate: (path: string) => void,
+  queryClient?: QueryClient
+): Promise<void> {
   try {
+    // ✅ Clear all caches BEFORE signOut to prevent stale data
+    if (queryClient) {
+      queryClient.clear();
+    }
+    
     await supabase.auth.signOut();
     toast.success("Erfolgreich abgemeldet");
     navigate('/auth');
