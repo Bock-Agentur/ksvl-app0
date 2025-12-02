@@ -10,6 +10,7 @@
  * - Metadata updates
  * - URL generation (signed and public URLs)
  * - Preview URL generation with caching
+ * - Bulk permission updates
  */
 
 import { supabase } from "@/integrations/supabase/client";
@@ -346,6 +347,36 @@ class FileService {
       logger.error('FILE_SERVICE', 'Error updating metadata', error);
       throw new FileServiceError("Metadaten konnten nicht aktualisiert werden", "UPDATE_FAILED");
     }
+  }
+
+  /**
+   * Update permissions for multiple files at once
+   */
+  async updateMultiplePermissions(
+    fileIds: string[],
+    allowedRoles: string[]
+  ): Promise<{ success: number; failed: number }> {
+    let success = 0;
+    let failed = 0;
+
+    for (const fileId of fileIds) {
+      try {
+        const { error } = await supabase
+          .from('file_metadata')
+          .update({ allowed_roles: allowedRoles.length > 0 ? allowedRoles : null })
+          .eq('id', fileId);
+
+        if (error) {
+          failed++;
+        } else {
+          success++;
+        }
+      } catch {
+        failed++;
+      }
+    }
+
+    return { success, failed };
   }
 
   /**
