@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useToast } from "@/hooks";
 import { ApiResponse } from "@/types";
 import { logger } from "@/lib/logger";
@@ -160,9 +160,22 @@ export function handleApiResponse<T>(
   };
 }
 
-// Hook für konfirmation dialogs
+// Hook für konfirmation dialogs - jetzt mit State-basiertem Dialog
+export interface ConfirmDialogState {
+  isOpen: boolean;
+  title: string;
+  description: string;
+  onConfirm: () => void;
+  onCancel?: () => void;
+}
+
 export function useConfirmDialog() {
-  const { toast } = useToast();
+  const [dialogState, setDialogState] = useState<ConfirmDialogState>({
+    isOpen: false,
+    title: '',
+    description: '',
+    onConfirm: () => {},
+  });
 
   const confirm = useCallback((
     title: string,
@@ -170,14 +183,34 @@ export function useConfirmDialog() {
     onConfirm: () => void,
     onCancel?: () => void
   ) => {
-    // In einer echten App würde hier ein Dialog-State gesetzt werden
-    // Für jetzt verwenden wir window.confirm als Fallback
-    if (window.confirm(`${title}\n\n${description}`)) {
-      onConfirm();
-    } else {
-      onCancel?.();
-    }
+    setDialogState({
+      isOpen: true,
+      title,
+      description,
+      onConfirm,
+      onCancel,
+    });
   }, []);
 
-  return { confirm };
+  const closeDialog = useCallback(() => {
+    setDialogState(prev => ({ ...prev, isOpen: false }));
+  }, []);
+
+  const handleConfirm = useCallback(() => {
+    dialogState.onConfirm();
+    closeDialog();
+  }, [dialogState.onConfirm, closeDialog]);
+
+  const handleCancel = useCallback(() => {
+    dialogState.onCancel?.();
+    closeDialog();
+  }, [dialogState.onCancel, closeDialog]);
+
+  return { 
+    confirm, 
+    dialogState, 
+    closeDialog, 
+    handleConfirm, 
+    handleCancel 
+  };
 }
