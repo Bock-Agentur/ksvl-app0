@@ -58,18 +58,9 @@ export const NAV_ITEMS: NavItem[] = [
     order: 2 
   },
   
-  // === BOTTOM NAV - Operator Roles ===
+  // === BOTTOM NAV - Admin Only ===
   { 
-    id: 'slots', 
-    label: 'Slots', 
-    icon: 'Layers', 
-    routeId: 'slots',
-    allowedRoles: ['admin', 'kranfuehrer', 'vorstand'], 
-    position: ['bottom', 'drawer'], 
-    order: 3 
-  },
-  { 
-    id: 'settings', 
+    id: 'settings',
     label: 'Einstellungen', 
     icon: 'Settings', 
     routeId: 'settings',
@@ -118,7 +109,7 @@ export const ROUTE_VISIBILITY = {
   hideFooter: ['/auth'],
   
   // Routes where drawer is available (admin/vorstand only)
-  showDrawer: ['/', '/kalender', '/profil', '/slots', '/einstellungen', '/dateimanager', '/berichte', '/mitglieder', '/einstellungen/settings-manager'],
+  showDrawer: ['/', '/kalender', '/profil', '/einstellungen', '/dateimanager', '/berichte', '/mitglieder', '/einstellungen/settings-manager'],
 };
 
 // ========================================

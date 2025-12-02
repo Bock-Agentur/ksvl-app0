@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from "react";
 import { WeekCalendar } from "./week-calendar";
 import { MonthCalendar } from "./month-calendar";
+import { SlotListView } from "./calendar/slot-list-view";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Calendar, CalendarDays, CircleDot, Grid3x3, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { Calendar, CalendarDays, CircleDot, Grid3x3, ChevronLeft, ChevronRight, Plus, Layers } from "lucide-react";
 import { usePermissions, useStickyHeaderLayout, useIsMobile } from "@/hooks";
 import { SlotFormDialog } from "./slot-form-dialog";
 import { Slot } from "@/types";
@@ -36,7 +37,8 @@ export function CalendarView({
     date: string;
     time: string;
   } | null>(null);
-  const [viewMode, setViewMode] = useState<"day" | "week" | "month">("day");
+  // Extended viewMode with "list" for slot management
+  const [viewMode, setViewMode] = useState<"day" | "week" | "month" | "list">("day");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date());
@@ -85,6 +87,11 @@ export function CalendarView({
       setSelectedDate(navigateToDate);
       setViewMode("day"); // Wechsle zur Tagesansicht um den neuen Slot zu sehen
     }
+  };
+
+  const handleDialogOpen = (slot: Slot | null) => {
+    setSelectedSlot(slot);
+    setIsDialogOpen(true);
   };
   
   const handleDayClick = (date: Date) => {
@@ -155,39 +162,41 @@ export function CalendarView({
       )}>
         <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
           <CardHeader>
-            <CardTitle>Kalender</CardTitle>
+            <CardTitle>Krankalender</CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0 space-y-4">
             <div className="flex items-center justify-between gap-2 flex-wrap">
-              {/* Week Navigation */}
-              <div className="flex items-center gap-1">
-                <Button 
-                  variant="outline" 
-                  size={isMobile ? "icon" : "sm"}
-                  onClick={handlePreviousWeek} 
-                  title="Vorherige Woche"
-                  className="h-9"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleToday} 
-                  className="h-9 px-3"
-                >
-                  {isMobile ? <CircleDot className="h-4 w-4" /> : "Heute"}
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size={isMobile ? "icon" : "sm"}
-                  onClick={handleNextWeek} 
-                  title="Nächste Woche"
-                  className="h-9"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-              </div>
+              {/* Week Navigation - Hidden in list view */}
+              {viewMode !== "list" && (
+                <div className="flex items-center gap-1">
+                  <Button 
+                    variant="outline" 
+                    size={isMobile ? "icon" : "sm"}
+                    onClick={handlePreviousWeek} 
+                    title="Vorherige Woche"
+                    className="h-9"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={handleToday} 
+                    className="h-9 px-3"
+                  >
+                    {isMobile ? <CircleDot className="h-4 w-4" /> : "Heute"}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size={isMobile ? "icon" : "sm"}
+                    onClick={handleNextWeek} 
+                    title="Nächste Woche"
+                    className="h-9"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
 
               {/* View Toggle Buttons */}
               <div className="flex gap-1">
@@ -223,6 +232,19 @@ export function CalendarView({
                   <Grid3x3 className="h-4 w-4" />
                   {!isMobile && <span className="ml-1">Monat</span>}
                 </Button>
+                {/* Liste Button - Only for crane operators, vorstand, admin */}
+                {canManageSlots && (
+                  <Button 
+                    variant={viewMode === "list" ? "default" : "outline"} 
+                    size={isMobile ? "icon" : "sm"}
+                    onClick={() => setViewMode("list")}
+                    title="Listenansicht"
+                    className="h-9"
+                  >
+                    <Layers className="h-4 w-4" />
+                    {!isMobile && <span className="ml-1">Liste</span>}
+                  </Button>
+                )}
               </div>
 
               {/* Add Slot Button - Only for authorized users */}
@@ -334,7 +356,7 @@ export function CalendarView({
 
       {/* Calendar Content */}
       <div className={cn(
-        "px-4",
+        viewMode !== "list" ? "px-4" : "",
         isStickyEnabled ? "flex-1 overflow-y-auto overflow-x-hidden pb-6" : ""
       )}>
         {(viewMode === "day" || viewMode === "week") && (
@@ -352,6 +374,13 @@ export function CalendarView({
             onDayClick={handleDayClick}
             slots={slots}
             isLoading={slotsLoading}
+          />
+        )}
+        {viewMode === "list" && canManageSlots && (
+          <SlotListView 
+            slots={slots}
+            onSlotEdit={handleSlotEdit}
+            onDialogOpen={handleDialogOpen}
           />
         )}
       </div>
