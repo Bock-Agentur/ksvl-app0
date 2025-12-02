@@ -8,7 +8,6 @@ import { FooterMenuSettings } from "@/components/footer-menu-settings";
 import { MenuSettings } from "@/components/menu-settings";
 import { DesignSettings } from "@/components/design-settings";
 import { ThemeManager } from "@/components/theme-manager";
-import { TestDataManager } from "@/components/test-data-manager";
 import { LoginBackgroundSettings } from "@/components/settings/login-background";
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
@@ -105,7 +104,6 @@ function SettingsContent() {
       { id: "settingsmanager", label: "Settings Manager", description: "Alle Settings verwalten", icon: Database, route: "/einstellungen/settings-manager", group: "advanced" }
     ] : []),
     { id: "system", label: "System", description: "Systemeinstellungen", icon: SettingsIcon, component: ConsecutiveSlotsSettings, group: "advanced" },
-    { id: "testdata", label: "Testdaten", description: "Testdaten verwalten", icon: Database, component: TestDataManager, group: "advanced" },
   ];
 
   const groupedSections = {

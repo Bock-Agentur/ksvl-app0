@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { useTestData, usePermissions, useRole, useToast, useConsecutiveSlots, useSlotDesign } from "@/hooks";
+import { usePermissions, useRole, useToast, useConsecutiveSlots, useSlotDesign } from "@/hooks";
 import { Slot, WeekCalendarProps } from "@/types";
 import { useSlotsContext } from "@/contexts/slots-context";
 import { StatusLabel } from "@/components/ui/status-label";

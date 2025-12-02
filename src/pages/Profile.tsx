@@ -1,9 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth-context";
-import { useRole, useFooterMenuSettings } from "@/hooks";
+import { useRole, useFooterMenuSettings, ConsecutiveSlotsProvider } from "@/hooks";
 import { SlotsProvider } from "@/contexts/slots-context";
-import { TestDataProvider, ConsecutiveSlotsProvider } from "@/hooks";
 import { UnifiedFooter } from "@/components/common/unified-footer";
 import { ProfileView } from "@/components/profile-view";
 import { PageLoader } from "@/components/common/page-loader";
@@ -53,13 +52,11 @@ export function Profile() {
   }
 
   return (
-    <TestDataProvider>
-      <ConsecutiveSlotsProvider>
-        <SlotsProvider>
-          <ProfileContent />
-        </SlotsProvider>
-      </ConsecutiveSlotsProvider>
-    </TestDataProvider>
+    <ConsecutiveSlotsProvider>
+      <SlotsProvider>
+        <ProfileContent />
+      </SlotsProvider>
+    </ConsecutiveSlotsProvider>
   );
 }
 

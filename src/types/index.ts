@@ -7,7 +7,6 @@
 export * from './user';
 export * from './slot';
 export * from './common';
-export * from './test-data';
 
 // Keep legacy exports for backward compatibility
 export type { UserRole, User } from './user';

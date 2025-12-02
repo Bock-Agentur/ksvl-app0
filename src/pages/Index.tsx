@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth-context";
-import { useRole, useSlotDesign, TestDataProvider, ConsecutiveSlotsProvider, useProfileData, useFooterMenuSettings } from "@/hooks";
+import { useRole, useSlotDesign, ConsecutiveSlotsProvider, useProfileData, useFooterMenuSettings } from "@/hooks";
 import { SlotsProvider } from "@/contexts/slots-context";
 import { UnifiedFooter } from "@/components/common/unified-footer";
 import { Dashboard } from "@/components/dashboard";
@@ -63,13 +63,11 @@ const Index = () => {
   }
 
   return (
-    <TestDataProvider>
-      <ConsecutiveSlotsProvider>
-        <SlotsProvider>
-          <AppContent />
-        </SlotsProvider>
-      </ConsecutiveSlotsProvider>
-    </TestDataProvider>
+    <ConsecutiveSlotsProvider>
+      <SlotsProvider>
+        <AppContent />
+      </SlotsProvider>
+    </ConsecutiveSlotsProvider>
   );
 };
 

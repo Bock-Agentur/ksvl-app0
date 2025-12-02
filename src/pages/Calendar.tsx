@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/auth-context";
-import { useRole, useSlotDesign, useFooterMenuSettings } from "@/hooks";
+import { useRole, useSlotDesign, useFooterMenuSettings, ConsecutiveSlotsProvider } from "@/hooks";
 import { SlotsProvider } from "@/contexts/slots-context";
-import { TestDataProvider, ConsecutiveSlotsProvider } from "@/hooks";
 import { UnifiedFooter } from "@/components/common/unified-footer";
 import { CalendarView } from "@/components/calendar-view";
 import { PageLoader } from "@/components/common/page-loader";
@@ -69,13 +68,11 @@ export function Calendar() {
   }
 
   return (
-    <TestDataProvider>
-      <ConsecutiveSlotsProvider>
-        <SlotsProvider>
-          <CalendarContent />
-        </SlotsProvider>
-      </ConsecutiveSlotsProvider>
-    </TestDataProvider>
+    <ConsecutiveSlotsProvider>
+      <SlotsProvider>
+        <CalendarContent />
+      </SlotsProvider>
+    </ConsecutiveSlotsProvider>
   );
 }
 
