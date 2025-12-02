@@ -19,7 +19,6 @@ import { Reports } from "./pages/Reports";
 import { Users } from "./pages/Users";
 import { Calendar } from "./pages/Calendar";
 import { Profile } from "./pages/Profile";
-import { Slots } from "./pages/Slots";
 import SettingsManager from "./pages/SettingsManager";
 
 const queryClient = new QueryClient();
@@ -65,18 +64,12 @@ const App = () => {
                     element={<Profile />} 
                   />
                   
+                  {/* Legacy redirect for /slots */}
+                  <Route path="/slots" element={<Navigate to="/kalender" replace />} />
+                  
                   {/* Protected Routes - Role-Restricted */}
                   <Route 
-                    path={ROUTES.protected.slots.path} 
-                    element={
-                      <ProtectedRoute requiredRoles={['admin', 'kranfuehrer', 'vorstand']}>
-                        <Slots />
-                      </ProtectedRoute>
-                    } 
-                  />
-                  
-                  <Route 
-                    path={ROUTES.protected.users.path} 
+                    path={ROUTES.protected.users.path}
                     element={
                       <ProtectedRoute requiredRoles={['admin', 'vorstand']}>
                         <Users />

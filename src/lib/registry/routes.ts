@@ -63,14 +63,6 @@ export const ROUTES: RouteRegistry = {
       description: 'Persönliches Profil'
     },
     
-    slots: {
-      path: '/slots',
-      label: 'Slots',
-      allowedRoles: ['admin', 'kranfuehrer', 'vorstand'],
-      icon: 'Layers',
-      description: 'Slot-Verwaltung'
-    },
-    
     users: {
       path: '/mitglieder',
       label: 'Mitgliederverwaltung',
