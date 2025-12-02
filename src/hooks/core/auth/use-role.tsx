@@ -38,6 +38,24 @@ export function RoleProvider({ children }: { children: ReactNode }) {
   // ✅ Load all users for role-switching (cached via useUsersData)
   const { users: allUsers } = useUsersData({ enabled: !authLoading && !!authUser });
 
+  // ✅ Reset state when auth user changes (login/logout)
+  useEffect(() => {
+    // Reset state when user ID changes
+    setIsInitialLoad(true);
+    setCurrentUser(null);
+    setOriginalUser(null);
+    setCurrentRole("mitglied");
+    
+    // Invalidate user-specific caches
+    queryClient.invalidateQueries({ 
+      predicate: (query) => {
+        const key = query.queryKey[0];
+        return key === 'profile' || key === 'users-with-roles' || 
+               key === 'app-settings-batch' || key === 'slots';
+      }
+    });
+  }, [authUser?.id, queryClient]);
+
   // Load current user from Auth Context
   useEffect(() => {
     if (authLoading || !authUser || !isInitialLoad || profileLoading) return;
