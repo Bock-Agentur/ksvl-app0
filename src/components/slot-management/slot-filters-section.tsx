@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as UICalendar } from "@/components/ui/calendar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Filter, CalendarDays, ChevronDown, ChevronUp, X } from "lucide-react";
+import { CalendarDays, ChevronDown, X } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -27,7 +26,6 @@ export function SlotFiltersSection({
   craneOperators,
 }: SlotFiltersSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
-  const activeFilterCount = [selectedDate, selectedCraneOperator && selectedCraneOperator !== "all"].filter(Boolean).length;
 
   const FiltersContent = () => (
     <div className="flex flex-col sm:flex-row gap-2">
@@ -99,43 +97,29 @@ export function SlotFiltersSection({
 
   return (
     <>
-      {/* Mobile: Collapsible Card */}
-      <Card className="sm:hidden card-maritime-hero">
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-          <CollapsibleTrigger asChild>
-            <Button variant="ghost" className="w-full justify-between p-4 h-auto">
-              <span className="flex items-center gap-2 font-semibold">
-                <Filter className="w-4 h-4" />
-                Filter & Suche
-                {activeFilterCount > 0 && (
-                  <Badge variant="secondary" className="ml-2">
-                    {activeFilterCount}
-                  </Badge>
-                )}
-              </span>
-              {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </Button>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <CardContent className="pt-0 pb-4">
+      {/* Mobile Collapsible */}
+      <Collapsible open={isOpen} onOpenChange={setIsOpen} className="sm:hidden">
+        <CollapsibleTrigger asChild>
+          <Button 
+            variant="outline" 
+            className="w-full flex items-center justify-between card-maritime-hero hover:bg-white/90 px-6 py-4 h-auto"
+          >
+            <span className="font-semibold text-sm">Filter & Suche</span>
+            <ChevronDown className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent className="mt-2">
+          <Card className="card-maritime-hero">
+            <CardContent className="p-4">
               <FiltersContent />
             </CardContent>
-          </CollapsibleContent>
-        </Collapsible>
-      </Card>
+          </Card>
+        </CollapsibleContent>
+      </Collapsible>
 
-      {/* Desktop: Always visible Card */}
+      {/* Desktop Card */}
       <Card className="hidden sm:block card-maritime-hero">
         <CardContent className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Filter className="w-4 h-4" />
-            <span className="font-semibold">Filter & Suche</span>
-            {activeFilterCount > 0 && (
-              <Badge variant="secondary">
-                {activeFilterCount}
-              </Badge>
-            )}
-          </div>
           <FiltersContent />
         </CardContent>
       </Card>
