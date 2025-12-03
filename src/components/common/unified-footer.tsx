@@ -1,17 +1,16 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
-import { Menu, Home } from "lucide-react";
+import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useFooterMenuSettings, useRole } from "@/hooks";
 import { Drawer, DrawerContent, DrawerTrigger } from "@/components/ui/drawer";
 import { UserRole } from "@/types";
-import * as LucideIcons from "lucide-react";
 import { handleFooterLogout } from "@/lib/footer-utils";
 import { FooterDrawerContent } from "@/components/common/footer-drawer-content";
-import { getNavItemsForRole, isNavItemActive, getNavItemPath, NAV_ITEMS } from "@/lib/registry/navigation";
+import { getNavItemsForRole, isNavItemActive, getNavItemPath, NAV_ITEMS, getNavIcon } from "@/lib/registry/navigation";
 
 interface UnifiedFooterProps {
   currentRole?: UserRole;
@@ -90,7 +89,7 @@ export function UnifiedFooter({
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border px-2 py-2 pb-safe-bottom shadow-elevated-maritime z-50">
       <div className="flex justify-evenly items-center max-w-md mx-auto">
         {footerItems.map((item, index) => {
-          const IconComponent = (LucideIcons as any)[item.icon] || Home;
+          const IconComponent = getNavIcon(item.icon);
           const isActive = checkIsActive(item.id);
           const isLogout = item.id === 'logout';
           
