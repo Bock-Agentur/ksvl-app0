@@ -6,6 +6,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Structured logger for consistent log output
+const logger = {
+  info: (message: string, data?: Record<string, unknown>) => {
+    console.info(JSON.stringify({ level: 'info', message, ...data, timestamp: new Date().toISOString() }));
+  },
+  warn: (message: string, data?: Record<string, unknown>) => {
+    console.warn(JSON.stringify({ level: 'warn', message, ...data, timestamp: new Date().toISOString() }));
+  },
+  error: (message: string, data?: Record<string, unknown>) => {
+    console.error(JSON.stringify({ level: 'error', message, ...data, timestamp: new Date().toISOString() }));
+  },
+};
+
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
@@ -16,7 +29,7 @@ serve(async (req) => {
     // Parse request body first
     const { userId, password, action, email, name, adminKey } = await req.json();
     
-    console.log('Received request:', { action, userId, hasAdminKey: !!adminKey });
+    logger.info('Request received', { action, userId, hasAdminKey: !!adminKey });
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -33,22 +46,21 @@ serve(async (req) => {
     let isAuthorized = false;
     const envAdminKey = Deno.env.get('ADMIN_PASSWORD_RESET_KEY');
     
-    console.log('Checking admin key:', { 
+    logger.info('Checking admin key', { 
       hasEnvKey: !!envAdminKey,
-      providedKey: adminKey,
       keysMatch: adminKey === envAdminKey 
     });
 
     // Check if admin key is provided and valid
     if (adminKey && envAdminKey && adminKey === envAdminKey) {
-      console.log('✅ Admin key validated');
+      logger.info('Admin key validated');
       isAuthorized = true;
     } else {
-      console.log('Admin key not valid, checking JWT token');
+      logger.info('Admin key not valid, checking JWT token');
       // Check JWT token
       const authHeader = req.headers.get('Authorization');
       if (!authHeader) {
-        console.error('❌ No authorization header and no valid admin key');
+        logger.error('No authorization header and no valid admin key');
         throw new Error('Unauthorized - Missing authorization or admin key');
       }
 
@@ -56,13 +68,13 @@ serve(async (req) => {
       const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
       if (authError || !user) {
-        console.error('❌ Auth error:', authError);
+        logger.error('Auth error', { error: authError?.message });
         throw new Error('Unauthorized - Invalid token');
       }
 
       // Allow users to change their OWN password without admin role
       if (action === 'update' && userId === user.id) {
-        console.log('✅ User changing own password - allowed');
+        logger.info('User changing own password - allowed', { userId: user.id });
         isAuthorized = true;
       } else {
         // For other operations or changing OTHER user's passwords, require admin role
@@ -72,22 +84,22 @@ serve(async (req) => {
           .eq('user_id', user.id);
 
         if (roleError || !roles?.some(r => r.role === 'admin')) {
-          console.error('❌ User is not admin:', { userId: user.id, roles });
+          logger.error('User is not admin', { userId: user.id, roles: roles?.map(r => r.role) });
           throw new Error('Unauthorized - Admin access required');
         }
         
-        console.log('✅ Admin JWT token validated');
+        logger.info('Admin JWT token validated', { userId: user.id });
         isAuthorized = true;
       }
     }
 
     if (!isAuthorized) {
-      console.error('❌ Not authorized');
+      logger.error('Not authorized');
       throw new Error('Unauthorized');
     }
 
     if (action === 'update') {
-      console.log('Updating password for user:', userId);
+      logger.info('Updating password', { userId });
       
       // Update user password
       const { error } = await supabaseAdmin.auth.admin.updateUserById(
@@ -96,17 +108,17 @@ serve(async (req) => {
       );
 
       if (error) {
-        console.error('❌ Error updating password:', error);
+        logger.error('Error updating password', { error: error.message, userId });
         throw error;
       }
 
-      console.log('✅ Password updated successfully');
+      logger.info('Password updated successfully', { userId });
       return new Response(
         JSON.stringify({ success: true, message: 'Password updated successfully' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } else if (action === 'create') {
-      console.log('Creating new user with email:', email);
+      logger.info('Creating new user', { email });
       
       // This is called during user creation
       const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
@@ -117,11 +129,11 @@ serve(async (req) => {
       });
 
       if (authError) {
-        console.error('❌ Error creating user:', authError);
+        logger.error('Error creating user', { error: authError.message, email });
         throw authError;
       }
 
-      console.log('✅ User created successfully');
+      logger.info('User created successfully', { userId: authData.user?.id, email });
       return new Response(
         JSON.stringify({ success: true, user: authData.user }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -131,8 +143,8 @@ serve(async (req) => {
     throw new Error('Invalid action');
 
   } catch (error) {
-    console.error('❌ Error in manage-user-password:', error);
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    logger.error('Error in manage-user-password', { error: errorMessage });
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
