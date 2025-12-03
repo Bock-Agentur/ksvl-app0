@@ -113,12 +113,12 @@ export function SlotCard({
     );
   }
 
-  // List Variant (für Slot-Liste)
+  // List Variant (für Slot-Liste) - Trendy Design
   if (variant === 'list') {
     return (
       <Card
         className={cn(
-          "border hover:shadow-md transition-shadow",
+          "border hover:shadow-md transition-shadow card-shadow-soft rounded-xl relative",
           className
         )}
         style={{
@@ -126,90 +126,96 @@ export function SlotCard({
           borderColor: slot.colors.border,
         }}
       >
-        <CardContent className="p-4">
-          {/* Compact Header */}
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <SlotStatusBadge 
-                status={slot.status} 
-                colors={slot.colors}
-                size="sm"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <span 
-                    className="font-medium text-sm"
-                    style={{ color: slot.colors.text }}
-                  >
-                    {slot.formattedDate}
-                  </span>
-                  <Badge 
-                    variant="outline" 
-                    className="text-xs"
-                    style={{ color: slot.colors.text, borderColor: slot.colors.border }}
-                  >
-                    {slot.formattedTime}
-                  </Badge>
-                  <Badge 
-                    variant="secondary" 
-                    className="text-xs"
-                    style={{ color: slot.colors.text }}
-                  >
-                    {slot.formattedDuration}
-                  </Badge>
-                </div>
-                <p 
-                  className="text-xs truncate"
-                  style={{ color: slot.colors.text, opacity: 0.8 }}
-                >
-                  {slot.craneOperator.name}
-                </p>
-              </div>
-            </div>
-
-            {/* Expand Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleExpand();
-              }}
-              className="flex-shrink-0"
+        <CardContent className="p-5">
+          {/* === COLLAPSED HEADER === */}
+          
+          {/* Zeile 1: Status-Badge | Dauer-Badge | Uhrzeit */}
+          <div className="flex items-center justify-between gap-2 pr-10">
+            <SlotStatusBadge 
+              status={slot.status} 
+              colors={slot.colors}
+              size="sm"
+            />
+            <Badge 
+              variant="secondary" 
+              className="text-xs"
+              style={{ color: slot.colors.text }}
             >
-              {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-            </Button>
+              {slot.formattedDuration}
+            </Badge>
+            <span 
+              className="text-sm font-medium"
+              style={{ color: slot.colors.text }}
+            >
+              {slot.formattedTime}
+            </span>
           </div>
 
-          {/* Expanded View */}
+          {/* Zeile 2: Datum als Haupttitel */}
+          <h3 
+            className="text-base font-semibold mt-3"
+            style={{ color: slot.colors.text }}
+          >
+            {slot.formattedDate}
+          </h3>
+
+          {/* Zeile 3-4: Info-Zeilen mit Emojis */}
+          <div className="mt-2 space-y-1">
+            <p 
+              className="text-sm"
+              style={{ color: slot.colors.text, opacity: 0.9 }}
+            >
+              👤 Kranführer: {slot.craneOperator.name}
+            </p>
+            {slot.isBooked && slot.bookedMember?.name && (
+              <p 
+                className="text-sm"
+                style={{ color: slot.colors.text, opacity: 0.9 }}
+              >
+                👥 Gebucht von: {slot.bookedMember.name}
+              </p>
+            )}
+          </div>
+
+          {/* Chevron Button - absolut positioniert unten rechts */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleExpand();
+            }}
+            className="absolute bottom-3 right-3"
+            style={{ color: slot.colors.text }}
+          >
+            {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          </Button>
+
+          {/* === EXPANDED VIEW === */}
           {isExpanded && (
-            <div className="mt-4 pt-4 border-t space-y-4">
-              {/* Details Grid */}
+            <div className="mt-4 pt-4 border-t space-y-4" style={{ borderColor: slot.colors.border }}>
+              {/* Detail-Block */}
               <div 
-                className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm"
+                className="space-y-2 text-sm"
                 style={{ color: slot.colors.text }}
               >
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="w-4 h-4" style={{ color: slot.colors.text, opacity: 0.7 }} />
-                  <span>{slot.formattedDateLong}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" style={{ color: slot.colors.text, opacity: 0.7 }} />
-                  <span>{slot.formattedTime} ({slot.formattedDuration})</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4" style={{ color: slot.colors.text, opacity: 0.7 }} />
-                  <span>Kranführer: {slot.craneOperator.name}</span>
-                </div>
+                <p className="flex items-center gap-2">
+                  📅 {slot.formattedDateLong}
+                </p>
+                <p className="flex items-center gap-2">
+                  🕒 {slot.formattedTime} ({slot.formattedDuration})
+                </p>
+                <p className="flex items-center gap-2">
+                  👤 Kranführer: {slot.craneOperator.name}
+                </p>
                 {slot.craneOperator.email && (
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-4 h-4" style={{ color: slot.colors.text, opacity: 0.7 }} />
-                    <span className="truncate">{slot.craneOperator.email}</span>
-                  </div>
+                  <p className="flex items-center gap-2">
+                    ✉️ {slot.craneOperator.email}
+                  </p>
                 )}
               </div>
 
-              {/* Booking Information */}
+              {/* Buchungsinformationen (nur wenn gebucht) */}
               {slot.isBooked && slot.bookedMember && (
                 <div 
                   className="p-3 rounded-lg space-y-2"
@@ -218,39 +224,49 @@ export function SlotCard({
                     borderLeft: `3px solid ${slot.colors.border}` 
                   }}
                 >
-                  <p className="text-sm font-medium" style={{ color: slot.colors.text }}>
-                    Gebucht von:
-                  </p>
-                  <div className="space-y-1 text-sm" style={{ color: slot.colors.text, opacity: 0.9 }}>
-                    <p>{slot.bookedMember.name}</p>
-                    {slot.bookedMember.email && <p>{slot.bookedMember.email}</p>}
+                  <div className="space-y-1 text-sm" style={{ color: slot.colors.text }}>
+                    <p>👥 Gebucht von: {slot.bookedMember.name}</p>
+                    {slot.bookedMember.email && <p>✉️ {slot.bookedMember.email}</p>}
                     {slot.bookedMember.memberNumber && (
-                      <p>Mitgliedsnr.: {slot.bookedMember.memberNumber}</p>
+                      <p># Mitgliedsnummer: {slot.bookedMember.memberNumber}</p>
                     )}
                   </div>
                 </div>
               )}
 
-              {/* Notes */}
+              {/* Notizen (optional) */}
               {slot.notes && (
-                <div className="text-sm" style={{ color: slot.colors.text }}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <StickyNote className="w-4 h-4" style={{ opacity: 0.7 }} />
-                    <span className="font-medium">Notizen:</span>
-                  </div>
-                  <p style={{ opacity: 0.9 }}>{slot.notes}</p>
+                <p className="text-sm" style={{ color: slot.colors.text }}>
+                  📝 Notizen: {slot.notes}
+                </p>
+              )}
+
+              {/* Block/Mini-Slot Hinweise */}
+              {(slot.isPartOfBlock || slot.isMiniSlot) && (
+                <div className="flex gap-2 flex-wrap">
+                  {slot.isPartOfBlock && (
+                    <Badge variant="outline" style={{ color: slot.colors.text, borderColor: slot.colors.border }}>
+                      Block-Buchung
+                    </Badge>
+                  )}
+                  {slot.isMiniSlot && (
+                    <Badge variant="outline" style={{ color: slot.colors.text, borderColor: slot.colors.border }}>
+                      15-Minuten-Slot
+                    </Badge>
+                  )}
                 </div>
               )}
 
-              {/* Action Buttons */}
+              {/* Action Buttons (nur im geöffneten Zustand) */}
               {showActions && (
-                <div className="flex gap-2 flex-wrap">
+                <div className="flex gap-2 flex-wrap pt-2">
                   <Button 
                     variant="outline" 
                     size="sm" 
                     onClick={(e) => handleAction('details', e)}
                     className="flex-1"
                   >
+                    <CalendarCheck className="w-4 h-4 mr-2" />
                     Details
                   </Button>
                   <Button 
