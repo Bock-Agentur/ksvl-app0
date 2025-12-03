@@ -97,6 +97,15 @@ export const NAV_ITEMS: NavItem[] = [
     position: ['drawer'], 
     order: 12 
   },
+  { 
+    id: 'settings-manager', 
+    label: 'Settings Manager', 
+    icon: 'Database', 
+    routeId: 'settingsManager',
+    allowedRoles: ['admin'], 
+    position: ['drawer'], 
+    order: 13 
+  },
   
   // === SPECIAL - Logout Action (available for all roles in footer settings) ===
   { 
