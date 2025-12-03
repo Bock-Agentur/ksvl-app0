@@ -5,6 +5,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Structured logger for consistent log output
+const logger = {
+  info: (message: string, data?: Record<string, unknown>) => {
+    console.info(JSON.stringify({ level: 'info', message, ...data, timestamp: new Date().toISOString() }));
+  },
+  warn: (message: string, data?: Record<string, unknown>) => {
+    console.warn(JSON.stringify({ level: 'warn', message, ...data, timestamp: new Date().toISOString() }));
+  },
+  error: (message: string, data?: Record<string, unknown>) => {
+    console.error(JSON.stringify({ level: 'error', message, ...data, timestamp: new Date().toISOString() }));
+  },
+};
+
 interface MigrationResult {
   success: boolean;
   migratedCount: number;
@@ -52,7 +65,7 @@ Deno.serve(async (req) => {
 
     const { bucketName = 'login-media' } = await req.json().catch(() => ({}));
 
-    console.log(`Starting migration for bucket: ${bucketName}`);
+    logger.info('Starting migration', { bucketName, userId: user.id });
 
     const result: MigrationResult = {
       success: true,
@@ -67,14 +80,14 @@ Deno.serve(async (req) => {
       .list('', { limit: 1000 });
 
     if (listError) {
-      console.error('Error listing files:', listError);
+      logger.error('Error listing files', { error: listError.message, bucketName });
       return new Response(
         JSON.stringify({ error: 'Failed to list files', details: listError.message }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    console.log(`Found ${files.length} files in bucket`);
+    logger.info('Files found in bucket', { count: files.length, bucketName });
 
     // Process each file
     for (const file of files) {
@@ -89,7 +102,7 @@ Deno.serve(async (req) => {
           .maybeSingle();
 
         if (existing) {
-          console.log(`Skipping ${storagePath} - metadata already exists`);
+          logger.info('Skipping file - metadata exists', { storagePath });
           result.skippedCount++;
           continue;
         }
@@ -124,22 +137,27 @@ Deno.serve(async (req) => {
           });
 
         if (insertError) {
-          console.error(`Error creating metadata for ${storagePath}:`, insertError);
+          logger.error('Error creating metadata', { storagePath, error: insertError.message });
           result.errors.push(`${storagePath}: ${insertError.message}`);
           result.success = false;
         } else {
-          console.log(`Successfully migrated ${storagePath}`);
+          logger.info('File migrated successfully', { storagePath });
           result.migratedCount++;
         }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        console.error(`Error processing file ${file.name}:`, error);
+        logger.error('Error processing file', { fileName: file.name, error: errorMessage });
         result.errors.push(`${file.name}: ${errorMessage}`);
         result.success = false;
       }
     }
 
-    console.log(`Migration completed: ${result.migratedCount} migrated, ${result.skippedCount} skipped, ${result.errors.length} errors`);
+    logger.info('Migration completed', { 
+      migratedCount: result.migratedCount, 
+      skippedCount: result.skippedCount, 
+      errorCount: result.errors.length,
+      bucketName 
+    });
 
     return new Response(
       JSON.stringify(result),
@@ -148,7 +166,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Migration error:', error);
+    logger.error('Migration failed', { error: errorMessage });
     return new Response(
       JSON.stringify({ error: 'Migration failed', details: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
