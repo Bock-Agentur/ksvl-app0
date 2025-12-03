@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useRole, useUsers, useDashboardSettings, useIsMobile } from "@/hooks";
 import { getAllDashboardItems, sortAllItemsByPosition, getColumnClassName } from "@/lib/dashboard-config";
 import { cn } from "@/lib/utils";
+import { LazyWidget } from "@/components/common/lazy-widget";
 
 interface DashboardStats {
   todayBookings: number;
@@ -181,31 +182,43 @@ export function Dashboard({ onNavigate, displayName }: DashboardProps) {
       <div className={gridClassName}>
         {sortedColumns.map((columnItems, columnIndex) => (
           <div key={columnIndex} className="space-y-4">
-            {columnItems.map((item) => {
+            {columnItems.map((item, itemIndex) => {
               const Component = item.component;
               const isSection = item.itemType === 'section';
               
+              // Sections (headerCard, statsGrid, etc.) render immediately
+              // Widgets use lazy loading for better initial performance
+              const shouldLazyLoad = !isSection && itemIndex > 1;
+              
+              const content = isSection ? (
+                item.id === 'headerCard' ? (
+                  <Component 
+                    stats={stats}
+                    currentUser={currentUser}
+                    currentRole={currentRole}
+                    onNavigate={onNavigate}
+                    displayName={displayName}
+                  />
+                ) : (
+                  <Component 
+                    stats={stats}
+                    currentUser={currentUser}
+                    currentRole={currentRole}
+                    onNavigate={onNavigate}
+                  />
+                )
+              ) : (
+                <Component />
+              );
+              
               return (
                 <div key={item.id}>
-                  {isSection ? (
-                    item.id === 'headerCard' ? (
-                      <Component 
-                        stats={stats}
-                        currentUser={currentUser}
-                        currentRole={currentRole}
-                        onNavigate={onNavigate}
-                        displayName={displayName}
-                      />
-                    ) : (
-                      <Component 
-                        stats={stats}
-                        currentUser={currentUser}
-                        currentRole={currentRole}
-                        onNavigate={onNavigate}
-                      />
-                    )
+                  {shouldLazyLoad ? (
+                    <LazyWidget id={item.id} minHeight={180}>
+                      {content}
+                    </LazyWidget>
                   ) : (
-                    <Component />
+                    content
                   )}
                 </div>
               );
