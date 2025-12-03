@@ -378,7 +378,7 @@ export function SlotCard({
                       onClick={(e) => handleAction('edit', e)}
                     >
                       <Edit className="w-3 h-3 mr-1" />
-                      Bearbeiten
+                  Verwalten
                     </span>
                   )}
                   
