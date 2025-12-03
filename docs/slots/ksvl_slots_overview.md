@@ -281,23 +281,45 @@ interface DayViewContentProps {
 />
 ```
 
-### Interne Subkomponenten
+### SlotCard Integration
 
-Die `DayViewContent` enthält drei fokussierte Subkomponenten:
+Die `DayViewContent` nutzt `SlotCard variant="list"` für konsistente Slot-Darstellung:
+
+```tsx
+// Intern in DayViewContent
+const { mapSlot } = useSlotViewModel();
+
+exactTimeSlots.map((slot) => {
+  const slotViewModel = mapSlot(slot, allSlots);
+  return (
+    <SlotCard
+      key={slot.id}
+      slot={slotViewModel}
+      variant="list"
+      showActions={shouldShowActions(slot)}
+      onAction={(action) => handleSlotAction(action, slot)}
+    />
+  );
+});
+```
+
+### Interne Subkomponenten
 
 | Komponente | Zweck |
 |------------|-------|
-| `ExistingSlotCard` | Zeigt existierende Slots mit Status, Actions |
+| `SlotCard variant="list"` | Existierende Slots mit Expand/Collapse, einheitliche UX |
 | `CoveredSlotCard` | Zeigt Slots die von längeren Slots überdeckt werden |
 | `EmptySlotCard` | Leerer Zeitslot mit "Slot erstellen" Option |
 
 ### Code-Einsparung
 
-Die Extraktion von `DayViewContent` eliminierte ~450 Zeilen duplizierten Code zwischen Desktop Day View und Mobile Day View in `week-calendar.tsx`.
+Die Konsolidierung auf `SlotCard` eliminierte weiteren duplizierten Code:
 
-| Vorher | Nachher | Einsparung |
-|--------|---------|------------|
-| 1010 LOC | 563 LOC | ~447 LOC (44%) |
+| Phase | Vorher | Nachher | Einsparung |
+|-------|--------|---------|------------|
+| DayViewContent Extraktion | 1010 LOC | 563 LOC | ~447 LOC (44%) |
+| SlotCard Integration | 402 LOC | 270 LOC | ~132 LOC (33%) |
+| **Gesamt** | **1010 LOC** | **270 LOC** | **~740 LOC (73%)** |
 
 
 
@@ -474,8 +496,32 @@ import { formatDuration } from "@/lib/slots/slot-view-model";
 
 - ✅ `DayViewContent` Komponente extrahiert (`src/components/calendar/day-view-content.tsx`)
 - ✅ Desktop Day View und Mobile Day View konsolidiert
-- ✅ Subkomponenten: `ExistingSlotCard`, `CoveredSlotCard`, `EmptySlotCard`
 - ✅ WeekCalendar Code-Reduktion: 1010 → 563 Zeilen (~447 LOC / 44%)
+
+### Phase 7: DayViewContent SlotCard Integration (Dezember 2025)
+
+- ✅ `ExistingSlotCard` durch `SlotCard variant="list"` ersetzt (~120 LOC entfernt)
+- ✅ `useSlotViewModel` Hook für ViewModel-Mapping integriert
+- ✅ Einheitliche Expand/Collapse-Funktionalität in Day View und List View
+- ✅ Konsistente Action-Handler über `SlotAction` Type
+- ✅ DayViewContent Code-Reduktion: 402 → 270 Zeilen (~132 LOC / 33%)
+
+### Gesamtergebnis
+
+Die vollständige SlotCard-Architektur reduziert den Slot-bezogenen Code um **~740 LOC (73%)**:
+
+| Komponente | Vorher | Nachher |
+|------------|--------|---------|
+| WeekCalendar | 1010 LOC | 563 LOC |
+| DayViewContent | 402 LOC | 270 LOC |
+| SlotListItem | 148 LOC | 42 LOC |
+| **Gesamt** | **~1560 LOC** | **~875 LOC** |
+
+**Vorteile:**
+- Single Source of Truth für Slot-Darstellung
+- Konsistente UX (Expand/Collapse) überall
+- Zentrale Status-Labels und Formatierung
+- Einfachere Wartung und Erweiterung
 
 ---
 
