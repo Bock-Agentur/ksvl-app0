@@ -356,13 +356,13 @@ file-manager/
 | 5 | ✅ ERLEDIGT | - | - | week-calendar.tsx in separate Mobile/Desktop Komponenten gesplittet (use-week-calendar.ts, desktop-week-grid.tsx) |
 | 6 | ✅ ERLEDIGT | - | - | settingsManager zu NAV_ITEMS hinzugefügt für konsistente Navigation |
 
-### Priorität: Niedrig (Optional, Nice-to-have) – ✅ 2/4 ERLEDIGT
+### Priorität: Niedrig (Optional, Nice-to-have) – ✅ 3/4 ERLEDIGT
 
 | # | Task | Impact | Aufwand | Beschreibung |
 |---|------|--------|---------|--------------|
 | 1 | ✅ ERLEDIGT | - | - | Zod-Validierung für LoginBackground Settings (LoginBackgroundSchema mit 30 Feldern) |
 | 2 | ✅ ERLEDIGT | - | - | Bundle Analysis: NAV_ICON_MAP erstellt, `import * as LucideIcons` entfernt (~1000 → 9 Icons) |
-| 3 | Dashboard Widget Lazy Loading | Low | 2-3h | Widgets nur laden wenn sichtbar |
+| 3 | ✅ ERLEDIGT | - | - | Dashboard Widget Lazy Loading: LazyWidget mit IntersectionObserver, Widgets laden erst bei Sichtbarkeit |
 | 4 | E2E Tests | Low | 8h+ | Playwright Tests für kritische Flows |
 
 ---
