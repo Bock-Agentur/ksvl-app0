@@ -7,6 +7,18 @@
 
 import { UserRole } from '@/types';
 import { ROUTES } from './routes';
+import { 
+  Home, 
+  Calendar, 
+  User, 
+  Settings, 
+  Users, 
+  FolderOpen, 
+  BarChart3, 
+  Database,
+  LogOut,
+  type LucideIcon 
+} from 'lucide-react';
 
 export interface NavItem {
   id: string;
@@ -18,6 +30,35 @@ export interface NavItem {
   order: number;
   badge?: string; // Optional badge for notifications
   deprecated?: boolean;
+}
+
+/**
+ * Navigation Icon Map
+ * 
+ * Explicit mapping of icon names to Lucide components.
+ * This enables proper tree-shaking - only listed icons are bundled.
+ * 
+ * IMPORTANT: When adding new NAV_ITEMS with different icons,
+ * add the icon import above and map it here.
+ */
+export const NAV_ICON_MAP: Record<string, LucideIcon> = {
+  Home,
+  Calendar,
+  User,
+  Settings,
+  Users,
+  FolderOpen,
+  BarChart3,
+  Database,
+  LogOut,
+};
+
+/**
+ * Get the Lucide icon component for a nav item
+ * Falls back to Home icon if not found
+ */
+export function getNavIcon(iconName: string): LucideIcon {
+  return NAV_ICON_MAP[iconName] ?? Home;
 }
 
 /**

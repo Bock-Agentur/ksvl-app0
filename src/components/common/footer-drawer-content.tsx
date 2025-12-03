@@ -7,8 +7,7 @@ import { cn } from "@/lib/utils";
 import { UserRole } from "@/types";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 import { ROLE_COLORS } from "@/lib/footer-utils";
-import { NavItem } from "@/lib/registry/navigation";
-import * as LucideIcons from "lucide-react";
+import { NavItem, getNavIcon } from "@/lib/registry/navigation";
 
 interface FooterDrawerContentProps {
   currentRole: UserRole;
@@ -75,7 +74,7 @@ export function FooterDrawerContent({
               <h3 className="text-sm font-medium text-muted-foreground">Verwaltung</h3>
               <div className="space-y-1">
                 {drawerItems.map(item => {
-                  const IconComponent = (LucideIcons as any)[item.icon] || LucideIcons.Home;
+                  const IconComponent = getNavIcon(item.icon);
                   const isActive = isItemActive(item.id);
                   
                   const handleClick = () => {
