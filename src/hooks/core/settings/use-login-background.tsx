@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useSettingsBatch } from "./use-settings-batch";
-import { validateSettings } from "@/lib/settings-validation";
+import { LoginBackgroundSchema } from "@/lib/settings-validation";
+import { logger } from "@/lib/logger";
 
 export interface LoginBackground {
   type: 'gradient' | 'image' | 'video';
@@ -76,23 +77,23 @@ export function useLoginBackground(options?: { enabled?: boolean }) {
     DEFAULT_BACKGROUND
   );
 
-  // ✅ Phase 2: Validate settings on load
-  const value = validateSettings<LoginBackground>(
-    // No Zod schema needed for this complex structure - using type safety
-    { parse: (data: unknown) => data } as any,
-    rawValue,
-    DEFAULT_BACKGROUND,
-    'login_background'
-  );
+  // ✅ Phase 2: Validate settings on load with Zod schema
+  const value = (() => {
+    const result = LoginBackgroundSchema.safeParse(rawValue);
+    if (result.success) {
+      return result.data as LoginBackground;
+    }
+    logger.warn('SETTINGS', 'Invalid login_background data, using defaults', result.error);
+    return DEFAULT_BACKGROUND;
+  })();
 
   const setValue = async (newValue: LoginBackground) => {
-    // Validate before saving
-    const validated = validateSettings<LoginBackground>(
-      { parse: (data: unknown) => data } as any,
-      newValue,
-      DEFAULT_BACKGROUND,
-      'login_background'
-    );
+    // Validate before saving with Zod schema
+    const result = LoginBackgroundSchema.safeParse(newValue);
+    if (!result.success) {
+      logger.warn('SETTINGS', 'Invalid login_background data on save, using defaults', result.error);
+    }
+    const validated = result.success ? (result.data as LoginBackground) : DEFAULT_BACKGROUND;
     await updateSetting('login_background', validated, true);
   };
 
