@@ -1,11 +1,12 @@
 import React from "react";
 import { useSlotDesign } from "@/hooks";
+import { STATUS_LABELS } from "@/lib/slots/slot-view-model";
 
 export type SlotStatus = "available" | "booked" | "blocked";
 
 interface StatusLabelProps {
   status: SlotStatus;
-  children: React.ReactNode;
+  children?: React.ReactNode; // Optional - uses STATUS_LABELS as default
   size?: "sm" | "md" | "lg";
   className?: string;
 }
@@ -72,9 +73,12 @@ export function StatusLabel({
     isolation: "auto"
   };
   
+  // Use STATUS_LABELS as default if no children provided
+  const displayText = children ?? STATUS_LABELS[status];
+  
   return (
     <span style={forceStyle}>
-      {children}
+      {displayText}
     </span>
   );
 }
