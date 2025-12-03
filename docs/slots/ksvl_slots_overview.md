@@ -196,7 +196,110 @@ Zeigt (Expanded):
 
 Vollständige Anzeige aller Informationen.
 
-## SlotStatusBadge
+## DayViewContent Komponente
+
+Die `DayViewContent` Komponente (`src/components/calendar/day-view-content.tsx`) konsolidiert die Tagesansicht für Desktop und Mobile in einer einzigen wiederverwendbaren Komponente.
+
+### Architektur
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     WeekCalendar                            │
+│  (src/components/week-calendar.tsx)                        │
+│                                                             │
+│  ┌──────────────────┐    ┌──────────────────┐              │
+│  │  Desktop Week    │    │  Desktop Day     │              │
+│  │  (Grid View)     │    │  (DayViewContent)│              │
+│  └──────────────────┘    └──────────────────┘              │
+│                                                             │
+│  ┌──────────────────────────────────────────┐              │
+│  │            Mobile Day View               │              │
+│  │           (DayViewContent)               │              │
+│  └──────────────────────────────────────────┘              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Props Interface
+
+```typescript
+interface DayViewContentProps {
+  // Datum und Slots
+  selectedDay: Date;
+  selectedDaySlots: Slot[];
+  allSlots: Slot[];
+  
+  // Status und Farben
+  getSlotStatus: (slot: Slot, allSlots: Slot[]) => SlotStatus;
+  getSlotColors: (status: SlotStatus) => SlotColors;
+  
+  // Berechtigungen
+  canManageSlots: boolean;
+  canBookSlots: boolean;
+  currentUserId?: string;
+  
+  // Callbacks
+  onSlotClick: (slot: Slot) => void;
+  onSlotEdit: (slot: Slot) => void;
+  onSlotCancel: (slot: Slot) => void;
+  onSlotDelete: (slot: Slot) => void;
+  onCreateSlot: (date: string, time: string) => void;
+  onBlockedSlotClick: () => void;
+  
+  // Darstellung
+  showHeader?: boolean;     // Datum-Header anzeigen
+  variant?: "desktop" | "mobile";
+}
+```
+
+### Verwendung in WeekCalendar
+
+```tsx
+// Desktop Day View
+<DayViewContent
+  selectedDay={selectedDay}
+  selectedDaySlots={selectedDaySlots}
+  allSlots={weekSlots}
+  getSlotStatus={getSlotStatus}
+  getSlotColors={getSlotColors}
+  canManageSlots={canManageSlots}
+  canBookSlots={canBookSlots}
+  currentUserId={currentUser?.id}
+  onSlotClick={handleDayViewSlotClick}
+  onSlotEdit={onSlotEdit}
+  onSlotCancel={handleCancelSlot}
+  onSlotDelete={handleDeleteSlotConfirm}
+  onCreateSlot={handleCreateSlot}
+  onBlockedSlotClick={handleBlockedSlotToast}
+  showHeader={true}
+  variant="desktop"
+/>
+
+// Mobile Day View (gleiche Props, nur variant="mobile")
+<DayViewContent
+  {...sameProps}
+  variant="mobile"
+/>
+```
+
+### Interne Subkomponenten
+
+Die `DayViewContent` enthält drei fokussierte Subkomponenten:
+
+| Komponente | Zweck |
+|------------|-------|
+| `ExistingSlotCard` | Zeigt existierende Slots mit Status, Actions |
+| `CoveredSlotCard` | Zeigt Slots die von längeren Slots überdeckt werden |
+| `EmptySlotCard` | Leerer Zeitslot mit "Slot erstellen" Option |
+
+### Code-Einsparung
+
+Die Extraktion von `DayViewContent` eliminierte ~450 Zeilen duplizierten Code zwischen Desktop Day View und Mobile Day View in `week-calendar.tsx`.
+
+| Vorher | Nachher | Einsparung |
+|--------|---------|------------|
+| 1010 LOC | 563 LOC | ~447 LOC (44%) |
+
+
 
 ```tsx
 <SlotStatusBadge 
@@ -284,14 +387,16 @@ src/
 │       └── data/
 │           └── use-slot-view-model.tsx  # Hook für ViewModel-Mapping
 ├── components/
+│   ├── calendar/
+│   │   └── day-view-content.tsx  # Shared Day View (Desktop/Mobile)
 │   ├── slots/
 │   │   ├── index.ts              # Barrel exports
 │   │   ├── slot-card.tsx         # SlotCard (compact/list/detail)
 │   │   └── slot-status-badge.tsx # Status-Badge
-│   ├── week-calendar.tsx         # Wochen-/Tagesansicht
+│   ├── week-calendar.tsx         # Wochen-/Tagesansicht (nutzt DayViewContent)
 │   ├── month-calendar.tsx        # Monatsansicht
 │   └── slot-management/
-│       └── slot-list-item.tsx    # Listen-Item
+│       └── slot-list-item.tsx    # Listen-Item (nutzt SlotCard)
 └── types/
     └── slot.ts                   # Slot Type Definitions
 ```
@@ -359,6 +464,18 @@ import { formatDuration } from "@/lib/slots/slot-view-model";
 - ✅ `useSlotViewModel` Hook implementiert
 - ✅ `SlotCard` Komponente mit 3 Varianten (compact/list/detail)
 - ✅ Zentrale Exports in `src/components/slots/index.ts`
+
+### Phase 5: SlotListItem Migration (Dezember 2025)
+
+- ✅ `SlotListItem` vollständig auf `SlotCard` mit `variant="list"` migriert
+- ✅ Code-Reduktion von ~148 auf ~42 Zeilen
+
+### Phase 6: WeekCalendar DayViewContent (Dezember 2025)
+
+- ✅ `DayViewContent` Komponente extrahiert (`src/components/calendar/day-view-content.tsx`)
+- ✅ Desktop Day View und Mobile Day View konsolidiert
+- ✅ Subkomponenten: `ExistingSlotCard`, `CoveredSlotCard`, `EmptySlotCard`
+- ✅ WeekCalendar Code-Reduktion: 1010 → 563 Zeilen (~447 LOC / 44%)
 
 ---
 
