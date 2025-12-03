@@ -3,13 +3,15 @@ import { cn } from "@/lib/utils";
 
 interface PageLoaderProps {
   className?: string;
+  isExiting?: boolean;
 }
 
-export function PageLoader({ className }: PageLoaderProps) {
+export function PageLoader({ className, isExiting }: PageLoaderProps) {
   return (
     <div 
       className={cn(
         "fixed inset-0 z-50 flex items-center justify-center bg-background",
+        isExiting ? "animate-fade-out" : "animate-fade-in",
         className
       )}
     >
