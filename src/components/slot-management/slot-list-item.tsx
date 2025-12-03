@@ -1,5 +1,6 @@
 import { SlotCard, SlotAction } from "@/components/slots";
 import { useSlotViewModel } from "@/hooks";
+import { useRole } from "@/hooks";
 import { Slot } from "@/types";
 
 interface SlotListItemProps {
@@ -13,17 +14,16 @@ interface SlotListItemProps {
 
 export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onShowDetails }: SlotListItemProps) {
   const { mapSlot } = useSlotViewModel();
+  const { currentRole, currentUser } = useRole();
   
   // Map to SlotViewModel
   const slotViewModel = mapSlot(slot, allSlots);
 
-  // Handle actions from SlotCard
+  // Handle actions from SlotCard - neue Action-Types
   const handleAction = (action: SlotAction) => {
     switch (action) {
-      case 'details':
-        onShowDetails(slot);
-        break;
-      case 'edit':
+      case 'manage':
+        // Öffnet den Verwaltungs-Drawer (ersetzt 'details' und 'edit')
         onEdit(slot);
         break;
       case 'delete':
@@ -31,6 +31,9 @@ export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onSho
         break;
       case 'cancel':
         onCancel(slot.id);
+        break;
+      case 'book':
+        onEdit(slot);
         break;
     }
   };
@@ -41,6 +44,8 @@ export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onSho
       variant="list"
       onAction={handleAction}
       showActions
+      userRole={currentRole}
+      currentUserId={currentUser?.id}
     />
   );
 }

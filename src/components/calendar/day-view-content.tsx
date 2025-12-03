@@ -97,14 +97,14 @@ export function DayViewContent({
     const status = getSlotStatus(slot, allSlots);
     
     switch (action) {
-      case 'details':
+      case 'manage':
+        // Öffnet den Verwaltungs-Drawer
         if (status === 'blocked') {
           onBlockedSlotClick();
         } else {
-          onSlotClick(slot);
+          onSlotEdit(slot);
         }
         break;
-      case 'edit':
       case 'book':
         onSlotEdit(slot);
         break;

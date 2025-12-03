@@ -66,19 +66,21 @@ export interface SlotViewModel {
   status: SlotStatus;
   statusLabel: string;
   
-  // Kranführer
+  // Kranführer (mit Telefon)
   craneOperator: {
     id: string;
     name: string;
     email?: string;
+    phone?: string;
   };
   
-  // Gebuchtes Mitglied (optional)
+  // Gebuchtes Mitglied (optional, mit Telefon)
   bookedMember?: {
     id: string;
     name: string;
     email?: string;
     memberNumber?: string;
+    phone?: string;
   };
   
   // Meta
@@ -136,6 +138,7 @@ export function mapSlotToViewModel(
     name: slot.memberName || slot.member?.name || slot.bookedBy || '',
     email: slot.member?.email,
     memberNumber: slot.member?.memberNumber,
+    phone: slot.member?.phone,
   } : undefined;
   
   // Block-Info
@@ -153,6 +156,7 @@ export function mapSlotToViewModel(
       id: slot.craneOperator.id,
       name: slot.craneOperator.name,
       email: slot.craneOperator.email,
+      phone: slot.craneOperator.phone,
     },
     bookedMember,
     notes: slot.notes,
