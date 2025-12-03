@@ -118,7 +118,7 @@ export function SlotCard({
     return (
       <Card
         className={cn(
-          "border hover:shadow-md transition-shadow card-shadow-soft rounded-xl relative",
+          "border hover:shadow-md transition-shadow card-shadow-soft rounded-xl",
           className
         )}
         style={{
@@ -129,26 +129,29 @@ export function SlotCard({
         <CardContent className="p-5">
           {/* === COLLAPSED HEADER === */}
           
-          {/* Zeile 1: Status-Badge | Dauer-Badge | Uhrzeit */}
-          <div className="flex items-center justify-between gap-2 pr-10">
+          {/* Zeile 1: Links Uhr-Icon + Uhrzeit + Dauer | Rechts Status-Badge */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" style={{ color: slot.colors.text, opacity: 0.7 }} />
+              <span 
+                className="text-sm font-medium"
+                style={{ color: slot.colors.text }}
+              >
+                {slot.formattedTime}
+              </span>
+              <Badge 
+                variant="secondary" 
+                className="text-xs"
+                style={{ color: slot.colors.text }}
+              >
+                {slot.formattedDuration}
+              </Badge>
+            </div>
             <SlotStatusBadge 
               status={slot.status} 
               colors={slot.colors}
               size="sm"
             />
-            <Badge 
-              variant="secondary" 
-              className="text-xs"
-              style={{ color: slot.colors.text }}
-            >
-              {slot.formattedDuration}
-            </Badge>
-            <span 
-              className="text-sm font-medium"
-              style={{ color: slot.colors.text }}
-            >
-              {slot.formattedTime}
-            </span>
           </div>
 
           {/* Zeile 2: Datum als Haupttitel */}
@@ -176,20 +179,6 @@ export function SlotCard({
               </p>
             )}
           </div>
-
-          {/* Chevron Button - absolut positioniert unten rechts */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={(e) => {
-              e.stopPropagation();
-              toggleExpand();
-            }}
-            className="absolute bottom-3 right-3"
-            style={{ color: slot.colors.text }}
-          >
-            {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-          </Button>
 
           {/* === EXPANDED VIEW === */}
           {isExpanded && (
@@ -257,42 +246,43 @@ export function SlotCard({
                 </div>
               )}
 
-              {/* Action Buttons (nur im geöffneten Zustand) */}
+              {/* Action Buttons (nur im geöffneten Zustand) - linksbündig, klein */}
               {showActions && (
-                <div className="flex gap-2 flex-wrap pt-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button 
-                    variant="outline" 
+                    variant="ghost" 
                     size="sm" 
                     onClick={(e) => handleAction('details', e)}
-                    className="flex-1"
                   >
-                    <CalendarCheck className="w-4 h-4 mr-2" />
+                    <CalendarCheck className="w-4 h-4 mr-1" />
                     Details
                   </Button>
                   <Button 
-                    variant="outline" 
+                    variant="ghost" 
                     size="sm" 
                     onClick={(e) => handleAction('edit', e)}
                   >
-                    <Edit className="w-4 h-4 mr-2" />
+                    <Edit className="w-4 h-4 mr-1" />
                     Bearbeiten
                   </Button>
                   {slot.isBooked ? (
                     <Button 
-                      variant="destructive" 
+                      variant="ghost" 
                       size="sm" 
+                      className="text-destructive hover:text-destructive"
                       onClick={(e) => handleAction('cancel', e)}
                     >
-                      <XCircle className="w-4 h-4 mr-2" />
+                      <XCircle className="w-4 h-4 mr-1" />
                       Stornieren
                     </Button>
                   ) : (
                     <Button 
-                      variant="destructive" 
+                      variant="ghost" 
                       size="sm" 
+                      className="text-destructive hover:text-destructive"
                       onClick={(e) => handleAction('delete', e)}
                     >
-                      <Trash2 className="w-4 h-4 mr-2" />
+                      <Trash2 className="w-4 h-4 mr-1" />
                       Löschen
                     </Button>
                   )}
@@ -300,6 +290,27 @@ export function SlotCard({
               )}
             </div>
           )}
+
+          {/* Footer-Zeile: Chevron immer unten rechts, eigene Zeile */}
+          <div 
+            className={cn(
+              "flex justify-end mt-3",
+              isExpanded && "pt-2 border-t"
+            )}
+            style={{ borderColor: isExpanded ? slot.colors.border : 'transparent' }}
+          >
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleExpand();
+              }}
+              style={{ color: slot.colors.text }}
+            >
+              {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
