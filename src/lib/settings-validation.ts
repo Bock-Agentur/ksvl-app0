@@ -11,25 +11,56 @@ import { logger } from "@/lib/logger";
 // LOGIN BACKGROUND SETTINGS
 // ============================================================================
 
-export const LoginBackgroundBasicSchema = z.object({
-  mode: z.enum(['image', 'video', 'gradient', 'none']).default('gradient'),
-  backgroundImage: z.string().optional(),
-  backgroundVideo: z.string().optional(),
-  gradientColors: z.array(z.string()).optional(),
-});
+export const LoginBackgroundSchema = z.object({
+  // Background type
+  type: z.enum(['gradient', 'image', 'video']).default('gradient'),
+  
+  // Storage fields
+  bucket: z.enum(['documents', 'login-media']).nullable().default(null),
+  storagePath: z.string().nullable().default(null),
+  url: z.string().nullable().default(null), // @deprecated - Only for temporary preview
+  filename: z.string().nullable().default(null),
+  
+  // Video settings
+  videoOnMobile: z.boolean().default(false),
+  
+  // Card styling (legacy, currently unused)
+  cardOpacity: z.number().min(0).max(100).default(95),
+  cardBorderBlur: z.number().min(0).max(20).default(8),
+  cardBorderRadius: z.number().min(0).max(32).default(8),
+  
+  // Overlay settings
+  overlayColor: z.string().default('#000000'),
+  overlayOpacity: z.number().min(0).max(100).default(40),
+  mediaBlur: z.number().min(0).max(20).default(0),
+  
+  // Input field styling
+  inputBgColor: z.string().default('#FFFFFF'),
+  inputBgOpacity: z.number().min(0).max(100).default(10),
+  
+  // Login block positioning (device-specific)
+  loginBlockVerticalPositionDesktop: z.number().min(0).max(100).default(50),
+  loginBlockVerticalPositionTablet: z.number().min(0).max(100).default(50),
+  loginBlockVerticalPositionMobile: z.number().min(0).max(100).default(50),
+  
+  // Login block width (device-specific)
+  loginBlockWidthDesktop: z.number().min(200).max(800).default(400),
+  loginBlockWidthTablet: z.number().min(200).max(800).default(380),
+  loginBlockWidthMobile: z.number().min(200).max(800).default(340),
+  
+  // Countdown settings
+  countdownEnabled: z.boolean().default(false),
+  countdownEndDate: z.string().nullable().default(null),
+  countdownText: z.string().default('bis zur neuen Segelsaison'),
+  countdownShowDays: z.boolean().default(true),
+  countdownFontSize: z.number().min(12).max(120).default(48),
+  countdownFontWeight: z.number().min(100).max(900).default(100),
+  countdownVerticalPositionDesktop: z.number().min(0).max(100).default(35),
+  countdownVerticalPositionTablet: z.number().min(0).max(100).default(35),
+  countdownVerticalPositionMobile: z.number().min(0).max(100).default(35),
+}).passthrough(); // Allow additional fields for backward compatibility
 
-export const LoginBackgroundAdvancedSchema = z.object({
-  overlayOpacity: z.number().min(0).max(1).default(0.3),
-  animationEnabled: z.boolean().default(true),
-  animationDuration: z.number().min(1).max(60).default(10),
-  blurAmount: z.number().min(0).max(20).default(0),
-  brightness: z.number().min(0).max(2).default(1),
-  contrast: z.number().min(0).max(2).default(1),
-  saturation: z.number().min(0).max(2).default(1),
-});
-
-export type LoginBackgroundBasic = z.infer<typeof LoginBackgroundBasicSchema>;
-export type LoginBackgroundAdvanced = z.infer<typeof LoginBackgroundAdvancedSchema>;
+export type LoginBackgroundValidated = z.infer<typeof LoginBackgroundSchema>;
 
 // ============================================================================
 // DASHBOARD SETTINGS
