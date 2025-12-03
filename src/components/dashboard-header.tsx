@@ -170,7 +170,7 @@ export function DashboardHeader({
   };
 
   return (
-    <div className="bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white pt-12 pb-8 px-[15px] rounded-[2rem] card-shadow-soft">
+    <div className="text-white pt-12 pb-8 px-[15px] rounded-[2rem] card-shadow-soft" style={{ background: 'var(--gradient-header)' }}>
       {/* Header mit Profilbild, Name und Glocke */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
