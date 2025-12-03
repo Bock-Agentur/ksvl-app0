@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,17 +14,25 @@ import { cn } from "@/lib/utils";
 import { SlotForm, SlotFormData } from "@/components/common/slot-form";
 import { logger } from "@/lib/logger";
 
-export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, onClose }: SlotFormDialogProps) {
+export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, onClose, mode = 'book' }: SlotFormDialogProps) {
   const { toast } = useToast();
   const { canManageSlots, canBookSlots, currentUser, currentRole } = usePermissions();
   const { slots: allSlots, addSlot, addSlotBlock, updateSlot, deleteSlot, bookSlot, cancelBooking } = useSlotsContext();
   const { users } = useUsers();
   const { validateConsecutiveSlots } = useConsecutiveSlots();
   
-  const [isEditing, setIsEditing] = useState(false);
+  // mode='manage' öffnet direkt das Bearbeitungs-Formular
+  const [isEditing, setIsEditing] = useState(mode === 'manage');
   const [existingBookedSlot, setExistingBookedSlot] = useState<Slot | null>(null);
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [pendingBookingSlotId, setPendingBookingSlotId] = useState<string | null>(null);
+  
+  // Reset isEditing wenn mode oder slot sich ändert
+  useEffect(() => {
+    if (open) {
+      setIsEditing(mode === 'manage');
+    }
+  }, [mode, open]);
   
   // Get crane operators from users
   const craneOperators = users.filter(u => 
@@ -389,7 +397,7 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
               {slot ? (
                 <>
                   <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
-                  {slot.isBooked ? "Buchung verwalten" : "Slot buchen"}
+                  {mode === 'manage' ? "Slot verwalten" : (slot.isBooked ? "Buchung verwalten" : "Slot buchen")}
                 </>
               ) : (
               <>
@@ -494,8 +502,8 @@ export function SlotFormDialog({ open, onOpenChange, slot, prefilledDateTime, on
                   )}
                 </div>
                 
-                {/* Secondary Actions - only for admins/kranfuehrer */}
-                {canManageSlots && (
+                {/* Secondary Actions - only for admins/kranfuehrer and only in 'manage' mode */}
+                {canManageSlots && mode === 'manage' && (
                   <div className="grid grid-cols-2 gap-2">
                     <Button onClick={() => setIsEditing(true)} variant="outline">
                       Bearbeiten

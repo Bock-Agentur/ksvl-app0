@@ -312,6 +312,11 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
     onSlotEdit(undefined, { date, time });
   }, [onSlotEdit]);
 
+  // Handler for DayViewContent - slot edit with mode support
+  const handleDayViewSlotEdit = useCallback((slot: Slot, mode?: 'book' | 'manage') => {
+    onSlotEdit(slot, undefined, mode);
+  }, [onSlotEdit]);
+
   // Handler for DayViewContent - blocked slot toast
   const handleBlockedSlotToast = useCallback(() => {
     toast({
@@ -490,7 +495,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
                 currentUserId={currentUser?.id}
                 userRole={currentRole}
                 onSlotClick={handleDayViewSlotClick}
-                onSlotEdit={onSlotEdit}
+                onSlotEdit={handleDayViewSlotEdit}
                 onSlotCancel={handleCancelSlot}
                 onSlotDelete={handleDeleteSlotConfirm}
                 onCreateSlot={handleCreateSlot}
@@ -516,7 +521,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
           currentUserId={currentUser?.id}
           userRole={currentRole}
           onSlotClick={handleDayViewSlotClick}
-          onSlotEdit={onSlotEdit}
+          onSlotEdit={handleDayViewSlotEdit}
           onSlotCancel={handleCancelSlot}
           onSlotDelete={handleDeleteSlotConfirm}
           onCreateSlot={handleCreateSlot}
