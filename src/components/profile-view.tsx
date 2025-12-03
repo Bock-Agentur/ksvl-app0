@@ -1,7 +1,7 @@
 /**
  * Profile View Component
  * 
- * Refactored: Uses useProfileLoader hook.
+ * Refactored: Uses useProfileLoader hook and userService for all updates.
  * Simplified: Removed sticky header feature and custom fields.
  */
 import { useState, useEffect } from "react";
@@ -10,7 +10,7 @@ import { ProfileDocumentsSection } from "@/components/profile/profile-documents-
 import { ProfileHeader } from "@/components/profile/profile-header";
 import { ProfileFormCards } from "@/components/profile/profile-form-cards";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { User as UserType, UserRole, ProfileViewProps } from "@/types";
+import { User as UserType, UserRole } from "@/types";
 import { supabase } from "@/integrations/supabase/client";
 import { userLogger } from "@/lib/logger";
 import { userService } from "@/lib/services/user-service";
@@ -86,134 +86,68 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         targetId = authUser.id;
       }
 
-      // If admin is editing another user and roles changed, use manage-user function
-      if (isAdmin && userId && editedUser.roles) {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) throw new Error('Nicht angemeldet');
+      // Build update data from editedUser
+      const updateData = {
+        id: targetId,
+        name: editedUser.name,
+        firstName: editedUser.firstName,
+        lastName: editedUser.lastName,
+        username: (editedUser as any).username,
+        phone: editedUser.phone,
+        memberNumber: editedUser.memberNumber,
+        boatName: editedUser.boatName,
+        roles: editedUser.roles,
+        oesvNumber: (editedUser as any).oesvNumber,
+        address: (editedUser as any).address,
+        streetAddress: editedUser.streetAddress,
+        postalCode: editedUser.postalCode,
+        city: editedUser.city,
+        berthNumber: (editedUser as any).berthNumber,
+        berthType: (editedUser as any).berthType,
+        birthDate: (editedUser as any).birthDate,
+        entryDate: (editedUser as any).entryDate,
+        dinghyBerthNumber: (editedUser as any).dinghyBerthNumber,
+        boatType: (editedUser as any).boatType,
+        boatLength: (editedUser as any).boatLength,
+        boatWidth: (editedUser as any).boatWidth,
+        boatColor: (editedUser as any).boatColor,
+        berthLength: (editedUser as any).berthLength,
+        berthWidth: (editedUser as any).berthWidth,
+        buoyRadius: (editedUser as any).buoyRadius,
+        hasDinghyBerth: (editedUser as any).hasDinghyBerth,
+        parkingPermitNumber: (editedUser as any).parkingPermitNumber,
+        parkingPermitIssueDate: (editedUser as any).parkingPermitIssueDate,
+        beverageChipNumber: (editedUser as any).beverageChipNumber,
+        beverageChipIssueDate: (editedUser as any).beverageChipIssueDate,
+        beverageChipStatus: (editedUser as any).beverageChipStatus,
+        emergencyContact: (editedUser as any).emergencyContact,
+        emergencyContactName: (editedUser as any).emergencyContactName,
+        emergencyContactPhone: (editedUser as any).emergencyContactPhone,
+        emergencyContactRelationship: (editedUser as any).emergencyContactRelationship,
+        notes: (editedUser as any).notes,
+        vorstandFunktion: (editedUser as any).vorstandFunktion,
+        membershipType: (editedUser as any).membershipType,
+        membershipStatus: (editedUser as any).membershipStatus,
+        boardPositionStartDate: (editedUser as any).boardPositionStartDate,
+        boardPositionEndDate: (editedUser as any).boardPositionEndDate,
+        passwordChangeRequired: (editedUser as any).passwordChangeRequired,
+        twoFactorMethod: (editedUser as any).twoFactorMethod,
+        dataPublicInKsvl: (editedUser as any).dataPublicInKsvl,
+        contactPublicInKsvl: (editedUser as any).contactPublicInKsvl,
+        newsletterOptin: (editedUser as any).newsletterOptin,
+        documentBfa: (editedUser as any).documentBfa,
+        documentInsurance: (editedUser as any).documentInsurance,
+        documentBerthContract: (editedUser as any).documentBerthContract,
+        documentMemberPhoto: (editedUser as any).documentMemberPhoto,
+        aiInfoEnabled: aiInfoEnabled
+      };
 
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/manage-user`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`
-          },
-          body: JSON.stringify({
-            action: 'update',
-            userId: targetId,
-            userData: {
-              name: editedUser.name,
-              firstName: editedUser.firstName,
-              lastName: editedUser.lastName,
-              username: (editedUser as any).username,
-              phone: editedUser.phone,
-              memberNumber: editedUser.memberNumber,
-              boatName: editedUser.boatName,
-              roles: editedUser.roles,
-              oesvNumber: (editedUser as any).oesvNumber,
-              address: (editedUser as any).address,
-              streetAddress: editedUser.streetAddress,
-              postalCode: editedUser.postalCode,
-              city: editedUser.city,
-              berthNumber: (editedUser as any).berthNumber,
-              berthType: (editedUser as any).berthType,
-              birthDate: (editedUser as any).birthDate,
-              entryDate: (editedUser as any).entryDate,
-              dinghyBerthNumber: (editedUser as any).dinghyBerthNumber,
-              boatType: (editedUser as any).boatType,
-              boatLength: (editedUser as any).boatLength,
-              boatWidth: (editedUser as any).boatWidth,
-              boatColor: (editedUser as any).boatColor,
-              berthLength: (editedUser as any).berthLength,
-              berthWidth: (editedUser as any).berthWidth,
-              buoyRadius: (editedUser as any).buoyRadius,
-              hasDinghyBerth: (editedUser as any).hasDinghyBerth,
-              parkingPermitNumber: (editedUser as any).parkingPermitNumber,
-              parkingPermitIssueDate: (editedUser as any).parkingPermitIssueDate,
-              beverageChipNumber: (editedUser as any).beverageChipNumber,
-              beverageChipIssueDate: (editedUser as any).beverageChipIssueDate,
-              beverageChipStatus: (editedUser as any).beverageChipStatus,
-              emergencyContact: (editedUser as any).emergencyContact,
-              emergencyContactName: (editedUser as any).emergencyContactName,
-              emergencyContactPhone: (editedUser as any).emergencyContactPhone,
-              emergencyContactRelationship: (editedUser as any).emergencyContactRelationship,
-              notes: (editedUser as any).notes,
-              vorstandFunktion: (editedUser as any).vorstandFunktion,
-              membershipType: (editedUser as any).membershipType,
-              membershipStatus: (editedUser as any).membershipStatus,
-              boardPositionStartDate: (editedUser as any).boardPositionStartDate,
-              boardPositionEndDate: (editedUser as any).boardPositionEndDate,
-              passwordChangeRequired: (editedUser as any).passwordChangeRequired,
-              twoFactorMethod: (editedUser as any).twoFactorMethod,
-              dataPublicInKsvl: (editedUser as any).dataPublicInKsvl,
-              contactPublicInKsvl: (editedUser as any).contactPublicInKsvl,
-              newsletterOptin: (editedUser as any).newsletterOptin,
-              documentBfa: (editedUser as any).documentBfa,
-              documentInsurance: (editedUser as any).documentInsurance,
-              documentBerthContract: (editedUser as any).documentBerthContract,
-              documentMemberPhoto: (editedUser as any).documentMemberPhoto,
-              aiInfoEnabled: aiInfoEnabled
-            }
-          })
-        });
-
-        const result = await response.json();
-        if (!response.ok || result.error) {
-          throw new Error(result.error || 'Benutzer konnte nicht aktualisiert werden');
-        }
+      // If admin is editing another user (with potential role changes), use updateUser (Edge Function)
+      // Otherwise, use updateProfile (direct DB update for own profile)
+      if (isAdmin && userId) {
+        await userService.updateUser(updateData);
       } else {
-        // Regular profile update - use service layer
-        await userService.updateProfile({
-          id: targetId,
-          name: editedUser.name,
-          firstName: editedUser.firstName,
-          lastName: editedUser.lastName,
-          phone: editedUser.phone,
-          memberNumber: editedUser.memberNumber,
-          boatName: editedUser.boatName,
-          streetAddress: editedUser.streetAddress,
-          postalCode: editedUser.postalCode,
-          city: editedUser.city,
-          oesvNumber: (editedUser as any).oesvNumber,
-          address: (editedUser as any).address,
-          berthNumber: (editedUser as any).berthNumber,
-          berthType: (editedUser as any).berthType,
-          birthDate: (editedUser as any).birthDate,
-          entryDate: (editedUser as any).entryDate,
-          dinghyBerthNumber: (editedUser as any).dinghyBerthNumber,
-          boatType: (editedUser as any).boatType,
-          boatLength: (editedUser as any).boatLength,
-          boatWidth: (editedUser as any).boatWidth,
-          boatColor: (editedUser as any).boatColor,
-          berthLength: (editedUser as any).berthLength,
-          berthWidth: (editedUser as any).berthWidth,
-          buoyRadius: (editedUser as any).buoyRadius,
-          hasDinghyBerth: (editedUser as any).hasDinghyBerth,
-          parkingPermitNumber: (editedUser as any).parkingPermitNumber,
-          parkingPermitIssueDate: (editedUser as any).parkingPermitIssueDate,
-          beverageChipNumber: (editedUser as any).beverageChipNumber,
-          beverageChipIssueDate: (editedUser as any).beverageChipIssueDate,
-          beverageChipStatus: (editedUser as any).beverageChipStatus,
-          emergencyContact: (editedUser as any).emergencyContact,
-          emergencyContactName: (editedUser as any).emergencyContactName,
-          emergencyContactPhone: (editedUser as any).emergencyContactPhone,
-          emergencyContactRelationship: (editedUser as any).emergencyContactRelationship,
-          notes: (editedUser as any).notes,
-          vorstandFunktion: (editedUser as any).vorstandFunktion,
-          membershipType: (editedUser as any).membershipType,
-          membershipStatus: (editedUser as any).membershipStatus,
-          boardPositionStartDate: (editedUser as any).boardPositionStartDate,
-          boardPositionEndDate: (editedUser as any).boardPositionEndDate,
-          passwordChangeRequired: (editedUser as any).passwordChangeRequired,
-          twoFactorMethod: (editedUser as any).twoFactorMethod,
-          dataPublicInKsvl: (editedUser as any).dataPublicInKsvl,
-          contactPublicInKsvl: (editedUser as any).contactPublicInKsvl,
-          newsletterOptin: (editedUser as any).newsletterOptin,
-          aiInfoEnabled: aiInfoEnabled,
-          documentBfa: (editedUser as any).documentBfa,
-          documentInsurance: (editedUser as any).documentInsurance,
-          documentBerthContract: (editedUser as any).documentBerthContract,
-          documentMemberPhoto: (editedUser as any).documentMemberPhoto
-        });
+        await userService.updateProfile(updateData);
       }
       
       setIsEditing(false);

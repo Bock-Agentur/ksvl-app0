@@ -50,6 +50,28 @@ export interface CreateUserData {
 
 export interface UpdateUserData extends Partial<CreateUserData> {
   id: string;
+  // Additional fields for admin updates
+  username?: string;
+  dinghyBerthNumber?: string;
+  parkingPermitNumber?: string;
+  parkingPermitIssueDate?: string;
+  beverageChipNumber?: string;
+  beverageChipIssueDate?: string;
+  emergencyContact?: string;
+  emergencyContactRelationship?: string;
+  notes?: string;
+  boardPositionStartDate?: string;
+  boardPositionEndDate?: string;
+  passwordChangeRequired?: boolean;
+  twoFactorMethod?: string;
+  dataPublicInKsvl?: boolean;
+  contactPublicInKsvl?: boolean;
+  newsletterOptin?: boolean;
+  aiInfoEnabled?: boolean;
+  documentBfa?: string;
+  documentInsurance?: string;
+  documentBerthContract?: string;
+  documentMemberPhoto?: string;
 }
 
 export interface UpdatePasswordData {
@@ -196,7 +218,8 @@ class UserService {
   }
 
   /**
-   * Update an existing user
+   * Update an existing user (admin operation via Edge Function)
+   * Supports role changes and all profile fields
    * 
    * @param data User data to update (must include id)
    * @returns Updated user data
@@ -215,6 +238,9 @@ class UserService {
         userId: data.id,
         userData: {
           name: data.name,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          username: data.username,
           phone: data.phone,
           memberNumber: data.memberNumber,
           boatName: data.boatName,
@@ -222,18 +248,14 @@ class UserService {
           roles: data.roles,
           oesvNumber: data.oesvNumber,
           address: data.address,
+          streetAddress: data.streetAddress,
+          postalCode: data.postalCode,
+          city: data.city,
           berthNumber: data.berthNumber,
           berthType: data.berthType,
           birthDate: data.birthDate,
           entryDate: data.entryDate,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          streetAddress: data.streetAddress,
-          postalCode: data.postalCode,
-          city: data.city,
-          membershipType: data.membershipType,
-          membershipStatus: data.membershipStatus,
-          vorstandFunktion: data.vorstandFunktion,
+          dinghyBerthNumber: data.dinghyBerthNumber,
           boatType: data.boatType,
           boatLength: data.boatLength,
           boatWidth: data.boatWidth,
@@ -242,9 +264,31 @@ class UserService {
           berthWidth: data.berthWidth,
           buoyRadius: data.buoyRadius,
           hasDinghyBerth: data.hasDinghyBerth,
+          parkingPermitNumber: data.parkingPermitNumber,
+          parkingPermitIssueDate: data.parkingPermitIssueDate,
+          beverageChipNumber: data.beverageChipNumber,
+          beverageChipIssueDate: data.beverageChipIssueDate,
           beverageChipStatus: data.beverageChipStatus,
+          emergencyContact: data.emergencyContact,
           emergencyContactName: data.emergencyContactName,
-          emergencyContactPhone: data.emergencyContactPhone
+          emergencyContactPhone: data.emergencyContactPhone,
+          emergencyContactRelationship: data.emergencyContactRelationship,
+          notes: data.notes,
+          vorstandFunktion: data.vorstandFunktion,
+          membershipType: data.membershipType,
+          membershipStatus: data.membershipStatus,
+          boardPositionStartDate: data.boardPositionStartDate,
+          boardPositionEndDate: data.boardPositionEndDate,
+          passwordChangeRequired: data.passwordChangeRequired,
+          twoFactorMethod: data.twoFactorMethod,
+          dataPublicInKsvl: data.dataPublicInKsvl,
+          contactPublicInKsvl: data.contactPublicInKsvl,
+          newsletterOptin: data.newsletterOptin,
+          aiInfoEnabled: data.aiInfoEnabled,
+          documentBfa: data.documentBfa,
+          documentInsurance: data.documentInsurance,
+          documentBerthContract: data.documentBerthContract,
+          documentMemberPhoto: data.documentMemberPhoto
         }
       })
     });
