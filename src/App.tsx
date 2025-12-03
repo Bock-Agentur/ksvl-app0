@@ -10,6 +10,7 @@ import { RoleProvider } from "@/hooks";
 import { ProtectedRoute } from "@/components/common/protected-route";
 import { ROUTES } from "@/lib/registry/routes";
 import { TabRedirect } from "@/components/common/tab-redirect";
+import { ThemeLoader } from "@/components/theme-loader";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { Settings } from "./pages/Settings";
@@ -26,6 +27,7 @@ const queryClient = new QueryClient();
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
+      <ThemeLoader />
       <AuthProvider>
         <RoleProvider>
           <TooltipProvider>
