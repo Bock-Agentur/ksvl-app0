@@ -6,7 +6,6 @@
 
 import React, { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
   User, 
@@ -16,18 +15,29 @@ import {
   CalendarDays, 
   ChevronDown, 
   ChevronUp,
-  Settings,
+  Edit,
   Trash2,
   XCircle,
   StickyNote,
-  Hash
+  Hash,
+  CalendarPlus
 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { SlotViewModel, STATUS_LABELS } from "@/lib/slots/slot-view-model";
 import { SlotStatusBadge } from "./slot-status-badge";
 import { cn } from "@/lib/utils";
 
-// Neue Action-Types: 'details' und 'edit' werden zu 'manage'
-export type SlotAction = 'manage' | 'delete' | 'cancel' | 'book';
+// Action-Types: 'edit' öffnet den Drawer
+export type SlotAction = 'book' | 'edit' | 'cancel' | 'delete';
 
 // Rollen für Button-Visibility
 type UserRole = 'admin' | 'vorstand' | 'kranfuehrer' | 'mitglied' | 'gastmitglied';
@@ -46,8 +56,8 @@ interface SlotCardProps {
   currentUserId?: string;
 }
 
-// Hilfsfunktion: Kann der User Aktionen ausführen?
-function canPerformActions(userRole?: UserRole): boolean {
+// Hilfsfunktion: Kann der User Admin-Aktionen ausführen?
+function canManageSlots(userRole?: UserRole): boolean {
   return ['admin', 'vorstand', 'kranfuehrer'].includes(userRole || '');
 }
 
@@ -65,6 +75,7 @@ export function SlotCard({
 }: SlotCardProps) {
   // Uncontrolled expand state for list variant
   const [internalExpanded, setInternalExpanded] = useState(false);
+  const [showBookConfirm, setShowBookConfirm] = useState(false);
   const isExpanded = controlledExpanded ?? internalExpanded;
   const toggleExpand = onToggleExpand ?? (() => setInternalExpanded(!internalExpanded));
   
@@ -75,12 +86,14 @@ export function SlotCard({
   
   const handleClick = () => {
     if (isClickable && onAction) {
-      onAction('manage', slot);
+      onAction('edit', slot);
     }
   };
 
-  // Nur Admin/Vorstand/Kranführer sehen Aktions-Buttons
-  const showActionButtons = showActions && canPerformActions(userRole);
+  // Berechtigungen
+  const canManage = canManageSlots(userRole);
+  // Buttons anzeigen wenn expanded UND (Mitglied kann buchen ODER Admin kann verwalten)
+  const showActionButtons = showActions && isExpanded;
 
   // Compact Variant (für Kalender-Grid)
   if (variant === 'compact') {
@@ -330,27 +343,47 @@ export function SlotCard({
                 </div>
               </div>
 
-              {/* Action Buttons - Badge-Stil ohne Hover */}
+              {/* Action Buttons - Badge-Stil ohne Hover, rechts ausgerichtet */}
               {showActionButtons && (
                 <div 
-                  className="mt-4 pt-3 border-t flex gap-2 flex-wrap"
+                  className="mt-4 pt-3 border-t flex gap-2 flex-wrap justify-end"
                   style={{ borderColor: slot.colors.border }}
                 >
-                  {/* Verwalten */}
-                  <span 
-                    className="inline-flex items-center h-6 px-2.5 text-xs font-medium rounded-full cursor-pointer"
-                    style={{ 
-                      backgroundColor: slot.colors.label,
-                      color: '#fff'
-                    }}
-                    onClick={(e) => handleAction('manage', e)}
-                  >
-                    <Settings className="w-3 h-3 mr-1" />
-                    Verwalten
-                  </span>
+                  {/* Buchen - für ALLE Benutzer bei verfügbaren Slots */}
+                  {!slot.isBooked && (
+                    <span 
+                      className="inline-flex items-center h-6 px-2.5 text-xs font-medium rounded-full cursor-pointer"
+                      style={{ 
+                        backgroundColor: 'hsl(var(--primary))',
+                        color: '#fff'
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowBookConfirm(true);
+                      }}
+                    >
+                      <CalendarPlus className="w-3 h-3 mr-1" />
+                      Buchen
+                    </span>
+                  )}
                   
-                  {/* Stornieren - nur wenn gebucht */}
-                  {slot.isBooked && (
+                  {/* Bearbeiten - nur Admin/Vorstand/Kranführer */}
+                  {canManage && (
+                    <span 
+                      className="inline-flex items-center h-6 px-2.5 text-xs font-medium rounded-full cursor-pointer"
+                      style={{ 
+                        backgroundColor: slot.colors.label,
+                        color: '#fff'
+                      }}
+                      onClick={(e) => handleAction('edit', e)}
+                    >
+                      <Edit className="w-3 h-3 mr-1" />
+                      Bearbeiten
+                    </span>
+                  )}
+                  
+                  {/* Stornieren - nur Admin/Vorstand/Kranführer wenn gebucht */}
+                  {canManage && slot.isBooked && (
                     <span 
                       className="inline-flex items-center h-6 px-2.5 text-xs font-medium rounded-full cursor-pointer"
                       style={{ 
@@ -364,20 +397,48 @@ export function SlotCard({
                     </span>
                   )}
                   
-                  {/* Löschen */}
-                  <span 
-                    className="inline-flex items-center h-6 px-2.5 text-xs font-medium rounded-full cursor-pointer"
-                    style={{ 
-                      backgroundColor: 'hsl(var(--destructive))',
-                      color: '#fff'
-                    }}
-                    onClick={(e) => handleAction('delete', e)}
-                  >
-                    <Trash2 className="w-3 h-3 mr-1" />
-                    Löschen
-                  </span>
+                  {/* Löschen - nur Admin/Vorstand/Kranführer */}
+                  {canManage && (
+                    <span 
+                      className="inline-flex items-center h-6 px-2.5 text-xs font-medium rounded-full cursor-pointer"
+                      style={{ 
+                        backgroundColor: 'hsl(var(--destructive))',
+                        color: '#fff'
+                      }}
+                      onClick={(e) => handleAction('delete', e)}
+                    >
+                      <Trash2 className="w-3 h-3 mr-1" />
+                      Löschen
+                    </span>
+                  )}
                 </div>
               )}
+              
+              {/* AlertDialog für Buchungsbestätigung */}
+              <AlertDialog open={showBookConfirm} onOpenChange={setShowBookConfirm}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Termin buchen?</AlertDialogTitle>
+                    <AlertDialogDescription className="space-y-2">
+                      <span className="block">
+                        Möchten Sie den Termin am <strong>{slot.formattedDate}</strong> um <strong>{slot.time} Uhr</strong> wirklich buchen?
+                      </span>
+                      <span className="block text-destructive font-medium">
+                        ⚠️ Achtung: Der Termin kann nicht selbständig storniert werden. Bei Bedarf wenden Sie sich bitte an den Vorstand.
+                      </span>
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => {
+                      setShowBookConfirm(false);
+                      onAction?.('book', slot);
+                    }}>
+                      Jetzt buchen
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </>
           )}
         </CardContent>
