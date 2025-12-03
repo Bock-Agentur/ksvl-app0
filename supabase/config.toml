@@ -13,7 +13,7 @@ verify_jwt = true
 verify_jwt = true
 
 [functions.reset-password-admin]
-verify_jwt = false
+verify_jwt = true
 
 [functions.copy-login-image]
 verify_jwt = false
