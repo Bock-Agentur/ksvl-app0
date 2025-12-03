@@ -8,6 +8,7 @@ import { Loader2, Send, Bot, ChevronDown, ChevronUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast, useRole, useProfileData, useHarborChatData } from "@/hooks";
 import { apiLogger } from "@/lib/logger";
+import { formatChatContent } from "@/lib/sanitize";
 
 interface Message {
   role: 'user' | 'assistant';
@@ -151,9 +152,7 @@ export function AIChatMiniWidget() {
                         <div 
                           className="text-sm whitespace-pre-wrap leading-relaxed prose prose-sm max-w-none dark:prose-invert prose-a:text-primary prose-a:no-underline hover:prose-a:underline"
                           dangerouslySetInnerHTML={{ 
-                            __html: msg.content
-                              .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="font-medium">$1</a>')
-                              .replace(/\n/g, '<br/>')
+                            __html: formatChatContent(msg.content)
                           }}
                         />
                       </div>

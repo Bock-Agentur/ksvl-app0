@@ -1,8 +1,5 @@
 project_id = "zivkmpyvfxudzypqezhu"
 
-[functions.delete-test-data]
-verify_jwt = false
-
 [functions.harbor-chat]
 verify_jwt = true
 
@@ -14,6 +11,3 @@ verify_jwt = true
 
 [functions.reset-password-admin]
 verify_jwt = true
-
-[functions.copy-login-image]
-verify_jwt = false
