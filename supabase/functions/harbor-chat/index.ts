@@ -247,13 +247,13 @@ AKTUELLE KRANTERMIN-DATEN (${today} bis ${nextWeek}):
 VERFÜGBARE TERMINE (${availableSlots.length}):
 ${availableSlots.map(s => {
   const craneOp = usersMap.get(s.crane_operator_id);
-  return `- ${formatDate(s.date)} um ${s.time} Uhr (${s.duration} Min) - Kranführer: ${getFullName(craneOp)}${craneOp?.member_number ? ` (Nr: ${craneOp.member_number})` : ''} - [Details anzeigen](/?date=${s.date})`;
+  return `- ${formatDate(s.date)} um ${s.time} Uhr (${s.duration} Min) - Kranführer: ${getFullName(craneOp)}${craneOp?.member_number ? ` (Nr: ${craneOp.member_number})` : ''} - [Details anzeigen](/kalender?date=${s.date})`;
 }).join('\n') || 'Keine verfügbaren Termine'}
 
 GEBUCHTE TERMINE (${bookedSlots.length}):
 ${bookedSlots.map(s => {
   const member = usersMap.get(s.member_id);
-  return `- ${formatDate(s.date)} um ${s.time} Uhr - gebucht von ${getFullName(member)}${member?.boat_name ? ` (Boot: ${member.boat_name})` : ''} - [Details anzeigen](/?date=${s.date})`;
+  return `- ${formatDate(s.date)} um ${s.time} Uhr - gebucht von ${getFullName(member)}${member?.boat_name ? ` (Boot: ${member.boat_name})` : ''} - [Details anzeigen](/kalender?date=${s.date})`;
 }).join('\n') || 'Keine Buchungen'}
 
 STATISTIK:
