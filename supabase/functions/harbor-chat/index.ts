@@ -28,16 +28,43 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, firstName, userRole } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    // JWT Authentication - verify user is logged in
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('❌ Missing or invalid Authorization header');
+      return new Response(
+        JSON.stringify({ error: 'Nicht autorisiert - Anmeldung erforderlich' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {
       throw new Error('LOVABLE_API_KEY nicht konfiguriert');
     }
 
-    // Supabase Client für Datenbankzugriff
+    // Verify JWT token
+    const token = authHeader.replace('Bearer ', '');
+    const supabaseAuth = createClient(SUPABASE_URL!, SUPABASE_ANON_KEY!);
+    const { data: { user }, error: authError } = await supabaseAuth.auth.getUser(token);
+
+    if (authError || !user) {
+      console.error('❌ Invalid JWT token:', authError?.message);
+      return new Response(
+        JSON.stringify({ error: 'Nicht autorisiert - Ungültiger Token' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    console.log('✅ Authenticated user:', user.id);
+
+    const { messages, firstName, userRole } = await req.json();
+
+    // Supabase Client für Datenbankzugriff (mit Service Role für vollständigen Zugriff)
     const supabase = createClient(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
     // Load AI assistant settings
