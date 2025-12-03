@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Plus, X, Clock, CheckCircle, XCircle, Edit2, Trash2, User, StickyNote, CalendarCheck, Calendar, CalendarDays } from "lucide-react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
+import { Plus } from "lucide-react";
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, parseISO, addMinutes, getWeek } from "date-fns";
 import { de } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,7 @@ import { useSlotsContext } from "@/contexts/slots-context";
 import { StatusLabel } from "@/components/ui/status-label";
 import { cn } from "@/lib/utils";
 import { CalendarErrorBoundary } from "@/components/common/error-boundary";
+import { DayViewContent } from "@/components/calendar/day-view-content";
 
 // WeekCalendarProps is now imported from @/types
 
@@ -297,6 +298,29 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
     });
   };
 
+  // Handler for DayViewContent - slot click
+  const handleDayViewSlotClick = useCallback((slot: Slot) => {
+    if (slot.isBooked && (canManageSlots || slot.bookedBy === currentRole)) {
+      onSlotEdit(slot);
+    } else if (!slot.isBooked && canBookSlots) {
+      onSlotEdit(slot);
+    }
+  }, [canManageSlots, canBookSlots, currentRole, onSlotEdit]);
+
+  // Handler for DayViewContent - create slot
+  const handleCreateSlot = useCallback((date: string, time: string) => {
+    onSlotEdit(undefined, { date, time });
+  }, [onSlotEdit]);
+
+  // Handler for DayViewContent - blocked slot toast
+  const handleBlockedSlotToast = useCallback(() => {
+    toast({
+      title: "Slot nicht buchbar",
+      description: "In Slot-Blöcken können nur aufeinanderfolgende Slots von oben nach unten gebucht werden.",
+      variant: "destructive"
+    });
+  }, [toast]);
+
   return (
     <div className="w-full space-y-4">
 
@@ -451,524 +475,53 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
           </div>
         </div>
         ) : (
-          /* Desktop Day View - Same as Mobile/Tablet */
-          <div>
-            {/* Day Content */}
-            <Card className="card-maritime-hero">
-              <CardHeader className="pb-2">
-                <p className="text-center text-lg font-bold text-muted-foreground mb-6">
-                  {format(selectedDay, "dd. MMMM yyyy", { locale: de })}
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                {/* Show all 15-minute intervals from 6:00 to 20:45 */}
-                {Array.from({ length: 15 * 4 }, (_, i) => {
-                  const totalMinutes = (6 * 60) + (i * 15);  // Start at 6:00, increment by 15min
-                  const hour = Math.floor(totalMinutes / 60);
-                  const minute = totalMinutes % 60;
-                  if (hour > 20) return null; // Stop after 20:45
-                  
-                  const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-                  
-                  // Function to check if a time slot is covered by any existing slot
-                  const isTimeCoveredBySlot = (checkTime: string) => {
-                    return selectedDaySlots.some(slot => {
-                      const slotHour = parseInt(slot.time.split(':')[0]);
-                      const slotMinute = parseInt(slot.time.split(':')[1]);
-                      const slotStartMinutes = slotHour * 60 + slotMinute;
-                      const slotEndMinutes = slotStartMinutes + slot.duration;
-                      
-                      const checkHour = parseInt(checkTime.split(':')[0]);
-                      const checkMinute = parseInt(checkTime.split(':')[1]);
-                      const checkMinutes = checkHour * 60 + checkMinute;
-                      
-                      return checkMinutes >= slotStartMinutes && checkMinutes < slotEndMinutes;
-                    });
-                  };
-                  
-                  // Get exact time slots and check if covered
-                  const exactTimeSlots = selectedDaySlots.filter(slot => slot.time === timeString);
-                  const isCoveredByLongerSlot = isTimeCoveredBySlot(timeString);
-                  
-                  // Skip this time slot if it's covered by a longer slot and has no exact match
-                  if (isCoveredByLongerSlot && exactTimeSlots.length === 0) {
-                    return null;
-                  }
-                  const coveringSlot = selectedDaySlots.find(slot => {
-                    if (slot.time === timeString) return false; // Exclude exact matches
-                    const slotHour = parseInt(slot.time.split(':')[0]);
-                    const slotMinute = parseInt(slot.time.split(':')[1]);
-                    const slotStartMinutes = slotHour * 60 + slotMinute;
-                    const slotEndMinutes = slotStartMinutes + slot.duration;
-                    
-                    const checkHour = parseInt(timeString.split(':')[0]);
-                    const checkMinute = parseInt(timeString.split(':')[1]);
-                    const checkMinutes = checkHour * 60 + checkMinute;
-                    
-                    return checkMinutes >= slotStartMinutes && checkMinutes < slotEndMinutes;
-                  });
-                  
-                  return (
-                    <div key={`${hour}-${minute}`} className="space-y-1">
-                      {exactTimeSlots.length > 0 ? (
-                        // Show existing slots for this exact time
-                        exactTimeSlots.map((slot) => {
-                          const isInBlock = isSlotInBlock(slot, weekSlots);
-                          return (
-                            <Card
-                              key={slot.id}
-                              className={cn(
-                                "p-3 cursor-pointer transition-all hover:shadow-sm relative group border-2",
-                                "rounded-lg shadow-sm"
-                              )}
-                              style={(() => {
-                                const status = getSlotStatus(slot, weekSlots);
-                                const colors = getSlotColors(status);
-                                return {
-                                  backgroundColor: colors.background,
-                                  borderColor: colors.border,
-                                  color: colors.text
-                                };
-                              })()}
-                              onClick={() => {
-                                const status = getSlotStatus(slot, weekSlots);
-                                if (status === 'blocked') {
-                                  toast({
-                                    title: "Slot nicht buchbar",
-                                    description: "In Slot-Blöcken können nur aufeinanderfolgende Slots von oben nach unten gebucht werden.",
-                                    variant: "destructive"
-                                  });
-                                  return;
-                                }
-                                if (slot.isBooked && (canManageSlots || slot.bookedBy === currentRole)) {
-                                  onSlotEdit(slot);
-                                } else if (!slot.isBooked && canBookSlots) {
-                                  onSlotEdit(slot);
-                                }
-                              }}
-                            >
-                              {/* Status badge - top right */}
-                              <div className="absolute top-2 right-2 z-20">
-                                <StatusLabel 
-                                  status={getSlotStatus(slot, weekSlots) as "available" | "booked" | "blocked"} 
-                                  size="sm"
-                                >
-                                  {STATUS_LABELS[getSlotStatus(slot, weekSlots)]}
-                                </StatusLabel>
-                              </div>
-
-                              {/* Action icons - bottom right */}
-                              <div className="absolute bottom-2 right-2 flex gap-2 z-20">
-                                {/* Edit button - only for own booked slots (members) or admin/kranfuehrer */}
-                                {((slot.isBooked && slot.memberId === currentUser?.id) || canManageSlots) && (
-                                  <Edit2 
-                                    className="w-5 h-5 cursor-pointer transition-colors"
-                                    style={{ 
-                                      color: getSlotColors(getSlotStatus(slot, weekSlots)).text,
-                                      opacity: 0.7
-                                    }}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onSlotEdit(slot);
-                                    }}
-                                  />
-                                )}
-                                {(() => {
-                                  const status = getSlotStatus(slot, weekSlots);
-                                  return status === 'available' && canBookSlots && (
-                                    <CalendarCheck 
-                                      className="w-5 h-5 cursor-pointer transition-colors hover:opacity-100"
-                                      style={{ 
-                                        color: getSlotColors(status).text,
-                                        opacity: 0.7
-                                      }}
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        onSlotEdit(slot);
-                                      }}
-                                    />
-                                  );
-                                })()}
-                                {/* Cancel button - only for own booked slots (members) or admin/kranfuehrer */}
-                                {slot.isBooked && ((slot.memberId === currentUser?.id && canBookSlots) || canManageSlots) && (
-                                  <X 
-                                    className="w-5 h-5 cursor-pointer transition-colors hover:opacity-100"
-                                    style={{ 
-                                      color: getSlotColors(getSlotStatus(slot, weekSlots)).text,
-                                      opacity: 0.7
-                                    }}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleCancelSlot(slot);
-                                    }}
-                                  />
-                                )}
-                                {/* Delete button - only for admin/kranfuehrer */}
-                                {canManageSlots && (
-                                  <Trash2 
-                                    className="w-5 h-5 cursor-pointer transition-colors hover:text-destructive"
-                                    style={{ 
-                                      color: getSlotColors(getSlotStatus(slot, weekSlots)).text,
-                                      opacity: 0.7
-                                    }}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeleteSlotConfirm(slot);
-                                    }}
-                                  />
-                                )}
-                              </div>
-
-                              <div className="flex items-start justify-between pr-20 pb-8">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-1" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>
-                                    <Clock className="w-4 h-4" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }} />
-                                    <span className="font-semibold">{slot.time}</span>
-                                  </div>
-                                  <div className="text-sm" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>
-                                    Kranführer: {slot.craneOperator.name}
-                                  </div>
-                                  {slot.isBooked && (slot.memberName || slot.bookedBy) && (
-                                    <div className="text-sm" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>
-                                      Gebucht von: {slot.memberName || slot.bookedBy}
-                                    </div>
-                                  )}
-                                  <div className="text-sm" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>
-                                    Dauer: {formatDuration(slot.duration)}
-                                  </div>
-                                </div>
-                              </div>
-                            </Card>
-                          );
-                        })
-                      ) : isCoveredByLongerSlot && coveringSlot ? (
-                        // Show covered slot indicator
-                        <Card 
-                          className={cn(
-                            "p-3 opacity-75 cursor-pointer transition-all hover:opacity-100 font-medium rounded-lg shadow-sm"
-                          )}
-                          style={{
-                            backgroundColor: getSlotColors(getSlotStatus(coveringSlot, weekSlots)).background,
-                            borderLeftColor: undefined,
-                            borderColor: getSlotColors(getSlotStatus(coveringSlot, weekSlots)).border,
-                            color: getSlotColors(getSlotStatus(coveringSlot, weekSlots)).text
-                          }}
-                          onClick={() => onSlotEdit(coveringSlot)}
-                        >
-                          <div className="flex items-center gap-2">
-                            <Clock className="w-4 h-4" style={{ color: getSlotColors(getSlotStatus(coveringSlot, weekSlots)).text }} />
-                            <span className="text-sm" style={{ color: getSlotColors(getSlotStatus(coveringSlot, weekSlots)).text }}>
-                              Teil des {coveringSlot?.duration || 60}-min Slots ab {coveringSlot?.time}
-                            </span>
-                          </div>
-                          <div className="text-xs mt-1" style={{ color: getSlotColors(getSlotStatus(coveringSlot, weekSlots)).text }}>
-                            Kranführer: {coveringSlot.craneOperator.name}
-                          </div>
-                        </Card>
-                      ) : (
-                        // Show empty time slot - clickable to create new slot
-                        <Card 
-                          className={cn(
-                            "p-3 border-2 border-dashed border-muted-foreground/30 bg-muted/20 cursor-pointer transition-all hover:border-primary hover:bg-primary/5",
-                            !canManageSlots && "cursor-not-allowed opacity-50"
-                          )}
-                          onClick={() => {
-                            if (canManageSlots) {
-                              handleHourClick(selectedDay, hour, minute);
-                            }
-                          }}
-                        >
-                          <div className="flex items-center gap-2 text-muted-foreground">
-                            <Clock className="w-4 h-4" />
-                            <span className="text-sm font-medium">{timeString}</span>
-                            {canManageSlots && <Plus className="w-4 h-4 ml-auto" />}
-                          </div>
-                          {canManageSlots && (
-                            <div className="text-xs text-muted-foreground mt-1">
-                              Klicken um neuen Slot zu erstellen
-                            </div>
-                          )}
-                        </Card>
-                      )}
-                    </div>
-                  );
-                }).filter(Boolean)}
-              </CardContent>
-            </Card>
-          </div>
+          /* Desktop Day View - Uses shared DayViewContent component */
+          <Card className="card-maritime-hero">
+            <CardHeader className="pb-2" />
+            <CardContent className="space-y-2">
+              <DayViewContent
+                selectedDay={selectedDay}
+                selectedDaySlots={selectedDaySlots}
+                allSlots={weekSlots}
+                getSlotStatus={getSlotStatus}
+                getSlotColors={getSlotColors}
+                canManageSlots={canManageSlots}
+                canBookSlots={canBookSlots}
+                currentUserId={currentUser?.id}
+                onSlotClick={handleDayViewSlotClick}
+                onSlotEdit={onSlotEdit}
+                onSlotCancel={handleCancelSlot}
+                onSlotDelete={handleDeleteSlotConfirm}
+                onCreateSlot={handleCreateSlot}
+                onBlockedSlotClick={handleBlockedSlotToast}
+                showHeader={true}
+                variant="desktop"
+              />
+            </CardContent>
+          </Card>
         )}
       </div>
 
-      {/* Tablet/Mobile Calendar View - Day Calendar with 15-minute slots */}
+      {/* Tablet/Mobile Calendar View - Uses shared DayViewContent component */}
       <div className="md:hidden">
-        <div>
-          <div className="pb-2">
-            <p className="text-center text-lg font-bold text-muted-foreground mb-6">
-              {format(selectedDay, "dd. MMMM yyyy", { locale: de })}
-            </p>
-          </div>
-          <div className="space-y-2">
-            {/* Show all 15-minute intervals from 6:00 to 20:45 */}
-            {Array.from({ length: 15 * 4 }, (_, i) => {
-              const totalMinutes = (6 * 60) + (i * 15);  // Start at 6:00, increment by 15min
-              const hour = Math.floor(totalMinutes / 60);
-              const minute = totalMinutes % 60;
-              if (hour > 20) return null; // Stop after 20:45
-              
-              const timeString = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-              
-              // Function to check if a time slot is covered by any existing slot
-              const isTimeCoveredBySlot = (checkTime: string) => {
-                return selectedDaySlots.some(slot => {
-                  const slotHour = parseInt(slot.time.split(':')[0]);
-                  const slotMinute = parseInt(slot.time.split(':')[1]);
-                  const slotStartMinutes = slotHour * 60 + slotMinute;
-                  const slotEndMinutes = slotStartMinutes + slot.duration;
-                  
-                  const checkHour = parseInt(checkTime.split(':')[0]);
-                  const checkMinute = parseInt(checkTime.split(':')[1]);
-                  const checkMinutes = checkHour * 60 + checkMinute;
-                  
-                  return checkMinutes >= slotStartMinutes && checkMinutes < slotEndMinutes;
-                });
-              };
-              
-              // Get exact time slots and check if covered
-              const exactTimeSlots = selectedDaySlots.filter(slot => slot.time === timeString);
-              const isCoveredByLongerSlot = isTimeCoveredBySlot(timeString);
-              
-              // Skip this time slot if it's covered by a longer slot and has no exact match
-              if (isCoveredByLongerSlot && exactTimeSlots.length === 0) {
-                return null;
-              }
-               const coveringSlot = selectedDaySlots.find(slot => {
-                 if (slot.time === timeString) return false; // Exclude exact matches
-                 const slotHour = parseInt(slot.time.split(':')[0]);
-                 const slotMinute = parseInt(slot.time.split(':')[1]);
-                 const slotStartMinutes = slotHour * 60 + slotMinute;
-                 const slotEndMinutes = slotStartMinutes + slot.duration;
-                 
-                 const checkHour = parseInt(timeString.split(':')[0]);
-                 const checkMinute = parseInt(timeString.split(':')[1]);
-                 const checkMinutes = checkHour * 60 + checkMinute;
-                 
-                  return checkMinutes >= slotStartMinutes && checkMinutes < slotEndMinutes;
-                });
-               
-               return (
-                 <div key={`${hour}-${minute}`} className="space-y-1">
-                   {exactTimeSlots.length > 0 ? (
-                    // Show existing slots for this exact time
-                    exactTimeSlots.map((slot) => {
-                      const isInBlock = isSlotInBlock(slot, weekSlots);
-                      return (
-                         <Card
-                           key={slot.id}
-                            className={cn(
-                              "p-3 cursor-pointer transition-all hover:shadow-sm relative group border-2",
-                              "rounded-lg shadow-sm",
-                              (() => {
-                                const status = getSlotStatus(slot, weekSlots);
-                                // Use inline styles instead of classes for dynamic colors
-                                return "";
-                              })()
-                            )}
-                            style={(() => {
-                              const status = getSlotStatus(slot, weekSlots);
-                              const colors = getSlotColors(status);
-                              return {
-                                backgroundColor: colors.background,
-                                borderColor: colors.border,
-                                color: colors.text
-                              };
-                            })()}
-                           onClick={() => {
-                             const status = getSlotStatus(slot, weekSlots);
-                             if (status === 'blocked') {
-                               toast({
-                                 title: "Slot nicht buchbar",
-                                 description: "In Slot-Blöcken können nur aufeinanderfolgende Slots von oben nach unten gebucht werden.",
-                                 variant: "destructive"
-                               });
-                               return;
-                             }
-                             if (slot.isBooked && (canManageSlots || slot.bookedBy === currentRole)) {
-                               onSlotEdit(slot);
-                             } else if (!slot.isBooked && canBookSlots) {
-                               onSlotEdit(slot);
-                             }
-                           }}
-                         >
-                           {/* Status badge - top right */}
-                           <div className="absolute top-2 right-2 z-20">
-                              <StatusLabel 
-                                status={getSlotStatus(slot, weekSlots) as "available" | "booked" | "blocked"} 
-                                size="sm"
-                              >
-                                {STATUS_LABELS[getSlotStatus(slot, weekSlots)]}
-                              </StatusLabel>
-                           </div>
-
-                            {/* Action icons - bottom right */}
-                            <div className="absolute bottom-2 right-2 flex gap-2 z-20">
-                              {/* Edit button - only for own booked slots (members) or admin/kranfuehrer */}
-                              {((slot.isBooked && slot.memberId === currentUser?.id) || canManageSlots) && (
-                                <Edit2 
-                                  className="w-5 h-5 cursor-pointer transition-colors"
-                                  style={{ 
-                                    color: getSlotColors(getSlotStatus(slot, weekSlots)).text,
-                                    opacity: 0.7
-                                  }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    onSlotEdit(slot);
-                                  }}
-                                />
-                              )}
-                              {(() => {
-                                const status = getSlotStatus(slot, weekSlots);
-                                return status === 'available' && canBookSlots && (
-                                  <CalendarCheck 
-                                    className="w-5 h-5 cursor-pointer transition-colors hover:opacity-100"
-                                    style={{ 
-                                      color: getSlotColors(status).text,
-                                      opacity: 0.7
-                                    }}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      onSlotEdit(slot);
-                                    }}
-                                  />
-                                );
-                              })()}
-                              {/* Cancel button - only for own booked slots (members) or admin/kranfuehrer */}
-                              {slot.isBooked && ((slot.memberId === currentUser?.id && canBookSlots) || canManageSlots) && (
-                                <X 
-                                  className="w-5 h-5 cursor-pointer transition-colors hover:opacity-100"
-                                  style={{ 
-                                    color: getSlotColors(getSlotStatus(slot, weekSlots)).text,
-                                    opacity: 0.7
-                                  }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleCancelSlot(slot);
-                                  }}
-                                />
-                              )}
-                              {/* Delete button - only for admin/kranfuehrer */}
-                              {canManageSlots && (
-                                <Trash2 
-                                  className="w-5 h-5 cursor-pointer transition-colors hover:text-destructive"
-                                  style={{ 
-                                    color: getSlotColors(getSlotStatus(slot, weekSlots)).text,
-                                    opacity: 0.7
-                                  }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteSlotConfirm(slot);
-                                  }}
-                                />
-                              )}
-                            </div>
-
-                            <div className="flex items-start justify-between pr-20 pb-8">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>
-                                <Clock className="w-4 h-4" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }} />
-                                <span className="font-semibold">{slot.time}</span>
-                              </div>
-                              <div className="text-sm" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>
-                                Kranführer: {slot.craneOperator.name}
-                              </div>
-                              {slot.isBooked && slot.bookedBy && (
-                                <div className="text-sm" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>
-                                  Gebucht von: {slot.bookedBy}
-                                </div>
-                              )}
-                              <div className="text-sm" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>
-                                Dauer: {formatDuration(slot.duration)}
-                              </div>
-                            </div>
-                          </div>
-                         </Card>
-                      );
-                    })
-                   ) : isCoveredByLongerSlot && coveringSlot ? (
-                     // Show covered slot indicator
-                      <Card 
-                        className={cn(
-                          "p-3 opacity-75 cursor-pointer transition-all hover:opacity-100 font-medium rounded-lg shadow-sm"
-                        )}
-                        style={{
-                          backgroundColor: getSlotColors(getSlotStatus(coveringSlot, weekSlots)).background,
-                          borderLeftColor: undefined,
-                          borderColor: getSlotColors(getSlotStatus(coveringSlot, weekSlots)).border,
-                          color: getSlotColors(getSlotStatus(coveringSlot, weekSlots)).text
-                        }}
-                        onClick={() => onSlotEdit(coveringSlot)}
-                      >
-                         <div className="flex items-center gap-2">
-                           <Clock className="w-4 h-4" style={{ color: getSlotColors(getSlotStatus(coveringSlot, weekSlots)).text }} />
-                           <span className="text-sm" style={{ color: getSlotColors(getSlotStatus(coveringSlot, weekSlots)).text }}>
-                             Teil des {coveringSlot?.duration || 60}-min Slots ab {coveringSlot?.time}
-                           </span>
-                         </div>
-                        <div className="text-xs mt-1" style={{ color: getSlotColors(getSlotStatus(coveringSlot, weekSlots)).text }}>
-                          Kranführer: {coveringSlot.craneOperator.name}
-                        </div>
-                     </Card>
-                   ) : (
-                     // Show empty time slot - clickable to create new slot
-                     <Card 
-                       className={cn(
-                         "p-4 border-2 border-dashed border-muted-foreground/20 transition-colors",
-                         canManageSlots ? "cursor-pointer hover:border-primary/50 hover:bg-primary/5" : "cursor-default"
-                       )}
-                        onClick={() => {
-                          if (canManageSlots) {
-                            // Check if there's already a slot at this time or covering this time
-                             if (exactTimeSlots.length > 0 || isCoveredByLongerSlot) {
-                               toast({
-                                 title: "Zeit bereits belegt",
-                                 description: isCoveredByLongerSlot 
-                                   ? `Diese Zeit ist Teil eines ${coveringSlot?.duration}-Minuten-Slots ab ${coveringSlot?.time}.`
-                                   : "Zu dieser Zeit ist bereits ein Slot vergeben.",
-                                 variant: "destructive"
-                               });
-                               return;
-                              }
-                              // Pass the selected day and time to create a slot at this specific time
-                              const dateString = format(selectedDay, 'yyyy-MM-dd');
-                              onSlotEdit(undefined, { date: dateString, time: timeString });
-                           } else {
-                            toast({
-                              title: "Keine Berechtigung",
-                              description: "Nur Kranführer und Administratoren können neue Slots erstellen. Wechseln Sie Ihre Rolle im Menü oben rechts.",
-                              variant: "destructive"
-                            });
-                          }
-                        }}
-                     >
-                       <div className="flex items-center justify-center gap-2 text-muted-foreground">
-                         {canManageSlots ? (
-                           <>
-                             <Plus className="w-4 h-4" />
-                             <span className="text-sm">Slot für {timeString} hinzufügen</span>
-                           </>
-                         ) : (
-                           <>
-                             <Plus className="w-4 h-4" />
-                             <span className="text-sm">Slot anlegen</span>
-                           </>
-                         )}
-                       </div>
-                     </Card>
-                   )}
-                 </div>
-               );
-             }).filter(Boolean)}
-          </div>
-        </div>
+        <DayViewContent
+          selectedDay={selectedDay}
+          selectedDaySlots={selectedDaySlots}
+          allSlots={weekSlots}
+          getSlotStatus={getSlotStatus}
+          getSlotColors={getSlotColors}
+          canManageSlots={canManageSlots}
+          canBookSlots={canBookSlots}
+          currentUserId={currentUser?.id}
+          onSlotClick={handleDayViewSlotClick}
+          onSlotEdit={onSlotEdit}
+          onSlotCancel={handleCancelSlot}
+          onSlotDelete={handleDeleteSlotConfirm}
+          onCreateSlot={handleCreateSlot}
+          onBlockedSlotClick={handleBlockedSlotToast}
+          showHeader={true}
+          variant="mobile"
+        />
       </div>
 
       {/* Confirmation Dialogs */}
