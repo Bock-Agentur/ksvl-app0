@@ -3,11 +3,11 @@ project_id = "zivkmpyvfxudzypqezhu"
 [functions.harbor-chat]
 verify_jwt = true
 
-[functions.regenerate-role-users]
-verify_jwt = true
-
 [functions.migrate-storage-files]
 verify_jwt = true
 
 [functions.reset-password-admin]
 verify_jwt = true
+
+[functions.monday-webhook]
+verify_jwt = false
