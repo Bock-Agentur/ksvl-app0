@@ -402,9 +402,9 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
                                         {slot.memberName || slot.member?.name}
                                       </div>
                                     )}
-                                    {/* Duration */}
+                                    {/* Duration - einheitliches Format */}
                                     <div className="text-xs opacity-75" style={{ color: getSlotColors(slotStatus).text }}>
-                                      {slot.duration}min
+                                      {slot.duration} Min.
                                     </div>
                                    {/* Status indicator */}
                                    <div 
@@ -642,7 +642,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
                                     </div>
                                   )}
                                   <div className="text-sm" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>
-                                    Dauer: {slot.duration} min
+                                    Dauer: {slot.duration} Min.
                                   </div>
                                 </div>
                               </div>
@@ -902,7 +902,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
                                 </div>
                               )}
                               <div className="text-sm" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>
-                                Dauer: {slot.duration} min
+                                Dauer: {slot.duration} Min.
                               </div>
                             </div>
                           </div>

@@ -2,12 +2,11 @@ import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { StatusLabel } from "@/components/ui/status-label";
-import { Edit, Trash2, Clock, User, Mail, CalendarDays, ChevronDown, ChevronUp, XCircle } from "lucide-react";
+import { Edit, Trash2, Clock, User, Mail, CalendarDays, ChevronDown, ChevronUp, XCircle, StickyNote } from "lucide-react";
 import { Slot } from "@/types";
-import { format, parseISO } from "date-fns";
-import { de } from "date-fns/locale";
 import { useConsecutiveSlots, useSlotDesign } from "@/hooks";
+import { STATUS_LABELS, formatDuration, formatDateShort, formatDateLong } from "@/lib/slots/slot-view-model";
+import { SlotStatusBadge } from "@/components/slots/slot-status-badge";
 
 interface SlotListItemProps {
   slot: Slot;
@@ -26,10 +25,6 @@ export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onSho
   const status = getSlotStatus(slot, allSlots);
   const colors = settings[status];
 
-  const formatDate = (dateString: string) => {
-    return format(parseISO(dateString), "EEE, dd.MM.yyyy", { locale: de });
-  };
-
   return (
     <Card 
       className="border hover:shadow-md transition-shadow"
@@ -42,17 +37,23 @@ export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onSho
         {/* Compact View */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <StatusLabel status={status} size="sm">
-              {status === "booked" ? "Gebucht" : status === "blocked" ? "Blockiert" : "Verfügbar"}
-            </StatusLabel>
+            {/* Einheitliches Status-Badge mit STATUS_LABELS */}
+            <SlotStatusBadge 
+              status={status} 
+              colors={colors}
+              size="sm"
+            />
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-medium text-sm" style={{ color: colors.text }}>{formatDate(slot.date)}</span>
+                <span className="font-medium text-sm" style={{ color: colors.text }}>
+                  {formatDateShort(slot.date)}
+                </span>
                 <Badge variant="outline" className="text-xs" style={{ color: colors.text, borderColor: colors.border }}>
                   {slot.time} Uhr
                 </Badge>
+                {/* Einheitliches Dauer-Format */}
                 <Badge variant="secondary" className="text-xs" style={{ color: colors.text }}>
-                  {slot.duration} Min
+                  {formatDuration(slot.duration)}
                 </Badge>
               </div>
               <p className="text-xs truncate" style={{ color: colors.text, opacity: 0.8 }}>{slot.craneOperator.name}</p>
@@ -77,11 +78,11 @@ export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onSho
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm" style={{ color: colors.text }}>
               <div className="flex items-center gap-2">
                 <CalendarDays className="w-4 h-4" style={{ color: colors.text, opacity: 0.7 }} />
-                <span>{format(parseISO(slot.date), "EEEE, dd. MMMM yyyy", { locale: de })}</span>
+                <span>{formatDateLong(slot.date)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" style={{ color: colors.text, opacity: 0.7 }} />
-                <span>{slot.time} Uhr ({slot.duration} Minuten)</span>
+                <span>{slot.time} Uhr ({formatDuration(slot.duration)})</span>
               </div>
               <div className="flex items-center gap-2">
                 <User className="w-4 h-4" style={{ color: colors.text, opacity: 0.7 }} />
@@ -110,7 +111,10 @@ export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onSho
             {/* Notes */}
             {slot.notes && (
               <div className="text-sm" style={{ color: colors.text }}>
-                <p className="font-medium mb-1">Notizen:</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <StickyNote className="w-4 h-4" style={{ opacity: 0.7 }} />
+                  <span className="font-medium">Notizen:</span>
+                </div>
                 <p style={{ opacity: 0.9 }}>{slot.notes}</p>
               </div>
             )}

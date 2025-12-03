@@ -18,7 +18,7 @@ import { de } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { usePermissions, useConsecutiveSlots } from "@/hooks";
+import { usePermissions, useConsecutiveSlots, useSlotDesign } from "@/hooks";
 import { useSlotsContext } from "@/contexts/slots-context";
 import { cn } from "@/lib/utils";
 import { Slot, MonthCalendarProps, DayStats } from "@/types";
@@ -31,6 +31,7 @@ export function MonthCalendar({ onDayClick, onSlotCreate, slots: propSlots, isLo
   const slots = propSlots ?? context.slots;
   const isLoading = propIsLoading ?? context.isLoading;
   const { getSlotStatus } = useConsecutiveSlots();
+  const { settings: slotDesignSettings } = useSlotDesign();
   const { canManageSlots } = usePermissions();
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -206,7 +207,7 @@ export function MonthCalendar({ onDayClick, onSlotCreate, slots: propSlots, isLo
                     </span>
                   </div>
 
-                  {/* Slot Statistics - Circles Vertical */}
+                  {/* Slot Statistics - Circles Vertical - NOW USING useSlotDesign */}
                   {hasSlots && (
                     <div className="flex flex-col items-center gap-1 mt-1">
                       {/* Total Slots - Outline Circle */}
@@ -214,26 +215,44 @@ export function MonthCalendar({ onDayClick, onSlotCreate, slots: propSlots, isLo
                         {dayStats.totalSlots}
                       </div>
                       
-                        {/* Available Slots - Green Circle */}
-                        {dayStats.availableSlots > 0 && (
-                          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-[hsl(var(--status-available))] text-[hsl(var(--status-available-foreground))] text-xs font-medium">
-                            {dayStats.availableSlots}
-                          </div>
+                      {/* Available Slots - Dynamic Color from useSlotDesign */}
+                      {dayStats.availableSlots > 0 && (
+                        <div 
+                          className="flex items-center justify-center w-5 h-5 rounded-full text-xs font-medium"
+                          style={{
+                            backgroundColor: slotDesignSettings.available.background,
+                            color: slotDesignSettings.available.text
+                          }}
+                        >
+                          {dayStats.availableSlots}
+                        </div>
                       )}
                       
-                        {/* Booked Slots - Blue Circle */}
-                        {dayStats.bookedSlots > 0 && (
-                          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-[hsl(var(--status-booked))] text-[hsl(var(--status-booked-foreground))] text-xs font-medium">
-                            {dayStats.bookedSlots}
-                          </div>
-                       )}
+                      {/* Booked Slots - Dynamic Color from useSlotDesign */}
+                      {dayStats.bookedSlots > 0 && (
+                        <div 
+                          className="flex items-center justify-center w-5 h-5 rounded-full text-xs font-medium"
+                          style={{
+                            backgroundColor: slotDesignSettings.booked.background,
+                            color: slotDesignSettings.booked.text
+                          }}
+                        >
+                          {dayStats.bookedSlots}
+                        </div>
+                      )}
                        
-                        {/* Blocked Slots - Red Circle */}
-                        {dayStats.blockedSlots > 0 && (
-                          <div className="flex items-center justify-center w-5 h-5 rounded-full bg-[hsl(var(--status-blocked))] text-[hsl(var(--status-blocked-foreground))] text-xs font-medium">
-                            {dayStats.blockedSlots}
-                          </div>
-                        )}
+                      {/* Blocked Slots - Dynamic Color from useSlotDesign */}
+                      {dayStats.blockedSlots > 0 && (
+                        <div 
+                          className="flex items-center justify-center w-5 h-5 rounded-full text-xs font-medium"
+                          style={{
+                            backgroundColor: slotDesignSettings.blocked.background,
+                            color: slotDesignSettings.blocked.text
+                          }}
+                        >
+                          {dayStats.blockedSlots}
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -256,7 +275,7 @@ export function MonthCalendar({ onDayClick, onSlotCreate, slots: propSlots, isLo
       </Card>
       </div>
 
-      {/* Legend */}
+      {/* Legend - NOW USING useSlotDesign */}
       <Card className="bg-muted/30">
         <CardContent className="p-3">
           <div className="flex flex-wrap items-center gap-3 text-xs">
@@ -265,15 +284,24 @@ export function MonthCalendar({ onDayClick, onSlotCreate, slots: propSlots, isLo
               <span>Gesamt</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-[hsl(var(--status-available))]"></div>
+              <div 
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: slotDesignSettings.available.background }}
+              />
               <span>Verfügbar</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-[hsl(var(--status-booked))]"></div>
+              <div 
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: slotDesignSettings.booked.background }}
+              />
               <span>Gebucht</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-[hsl(var(--status-blocked))]"></div>
+              <div 
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: slotDesignSettings.blocked.background }}
+              />
               <span>Gesperrt</span>
             </div>
             <div className="flex items-center gap-1.5">

@@ -10,3 +10,7 @@ export * from './core';
 // Feature hooks (remain in root)
 export { useConsecutiveSlots, ConsecutiveSlotsProvider } from './use-consecutive-slots';
 export { useToast, toast } from './use-toast';
+
+// Re-export SlotViewModel utilities for convenience
+export { STATUS_LABELS, formatDuration, formatTime, formatDateShort, formatDateLong } from '@/lib/slots/slot-view-model';
+export type { SlotViewModel, MapSlotOptions } from '@/lib/slots/slot-view-model';
