@@ -9,7 +9,7 @@ import { SlotListItem } from "../slot-management/slot-list-item";
 
 interface SlotListViewProps {
   slots: Slot[];
-  onSlotEdit: (slot?: Slot) => void;
+  onSlotEdit: (slot?: Slot, dateTime?: { date: string; time: string }, mode?: 'book' | 'manage') => void;
   onDialogOpen: (slot: Slot | null) => void;
 }
 
@@ -39,6 +39,11 @@ export function SlotListView({ slots, onSlotEdit, onDialogOpen }: SlotListViewPr
       u.role === "admin" ||
       u.role === "vorstand"
   );
+
+  // Wrapper für SlotListItem um mode zu übergeben
+  const handleSlotEdit = (slot: Slot, mode?: 'book' | 'manage') => {
+    onSlotEdit(slot, undefined, mode);
+  };
 
   return (
     <div className="space-y-2 px-4">
@@ -71,7 +76,7 @@ export function SlotListView({ slots, onSlotEdit, onDialogOpen }: SlotListViewPr
               key={slot.id}
               slot={slot}
               allSlots={slots}
-              onEdit={onSlotEdit}
+              onEdit={handleSlotEdit}
               onDelete={(slotId) => {
                 const slotToDelete = slots.find((s) => s.id === slotId);
                 if (slotToDelete?.isBooked) {

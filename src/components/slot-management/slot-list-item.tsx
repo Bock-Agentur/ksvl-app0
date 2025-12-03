@@ -6,7 +6,7 @@ import { Slot } from "@/types";
 interface SlotListItemProps {
   slot: Slot;
   allSlots: Slot[];
-  onEdit: (slot: Slot) => void;
+  onEdit: (slot: Slot, mode?: 'book' | 'manage') => void;
   onDelete: (slotId: string) => void;
   onCancel: (slotId: string) => void;
   onShowDetails: (slot: Slot) => void;
@@ -23,8 +23,8 @@ export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onSho
   const handleAction = (action: SlotAction) => {
     switch (action) {
       case 'edit':
-        // Öffnet den Bearbeitungs-Drawer
-        onEdit(slot);
+        // 'Verwalten' Button: Öffnet Drawer im manage-Modus
+        onEdit(slot, 'manage');
         break;
       case 'delete':
         onDelete(slot.id);
@@ -33,8 +33,8 @@ export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onSho
         onCancel(slot.id);
         break;
       case 'book':
-        // Buchung wird über den Drawer abgewickelt
-        onEdit(slot);
+        // 'Buchen' Button: Öffnet Drawer im book-Modus
+        onEdit(slot, 'book');
         break;
     }
   };

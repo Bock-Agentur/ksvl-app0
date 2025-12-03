@@ -31,7 +31,7 @@ interface DayViewContentProps {
   currentUserId?: string;
   userRole?: 'admin' | 'vorstand' | 'kranfuehrer' | 'mitglied' | 'gastmitglied';
   onSlotClick: (slot: Slot) => void;
-  onSlotEdit: (slot: Slot) => void;
+  onSlotEdit: (slot: Slot, mode?: 'book' | 'manage') => void;
   onSlotCancel: (slot: Slot) => void;
   onSlotDelete: (slot: Slot) => void;
   onCreateSlot: (date: string, time: string) => void;
@@ -100,15 +100,16 @@ export function DayViewContent({
     
     switch (action) {
       case 'edit':
-        // Öffnet den Bearbeitungs-Drawer
+        // 'Verwalten' Button: Öffnet Drawer im manage-Modus (direkt Bearbeiten)
         if (status === 'blocked') {
           onBlockedSlotClick();
         } else {
-          onSlotEdit(slot);
+          onSlotEdit(slot, 'manage');
         }
         break;
       case 'book':
-        onSlotEdit(slot);
+        // 'Buchen' Button: Öffnet Drawer im book-Modus (nur Buchen)
+        onSlotEdit(slot, 'book');
         break;
       case 'cancel':
         onSlotCancel(slot);

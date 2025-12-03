@@ -38,6 +38,7 @@ export function CalendarView({
     date: string;
     time: string;
   } | null>(null);
+  const [dialogMode, setDialogMode] = useState<'book' | 'manage'>('book');
   const [viewMode, setViewMode] = useState<CalendarViewMode>("day");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currentWeek, setCurrentWeek] = useState(new Date());
@@ -64,9 +65,10 @@ export function CalendarView({
     }
   }, [initialDate]);
   
-  const handleSlotEdit = (slot?: Slot, dateTime?: { date: string; time: string }) => {
+  const handleSlotEdit = (slot?: Slot, dateTime?: { date: string; time: string }, mode: 'book' | 'manage' = 'book') => {
     setSelectedSlot(slot || null);
     setPrefilledDateTime(dateTime || null);
+    setDialogMode(mode);
     setIsDialogOpen(true);
   };
   
@@ -201,7 +203,8 @@ export function CalendarView({
         }}
         onClose={handleDialogClose}
         slot={selectedSlot} 
-        prefilledDateTime={prefilledDateTime} 
+        prefilledDateTime={prefilledDateTime}
+        mode={dialogMode}
       />
     </div>
   );

@@ -107,7 +107,7 @@ export interface MonthCalendarProps {
 }
 
 export interface WeekCalendarProps {
-  onSlotEdit: (slot?: Slot, dateTime?: { date: string; time: string }) => void;
+  onSlotEdit: (slot?: Slot, dateTime?: { date: string; time: string }, mode?: 'book' | 'manage') => void;
   selectedDate?: Date;
   selectedDay?: Date;
   viewMode?: "day" | "week";
@@ -131,4 +131,5 @@ export interface SlotFormDialogProps {
   defaultTime?: string;
   prefilledDateTime?: { date: string; time: string } | null;
   onClose: (navigateToDate?: Date) => void;
+  mode?: 'book' | 'manage'; // 'book' = nur Buchen-Ansicht, 'manage' = direkt Bearbeiten-Formular
 }
