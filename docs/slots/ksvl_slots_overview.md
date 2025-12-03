@@ -342,6 +342,24 @@ import { formatDuration } from "@/lib/slots/slot-view-model";
 | Status-Labels | Inline strings | `STATUS_LABELS[status]` |
 | Slot-Rendering | Duplizierter Code | `SlotCard` Varianten |
 
+## Implementierte Änderungen
+
+### Phase 1-3: Quick Wins (Dezember 2025)
+
+- ✅ `STATUS_LABELS` als Single Source of Truth eingeführt
+- ✅ `formatDuration()` für einheitliche Dauer-Formatierung
+- ✅ `SlotStatusBadge` Komponente erstellt
+- ✅ `MonthCalendar`: CSS-Variablen durch `useSlotDesign()` ersetzt
+- ✅ `SlotListItem`: Status-Text und Formatierung vereinheitlicht
+- ✅ `WeekCalendar`: Hardcoded Status-Texte durch `STATUS_LABELS` ersetzt
+
+### Phase 4: SlotViewModel & SlotCard (Dezember 2025)
+
+- ✅ `SlotViewModel` Interface und Mapping-Funktion erstellt
+- ✅ `useSlotViewModel` Hook implementiert
+- ✅ `SlotCard` Komponente mit 3 Varianten (compact/list/detail)
+- ✅ Zentrale Exports in `src/components/slots/index.ts`
+
 ---
 
 *Letzte Aktualisierung: Dezember 2025*

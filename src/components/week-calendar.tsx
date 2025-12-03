@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { usePermissions, useRole, useToast, useConsecutiveSlots, useSlotDesign } from "@/hooks";
+import { usePermissions, useRole, useToast, useConsecutiveSlots, useSlotDesign, STATUS_LABELS, formatDuration } from "@/hooks";
 import { Slot, WeekCalendarProps } from "@/types";
 import { useSlotsContext } from "@/contexts/slots-context";
 import { StatusLabel } from "@/components/ui/status-label";
@@ -553,15 +553,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
                                   status={getSlotStatus(slot, weekSlots) as "available" | "booked" | "blocked"} 
                                   size="sm"
                                 >
-                                  {(() => {
-                                    const status = getSlotStatus(slot, weekSlots);
-                                    switch (status) {
-                                      case 'booked': return "Gebucht";
-                                      case 'blocked': return "Gesperrt";
-                                      case 'available':
-                                      default: return "Verfügbar";
-                                    }
-                                  })()}
+                                  {STATUS_LABELS[getSlotStatus(slot, weekSlots)]}
                                 </StatusLabel>
                               </div>
 
@@ -642,7 +634,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
                                     </div>
                                   )}
                                   <div className="text-sm" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>
-                                    Dauer: {slot.duration} Min.
+                                    Dauer: {formatDuration(slot.duration)}
                                   </div>
                                 </div>
                               </div>
@@ -813,15 +805,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
                                 status={getSlotStatus(slot, weekSlots) as "available" | "booked" | "blocked"} 
                                 size="sm"
                               >
-                                {(() => {
-                                  const status = getSlotStatus(slot, weekSlots);
-                                  switch (status) {
-                                    case 'booked': return "Gebucht";
-                                    case 'blocked': return "Gesperrt";
-                                    case 'available':
-                                    default: return "Verfügbar";
-                                  }
-                                })()}
+                                {STATUS_LABELS[getSlotStatus(slot, weekSlots)]}
                               </StatusLabel>
                            </div>
 
@@ -902,7 +886,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
                                 </div>
                               )}
                               <div className="text-sm" style={{ color: getSlotColors(getSlotStatus(slot, weekSlots)).text }}>
-                                Dauer: {slot.duration} Min.
+                                Dauer: {formatDuration(slot.duration)}
                               </div>
                             </div>
                           </div>
