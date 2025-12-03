@@ -126,7 +126,7 @@ export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
               type="password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Mindestens 6 Zeichen"
+              placeholder="Mind. 8 Zeichen, Groß-/Kleinbuchstabe, Zahl"
             />
           </div>
 

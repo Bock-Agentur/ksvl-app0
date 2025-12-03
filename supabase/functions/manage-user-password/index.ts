@@ -60,19 +60,25 @@ serve(async (req) => {
         throw new Error('Unauthorized - Invalid token');
       }
 
-      // Check if user is admin
-      const { data: roles, error: roleError } = await supabaseAdmin
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id);
+      // Allow users to change their OWN password without admin role
+      if (action === 'update' && userId === user.id) {
+        console.log('✅ User changing own password - allowed');
+        isAuthorized = true;
+      } else {
+        // For other operations or changing OTHER user's passwords, require admin role
+        const { data: roles, error: roleError } = await supabaseAdmin
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id);
 
-      if (roleError || !roles?.some(r => r.role === 'admin')) {
-        console.error('❌ User is not admin:', { userId: user.id, roles });
-        throw new Error('Unauthorized - Admin access required');
+        if (roleError || !roles?.some(r => r.role === 'admin')) {
+          console.error('❌ User is not admin:', { userId: user.id, roles });
+          throw new Error('Unauthorized - Admin access required');
+        }
+        
+        console.log('✅ Admin JWT token validated');
+        isAuthorized = true;
       }
-      
-      console.log('✅ JWT token validated');
-      isAuthorized = true;
     }
 
     if (!isAuthorized) {
