@@ -8,6 +8,7 @@ export interface CraneOperator {
   id: string;
   name: string;
   email: string;
+  phone?: string;
 }
 
 export interface SlotMember {
@@ -15,6 +16,7 @@ export interface SlotMember {
   name: string;
   email: string;
   memberNumber: string;
+  phone?: string;
 }
 
 export interface Slot {

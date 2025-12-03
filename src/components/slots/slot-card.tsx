@@ -1,6 +1,7 @@
 /**
  * SlotCard - Einheitliche Slot-Darstellung für alle Ansichten
  * Varianten: compact (Kalender), list (Listen-Ansicht), detail (Dialog)
+ * Trendy Design mit großer Uhrzeit, Status-farbigem Chevron, Lucide-Icons
  */
 
 import React, { useState } from "react";
@@ -8,23 +9,28 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-  Clock, 
   User, 
+  Users,
   Mail, 
+  Phone,
   CalendarDays, 
   ChevronDown, 
   ChevronUp,
-  Edit,
+  Settings,
   Trash2,
   XCircle,
-  CalendarCheck,
-  StickyNote
+  StickyNote,
+  Hash
 } from "lucide-react";
 import { SlotViewModel, STATUS_LABELS } from "@/lib/slots/slot-view-model";
 import { SlotStatusBadge } from "./slot-status-badge";
 import { cn } from "@/lib/utils";
 
-export type SlotAction = 'details' | 'edit' | 'delete' | 'cancel' | 'book';
+// Neue Action-Types: 'details' und 'edit' werden zu 'manage'
+export type SlotAction = 'manage' | 'delete' | 'cancel' | 'book';
+
+// Rollen für Button-Visibility
+type UserRole = 'admin' | 'vorstand' | 'kranfuehrer' | 'mitglied' | 'gastmitglied';
 
 interface SlotCardProps {
   slot: SlotViewModel;
@@ -35,6 +41,14 @@ interface SlotCardProps {
   showActions?: boolean;
   isClickable?: boolean;
   className?: string;
+  // NEU: Rollen-basierte Steuerung
+  userRole?: UserRole;
+  currentUserId?: string;
+}
+
+// Hilfsfunktion: Kann der User Aktionen ausführen?
+function canPerformActions(userRole?: UserRole): boolean {
+  return ['admin', 'vorstand', 'kranfuehrer'].includes(userRole || '');
 }
 
 export function SlotCard({
@@ -46,6 +60,8 @@ export function SlotCard({
   showActions = false,
   isClickable = false,
   className,
+  userRole,
+  currentUserId,
 }: SlotCardProps) {
   // Uncontrolled expand state for list variant
   const [internalExpanded, setInternalExpanded] = useState(false);
@@ -59,16 +75,19 @@ export function SlotCard({
   
   const handleClick = () => {
     if (isClickable && onAction) {
-      onAction('details', slot);
+      onAction('manage', slot);
     }
   };
+
+  // Nur Admin/Vorstand/Kranführer sehen Aktions-Buttons
+  const showActionButtons = showActions && canPerformActions(userRole);
 
   // Compact Variant (für Kalender-Grid)
   if (variant === 'compact') {
     return (
       <Card
         className={cn(
-          "h-full p-3 transition-all rounded-lg",
+          "h-full p-3 transition-all rounded-lg relative",
           isClickable && "cursor-pointer hover:shadow-md",
           className
         )}
@@ -129,188 +148,234 @@ export function SlotCard({
         <CardContent className="p-5">
           {/* === COLLAPSED HEADER === */}
           
-          {/* Zeile 1: Links Uhr-Icon + Uhrzeit + Dauer | Rechts Status-Badge */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" style={{ color: slot.colors.text, opacity: 0.7 }} />
+          {/* Zeile 1: Große Uhrzeit + Dauer-Badge | Status-Badge + Chevron */}
+          <div className="flex items-start justify-between">
+            {/* Links: Große Uhrzeit + Dauer */}
+            <div className="flex items-center gap-3">
               <span 
-                className="text-sm font-medium"
+                className="text-2xl font-bold tracking-tight"
                 style={{ color: slot.colors.text }}
               >
-                {slot.formattedTime}
+                {slot.time} Uhr
               </span>
               <Badge 
-                variant="secondary" 
-                className="text-xs"
-                style={{ color: slot.colors.text }}
+                className="text-xs font-medium px-2.5 py-0.5 rounded-full"
+                style={{ 
+                  backgroundColor: slot.colors.label,
+                  color: '#fff',
+                  border: 'none'
+                }}
               >
                 {slot.formattedDuration}
               </Badge>
             </div>
-            <SlotStatusBadge 
-              status={slot.status} 
-              colors={slot.colors}
-              size="sm"
-            />
+            
+            {/* Rechts: Status-Badge + Chevron-Kreis */}
+            <div className="flex items-center gap-2">
+              <SlotStatusBadge 
+                status={slot.status} 
+                colors={slot.colors}
+                size="sm"
+              />
+              {/* Kreis-Chevron in Status-Farbe, KEIN Hover */}
+              <div 
+                className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer"
+                style={{ backgroundColor: slot.colors.label }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleExpand();
+                }}
+              >
+                {isExpanded 
+                  ? <ChevronUp className="w-4 h-4 text-white" />
+                  : <ChevronDown className="w-4 h-4 text-white" />
+                }
+              </div>
+            </div>
           </div>
 
-          {/* Zeile 2: Datum als Haupttitel */}
-          <h3 
-            className="text-base font-semibold mt-3"
-            style={{ color: slot.colors.text }}
+          {/* Zeile 2: Datum kleiner */}
+          <p 
+            className="text-sm text-muted-foreground mt-1"
+            style={{ color: slot.colors.text, opacity: 0.7 }}
           >
             {slot.formattedDate}
-          </h3>
+          </p>
 
-          {/* Zeile 3-4: Info-Zeilen mit Emojis */}
-          <div className="mt-2 space-y-1">
-            <p 
-              className="text-sm"
-              style={{ color: slot.colors.text, opacity: 0.9 }}
+          {/* Zeile 3-4: Info-Zeilen mit Lucide-Icons */}
+          <div className="mt-3 space-y-1.5">
+            <div 
+              className="flex items-center gap-2 text-sm"
+              style={{ color: slot.colors.text }}
             >
-              👤 Kranführer: {slot.craneOperator.name}
-            </p>
+              <User className="w-4 h-4 opacity-70" />
+              <span>Kranführer: {slot.craneOperator.name}</span>
+            </div>
             {slot.isBooked && slot.bookedMember?.name && (
-              <p 
-                className="text-sm"
-                style={{ color: slot.colors.text, opacity: 0.9 }}
+              <div 
+                className="flex items-center gap-2 text-sm"
+                style={{ color: slot.colors.text }}
               >
-                👥 Gebucht von: {slot.bookedMember.name}
-              </p>
+                <Users className="w-4 h-4 opacity-70" />
+                <span>Gebucht von: {slot.bookedMember.name}</span>
+              </div>
             )}
           </div>
 
           {/* === EXPANDED VIEW === */}
           {isExpanded && (
-            <div className="mt-4 pt-4 border-t space-y-4" style={{ borderColor: slot.colors.border }}>
-              {/* Detail-Block */}
+            <>
+              {/* Klare Trennung */}
               <div 
-                className="space-y-2 text-sm"
-                style={{ color: slot.colors.text }}
+                className="mt-4 pt-4 border-t"
+                style={{ borderColor: slot.colors.border }}
               >
-                <p className="flex items-center gap-2">
-                  📅 {slot.formattedDateLong}
-                </p>
-                <p className="flex items-center gap-2">
-                  🕒 {slot.formattedTime} ({slot.formattedDuration})
-                </p>
-                <p className="flex items-center gap-2">
-                  👤 Kranführer: {slot.craneOperator.name}
-                </p>
-                {slot.craneOperator.email && (
-                  <p className="flex items-center gap-2">
-                    ✉️ {slot.craneOperator.email}
+                {/* Detail-Sektion: Kranführer */}
+                <div className="space-y-3">
+                  <p 
+                    className="text-xs font-semibold uppercase tracking-wide"
+                    style={{ color: slot.colors.text, opacity: 0.6 }}
+                  >
+                    Details
                   </p>
-                )}
-              </div>
-
-              {/* Buchungsinformationen (nur wenn gebucht) */}
-              {slot.isBooked && slot.bookedMember && (
-                <div 
-                  className="p-3 rounded-lg space-y-2"
-                  style={{ 
-                    backgroundColor: `${slot.colors.background}dd`, 
-                    borderLeft: `3px solid ${slot.colors.border}` 
-                  }}
-                >
-                  <div className="space-y-1 text-sm" style={{ color: slot.colors.text }}>
-                    <p>👥 Gebucht von: {slot.bookedMember.name}</p>
-                    {slot.bookedMember.email && <p>✉️ {slot.bookedMember.email}</p>}
-                    {slot.bookedMember.memberNumber && (
-                      <p># Mitgliedsnummer: {slot.bookedMember.memberNumber}</p>
+                  
+                  <div className="space-y-2 text-sm" style={{ color: slot.colors.text }}>
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="w-4 h-4 opacity-70" />
+                      <span>{slot.formattedDateLong}</span>
+                    </div>
+                    
+                    {/* Kranführer-Block */}
+                    <div className="mt-3 p-3 rounded-lg" style={{ backgroundColor: `${slot.colors.background}ee` }}>
+                      <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ opacity: 0.6 }}>
+                        Kranführer
+                      </p>
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <User className="w-4 h-4 opacity-70" />
+                          <span>{slot.craneOperator.name}</span>
+                        </div>
+                        {slot.craneOperator.email && (
+                          <div className="flex items-center gap-2">
+                            <Mail className="w-4 h-4 opacity-70" />
+                            <span>{slot.craneOperator.email}</span>
+                          </div>
+                        )}
+                        {slot.craneOperator.phone && (
+                          <div className="flex items-center gap-2">
+                            <Phone className="w-4 h-4 opacity-70" />
+                            <span>{slot.craneOperator.phone}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {/* Buchungs-Block (nur wenn gebucht) */}
+                    {slot.isBooked && slot.bookedMember && (
+                      <div className="mt-3 p-3 rounded-lg" style={{ backgroundColor: `${slot.colors.background}ee` }}>
+                        <p className="text-xs font-semibold uppercase tracking-wide mb-2" style={{ opacity: 0.6 }}>
+                          Buchung
+                        </p>
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <Users className="w-4 h-4 opacity-70" />
+                            <span>{slot.bookedMember.name}</span>
+                          </div>
+                          {slot.bookedMember.email && (
+                            <div className="flex items-center gap-2">
+                              <Mail className="w-4 h-4 opacity-70" />
+                              <span>{slot.bookedMember.email}</span>
+                            </div>
+                          )}
+                          {slot.bookedMember.phone && (
+                            <div className="flex items-center gap-2">
+                              <Phone className="w-4 h-4 opacity-70" />
+                              <span>{slot.bookedMember.phone}</span>
+                            </div>
+                          )}
+                          {slot.bookedMember.memberNumber && (
+                            <div className="flex items-center gap-2">
+                              <Hash className="w-4 h-4 opacity-70" />
+                              <span>Mitgliedsnr.: {slot.bookedMember.memberNumber}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     )}
                   </div>
-                </div>
-              )}
 
-              {/* Notizen (optional) */}
-              {slot.notes && (
-                <p className="text-sm" style={{ color: slot.colors.text }}>
-                  📝 Notizen: {slot.notes}
-                </p>
-              )}
-
-              {/* Block/Mini-Slot Hinweise */}
-              {(slot.isPartOfBlock || slot.isMiniSlot) && (
-                <div className="flex gap-2 flex-wrap">
-                  {slot.isPartOfBlock && (
-                    <Badge variant="outline" style={{ color: slot.colors.text, borderColor: slot.colors.border }}>
-                      Block-Buchung
-                    </Badge>
+                  {/* Notizen (optional) */}
+                  {slot.notes && (
+                    <div className="flex items-start gap-2 text-sm" style={{ color: slot.colors.text }}>
+                      <StickyNote className="w-4 h-4 opacity-70 mt-0.5" />
+                      <span>{slot.notes}</span>
+                    </div>
                   )}
-                  {slot.isMiniSlot && (
-                    <Badge variant="outline" style={{ color: slot.colors.text, borderColor: slot.colors.border }}>
-                      15-Minuten-Slot
-                    </Badge>
+
+                  {/* Block/Mini-Slot Hinweise */}
+                  {(slot.isPartOfBlock || slot.isMiniSlot) && (
+                    <div className="flex gap-2 flex-wrap mt-2">
+                      {slot.isPartOfBlock && (
+                        <Badge variant="outline" className="text-xs" style={{ color: slot.colors.text, borderColor: slot.colors.border }}>
+                          Block-Buchung
+                        </Badge>
+                      )}
+                      {slot.isMiniSlot && (
+                        <Badge variant="outline" className="text-xs" style={{ color: slot.colors.text, borderColor: slot.colors.border }}>
+                          15-Minuten-Slot
+                        </Badge>
+                      )}
+                    </div>
                   )}
                 </div>
-              )}
+              </div>
 
-              {/* Action Buttons (nur im geöffneten Zustand) - linksbündig, klein */}
-              {showActions && (
-                <div className="flex gap-2 flex-wrap">
+              {/* Action Buttons - nur für Admin/Vorstand/Kranführer */}
+              {showActionButtons && (
+                <div 
+                  className="mt-4 pt-3 border-t flex gap-2 flex-wrap"
+                  style={{ borderColor: slot.colors.border }}
+                >
+                  {/* Verwalten - öffnet den vollständigen Drawer */}
                   <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={(e) => handleAction('details', e)}
+                    variant="outline" 
+                    size="sm"
+                    className="h-7 px-3 text-xs rounded-full"
+                    style={{ 
+                      borderColor: slot.colors.border,
+                      color: slot.colors.text 
+                    }}
+                    onClick={(e) => handleAction('manage', e)}
                   >
-                    <CalendarCheck className="w-4 h-4 mr-1" />
-                    Details
+                    <Settings className="w-3 h-3 mr-1" />
+                    Verwalten
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={(e) => handleAction('edit', e)}
-                  >
-                    <Edit className="w-4 h-4 mr-1" />
-                    Bearbeiten
-                  </Button>
+                  
                   {slot.isBooked ? (
                     <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-destructive hover:text-destructive"
+                      variant="outline" 
+                      size="sm"
+                      className="h-7 px-3 text-xs rounded-full text-destructive border-destructive/50 hover:bg-destructive/10"
                       onClick={(e) => handleAction('cancel', e)}
                     >
-                      <XCircle className="w-4 h-4 mr-1" />
+                      <XCircle className="w-3 h-3 mr-1" />
                       Stornieren
                     </Button>
                   ) : (
                     <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      className="text-destructive hover:text-destructive"
+                      variant="outline" 
+                      size="sm"
+                      className="h-7 px-3 text-xs rounded-full text-destructive border-destructive/50 hover:bg-destructive/10"
                       onClick={(e) => handleAction('delete', e)}
                     >
-                      <Trash2 className="w-4 h-4 mr-1" />
+                      <Trash2 className="w-3 h-3 mr-1" />
                       Löschen
                     </Button>
                   )}
                 </div>
               )}
-            </div>
+            </>
           )}
-
-          {/* Footer-Zeile: Chevron immer unten rechts, eigene Zeile */}
-          <div 
-            className={cn(
-              "flex justify-end mt-3",
-              isExpanded && "pt-2 border-t"
-            )}
-            style={{ borderColor: isExpanded ? slot.colors.border : 'transparent' }}
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleExpand();
-              }}
-              style={{ color: slot.colors.text }}
-            >
-              {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
-            </Button>
-          </div>
         </CardContent>
       </Card>
     );
@@ -343,17 +408,19 @@ export function SlotCard({
         {/* Details */}
         <div className="space-y-3 text-sm" style={{ color: slot.colors.text }}>
           <div className="flex items-center gap-2">
-            <CalendarDays className="w-4 h-4" style={{ opacity: 0.7 }} />
+            <CalendarDays className="w-4 h-4 opacity-70" />
             <span>{slot.formattedDateLong}</span>
           </div>
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4" style={{ opacity: 0.7 }} />
-            <span>{slot.formattedTime} ({slot.formattedDuration})</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <User className="w-4 h-4" style={{ opacity: 0.7 }} />
+            <User className="w-4 h-4 opacity-70" />
             <span>Kranführer: {slot.craneOperator.name}</span>
           </div>
+          {slot.craneOperator.phone && (
+            <div className="flex items-center gap-2">
+              <Phone className="w-4 h-4 opacity-70" />
+              <span>{slot.craneOperator.phone}</span>
+            </div>
+          )}
         </div>
 
         {/* Booking Details */}
@@ -368,9 +435,20 @@ export function SlotCard({
             <p className="text-sm font-medium" style={{ color: slot.colors.text }}>
               Gebucht von:
             </p>
-            <div className="space-y-1 text-sm" style={{ color: slot.colors.text, opacity: 0.9 }}>
+            <div className="space-y-1.5 text-sm" style={{ color: slot.colors.text, opacity: 0.9 }}>
               <p>{slot.bookedMember.name}</p>
-              {slot.bookedMember.email && <p>{slot.bookedMember.email}</p>}
+              {slot.bookedMember.email && (
+                <div className="flex items-center gap-2">
+                  <Mail className="w-4 h-4 opacity-70" />
+                  <span>{slot.bookedMember.email}</span>
+                </div>
+              )}
+              {slot.bookedMember.phone && (
+                <div className="flex items-center gap-2">
+                  <Phone className="w-4 h-4 opacity-70" />
+                  <span>{slot.bookedMember.phone}</span>
+                </div>
+              )}
               {slot.bookedMember.memberNumber && (
                 <p>Mitgliedsnr.: {slot.bookedMember.memberNumber}</p>
               )}
