@@ -19,11 +19,11 @@ export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onSho
   // Map to SlotViewModel
   const slotViewModel = mapSlot(slot, allSlots);
 
-  // Handle actions from SlotCard - neue Action-Types
+  // Handle actions from SlotCard
   const handleAction = (action: SlotAction) => {
     switch (action) {
-      case 'manage':
-        // Öffnet den Verwaltungs-Drawer (ersetzt 'details' und 'edit')
+      case 'edit':
+        // Öffnet den Bearbeitungs-Drawer
         onEdit(slot);
         break;
       case 'delete':
@@ -33,6 +33,7 @@ export function SlotListItem({ slot, allSlots, onEdit, onDelete, onCancel, onSho
         onCancel(slot.id);
         break;
       case 'book':
+        // Buchung wird über den Drawer abgewickelt
         onEdit(slot);
         break;
     }
