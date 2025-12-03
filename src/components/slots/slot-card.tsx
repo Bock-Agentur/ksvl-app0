@@ -330,48 +330,52 @@ export function SlotCard({
                 </div>
               </div>
 
-              {/* Action Buttons - nur für Admin/Vorstand/Kranführer */}
+              {/* Action Buttons - Badge-Stil ohne Hover */}
               {showActionButtons && (
                 <div 
                   className="mt-4 pt-3 border-t flex gap-2 flex-wrap"
                   style={{ borderColor: slot.colors.border }}
                 >
-                  {/* Verwalten - öffnet den vollständigen Drawer */}
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="h-7 px-3 text-xs rounded-full"
+                  {/* Verwalten */}
+                  <span 
+                    className="inline-flex items-center h-6 px-2.5 text-xs font-medium rounded-full cursor-pointer"
                     style={{ 
-                      borderColor: slot.colors.border,
-                      color: slot.colors.text 
+                      backgroundColor: slot.colors.label,
+                      color: '#fff'
                     }}
                     onClick={(e) => handleAction('manage', e)}
                   >
                     <Settings className="w-3 h-3 mr-1" />
                     Verwalten
-                  </Button>
+                  </span>
                   
-                  {slot.isBooked ? (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="h-7 px-3 text-xs rounded-full text-destructive border-destructive/50 hover:bg-destructive/10"
+                  {/* Stornieren - nur wenn gebucht */}
+                  {slot.isBooked && (
+                    <span 
+                      className="inline-flex items-center h-6 px-2.5 text-xs font-medium rounded-full cursor-pointer"
+                      style={{ 
+                        backgroundColor: 'hsl(var(--destructive))',
+                        color: '#fff'
+                      }}
                       onClick={(e) => handleAction('cancel', e)}
                     >
                       <XCircle className="w-3 h-3 mr-1" />
                       Stornieren
-                    </Button>
-                  ) : (
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="h-7 px-3 text-xs rounded-full text-destructive border-destructive/50 hover:bg-destructive/10"
-                      onClick={(e) => handleAction('delete', e)}
-                    >
-                      <Trash2 className="w-3 h-3 mr-1" />
-                      Löschen
-                    </Button>
+                    </span>
                   )}
+                  
+                  {/* Löschen */}
+                  <span 
+                    className="inline-flex items-center h-6 px-2.5 text-xs font-medium rounded-full cursor-pointer"
+                    style={{ 
+                      backgroundColor: 'hsl(var(--destructive))',
+                      color: '#fff'
+                    }}
+                    onClick={(e) => handleAction('delete', e)}
+                  >
+                    <Trash2 className="w-3 h-3 mr-1" />
+                    Löschen
+                  </span>
                 </div>
               )}
             </>
