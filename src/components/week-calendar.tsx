@@ -488,6 +488,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
                 canManageSlots={canManageSlots}
                 canBookSlots={canBookSlots}
                 currentUserId={currentUser?.id}
+                userRole={currentRole}
                 onSlotClick={handleDayViewSlotClick}
                 onSlotEdit={onSlotEdit}
                 onSlotCancel={handleCancelSlot}
@@ -513,6 +514,7 @@ function WeekCalendarContent({ onSlotEdit, selectedDate, selectedDay: propSelect
           canManageSlots={canManageSlots}
           canBookSlots={canBookSlots}
           currentUserId={currentUser?.id}
+          userRole={currentRole}
           onSlotClick={handleDayViewSlotClick}
           onSlotEdit={onSlotEdit}
           onSlotCancel={handleCancelSlot}

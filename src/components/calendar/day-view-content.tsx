@@ -29,6 +29,7 @@ interface DayViewContentProps {
   canManageSlots: boolean;
   canBookSlots: boolean;
   currentUserId?: string;
+  userRole?: 'admin' | 'vorstand' | 'kranfuehrer' | 'mitglied' | 'gastmitglied';
   onSlotClick: (slot: Slot) => void;
   onSlotEdit: (slot: Slot) => void;
   onSlotCancel: (slot: Slot) => void;
@@ -48,6 +49,7 @@ export function DayViewContent({
   canManageSlots,
   canBookSlots,
   currentUserId,
+  userRole,
   onSlotClick,
   onSlotEdit,
   onSlotCancel,
@@ -167,6 +169,8 @@ export function DayViewContent({
                       variant="list"
                       showActions={shouldShowActions(slot)}
                       onAction={(action) => handleSlotAction(action, slot)}
+                      userRole={userRole}
+                      currentUserId={currentUserId}
                     />
                   );
                 })
