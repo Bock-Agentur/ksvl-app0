@@ -345,11 +345,10 @@ export function ThemeManager() {
     );
   }
 
+  // Filter settings by category - DEPRECATED categories removed: slot-status, slot-status-alt, theme
+  // Slot-Farben werden ausschließlich über slot-design-settings in app_settings verwaltet (siehe DesignSettings.tsx)
   const baseColors = settings?.filter(s => s.category === 'base') || [];
   const badgeColors = settings?.filter(s => s.category === 'badge') || [];
-  const slotColors = settings?.filter(s => s.category === 'slot-status') || [];
-  const slotAltColors = settings?.filter(s => s.category === 'slot-status-alt') || [];
-  const themeColors = settings?.filter(s => s.category === 'theme') || [];
   const gradients = settings?.filter(s => s.category === 'gradient') || [];
 
   return (
@@ -369,13 +368,10 @@ export function ThemeManager() {
       </Card>
 
       <Tabs defaultValue="base" className="w-full">
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="base">Basis-Farben</TabsTrigger>
           <TabsTrigger value="badges">Badges</TabsTrigger>
           <TabsTrigger value="role-badges">Rollen-Badges</TabsTrigger>
-          <TabsTrigger value="slots">Slot-Status</TabsTrigger>
-          <TabsTrigger value="slots-alt">Slot-Alt</TabsTrigger>
-          <TabsTrigger value="theme">Theme</TabsTrigger>
           <TabsTrigger value="gradients">Gradienten</TabsTrigger>
         </TabsList>
 
@@ -571,37 +567,7 @@ export function ThemeManager() {
           </div>
         </TabsContent>
 
-        <TabsContent value="slots" className="space-y-4 mt-6">
-          <Card className="bg-muted/50">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">
-                Diese Farben werden für Slot-Status-Badges verwendet (verfügbar, gebucht, blockiert).
-              </p>
-            </CardContent>
-          </Card>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {slotColors.map(renderColorCard)}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="slots-alt" className="space-y-4 mt-6">
-          <Card className="bg-muted/50">
-            <CardContent className="pt-6">
-              <p className="text-sm text-muted-foreground">
-                Alternative Slot-Farben mit dem Trendy-Design (Hintergrund, Rahmen, Text).
-              </p>
-            </CardContent>
-          </Card>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {slotAltColors.map(renderColorCard)}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="theme" className="space-y-4 mt-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {themeColors.map(renderColorCard)}
-          </div>
-        </TabsContent>
+        {/* REMOVED: Slot-Status, Slot-Alt, Theme tabs - Slot-Farben werden über DesignSettings.tsx / slot-design-settings verwaltet */}
 
         <TabsContent value="gradients" className="space-y-4 mt-6">
           <Card className="bg-muted/50">
