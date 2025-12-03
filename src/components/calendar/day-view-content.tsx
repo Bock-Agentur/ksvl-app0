@@ -1,17 +1,17 @@
 /**
  * DayViewContent - Shared Day View for Desktop and Mobile
- * Eliminates duplication between desktop day view and mobile day view in WeekCalendar
+ * Uses SlotCard variant="list" for consistent expand/collapse functionality
  */
 
 import React from "react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
-import { Clock, Plus, Edit2, Trash2, X, CalendarCheck } from "lucide-react";
+import { Clock, Plus } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { StatusLabel } from "@/components/ui/status-label";
 import { cn } from "@/lib/utils";
 import { Slot, SlotStatus } from "@/types";
-import { STATUS_LABELS, formatDuration } from "@/hooks";
+import { SlotCard, SlotAction } from "@/components/slots";
+import { useSlotViewModel } from "@/hooks";
 
 interface SlotColors {
   background: string;
@@ -57,6 +57,7 @@ export function DayViewContent({
   showHeader = true,
   variant = "mobile",
 }: DayViewContentProps) {
+  const { mapSlot } = useSlotViewModel();
   
   // Function to check if a time slot is covered by any existing slot
   const isTimeCoveredBySlot = (checkTime: string) => {
@@ -91,13 +92,38 @@ export function DayViewContent({
     });
   };
 
-  const handleSlotCardClick = (slot: Slot) => {
+  // Handle SlotCard actions and map to existing handlers
+  const handleSlotAction = (action: SlotAction, slot: Slot) => {
     const status = getSlotStatus(slot, allSlots);
-    if (status === 'blocked') {
-      onBlockedSlotClick();
-      return;
+    
+    switch (action) {
+      case 'details':
+        if (status === 'blocked') {
+          onBlockedSlotClick();
+        } else {
+          onSlotClick(slot);
+        }
+        break;
+      case 'edit':
+      case 'book':
+        onSlotEdit(slot);
+        break;
+      case 'cancel':
+        onSlotCancel(slot);
+        break;
+      case 'delete':
+        onSlotDelete(slot);
+        break;
     }
-    onSlotClick(slot);
+  };
+
+  // Determine if actions should be shown for a slot
+  const shouldShowActions = (slot: Slot): boolean => {
+    const status = getSlotStatus(slot, allSlots);
+    // Show actions if user can manage slots, or if they can book/cancel their own booking
+    return canManageSlots || 
+           (canBookSlots && status === 'available') ||
+           (slot.isBooked && slot.memberId === currentUserId);
   };
 
   return (
@@ -131,23 +157,19 @@ export function DayViewContent({
           return (
             <div key={`${hour}-${minute}`} className="space-y-1">
               {exactTimeSlots.length > 0 ? (
-                // Existing slots
-                exactTimeSlots.map((slot) => (
-                  <ExistingSlotCard
-                    key={slot.id}
-                    slot={slot}
-                    allSlots={allSlots}
-                    getSlotStatus={getSlotStatus}
-                    getSlotColors={getSlotColors}
-                    canManageSlots={canManageSlots}
-                    canBookSlots={canBookSlots}
-                    currentUserId={currentUserId}
-                    onSlotClick={handleSlotCardClick}
-                    onSlotEdit={onSlotEdit}
-                    onSlotCancel={onSlotCancel}
-                    onSlotDelete={onSlotDelete}
-                  />
-                ))
+                // Existing slots - use SlotCard with list variant
+                exactTimeSlots.map((slot) => {
+                  const slotViewModel = mapSlot(slot, allSlots);
+                  return (
+                    <SlotCard
+                      key={slot.id}
+                      slot={slotViewModel}
+                      variant="list"
+                      showActions={shouldShowActions(slot)}
+                      onAction={(action) => handleSlotAction(action, slot)}
+                    />
+                  );
+                })
               ) : isCoveredByLongerSlot && coveringSlot ? (
                 // Covered slot indicator
                 <CoveredSlotCard
@@ -172,129 +194,6 @@ export function DayViewContent({
         }).filter(Boolean)}
       </div>
     </div>
-  );
-}
-
-// Sub-component: Existing Slot Card
-interface ExistingSlotCardProps {
-  slot: Slot;
-  allSlots: Slot[];
-  getSlotStatus: (slot: Slot, allSlots: Slot[]) => SlotStatus;
-  getSlotColors: (status: SlotStatus) => SlotColors;
-  canManageSlots: boolean;
-  canBookSlots: boolean;
-  currentUserId?: string;
-  onSlotClick: (slot: Slot) => void;
-  onSlotEdit: (slot: Slot) => void;
-  onSlotCancel: (slot: Slot) => void;
-  onSlotDelete: (slot: Slot) => void;
-}
-
-function ExistingSlotCard({
-  slot,
-  allSlots,
-  getSlotStatus,
-  getSlotColors,
-  canManageSlots,
-  canBookSlots,
-  currentUserId,
-  onSlotClick,
-  onSlotEdit,
-  onSlotCancel,
-  onSlotDelete,
-}: ExistingSlotCardProps) {
-  const status = getSlotStatus(slot, allSlots);
-  const colors = getSlotColors(status);
-
-  return (
-    <Card
-      className={cn(
-        "p-3 cursor-pointer transition-all hover:shadow-sm relative group border-2",
-        "rounded-lg shadow-sm"
-      )}
-      style={{
-        backgroundColor: colors.background,
-        borderColor: colors.border,
-        color: colors.text
-      }}
-      onClick={() => onSlotClick(slot)}
-    >
-      {/* Status badge - top right */}
-      <div className="absolute top-2 right-2 z-20">
-        <StatusLabel status={status} size="sm">
-          {STATUS_LABELS[status]}
-        </StatusLabel>
-      </div>
-
-      {/* Action icons - bottom right */}
-      <div className="absolute bottom-2 right-2 flex gap-2 z-20">
-        {/* Edit button */}
-        {((slot.isBooked && slot.memberId === currentUserId) || canManageSlots) && (
-          <Edit2 
-            className="w-5 h-5 cursor-pointer transition-colors"
-            style={{ color: colors.text, opacity: 0.7 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSlotEdit(slot);
-            }}
-          />
-        )}
-        {/* Book button */}
-        {status === 'available' && canBookSlots && (
-          <CalendarCheck 
-            className="w-5 h-5 cursor-pointer transition-colors hover:opacity-100"
-            style={{ color: colors.text, opacity: 0.7 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSlotEdit(slot);
-            }}
-          />
-        )}
-        {/* Cancel button */}
-        {slot.isBooked && ((slot.memberId === currentUserId && canBookSlots) || canManageSlots) && (
-          <X 
-            className="w-5 h-5 cursor-pointer transition-colors hover:opacity-100"
-            style={{ color: colors.text, opacity: 0.7 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSlotCancel(slot);
-            }}
-          />
-        )}
-        {/* Delete button */}
-        {canManageSlots && (
-          <Trash2 
-            className="w-5 h-5 cursor-pointer transition-colors hover:text-destructive"
-            style={{ color: colors.text, opacity: 0.7 }}
-            onClick={(e) => {
-              e.stopPropagation();
-              onSlotDelete(slot);
-            }}
-          />
-        )}
-      </div>
-
-      {/* Slot content */}
-      <div className="flex items-start justify-between pr-20 pb-8">
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-1" style={{ color: colors.text }}>
-            <Clock className="w-4 h-4" style={{ color: colors.text }} />
-            <span className="font-semibold">{slot.time}</span>
-          </div>
-          <div className="text-sm" style={{ color: colors.text }}>
-            Kranführer: {slot.craneOperator.name}
-          </div>
-          {slot.isBooked && (slot.memberName || slot.bookedBy) && (
-            <div className="text-sm" style={{ color: colors.text }}>
-              Gebucht von: {slot.memberName || slot.bookedBy}
-            </div>
-          )}
-          <div className="text-sm" style={{ color: colors.text }}>
-            Dauer: {formatDuration(slot.duration)}
-          </div>
-        </div>
-      </div>
-    </Card>
   );
 }
 
