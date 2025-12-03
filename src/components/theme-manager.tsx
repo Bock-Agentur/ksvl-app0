@@ -390,7 +390,17 @@ export function ThemeManager() {
             </CardContent>
           </Card>
           
-          {/* Badge List View */}
+          {/* Hinweis: Slot-bezogene Badges (available, booked, blocked) werden über Slot-Design verwaltet */}
+          <Card className="bg-amber-50 border-amber-200">
+            <CardContent className="pt-4 pb-4">
+              <p className="text-sm text-amber-800">
+                <strong>Hinweis:</strong> Die Farben für Slot-Status (Verfügbar, Gebucht, Blockiert) werden unter 
+                <strong> Design → Slot-Design</strong> konfiguriert, nicht hier.
+              </p>
+            </CardContent>
+          </Card>
+          
+          {/* Badge List View - ohne Slot-bezogene Badges */}
           <div className="space-y-3">
             {[
               { variant: 'default', bgName: 'Badge Standard', fgName: 'Badge Standard Vordergrund' },
@@ -399,9 +409,7 @@ export function ThemeManager() {
               { variant: 'outline', bgName: 'Badge Outline', fgName: 'Badge Outline Vordergrund', hoverBgName: 'Badge Outline Hover', hoverFgName: 'Badge Outline Hover Vordergrund' },
               { variant: 'success', bgName: 'Badge Erfolg', fgName: 'Badge Erfolg Vordergrund' },
               { variant: 'warning', bgName: 'Badge Warnung', fgName: 'Badge Warnung Vordergrund' },
-              { variant: 'available', bgName: 'Badge Verfügbar', fgName: 'Badge Verfügbar Vordergrund' },
-              { variant: 'booked', bgName: 'Badge Gebucht', fgName: 'Badge Gebucht Vordergrund' },
-              { variant: 'blocked', bgName: 'Badge Blockiert', fgName: 'Badge Blockiert Vordergrund' },
+              // ENTFERNT: available, booked, blocked - werden über slot-design-settings verwaltet
             ].map(({ variant, bgName, fgName, hoverBgName, hoverFgName }) => {
               const bgSetting = badgeColors.find(s => s.name === bgName);
               const fgSetting = badgeColors.find(s => s.name === fgName);
