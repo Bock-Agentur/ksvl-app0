@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Key } from "lucide-react";
+import { Key, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,6 +24,8 @@ export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
   const [open, setOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isChanging, setIsChanging] = useState(false);
   const { toast } = useToast();
 
@@ -88,9 +90,7 @@ export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
         description: "Das Passwort wurde erfolgreich aktualisiert.",
       });
 
-      setOpen(false);
-      setNewPassword("");
-      setConfirmPassword("");
+      handleClose();
     } catch (error: any) {
       logger.error('AUTH', 'Error changing password', error);
       toast({
@@ -103,8 +103,16 @@ export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
     }
   };
 
+  const handleClose = () => {
+    setOpen(false);
+    setNewPassword("");
+    setConfirmPassword("");
+    setShowNewPassword(false);
+    setShowConfirmPassword(false);
+  };
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(isOpen) => isOpen ? setOpen(true) : handleClose()}>
       <DialogTrigger asChild>
         <Button type="button" variant="outline" size="sm">
           <Key className="w-4 h-4" />
@@ -121,39 +129,66 @@ export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
         <div className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="new-password">Neues Passwort</Label>
-            <Input
-              id="new-password"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Mind. 8 Zeichen, Groß-/Kleinbuchstabe, Zahl"
-            />
+            <div className="relative">
+              <Input
+                id="new-password"
+                type={showNewPassword ? "text" : "password"}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Neues Passwort eingeben"
+                className="pr-10"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+              >
+                {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="confirm-password">Passwort bestätigen</Label>
-            <Input
-              id="confirm-password"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Passwort wiederholen"
-            />
+            <div className="relative">
+              <Input
+                id="confirm-password"
+                type={showConfirmPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Passwort wiederholen"
+                className="pr-10"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </Button>
+            </div>
           </div>
+
+          <p className="text-xs text-muted-foreground">
+            Mind. 8 Zeichen, Groß- und Kleinbuchstaben, mindestens eine Zahl
+          </p>
 
           <div className="flex gap-2 justify-end">
             <Button
               variant="outline"
-              onClick={() => {
-                setOpen(false);
-                setNewPassword("");
-                setConfirmPassword("");
-              }}
+              onClick={handleClose}
               disabled={isChanging}
             >
               Abbrechen
             </Button>
-            <Button onClick={handleChangePassword} disabled={isChanging}>
+            <Button 
+              onClick={handleChangePassword} 
+              disabled={isChanging || !newPassword || !confirmPassword}
+            >
               {isChanging ? "Wird geändert..." : "Passwort ändern"}
             </Button>
           </div>

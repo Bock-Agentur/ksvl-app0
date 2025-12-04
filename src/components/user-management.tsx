@@ -275,43 +275,16 @@ export function UserManagementRefactored() {
     }
   };
 
-  const handlePasswordChange = async () => {
-    if (!passwordUserId || !password) {
-      toast({
-        title: "Fehler",
-        description: "Bitte geben Sie ein Passwort ein.",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    const validation = validatePassword(password);
-    if (!validation.isValid) {
-      toast({
-        title: "Fehler",
-        description: validation.error,
-        variant: "destructive"
-      });
-      return;
-    }
+  const handlePasswordChange = async (newPassword: string) => {
+    if (!passwordUserId) return;
 
-    try {
-      await userService.updatePassword({
-        userId: passwordUserId,
-        password: password
-      });
+    await userService.updatePassword({
+      userId: passwordUserId,
+      password: newPassword
+    });
 
-      toast({ title: "Erfolg", description: "Passwort wurde erfolgreich geändert." });
-      setShowPasswordDialog(false);
-      setPasswordUserId(null);
-      setPassword("");
-    } catch (error: any) {
-      toast({
-        title: "Fehler",
-        description: error.message || "Passwort konnte nicht geändert werden.",
-        variant: "destructive"
-      });
-    }
+    toast({ title: "Erfolg", description: "Passwort wurde erfolgreich geändert." });
+    setPasswordUserId(null);
   };
 
   // Export functionality
@@ -437,15 +410,12 @@ export function UserManagementRefactored() {
 
         <UserPasswordDialog
           open={showPasswordDialog}
-          onOpenChange={setShowPasswordDialog}
-          password={password}
-          onPasswordChange={setPassword}
-          onSubmit={handlePasswordChange}
-          onCancel={() => {
-            setShowPasswordDialog(false);
-            setPassword("");
-            setPasswordUserId(null);
+          onOpenChange={(open) => {
+            setShowPasswordDialog(open);
+            if (!open) setPasswordUserId(null);
           }}
+          onSubmit={handlePasswordChange}
+          userName={users.find(u => u.id === passwordUserId)?.name}
         />
       </div>
     </div>
