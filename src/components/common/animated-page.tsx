@@ -32,10 +32,10 @@ export function AnimatedPage({ children, className }: AnimatedPageProps) {
   const { settings, isLoading } = usePageTransitionSettings();
 
   const animationStyle = useMemo((): React.CSSProperties => {
-    // SOFORT Defaults verwenden, nicht auf DB warten - verhindert Layoutsprünge
+    // SOFORT Defaults verwenden, nicht auf DB warten
     const effectiveSettings = isLoading ? DEFAULT_SETTINGS : settings;
     
-    // Wenn disabled oder none, keine Animation aber auch kein Flash
+    // Wenn disabled oder none, sofort sichtbar ohne Animation
     if (!effectiveSettings.enabled || effectiveSettings.effect === 'none') {
       return { opacity: 1 };
     }
@@ -45,12 +45,14 @@ export function AnimatedPage({ children, className }: AnimatedPageProps) {
       return { opacity: 1 };
     }
 
+    // animation-fill-mode: both sorgt für:
+    // - VOR Animation: opacity aus "from" (0)
+    // - NACH Animation: opacity aus "to" (1)
     return {
-      opacity: 0, // Initial opacity: 0 um Flash zu verhindern
       animationName: keyframeName,
       animationDuration: `${effectiveSettings.duration}ms`,
       animationTimingFunction: effectiveSettings.easing,
-      animationFillMode: 'forwards',
+      animationFillMode: 'both',
       '--translate-distance': `${effectiveSettings.translateDistance}px`,
     } as React.CSSProperties;
   }, [settings, isLoading]);
