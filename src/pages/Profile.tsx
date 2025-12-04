@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth-context";
-import { useRole, useFooterMenuSettings, usePageTransitionSettings, ConsecutiveSlotsProvider } from "@/hooks";
+import { useRole, useFooterMenuSettings, ConsecutiveSlotsProvider } from "@/hooks";
 import { SlotsProvider } from "@/contexts/slots-context";
 import { UnifiedFooter } from "@/components/common/unified-footer";
 import { ProfileView } from "@/components/profile-view";
@@ -11,14 +11,12 @@ import { AnimatedPage } from "@/components/common/animated-page";
 /**
  * Profile Page
  * 
- * Overlay-Pattern: PageLoader und AnimatedPage werden parallel gerendert.
- * PageLoader liegt ÜBER dem Content und fadet aus.
+ * Vereinfachte Architektur: AnimatedPage übernimmt die visuelle Überblendung.
+ * PageLoader nur noch für initialen Auth-Check.
  */
 function ProfileContent() {
   const roleContext = useRole();
-  const [contentVisible, setContentVisible] = useState(false);
   const { isLoading: footerLoading } = useFooterMenuSettings(roleContext?.currentRole || 'mitglied');
-  const { settings: transitionSettings } = usePageTransitionSettings();
   
   // Scroll to top on mount
   useEffect(() => {
@@ -26,17 +24,6 @@ function ProfileContent() {
   }, []);
   
   const isReady = !footerLoading && !roleContext?.isLoading && !!roleContext?.currentUser;
-  
-  // Loader wird erst entfernt NACHDEM seine fade-out Animation komplett ist
-  useEffect(() => {
-    if (isReady) {
-      const fadeOutDuration = transitionSettings.enabled 
-        ? transitionSettings.loaderFadeOutDuration 
-        : 0;
-      const timer = setTimeout(() => setContentVisible(true), fadeOutDuration);
-      return () => clearTimeout(timer);
-    }
-  }, [isReady, transitionSettings.enabled, transitionSettings.loaderFadeOutDuration]);
 
   return (
     <>
@@ -58,11 +45,6 @@ function ProfileContent() {
           currentUser={roleContext.currentUser}
         />
       )}
-      
-      {/* Loader liegt DARÜBER und fadet aus - z-40 damit Footer (z-50) darüber bleibt */}
-      {!contentVisible && (
-        <PageLoader isExiting={isReady} />
-      )}
     </>
   );
 }
@@ -77,6 +59,7 @@ export function Profile() {
     }
   }, [loading, session, navigate]);
 
+  // PageLoader nur für initialen Auth-Check
   if (loading || !session || !user) {
     return <PageLoader />;
   }

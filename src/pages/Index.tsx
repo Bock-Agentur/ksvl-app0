@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth-context";
-import { useRole, useSlotDesign, ConsecutiveSlotsProvider, useProfileData, useFooterMenuSettings, usePageTransitionSettings } from "@/hooks";
+import { useRole, useSlotDesign, ConsecutiveSlotsProvider, useProfileData, useFooterMenuSettings } from "@/hooks";
 import { SlotsProvider } from "@/contexts/slots-context";
 import { UnifiedFooter } from "@/components/common/unified-footer";
 import { Dashboard } from "@/components/dashboard";
@@ -11,17 +11,15 @@ import { AnimatedPage } from "@/components/common/animated-page";
 /**
  * Index Page - Dashboard Only
  * 
- * Overlay-Pattern: PageLoader und AnimatedPage werden parallel gerendert.
- * PageLoader liegt ÜBER dem Content und fadet aus.
+ * Vereinfachte Architektur: AnimatedPage übernimmt die visuelle Überblendung.
+ * PageLoader nur noch für initialen Auth-Check.
  */
 function AppContent() {
   const roleContext = useRole();
-  const [contentVisible, setContentVisible] = useState(false);
   
   // Only load what's needed for page structure
   const { fullName: displayName } = useProfileData({ enabled: !!roleContext?.currentRole });
   const { isLoading: footerLoading } = useFooterMenuSettings(roleContext?.currentRole || 'mitglied');
-  const { settings: transitionSettings } = usePageTransitionSettings();
   
   useSlotDesign();
   
@@ -31,17 +29,6 @@ function AppContent() {
   }, []);
   
   const isReady = !footerLoading && !roleContext?.isLoading && !!roleContext?.currentUser;
-  
-  // Loader wird erst entfernt NACHDEM seine fade-out Animation komplett ist
-  useEffect(() => {
-    if (isReady) {
-      const fadeOutDuration = transitionSettings.enabled 
-        ? transitionSettings.loaderFadeOutDuration 
-        : 0;
-      const timer = setTimeout(() => setContentVisible(true), fadeOutDuration);
-      return () => clearTimeout(timer);
-    }
-  }, [isReady, transitionSettings.enabled, transitionSettings.loaderFadeOutDuration]);
 
   return (
     <>
@@ -63,11 +50,6 @@ function AppContent() {
           currentUser={roleContext.currentUser}
         />
       )}
-      
-      {/* Loader liegt DARÜBER und fadet aus - z-40 damit Footer (z-50) darüber bleibt */}
-      {!contentVisible && (
-        <PageLoader isExiting={isReady} />
-      )}
     </>
   );
 }
@@ -82,6 +64,7 @@ const Index = () => {
     }
   }, [loading, session, navigate]);
 
+  // PageLoader nur für initialen Auth-Check
   if (loading || !session || !user) {
     return <PageLoader />;
   }
