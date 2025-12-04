@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { PageLayout } from "@/components/common/page-layout";
 import { PageLoader } from "@/components/common/page-loader";
 import { AnimatedPage } from "@/components/common/animated-page";
+import { UnifiedFooter } from "@/components/common/unified-footer";
 
 /**
  * File Manager Page
@@ -14,7 +15,7 @@ import { AnimatedPage } from "@/components/common/animated-page";
  */
 export function FileManager() {
   const isMobile = useIsMobile();
-  const { isLoading } = useRole();
+  const { isLoading, currentRole, currentUser } = useRole();
   const [contentVisible, setContentVisible] = useState(false);
   const { settings: transitionSettings } = usePageTransitionSettings();
 
@@ -65,6 +66,14 @@ export function FileManager() {
             </div>
           </PageLayout>
         </AnimatedPage>
+      )}
+      
+      {/* Footer AUSSERHALB AnimatedPage - sofort sichtbar und sticky */}
+      {isReady && (
+        <UnifiedFooter
+          currentRole={currentRole}
+          currentUser={currentUser}
+        />
       )}
       
       {/* Loader liegt DARÜBER und fadet aus - z-40 damit Footer (z-50) darüber bleibt */}

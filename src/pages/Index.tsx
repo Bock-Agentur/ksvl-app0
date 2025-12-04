@@ -52,12 +52,16 @@ function AppContent() {
             <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
               <Dashboard displayName={displayName} />
             </main>
-            <UnifiedFooter
-              currentRole={roleContext.currentRole}
-              currentUser={roleContext.currentUser}
-            />
           </div>
         </AnimatedPage>
+      )}
+      
+      {/* Footer AUSSERHALB AnimatedPage - sofort sichtbar und sticky */}
+      {isReady && (
+        <UnifiedFooter
+          currentRole={roleContext.currentRole}
+          currentUser={roleContext.currentUser}
+        />
       )}
       
       {/* Loader liegt DARÜBER und fadet aus - z-40 damit Footer (z-50) darüber bleibt */}

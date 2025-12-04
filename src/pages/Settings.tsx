@@ -15,6 +15,7 @@ import { PageTransitionSettings } from "@/components/page-transition-settings";
 import { PageLoader } from "@/components/common/page-loader";
 import { PageLayout } from "@/components/common/page-layout";
 import { AnimatedPage } from "@/components/common/animated-page";
+import { UnifiedFooter } from "@/components/common/unified-footer";
 import { useRole, useIsMobile, useLoginBackground, usePageTransitionSettings, ConsecutiveSlotsProvider } from "@/hooks";
 import { UserRole } from "@/types";
 import { cn } from "@/lib/utils";
@@ -356,6 +357,14 @@ function SettingsContent() {
             {isOverview ? <OverviewContent /> : <DetailContent />}
           </PageLayout>
         </AnimatedPage>
+      )}
+      
+      {/* Footer AUSSERHALB AnimatedPage - sofort sichtbar und sticky */}
+      {isReady && (
+        <UnifiedFooter
+          currentRole={currentRole}
+          currentUser={currentUser}
+        />
       )}
       
       {/* Loader liegt DARÜBER und fadet aus - z-40 damit Footer (z-50) darüber bleibt */}
