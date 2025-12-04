@@ -51,8 +51,7 @@ type SettingSection = {
 function SettingsContent() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [isOverview, setIsOverview] = useState(true);
-  const [showContent, setShowContent] = useState(false);
-  const [loaderExiting, setLoaderExiting] = useState(false);
+  const [contentVisible, setContentVisible] = useState(false);
   const { currentRole, currentUser, isLoading: roleLoading } = useRole();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
@@ -67,6 +66,8 @@ function SettingsContent() {
   // KRITISCH: Prüfe TATSÄCHLICHE Rollen, nicht die ausgewählte Role-Switch-Rolle
   const isAdmin = currentUser?.roles?.includes('admin') || currentUser?.roles?.includes('vorstand');
   
+  const isReady = !isPageLoading && isAdmin;
+  
   // Access control - redirect if not authorized
   useEffect(() => {
     if (!roleLoading && !isAdmin) {
@@ -77,22 +78,16 @@ function SettingsContent() {
     }
   }, [isAdmin, roleLoading, navigate]);
 
-  // Handle smooth transition mit dynamischer Dauer aus Settings
+  // Loader wird erst entfernt NACHDEM seine fade-out Animation komplett ist
   useEffect(() => {
-    if (!isPageLoading && isAdmin) {
-      setLoaderExiting(true);
+    if (isReady) {
       const fadeOutDuration = transitionSettings.enabled 
         ? transitionSettings.loaderFadeOutDuration 
         : 0;
-      const timer = setTimeout(() => setShowContent(true), fadeOutDuration);
+      const timer = setTimeout(() => setContentVisible(true), fadeOutDuration);
       return () => clearTimeout(timer);
     }
-  }, [isPageLoading, isAdmin, transitionSettings.enabled, transitionSettings.loaderFadeOutDuration]);
-  
-  // Zeige Loader während der Prüfung oder wenn kein Zugriff
-  if (!showContent) {
-    return <PageLoader isExiting={loaderExiting} />;
-  }
+  }, [isReady, transitionSettings.enabled, transitionSettings.loaderFadeOutDuration]);
 
   // Helper: prüft ob User die tatsächliche Rolle hat (nicht die ausgewählte)
   const userHasRole = (role: UserRole) => currentUser?.roles?.includes(role) ?? false;
@@ -149,216 +144,225 @@ function SettingsContent() {
   const activeLabel = sections.find(section => section.id === activeSection)?.label;
 
 
-  if (isOverview) {
-    return (
-      <AnimatedPage>
-        <PageLayout>
-          <div
-            className={cn(
-              "min-h-screen pb-20 bg-background",
-              isMobile ? "pt-4" : "p-6"
-            )}
-            style={showBackground ? {
-              backgroundImage: `url(${background})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              backgroundRepeat: 'no-repeat',
-              backgroundAttachment: 'fixed'
-            } : undefined}
-          >
-            <div className={cn("max-w-4xl mx-auto")}>
-              {/* Header */}
-              <Card className={cn(
-                "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
-                isMobile && "mx-4"
-              )}>
-                <CardHeader className="pb-6">
-                  <CardTitle className={cn(
-                    "font-bold",
-                    isMobile ? "text-3xl" : "text-4xl"
-                  )}>
-                    Settings
-                  </CardTitle>
-                </CardHeader>
-              </Card>
-
-              {/* Settings Cards Groups */}
-              <div className={cn("space-y-4", isMobile ? "px-4" : "")}>
-                {/* Dashboard & Ansicht */}
-                {groupedSections.dashboard.length > 0 && (
-                  <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
-                    {groupedSections.dashboard.map((section, index) => (
-                      <div key={section.id}>
-                        <div
-                          onClick={() => handleSelectSection(section.id)}
-                          className="flex items-center justify-between py-4 px-6 hover:bg-muted/50 cursor-pointer transition-colors"
-                        >
-                          <div className="flex items-center gap-4 flex-1">
-                            <section.icon className="h-5 w-5 text-primary" />
-                            <div className="flex-1">
-                              <div className="font-medium">{section.label}</div>
-                              {section.description && (
-                                <div className="text-sm text-muted-foreground">{section.description}</div>
-                              )}
-                            </div>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        {index < groupedSections.dashboard.length - 1 && (
-                          <div className="border-t border-border/50 mx-6" />
-                        )}
-                      </div>
-                    ))}
-                  </Card>
-                )}
-
-                {/* Navigation */}
-                {groupedSections.navigation.length > 0 && (
-                  <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
-                    {groupedSections.navigation.map((section, index) => (
-                      <div key={section.id}>
-                        <div
-                          onClick={() => handleSelectSection(section.id)}
-                          className="flex items-center justify-between py-4 px-6 hover:bg-muted/50 cursor-pointer transition-colors"
-                        >
-                          <div className="flex items-center gap-4 flex-1">
-                            <section.icon className="h-5 w-5 text-primary" />
-                            <div className="flex-1">
-                              <div className="font-medium">{section.label}</div>
-                              {section.description && (
-                                <div className="text-sm text-muted-foreground">{section.description}</div>
-                              )}
-                            </div>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        {index < groupedSections.navigation.length - 1 && (
-                          <div className="border-t border-border/50 mx-6" />
-                        )}
-                      </div>
-                    ))}
-                  </Card>
-                )}
-
-                {/* Design & Darstellung */}
-                {groupedSections.design.length > 0 && (
-                  <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
-                    {groupedSections.design.map((section, index) => (
-                      <div key={section.id}>
-                        <div
-                          onClick={() => handleSelectSection(section.id)}
-                          className="flex items-center justify-between py-4 px-6 hover:bg-muted/50 cursor-pointer transition-colors"
-                        >
-                          <div className="flex items-center gap-4 flex-1">
-                            <section.icon className="h-5 w-5 text-primary" />
-                            <div className="flex-1">
-                              <div className="font-medium">{section.label}</div>
-                              {section.description && (
-                                <div className="text-sm text-muted-foreground">{section.description}</div>
-                              )}
-                            </div>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        {index < groupedSections.design.length - 1 && (
-                          <div className="border-t border-border/50 mx-6" />
-                        )}
-                      </div>
-                    ))}
-                  </Card>
-                )}
-
-                {/* Erweitert */}
-                {groupedSections.advanced.length > 0 && (
-                  <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
-                    {groupedSections.advanced.map((section, index) => (
-                      <div key={section.id}>
-                        <div
-                          onClick={() => handleSelectSection(section.id)}
-                          className="flex items-center justify-between py-4 px-6 hover:bg-muted/50 cursor-pointer transition-colors"
-                        >
-                          <div className="flex items-center gap-4 flex-1">
-                            <section.icon className="h-5 w-5 text-primary" />
-                            <div className="flex-1">
-                              <div className="font-medium">{section.label}</div>
-                              {section.description && (
-                                <div className="text-sm text-muted-foreground">{section.description}</div>
-                              )}
-                            </div>
-                          </div>
-                          <ChevronRight className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        {index < groupedSections.advanced.length - 1 && (
-                          <div className="border-t border-border/50 mx-6" />
-                        )}
-                      </div>
-                    ))}
-                  </Card>
-                )}
-              </div>
-            </div>
-          </div>
-        </PageLayout>
-      </AnimatedPage>
-    );
-  }
-
-  // Detail View
-  return (
-    <AnimatedPage>
-      <PageLayout>
-        <div
-          className={cn(
-            "min-h-screen pb-20 bg-background",
-            isMobile ? "pt-4" : "p-6"
-          )}
-          style={showBackground ? {
-            backgroundImage: `url(${background})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            backgroundAttachment: 'fixed'
-          } : undefined}
-        >
-          <div className="max-w-4xl mx-auto">
-            {/* Header */}
-            <Card className={cn(
-              "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
-              isMobile && "mx-4"
+  // Overview Content
+  const OverviewContent = () => (
+    <div
+      className={cn(
+        "min-h-screen pb-20 bg-background",
+        isMobile ? "pt-4" : "p-6"
+      )}
+      style={showBackground ? {
+        backgroundImage: `url(${background})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
+      } : undefined}
+    >
+      <div className={cn("max-w-4xl mx-auto")}>
+        {/* Header */}
+        <Card className={cn(
+          "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
+          isMobile && "mx-4"
+        )}>
+          <CardHeader className="pb-6">
+            <CardTitle className={cn(
+              "font-bold",
+              isMobile ? "text-3xl" : "text-4xl"
             )}>
-              <CardHeader>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={handleBack}
-                    className={cn(
-                      "rounded-full bg-white flex items-center justify-center hover:bg-white/90 transition-colors shadow-md",
-                      isMobile ? "w-8 h-8" : "w-10 h-10"
-                    )}
-                  >
-                    <ArrowLeft className={cn(
-                      "text-foreground",
-                      isMobile ? "h-4 w-4" : "h-5 w-5"
-                    )} />
-                  </button>
-                  <CardTitle className={cn(
-                    "font-bold flex-1 text-center text-white",
-                    isMobile ? "text-xl" : "text-2xl"
-                  )}>
-                    {activeLabel}
-                  </CardTitle>
-                  <div className="w-10" />
-                </div>
-              </CardHeader>
-            </Card>
+              Settings
+            </CardTitle>
+          </CardHeader>
+        </Card>
 
-            {/* Settings Content */}
-            <div className={isMobile ? "px-4" : ""}>
-              {ActiveComponent && <ActiveComponent />}
-            </div>
-          </div>
+        {/* Settings Cards Groups */}
+        <div className={cn("space-y-4", isMobile ? "px-4" : "")}>
+          {/* Dashboard & Ansicht */}
+          {groupedSections.dashboard.length > 0 && (
+            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
+              {groupedSections.dashboard.map((section, index) => (
+                <div key={section.id}>
+                  <div
+                    onClick={() => handleSelectSection(section.id)}
+                    className="flex items-center justify-between py-4 px-6 hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <section.icon className="h-5 w-5 text-primary" />
+                      <div className="flex-1">
+                        <div className="font-medium">{section.label}</div>
+                        {section.description && (
+                          <div className="text-sm text-muted-foreground">{section.description}</div>
+                        )}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  {index < groupedSections.dashboard.length - 1 && (
+                    <div className="border-t border-border/50 mx-6" />
+                  )}
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {/* Navigation */}
+          {groupedSections.navigation.length > 0 && (
+            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
+              {groupedSections.navigation.map((section, index) => (
+                <div key={section.id}>
+                  <div
+                    onClick={() => handleSelectSection(section.id)}
+                    className="flex items-center justify-between py-4 px-6 hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <section.icon className="h-5 w-5 text-primary" />
+                      <div className="flex-1">
+                        <div className="font-medium">{section.label}</div>
+                        {section.description && (
+                          <div className="text-sm text-muted-foreground">{section.description}</div>
+                        )}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  {index < groupedSections.navigation.length - 1 && (
+                    <div className="border-t border-border/50 mx-6" />
+                  )}
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {/* Design */}
+          {groupedSections.design.length > 0 && (
+            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
+              {groupedSections.design.map((section, index) => (
+                <div key={section.id}>
+                  <div
+                    onClick={() => handleSelectSection(section.id)}
+                    className="flex items-center justify-between py-4 px-6 hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <section.icon className="h-5 w-5 text-primary" />
+                      <div className="flex-1">
+                        <div className="font-medium">{section.label}</div>
+                        {section.description && (
+                          <div className="text-sm text-muted-foreground">{section.description}</div>
+                        )}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  {index < groupedSections.design.length - 1 && (
+                    <div className="border-t border-border/50 mx-6" />
+                  )}
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {/* Advanced */}
+          {groupedSections.advanced.length > 0 && (
+            <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
+              {groupedSections.advanced.map((section, index) => (
+                <div key={section.id}>
+                  <div
+                    onClick={() => handleSelectSection(section.id)}
+                    className="flex items-center justify-between py-4 px-6 hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
+                    <div className="flex items-center gap-4 flex-1">
+                      <section.icon className="h-5 w-5 text-primary" />
+                      <div className="flex-1">
+                        <div className="font-medium">{section.label}</div>
+                        {section.description && (
+                          <div className="text-sm text-muted-foreground">{section.description}</div>
+                        )}
+                      </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  {index < groupedSections.advanced.length - 1 && (
+                    <div className="border-t border-border/50 mx-6" />
+                  )}
+                </div>
+              ))}
+            </Card>
+          )}
         </div>
-      </PageLayout>
-    </AnimatedPage>
+      </div>
+    </div>
+  );
+
+  // Detail View Content
+  const DetailContent = () => (
+    <div
+      className={cn(
+        "min-h-screen pb-20 bg-background",
+        isMobile ? "pt-4" : "p-6"
+      )}
+      style={showBackground ? {
+        backgroundImage: `url(${background})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed'
+      } : undefined}
+    >
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <Card className={cn(
+          "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
+          isMobile && "mx-4"
+        )}>
+          <CardHeader>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={handleBack}
+                className={cn(
+                  "rounded-full bg-white flex items-center justify-center hover:bg-white/90 transition-colors shadow-md",
+                  isMobile ? "w-8 h-8" : "w-10 h-10"
+                )}
+              >
+                <ArrowLeft className={cn(
+                  "text-foreground",
+                  isMobile ? "h-4 w-4" : "h-5 w-5"
+                )} />
+              </button>
+              <CardTitle className={cn(
+                "font-bold flex-1 text-center text-white",
+                isMobile ? "text-xl" : "text-2xl"
+              )}>
+                {activeLabel}
+              </CardTitle>
+              <div className="w-10" />
+            </div>
+          </CardHeader>
+        </Card>
+
+        {/* Settings Content */}
+        <div className={isMobile ? "px-4" : ""}>
+          {ActiveComponent && <ActiveComponent />}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Content wird gerendert sobald Daten bereit sind */}
+      {isReady && (
+        <AnimatedPage>
+          <PageLayout>
+            {isOverview ? <OverviewContent /> : <DetailContent />}
+          </PageLayout>
+        </AnimatedPage>
+      )}
+      
+      {/* Loader liegt DARÜBER (z-50) und fadet aus */}
+      {!contentVisible && (
+        <PageLoader isExiting={isReady} />
+      )}
+    </>
   );
 }
 

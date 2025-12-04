@@ -8,36 +8,42 @@ import { useRole, usePageTransitionSettings } from "@/hooks";
 /**
  * Mitgliederverwaltung Page
  * 
- * Zentrale Seite für die Verwaltung von Mitgliedern.
- * Zugriff nur für Admin und Vorstand.
+ * Overlay-Pattern: PageLoader und AnimatedPage werden parallel gerendert.
+ * PageLoader liegt ÜBER dem Content und fadet aus.
  */
 export function Users() {
   const { isLoading } = useRole();
-  const [showContent, setShowContent] = useState(false);
-  const [loaderExiting, setLoaderExiting] = useState(false);
+  const [contentVisible, setContentVisible] = useState(false);
   const { settings: transitionSettings } = usePageTransitionSettings();
 
-  // Handle smooth transition mit dynamischer Dauer aus Settings
+  const isReady = !isLoading;
+
+  // Loader wird erst entfernt NACHDEM seine fade-out Animation komplett ist
   useEffect(() => {
-    if (!isLoading) {
-      setLoaderExiting(true);
+    if (isReady) {
       const fadeOutDuration = transitionSettings.enabled 
         ? transitionSettings.loaderFadeOutDuration 
         : 0;
-      const timer = setTimeout(() => setShowContent(true), fadeOutDuration);
+      const timer = setTimeout(() => setContentVisible(true), fadeOutDuration);
       return () => clearTimeout(timer);
     }
-  }, [isLoading, transitionSettings.enabled, transitionSettings.loaderFadeOutDuration]);
-
-  if (!showContent) {
-    return <PageLoader isExiting={loaderExiting} />;
-  }
+  }, [isReady, transitionSettings.enabled, transitionSettings.loaderFadeOutDuration]);
 
   return (
-    <AnimatedPage>
-      <PageLayout>
-        <UserManagementRefactored />
-      </PageLayout>
-    </AnimatedPage>
+    <>
+      {/* Content wird gerendert sobald Daten bereit sind */}
+      {isReady && (
+        <AnimatedPage>
+          <PageLayout>
+            <UserManagementRefactored />
+          </PageLayout>
+        </AnimatedPage>
+      )}
+      
+      {/* Loader liegt DARÜBER (z-50) und fadet aus */}
+      {!contentVisible && (
+        <PageLoader isExiting={isReady} />
+      )}
+    </>
   );
 }

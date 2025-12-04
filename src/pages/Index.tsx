@@ -11,13 +11,12 @@ import { AnimatedPage } from "@/components/common/animated-page";
 /**
  * Index Page - Dashboard Only
  * 
- * Optimized: Only loads essential hooks for page render.
- * Dashboard-specific data (AI settings, users, etc.) loads inside Dashboard component.
+ * Overlay-Pattern: PageLoader und AnimatedPage werden parallel gerendert.
+ * PageLoader liegt ÜBER dem Content und fadet aus.
  */
 function AppContent() {
   const roleContext = useRole();
-  const [showContent, setShowContent] = useState(false);
-  const [loaderExiting, setLoaderExiting] = useState(false);
+  const [contentVisible, setContentVisible] = useState(false);
   
   // Only load what's needed for page structure
   const { fullName: displayName } = useProfileData({ enabled: !!roleContext?.currentRole });
@@ -31,38 +30,41 @@ function AppContent() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
   
-  const isFullyLoaded = !footerLoading && !roleContext?.isLoading;
+  const isReady = !footerLoading && !roleContext?.isLoading && !!roleContext?.currentUser;
   
-  // Handle smooth transition mit dynamischer Dauer aus Settings
+  // Loader wird erst entfernt NACHDEM seine fade-out Animation komplett ist
   useEffect(() => {
-    if (isFullyLoaded && roleContext?.currentUser) {
-      setLoaderExiting(true);
+    if (isReady) {
       const fadeOutDuration = transitionSettings.enabled 
         ? transitionSettings.loaderFadeOutDuration 
         : 0;
-      const timer = setTimeout(() => setShowContent(true), fadeOutDuration);
+      const timer = setTimeout(() => setContentVisible(true), fadeOutDuration);
       return () => clearTimeout(timer);
     }
-  }, [isFullyLoaded, roleContext?.currentUser, transitionSettings.enabled, transitionSettings.loaderFadeOutDuration]);
-  
-  if (!showContent) {
-    return <PageLoader isExiting={loaderExiting} />;
-  }
-  
-  const { currentRole, currentUser } = roleContext!;
+  }, [isReady, transitionSettings.enabled, transitionSettings.loaderFadeOutDuration]);
 
   return (
-    <AnimatedPage>
-      <div className="min-h-screen flex flex-col relative z-0 pt-safe bg-background">
-        <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
-          <Dashboard displayName={displayName} />
-        </main>
-        <UnifiedFooter
-          currentRole={currentRole}
-          currentUser={currentUser}
-        />
-      </div>
-    </AnimatedPage>
+    <>
+      {/* Content wird gerendert sobald Daten bereit sind */}
+      {isReady && (
+        <AnimatedPage>
+          <div className="min-h-screen flex flex-col relative z-0 pt-safe bg-background">
+            <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
+              <Dashboard displayName={displayName} />
+            </main>
+            <UnifiedFooter
+              currentRole={roleContext.currentRole}
+              currentUser={roleContext.currentUser}
+            />
+          </div>
+        </AnimatedPage>
+      )}
+      
+      {/* Loader liegt DARÜBER (z-50) und fadet aus */}
+      {!contentVisible && (
+        <PageLoader isExiting={isReady} />
+      )}
+    </>
   );
 }
 
