@@ -54,8 +54,9 @@ export function AnimatedPage({ children, className }: AnimatedPageProps) {
       return { opacity: 0 };
     }
 
-    // NACH isReady: Animation startet
+    // NACH isReady: Animation startet mit explizitem opacity: 0 als Fallback
     return {
+      opacity: 0, // Fallback - wird durch animation-fill-mode: both überschrieben
       animationName: keyframeName,
       animationDuration: `${effectiveSettings.duration}ms`,
       animationTimingFunction: effectiveSettings.easing,
