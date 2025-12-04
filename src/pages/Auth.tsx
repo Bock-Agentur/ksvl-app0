@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast, useLoginBackground, LoginBackground, useIsMobile } from "@/hooks";
 import { z } from "zod";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Lock } from "lucide-react";
+import { validatePassword } from "@/lib/password-validation";
 
 function Countdown({ endDate, text, showDays, fontSize, fontWeight }: { endDate: string; text: string; showDays?: boolean; fontSize?: number; fontWeight?: number }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, tenths: 0, hundredths: 0 });
@@ -163,17 +164,45 @@ export function Auth() {
   const [loading, setLoading] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // Recovery mode states
+  const [isRecoveryMode, setIsRecoveryMode] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
   const emailInputRef = useRef<HTMLInputElement>(null);
+  const newPasswordRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { background, isLoading } = useLoginBackground();
   const isMobile = useIsMobile();
 
+  // Detect PASSWORD_RECOVERY event from Supabase
   useEffect(() => {
-    if (!isLoading && emailInputRef.current) {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        setIsRecoveryMode(true);
+        setShowResetPassword(false);
+        toast({
+          title: "Passwort zurücksetzen",
+          description: "Bitte gib dein neues Passwort ein.",
+        });
+        // Focus on new password field after a short delay
+        setTimeout(() => {
+          newPasswordRef.current?.focus();
+        }, 100);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [toast]);
+
+  useEffect(() => {
+    if (!isLoading && emailInputRef.current && !isRecoveryMode) {
       emailInputRef.current.focus();
     }
-  }, [isLoading]);
+  }, [isLoading, isRecoveryMode]);
 
   const getMediaUrl = (): string | null => {
     if (!background.storagePath || !background.bucket) {
@@ -359,6 +388,53 @@ export function Auth() {
     }
   };
 
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      // Validate password match
+      if (newPassword !== confirmPassword) {
+        throw new Error("Passwörter stimmen nicht überein");
+      }
+
+      // Validate password strength
+      const validation = validatePassword(newPassword);
+      if (!validation.isValid) {
+        throw new Error(validation.error);
+      }
+
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Passwort geändert",
+        description: "Dein Passwort wurde erfolgreich aktualisiert. Du wirst jetzt weitergeleitet.",
+      });
+
+      // Reset states and navigate to dashboard
+      setIsRecoveryMode(false);
+      setNewPassword("");
+      setConfirmPassword("");
+      
+      // Small delay before navigation
+      setTimeout(() => {
+        navigate("/", { replace: true });
+      }, 1000);
+    } catch (error: any) {
+      toast({
+        title: "Fehler",
+        description: error.message || "Fehler beim Aktualisieren des Passworts",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderBackground = () => {
     const overlayStyle = {
       backgroundColor: `${background.overlayColor}${Math.round((background.overlayOpacity / 100) * 255).toString(16).padStart(2, '0')}`
@@ -477,15 +553,99 @@ export function Auth() {
           zIndex: 3
         }}
       >
-        <form onSubmit={showResetPassword ? handleResetPassword : handleLogin} className="w-full space-y-4 mb-8 pointer-events-auto" autoComplete="on">
-          {/* Email Input with Glass Effect */}
-          <div 
-            className="relative overflow-hidden transition-all duration-300 h-12"
-            style={{ 
-              borderRadius: `${cardBorderRadius}px`,
-              backgroundColor: `${background.inputBgColor}${Math.round(background.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
-            }}
-          >
+        {/* Recovery Mode Form */}
+        {isRecoveryMode ? (
+          <form onSubmit={handleUpdatePassword} className="w-full space-y-4 mb-8 pointer-events-auto" autoComplete="off">
+            {/* Title */}
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-semibold text-foreground">Neues Passwort setzen</h2>
+              <p className="text-sm text-foreground/70 mt-1">Mind. 8 Zeichen, Groß-/Kleinbuchstabe, Zahl</p>
+            </div>
+
+            {/* New Password Input */}
+            <div 
+              className="relative overflow-hidden transition-all duration-300 h-12"
+              style={{ 
+                borderRadius: `${cardBorderRadius}px`,
+                backgroundColor: `${background.inputBgColor}${Math.round(background.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
+              }}
+            >
+              <div className="relative flex items-center gap-3 px-4 h-full">
+                <Lock className="w-5 h-5 flex-shrink-0 text-foreground/50" />
+                <input
+                  ref={newPasswordRef}
+                  id="newPassword"
+                  name="newPassword"
+                  type={showNewPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  placeholder="Neues Passwort"
+                  className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-foreground/50"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="flex-shrink-0 text-foreground/50 hover:text-foreground/70 transition-colors"
+                >
+                  {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Confirm Password Input */}
+            <div 
+              className="relative overflow-hidden transition-all duration-300 h-12"
+              style={{ 
+                borderRadius: `${cardBorderRadius}px`,
+                backgroundColor: `${background.inputBgColor}${Math.round(background.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
+              }}
+            >
+              <div className="relative flex items-center gap-3 px-4 h-full">
+                <Lock className="w-5 h-5 flex-shrink-0 text-foreground/50" />
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  placeholder="Passwort bestätigen"
+                  className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-foreground/50"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="flex-shrink-0 text-foreground/50 hover:text-foreground/70 transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <Button 
+              type="submit" 
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg transition-all duration-300 h-12"
+              disabled={loading}
+              style={{ borderRadius: `${cardBorderRadius}px` }}
+            >
+              {loading ? "Wird gespeichert..." : "Passwort speichern"}
+            </Button>
+          </form>
+        ) : (
+          /* Normal Login/Reset Form */
+          <form onSubmit={showResetPassword ? handleResetPassword : handleLogin} className="w-full space-y-4 mb-8 pointer-events-auto" autoComplete="on">
+            {/* Email Input with Glass Effect */}
+            <div 
+              className="relative overflow-hidden transition-all duration-300 h-12"
+              style={{ 
+                borderRadius: `${cardBorderRadius}px`,
+                backgroundColor: `${background.inputBgColor}${Math.round(background.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
+              }}
+            >
               <div className="relative flex items-center gap-3 px-4 h-full">
                 <svg className="w-5 h-5 flex-shrink-0 text-foreground/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
@@ -502,64 +662,68 @@ export function Auth() {
                   placeholder="E-Mail oder Benutzername"
                   className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-foreground/50"
                 />
-            </div>
-          </div>
-
-          {/* Password Input with Glass Effect - nur bei Login anzeigen */}
-          {!showResetPassword && (
-            <div 
-              className="relative overflow-hidden transition-all duration-300 h-12"
-              style={{ 
-                borderRadius: `${cardBorderRadius}px`,
-                backgroundColor: `${background.inputBgColor}${Math.round(background.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
-              }}
-            >
-              <div className="relative flex items-center gap-3 px-4 h-full">
-                <svg className="w-5 h-5 flex-shrink-0 text-foreground/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="current-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  placeholder="Passwort"
-                  className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-foreground/50"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="flex-shrink-0 text-foreground/50 hover:text-foreground/70 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
               </div>
             </div>
-          )}
 
-          {/* Submit Button */}
-          <Button 
-            type="submit" 
-            className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg transition-all duration-300 h-12"
-            disabled={loading}
-            style={{ borderRadius: `${cardBorderRadius}px` }}
-          >
-            {loading ? "Wird geladen..." : showResetPassword ? "Passwort zurücksetzen" : "Anmelden"}
-          </Button>
-        </form>
-        {/* Bottom Links */}
-        <div className="flex items-center justify-center text-sm">
-          <button 
-            type="button"
-            onClick={() => setShowResetPassword(!showResetPassword)}
-            className="text-white hover:text-white/80 transition-colors"
-          >
-            {showResetPassword ? "Zurück zum Login" : "Passwort vergessen?"}
-          </button>
-        </div>
+            {/* Password Input with Glass Effect - nur bei Login anzeigen */}
+            {!showResetPassword && (
+              <div 
+                className="relative overflow-hidden transition-all duration-300 h-12"
+                style={{ 
+                  borderRadius: `${cardBorderRadius}px`,
+                  backgroundColor: `${background.inputBgColor}${Math.round(background.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
+                }}
+              >
+                <div className="relative flex items-center gap-3 px-4 h-full">
+                  <svg className="w-5 h-5 flex-shrink-0 text-foreground/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="Passwort"
+                    className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-foreground/50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="flex-shrink-0 text-foreground/50 hover:text-foreground/70 transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <Button 
+              type="submit" 
+              className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-lg transition-all duration-300 h-12"
+              disabled={loading}
+              style={{ borderRadius: `${cardBorderRadius}px` }}
+            >
+              {loading ? "Wird geladen..." : showResetPassword ? "Passwort zurücksetzen" : "Anmelden"}
+            </Button>
+          </form>
+        )}
+
+        {/* Bottom Links - nur anzeigen wenn nicht im Recovery Mode */}
+        {!isRecoveryMode && (
+          <div className="flex items-center justify-center text-sm">
+            <button 
+              type="button"
+              onClick={() => setShowResetPassword(!showResetPassword)}
+              className="text-white hover:text-white/80 transition-colors"
+            >
+              {showResetPassword ? "Zurück zum Login" : "Passwort vergessen?"}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
