@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast, useLoginBackground, LoginBackground, useIsMobile } from "@/hooks";
 import { z } from "zod";
+import { Eye, EyeOff } from "lucide-react";
 
 function Countdown({ endDate, text, showDays, fontSize, fontWeight }: { endDate: string; text: string; showDays?: boolean; fontSize?: number; fontWeight?: number }) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0, tenths: 0, hundredths: 0 });
@@ -161,6 +162,7 @@ export function Auth() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { background, isLoading } = useLoginBackground();
@@ -511,7 +513,7 @@ export function Auth() {
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -519,6 +521,13 @@ export function Auth() {
                   placeholder="Passwort"
                   className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-foreground/50"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="flex-shrink-0 text-foreground/50 hover:text-foreground/70 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
             </div>
           )}
@@ -534,15 +543,7 @@ export function Auth() {
           </Button>
         </form>
         {/* Bottom Links */}
-        <div className="flex items-center justify-center gap-4 text-sm">
-          <button 
-            type="button"
-            onClick={() => setShowResetPassword(false)}
-            className="text-white hover:text-white/80 transition-colors font-medium"
-          >
-            Registrieren
-          </button>
-          <div className="h-4 w-px bg-white/30" />
+        <div className="flex items-center justify-center text-sm">
           <button 
             type="button"
             onClick={() => setShowResetPassword(!showResetPassword)}
