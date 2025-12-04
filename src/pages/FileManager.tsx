@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { EnhancedFileManager } from "@/components/file-manager/enhanced-file-manager";
-import { useIsMobile, useRole } from "@/hooks";
+import { useIsMobile, useRole, useFooterMenuSettings } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { PageLayout } from "@/components/common/page-layout";
 import { PageLoader } from "@/components/common/page-loader";
@@ -8,23 +8,26 @@ import { AnimatedPage } from "@/components/common/animated-page";
 import { UnifiedFooter } from "@/components/common/unified-footer";
 
 /**
- * File Manager Page
+ * File Manager Page - Pattern A
  * 
- * Vereinfachte Architektur: AnimatedPage übernimmt die visuelle Überblendung.
- * PageLoader nur noch für initialen Auth-Check.
+ * Architektur:
+ * - PageLoader während Auth/Role/Footer laden
+ * - AnimatedPage für Content mit CSS-Animation
+ * - UnifiedFooter außerhalb AnimatedPage (sofort sichtbar)
  */
 export function FileManager() {
   const isMobile = useIsMobile();
-  const { isLoading, currentRole, currentUser } = useRole();
+  const { isLoading: roleLoading, currentRole, currentUser } = useRole();
+  const { isLoading: footerLoading } = useFooterMenuSettings(currentRole || 'mitglied');
 
   // Scroll to top on mount
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
 
-  const isReady = !isLoading;
+  const isReady = !roleLoading && !footerLoading && !!currentUser;
 
-  // PageLoader nur während Auth/Role lädt
+  // PageLoader während Auth/Role/Footer laden
   if (!isReady) {
     return <PageLoader />;
   }
