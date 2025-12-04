@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/auth-context";
-import { useRole, useSlotDesign, ConsecutiveSlotsProvider, useProfileData, useFooterMenuSettings } from "@/hooks";
+import { useRole, useSlotDesign, ConsecutiveSlotsProvider, useProfileData, useFooterMenuSettings, usePageTransitionSettings } from "@/hooks";
 import { SlotsProvider } from "@/contexts/slots-context";
 import { UnifiedFooter } from "@/components/common/unified-footer";
 import { Dashboard } from "@/components/dashboard";
@@ -22,6 +22,7 @@ function AppContent() {
   // Only load what's needed for page structure
   const { fullName: displayName } = useProfileData({ enabled: !!roleContext?.currentRole });
   const { isLoading: footerLoading } = useFooterMenuSettings(roleContext?.currentRole || 'mitglied');
+  const { settings: transitionSettings } = usePageTransitionSettings();
   
   useSlotDesign();
   
@@ -32,14 +33,17 @@ function AppContent() {
   
   const isFullyLoaded = !footerLoading && !roleContext?.isLoading;
   
-  // Handle smooth transition
+  // Handle smooth transition mit dynamischer Dauer aus Settings
   useEffect(() => {
     if (isFullyLoaded && roleContext?.currentUser) {
       setLoaderExiting(true);
-      const timer = setTimeout(() => setShowContent(true), 200);
+      const fadeOutDuration = transitionSettings.enabled 
+        ? transitionSettings.loaderFadeOutDuration 
+        : 0;
+      const timer = setTimeout(() => setShowContent(true), fadeOutDuration);
       return () => clearTimeout(timer);
     }
-  }, [isFullyLoaded, roleContext?.currentUser]);
+  }, [isFullyLoaded, roleContext?.currentUser, transitionSettings.enabled, transitionSettings.loaderFadeOutDuration]);
   
   if (!showContent) {
     return <PageLoader isExiting={loaderExiting} />;

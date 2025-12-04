@@ -1,43 +1,59 @@
 import { ReactNode, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { usePageTransitionSettings } from "@/hooks/core/settings/use-page-transition-settings";
+import { usePageTransitionSettings, type PageTransitionSettings } from "@/hooks/core/settings/use-page-transition-settings";
 
 interface AnimatedPageProps {
   children: ReactNode;
   className?: string;
 }
 
+// Default settings für sofortige Animation ohne DB-Wartezeit
+const DEFAULT_SETTINGS: PageTransitionSettings = {
+  enabled: true,
+  duration: 300,
+  easing: 'ease-out',
+  effect: 'fade-slide',
+  loaderFadeOutDuration: 200,
+  translateDistance: 10,
+};
+
+const getKeyframeName = (effect: PageTransitionSettings['effect']): string => {
+  switch (effect) {
+    case 'fade': return 'page-fade';
+    case 'slide-up': return 'page-slide-up';
+    case 'slide-down': return 'page-slide-down';
+    case 'scale': return 'page-scale';
+    case 'fade-slide': return 'page-fade-slide';
+    default: return 'none';
+  }
+};
+
 export function AnimatedPage({ children, className }: AnimatedPageProps) {
   const { settings, isLoading } = usePageTransitionSettings();
 
   const animationStyle = useMemo((): React.CSSProperties => {
-    // Don't animate while loading settings or if disabled
-    if (isLoading || !settings.enabled || settings.effect === 'none') {
-      return {};
+    // SOFORT Defaults verwenden, nicht auf DB warten - verhindert Layoutsprünge
+    const effectiveSettings = isLoading ? DEFAULT_SETTINGS : settings;
+    
+    // Wenn disabled oder none, keine Animation aber auch kein Flash
+    if (!effectiveSettings.enabled || effectiveSettings.effect === 'none') {
+      return { opacity: 1 };
     }
 
-    const keyframeName = settings.effect === 'fade' ? 'page-fade' 
-      : settings.effect === 'slide-up' ? 'page-slide-up'
-      : settings.effect === 'slide-down' ? 'page-slide-down'
-      : settings.effect === 'scale' ? 'page-scale'
-      : settings.effect === 'fade-slide' ? 'page-fade-slide'
-      : 'none';
-
-    if (keyframeName === 'none') return {};
+    const keyframeName = getKeyframeName(effectiveSettings.effect);
+    if (keyframeName === 'none') {
+      return { opacity: 1 };
+    }
 
     return {
+      opacity: 0, // Initial opacity: 0 um Flash zu verhindern
       animationName: keyframeName,
-      animationDuration: `${settings.duration}ms`,
-      animationTimingFunction: settings.easing,
+      animationDuration: `${effectiveSettings.duration}ms`,
+      animationTimingFunction: effectiveSettings.easing,
       animationFillMode: 'forwards',
-      '--translate-distance': `${settings.translateDistance}px`,
+      '--translate-distance': `${effectiveSettings.translateDistance}px`,
     } as React.CSSProperties;
   }, [settings, isLoading]);
-
-  // If animations disabled or loading, render without animation
-  if (isLoading || !settings.enabled || settings.effect === 'none') {
-    return <div className={className}>{children}</div>;
-  }
 
   return (
     <div className={cn(className)} style={animationStyle}>
