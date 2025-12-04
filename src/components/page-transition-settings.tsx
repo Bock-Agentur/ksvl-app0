@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Zap, Play, RotateCcw } from "lucide-react";
+import { Zap, Play, RotateCcw, Save, Loader2 } from "lucide-react";
 import { usePageTransitionSettings, type PageTransitionSettings } from "@/hooks/core/settings/use-page-transition-settings";
 import { toast } from "sonner";
 
@@ -27,20 +27,47 @@ const EFFECT_OPTIONS = [
 ] as const;
 
 export function PageTransitionSettings() {
-  const { settings, updateSettings, isLoading, DEFAULT_SETTINGS } = usePageTransitionSettings();
+  const { settings: savedSettings, updateSettings, isLoading, DEFAULT_SETTINGS } = usePageTransitionSettings();
+  
+  // Local state for unsaved changes
+  const [localSettings, setLocalSettings] = useState<PageTransitionSettings>(savedSettings);
+  const [hasChanges, setHasChanges] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  
+  // Preview state
   const [previewKey, setPreviewKey] = useState(0);
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
 
-  const handleChange = async <K extends keyof PageTransitionSettings>(
+  // Sync local state when saved settings change
+  useEffect(() => {
+    setLocalSettings(savedSettings);
+    setHasChanges(false);
+  }, [savedSettings]);
+
+  const handleLocalChange = <K extends keyof PageTransitionSettings>(
     key: K,
     value: PageTransitionSettings[K]
   ) => {
-    await updateSettings({ [key]: value });
+    setLocalSettings(prev => ({ ...prev, [key]: value }));
+    setHasChanges(true);
   };
 
-  const handleReset = async () => {
-    await updateSettings(DEFAULT_SETTINGS);
-    toast.success("Einstellungen zurückgesetzt");
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await updateSettings(localSettings);
+      setHasChanges(false);
+      toast.success("Einstellungen gespeichert");
+    } catch (error) {
+      toast.error("Fehler beim Speichern");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleReset = () => {
+    setLocalSettings(DEFAULT_SETTINGS);
+    setHasChanges(true);
   };
 
   const triggerPreview = () => {
@@ -52,30 +79,30 @@ export function PageTransitionSettings() {
   };
 
   const getPreviewStyle = (): React.CSSProperties => {
-    if (!settings.enabled || settings.effect === 'none' || !isPreviewVisible) {
+    if (!localSettings.enabled || localSettings.effect === 'none' || !isPreviewVisible) {
       return { opacity: isPreviewVisible ? 1 : 0 };
     }
 
     const baseStyle: React.CSSProperties = {
-      animationDuration: `${settings.duration}ms`,
-      animationTimingFunction: settings.easing,
+      animationDuration: `${localSettings.duration}ms`,
+      animationTimingFunction: localSettings.easing,
       animationFillMode: 'forwards',
     };
 
-    switch (settings.effect) {
+    switch (localSettings.effect) {
       case 'fade':
         return { ...baseStyle, animationName: 'page-fade' };
       case 'slide-up':
         return { 
           ...baseStyle, 
           animationName: 'page-slide-up',
-          '--translate-distance': `${settings.translateDistance}px`,
+          '--translate-distance': `${localSettings.translateDistance}px`,
         } as React.CSSProperties;
       case 'slide-down':
         return { 
           ...baseStyle, 
           animationName: 'page-slide-down',
-          '--translate-distance': `${settings.translateDistance}px`,
+          '--translate-distance': `${localSettings.translateDistance}px`,
         } as React.CSSProperties;
       case 'scale':
         return { ...baseStyle, animationName: 'page-scale' };
@@ -83,7 +110,7 @@ export function PageTransitionSettings() {
         return { 
           ...baseStyle, 
           animationName: 'page-fade-slide',
-          '--translate-distance': `${settings.translateDistance}px`,
+          '--translate-distance': `${localSettings.translateDistance}px`,
         } as React.CSSProperties;
       default:
         return {};
@@ -103,7 +130,7 @@ export function PageTransitionSettings() {
     );
   }
 
-  const showSlideDistance = ['slide-up', 'slide-down', 'fade-slide'].includes(settings.effect);
+  const showSlideDistance = ['slide-up', 'slide-down', 'fade-slide'].includes(localSettings.effect);
 
   return (
     <div className="space-y-6">
@@ -127,19 +154,19 @@ export function PageTransitionSettings() {
               </p>
             </div>
             <Switch
-              checked={settings.enabled}
-              onCheckedChange={(checked) => handleChange('enabled', checked)}
+              checked={localSettings.enabled}
+              onCheckedChange={(checked) => handleLocalChange('enabled', checked)}
             />
           </div>
 
-          {settings.enabled && (
+          {localSettings.enabled && (
             <>
               {/* Effect */}
               <div className="space-y-2">
                 <Label>Effekt</Label>
                 <Select
-                  value={settings.effect}
-                  onValueChange={(value) => handleChange('effect', value as PageTransitionSettings['effect'])}
+                  value={localSettings.effect}
+                  onValueChange={(value) => handleLocalChange('effect', value as PageTransitionSettings['effect'])}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -154,19 +181,19 @@ export function PageTransitionSettings() {
                 </Select>
               </div>
 
-              {settings.effect !== 'none' && (
+              {localSettings.effect !== 'none' && (
                 <>
-                  {/* Duration */}
+                  {/* Duration - Einblenden */}
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <Label>Animationsdauer</Label>
-                      <span className="text-sm text-muted-foreground">{settings.duration}ms</span>
+                      <Label>Einblenden (Content)</Label>
+                      <span className="text-sm text-muted-foreground">{localSettings.duration}ms</span>
                     </div>
                     <Slider
-                      value={[settings.duration]}
-                      onValueChange={([value]) => handleChange('duration', value)}
-                      min={200}
-                      max={1500}
+                      value={[localSettings.duration]}
+                      onValueChange={([value]) => handleLocalChange('duration', value)}
+                      min={100}
+                      max={3000}
                       step={50}
                     />
                   </div>
@@ -175,8 +202,8 @@ export function PageTransitionSettings() {
                   <div className="space-y-2">
                     <Label>Easing-Funktion</Label>
                     <Select
-                      value={settings.easing}
-                      onValueChange={(value) => handleChange('easing', value as PageTransitionSettings['easing'])}
+                      value={localSettings.easing}
+                      onValueChange={(value) => handleLocalChange('easing', value as PageTransitionSettings['easing'])}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -196,29 +223,29 @@ export function PageTransitionSettings() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <Label>Slide-Distanz</Label>
-                        <span className="text-sm text-muted-foreground">{settings.translateDistance}px</span>
+                        <span className="text-sm text-muted-foreground">{localSettings.translateDistance}px</span>
                       </div>
                       <Slider
-                        value={[settings.translateDistance]}
-                        onValueChange={([value]) => handleChange('translateDistance', value)}
+                        value={[localSettings.translateDistance]}
+                        onValueChange={([value]) => handleLocalChange('translateDistance', value)}
                         min={0}
-                        max={30}
+                        max={50}
                         step={2}
                       />
                     </div>
                   )}
 
-                  {/* Loader Fade Out Duration */}
+                  {/* Loader Fade Out Duration - Ausblenden */}
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <Label>Loader-Ausblendung</Label>
-                      <span className="text-sm text-muted-foreground">{settings.loaderFadeOutDuration}ms</span>
+                      <Label>Ausblenden (Loader)</Label>
+                      <span className="text-sm text-muted-foreground">{localSettings.loaderFadeOutDuration}ms</span>
                     </div>
                     <Slider
-                      value={[settings.loaderFadeOutDuration]}
-                      onValueChange={([value]) => handleChange('loaderFadeOutDuration', value)}
-                      min={200}
-                      max={800}
+                      value={[localSettings.loaderFadeOutDuration]}
+                      onValueChange={([value]) => handleLocalChange('loaderFadeOutDuration', value)}
+                      min={100}
+                      max={3000}
                       step={50}
                     />
                   </div>
@@ -227,21 +254,35 @@ export function PageTransitionSettings() {
             </>
           )}
 
-          {/* Reset Button */}
-          <div className="pt-2">
-            <Button variant="outline" size="sm" onClick={handleReset}>
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Auf Standard zurücksetzen
+          {/* Action Buttons */}
+          <div className="flex gap-2 pt-4 border-t">
+            <Button 
+              onClick={handleSave} 
+              disabled={!hasChanges || isSaving}
+              className="flex-1"
+            >
+              {isSaving ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4 mr-2" />
+              )}
+              Speichern
+            </Button>
+            <Button variant="outline" size="icon" onClick={handleReset} title="Auf Standard zurücksetzen">
+              <RotateCcw className="h-4 w-4" />
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Live Preview */}
-      {settings.enabled && settings.effect !== 'none' && (
+      {localSettings.enabled && localSettings.effect !== 'none' && (
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Vorschau</CardTitle>
+            <CardDescription>
+              Zeigt die Animation mit den aktuellen lokalen Einstellungen
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">

@@ -67,7 +67,7 @@ export function FileManager() {
         </AnimatedPage>
       )}
       
-      {/* Loader liegt DARÜBER (z-50) und fadet aus */}
+      {/* Loader liegt DARÜBER und fadet aus - z-40 damit Footer (z-50) darüber bleibt */}
       {!contentVisible && (
         <PageLoader isExiting={isReady} />
       )}

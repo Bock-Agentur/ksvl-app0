@@ -39,7 +39,7 @@ export function PageLoader({ className, isExiting }: PageLoaderProps) {
   return (
     <div 
       className={cn(
-        "fixed inset-0 z-50 flex items-center justify-center bg-background",
+        "fixed inset-0 z-40 flex items-center justify-center bg-background",
         className
       )}
       style={getAnimationStyle()}
