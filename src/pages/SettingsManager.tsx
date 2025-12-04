@@ -1,10 +1,10 @@
 /**
  * Settings Manager (Admin UI)
- * Phase 3: Admin interface to view, validate, and manage all app_settings
+ * Pattern A: PageLoader + AnimatedPage + UnifiedFooter
  */
 
-import { useState } from "react";
-import { useSettingsBatch } from "@/hooks";
+import { useState, useEffect } from "react";
+import { useSettingsBatch, useRole, useFooterMenuSettings } from "@/hooks";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,10 @@ import { Search, Trash2, RefreshCw, AlertTriangle, CheckCircle2, Info } from "lu
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { logger } from "@/lib/logger";
+import { PageLayout } from "@/components/common/page-layout";
+import { PageLoader } from "@/components/common/page-loader";
+import { AnimatedPage } from "@/components/common/animated-page";
+import { UnifiedFooter } from "@/components/common/unified-footer";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,12 +60,22 @@ const KNOWN_SETTINGS = [
   'consecutiveSlotsEnabled',
   'roleWelcomeMessages',
   'footerMenuActiveRole',
+  'page-transition-settings',
 ];
 
 export default function SettingsManager() {
-  const { settingsMap, isLoading, refetch } = useSettingsBatch({ loadAll: true });
+  const { isLoading: roleLoading, currentRole, currentUser } = useRole();
+  const { isLoading: footerLoading } = useFooterMenuSettings(currentRole || 'mitglied');
+  const { settingsMap, isLoading: settingsLoading, refetch } = useSettingsBatch({ loadAll: true });
   const [searchQuery, setSearchQuery] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<SettingEntry | null>(null);
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
+  const isReady = !roleLoading && !footerLoading && !settingsLoading && !!currentUser;
 
   const allSettings = Array.from(settingsMap.values());
   const filteredSettings = allSettings.filter(s => 
@@ -151,187 +165,196 @@ export default function SettingsManager() {
     </Card>
   );
 
-  if (isLoading) {
-    return (
-      <div className="container mx-auto p-6">
-        <div className="flex items-center justify-center h-96">
-          <RefreshCw className="h-8 w-8 animate-spin text-muted-foreground" />
-        </div>
-      </div>
-    );
+  // PageLoader während Auth/Role/Footer/Settings laden
+  if (!isReady) {
+    return <PageLoader />;
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-6xl">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Settings Manager</h1>
-        <p className="text-muted-foreground">
-          Verwaltung aller App-Settings • {allSettings.length} Einträge
-        </p>
-      </div>
-
-      {/* Actions */}
-      <div className="flex gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Settings durchsuchen..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-        <Button onClick={handleRefresh} variant="outline">
-          <RefreshCw className="h-4 w-4 mr-2" />
-          Neu laden
-        </Button>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Gesamt</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{allSettings.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Bekannte Settings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{knownSettings.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Unbekannte Settings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{unknownSettings.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Duplikate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-red-600">{duplicateSettings.length}</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs */}
-      <Tabs defaultValue="all" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="all">Alle ({filteredSettings.length})</TabsTrigger>
-          <TabsTrigger value="known">Bekannt ({knownSettings.length})</TabsTrigger>
-          <TabsTrigger value="unknown">Unbekannt ({unknownSettings.length})</TabsTrigger>
-          <TabsTrigger value="duplicates">Duplikate ({duplicateSettings.length})</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="all" className="mt-6">
-          {filteredSettings.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                Keine Settings gefunden
-              </CardContent>
-            </Card>
-          ) : (
-            filteredSettings.map(setting => <SettingCard key={setting.id} setting={setting} />)
-          )}
-        </TabsContent>
-
-        <TabsContent value="known" className="mt-6">
-          {knownSettings.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                Keine bekannten Settings gefunden
-              </CardContent>
-            </Card>
-          ) : (
-            knownSettings.map(setting => <SettingCard key={setting.id} setting={setting} />)
-          )}
-        </TabsContent>
-
-        <TabsContent value="unknown" className="mt-6">
-          {unknownSettings.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                Keine unbekannten Settings gefunden ✅
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900 rounded-lg p-4 mb-4">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-orange-900 dark:text-orange-100">
-                      Unbekannte Settings gefunden
-                    </h3>
-                    <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
-                      Diese Settings sind nicht in der offiziellen Registry dokumentiert. 
-                      Sie könnten veraltet sein oder von alten Features stammen.
-                    </p>
-                  </div>
-                </div>
+    <>
+      <AnimatedPage>
+        <PageLayout>
+          <div className="min-h-screen pb-20 bg-background">
+            <div className="container mx-auto p-6 max-w-6xl">
+              {/* Header */}
+              <div className="mb-6">
+                <h1 className="text-3xl font-bold mb-2">Settings Manager</h1>
+                <p className="text-muted-foreground">
+                  Verwaltung aller App-Settings • {allSettings.length} Einträge
+                </p>
               </div>
-              {unknownSettings.map(setting => <SettingCard key={setting.id} setting={setting} />)}
-            </>
-          )}
-        </TabsContent>
 
-        <TabsContent value="duplicates" className="mt-6">
-          {duplicateSettings.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                Keine Duplikate gefunden ✅
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-lg p-4 mb-4">
-                <div className="flex items-start gap-3">
-                  <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
-                  <div>
-                    <h3 className="font-semibold text-red-900 dark:text-red-100">
-                      Doppelte Settings gefunden
-                    </h3>
-                    <p className="text-sm text-red-700 dark:text-red-300 mt-1">
-                      Mehrere Einträge mit demselben Key können zu unerwartetem Verhalten führen.
-                      Bitte nur einen Eintrag pro Key behalten (idealerweise den globalen).
-                    </p>
-                  </div>
+              {/* Actions */}
+              <div className="flex gap-4 mb-6">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Settings durchsuchen..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
+                <Button onClick={handleRefresh} variant="outline">
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Neu laden
+                </Button>
               </div>
-              {duplicateSettings.map(setting => <SettingCard key={setting.id} setting={setting} />)}
-            </>
-          )}
-        </TabsContent>
-      </Tabs>
 
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Setting löschen?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Möchten Sie das Setting "{deleteTarget?.setting_key}" wirklich löschen?
-              Diese Aktion kann nicht rückgängig gemacht werden.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Abbrechen</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Löschen
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </div>
+              {/* Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Gesamt</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{allSettings.length}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Bekannte Settings</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600">{knownSettings.length}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Unbekannte Settings</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-orange-600">{unknownSettings.length}</div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Duplikate</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-red-600">{duplicateSettings.length}</div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Tabs */}
+              <Tabs defaultValue="all" className="w-full">
+                <TabsList className="grid w-full grid-cols-4">
+                  <TabsTrigger value="all">Alle ({filteredSettings.length})</TabsTrigger>
+                  <TabsTrigger value="known">Bekannt ({knownSettings.length})</TabsTrigger>
+                  <TabsTrigger value="unknown">Unbekannt ({unknownSettings.length})</TabsTrigger>
+                  <TabsTrigger value="duplicates">Duplikate ({duplicateSettings.length})</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="all" className="mt-6">
+                  {filteredSettings.length === 0 ? (
+                    <Card>
+                      <CardContent className="py-12 text-center text-muted-foreground">
+                        Keine Settings gefunden
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    filteredSettings.map(setting => <SettingCard key={setting.id} setting={setting} />)
+                  )}
+                </TabsContent>
+
+                <TabsContent value="known" className="mt-6">
+                  {knownSettings.length === 0 ? (
+                    <Card>
+                      <CardContent className="py-12 text-center text-muted-foreground">
+                        Keine bekannten Settings gefunden
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    knownSettings.map(setting => <SettingCard key={setting.id} setting={setting} />)
+                  )}
+                </TabsContent>
+
+                <TabsContent value="unknown" className="mt-6">
+                  {unknownSettings.length === 0 ? (
+                    <Card>
+                      <CardContent className="py-12 text-center text-muted-foreground">
+                        Keine unbekannten Settings gefunden ✅
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <>
+                      <div className="bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-900 rounded-lg p-4 mb-4">
+                        <div className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5" />
+                          <div>
+                            <h3 className="font-semibold text-orange-900 dark:text-orange-100">
+                              Unbekannte Settings gefunden
+                            </h3>
+                            <p className="text-sm text-orange-700 dark:text-orange-300 mt-1">
+                              Diese Settings sind nicht in der offiziellen Registry dokumentiert. 
+                              Sie könnten veraltet sein oder von alten Features stammen.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      {unknownSettings.map(setting => <SettingCard key={setting.id} setting={setting} />)}
+                    </>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="duplicates" className="mt-6">
+                  {duplicateSettings.length === 0 ? (
+                    <Card>
+                      <CardContent className="py-12 text-center text-muted-foreground">
+                        Keine Duplikate gefunden ✅
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <>
+                      <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900 rounded-lg p-4 mb-4">
+                        <div className="flex items-start gap-3">
+                          <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
+                          <div>
+                            <h3 className="font-semibold text-red-900 dark:text-red-100">
+                              Doppelte Settings gefunden
+                            </h3>
+                            <p className="text-sm text-red-700 dark:text-red-300 mt-1">
+                              Mehrere Einträge mit demselben Key können zu unerwartetem Verhalten führen.
+                              Bitte nur einen Eintrag pro Key behalten (idealerweise den globalen).
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      {duplicateSettings.map(setting => <SettingCard key={setting.id} setting={setting} />)}
+                    </>
+                  )}
+                </TabsContent>
+              </Tabs>
+
+              {/* Delete Confirmation Dialog */}
+              <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Setting löschen?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Möchten Sie das Setting "{deleteTarget?.setting_key}" wirklich löschen?
+                      Diese Aktion kann nicht rückgängig gemacht werden.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Abbrechen</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                      Löschen
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          </div>
+        </PageLayout>
+      </AnimatedPage>
+      
+      {/* Footer AUSSERHALB AnimatedPage - sofort sichtbar und sticky */}
+      <UnifiedFooter
+        currentRole={currentRole}
+        currentUser={currentUser}
+      />
+    </>
   );
 }
