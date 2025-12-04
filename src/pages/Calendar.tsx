@@ -11,8 +11,7 @@ import { AnimatedPage } from "@/components/common/animated-page";
 /**
  * Calendar Page
  * 
- * Vereinfachte Architektur: AnimatedPage übernimmt die visuelle Überblendung.
- * PageLoader nur noch für initialen Auth-Check.
+ * Pattern A: PageLoader für Loading, dann AnimatedPage + Footer ohne Conditional
  */
 function CalendarContent() {
   const roleContext = useRole();
@@ -41,26 +40,25 @@ function CalendarContent() {
   
   const isReady = !footerLoading && !roleContext?.isLoading && !!roleContext?.currentUser;
 
+  // Pattern A: PageLoader für Loading-State
+  if (!isReady) {
+    return <PageLoader />;
+  }
+
+  // Pattern A: AnimatedPage + Footer ohne Conditional
   return (
     <>
-      {/* Content wird gerendert sobald Daten bereit sind */}
-      {isReady && (
-        <AnimatedPage>
-          <div className="min-h-screen flex flex-col pt-safe bg-background">
-            <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
-              <CalendarView initialDate={selectedCalendarDate} />
-            </main>
-          </div>
-        </AnimatedPage>
-      )}
-      
-      {/* Footer AUSSERHALB AnimatedPage - sofort sichtbar und sticky */}
-      {isReady && (
-        <UnifiedFooter
-          currentRole={roleContext.currentRole}
-          currentUser={roleContext.currentUser}
-        />
-      )}
+      <AnimatedPage>
+        <div className="min-h-screen flex flex-col pt-safe bg-background">
+          <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
+            <CalendarView initialDate={selectedCalendarDate} />
+          </main>
+        </div>
+      </AnimatedPage>
+      <UnifiedFooter
+        currentRole={roleContext.currentRole}
+        currentUser={roleContext.currentUser}
+      />
     </>
   );
 }
@@ -75,7 +73,7 @@ export function Calendar() {
     }
   }, [loading, session, navigate]);
 
-  // PageLoader nur für initialen Auth-Check
+  // Auth-Check mit PageLoader
   if (loading || !session || !user) {
     return <PageLoader />;
   }
