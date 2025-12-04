@@ -48,7 +48,7 @@ function AppContent() {
       {/* Content wird gerendert sobald Daten bereit sind */}
       {isReady && (
         <AnimatedPage>
-          <div className="min-h-screen flex flex-col relative z-0 pt-safe bg-background">
+          <div className="min-h-screen flex flex-col pt-safe bg-background">
             <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
               <Dashboard displayName={displayName} />
             </main>
@@ -60,7 +60,7 @@ function AppContent() {
         </AnimatedPage>
       )}
       
-      {/* Loader liegt DARÜBER (z-50) und fadet aus */}
+      {/* Loader liegt DARÜBER und fadet aus - z-40 damit Footer (z-50) darüber bleibt */}
       {!contentVisible && (
         <PageLoader isExiting={isReady} />
       )}
