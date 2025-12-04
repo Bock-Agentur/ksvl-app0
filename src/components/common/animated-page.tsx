@@ -1,4 +1,4 @@
-import { ReactNode, useMemo } from "react";
+import { ReactNode, useMemo, useState, useLayoutEffect } from "react";
 import { cn } from "@/lib/utils";
 import { usePageTransitionSettings, type PageTransitionSettings } from "@/hooks/core/settings/use-page-transition-settings";
 
@@ -30,32 +30,39 @@ const getKeyframeName = (effect: PageTransitionSettings['effect']): string => {
 
 export function AnimatedPage({ children, className }: AnimatedPageProps) {
   const { settings, isLoading } = usePageTransitionSettings();
+  const [isReady, setIsReady] = useState(false);
+
+  // useLayoutEffect läuft synchron VOR dem Paint
+  // Dadurch wird isReady=true gesetzt bevor der Browser malt
+  useLayoutEffect(() => {
+    setIsReady(true);
+  }, []);
+
+  const effectiveSettings = isLoading ? DEFAULT_SETTINGS : settings;
+  const shouldAnimate = effectiveSettings.enabled && effectiveSettings.effect !== 'none';
 
   const animationStyle = useMemo((): React.CSSProperties => {
-    // SOFORT Defaults verwenden, nicht auf DB warten
-    const effectiveSettings = isLoading ? DEFAULT_SETTINGS : settings;
-    
-    // Wenn disabled oder none, sofort sichtbar ohne Animation
-    if (!effectiveSettings.enabled || effectiveSettings.effect === 'none') {
+    // Wenn nicht animiert, sofort sichtbar
+    if (!shouldAnimate) {
       return { opacity: 1 };
     }
 
     const keyframeName = getKeyframeName(effectiveSettings.effect);
-    if (keyframeName === 'none') {
-      return { opacity: 1 };
+    
+    // VOR isReady: komplett versteckt (kein Flash möglich)
+    if (!isReady) {
+      return { opacity: 0 };
     }
 
-    // opacity: 0 als Fallback für den Frame BEVOR die Animation greift
-    // animation-fill-mode: both überschreibt das dann korrekt
+    // NACH isReady: Animation startet
     return {
-      opacity: 0,
       animationName: keyframeName,
       animationDuration: `${effectiveSettings.duration}ms`,
       animationTimingFunction: effectiveSettings.easing,
       animationFillMode: 'both',
       '--translate-distance': `${effectiveSettings.translateDistance}px`,
     } as React.CSSProperties;
-  }, [settings, isLoading]);
+  }, [shouldAnimate, effectiveSettings, isReady]);
 
   return (
     <div className={cn(className)} style={animationStyle}>
