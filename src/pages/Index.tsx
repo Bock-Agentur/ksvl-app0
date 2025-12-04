@@ -6,46 +6,45 @@ import { SlotsProvider } from "@/contexts/slots-context";
 import { UnifiedFooter } from "@/components/common/unified-footer";
 import { Dashboard } from "@/components/dashboard";
 import { PageLoader } from "@/components/common/page-loader";
-import { AnimatedPage } from "@/components/common/animated-page";
 
 /**
  * Index Page - Dashboard Only
  * 
- * Pattern A: PageLoader für Loading, dann AnimatedPage + Footer ohne Conditional
+ * Optimized: Only loads essential hooks for page render.
+ * Dashboard-specific data (AI settings, users, etc.) loads inside Dashboard component.
  */
 function AppContent() {
   const roleContext = useRole();
+  
+  // Only load what's needed for page structure
   const { fullName: displayName } = useProfileData({ enabled: !!roleContext?.currentRole });
   const { isLoading: footerLoading } = useFooterMenuSettings(roleContext?.currentRole || 'mitglied');
   
   useSlotDesign();
   
+  // Scroll to top on mount
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
   
-  const isReady = !footerLoading && !roleContext?.isLoading && !!roleContext?.currentUser;
-
-  // Pattern A: PageLoader für Loading-State
-  if (!isReady) {
+  const isFullyLoaded = !footerLoading && !roleContext?.isLoading;
+  
+  if (!roleContext || !isFullyLoaded || !roleContext.currentUser) {
     return <PageLoader />;
   }
+  
+  const { currentRole, currentUser } = roleContext;
 
-  // Pattern A: AnimatedPage + Footer ohne Conditional
   return (
-    <>
-      <AnimatedPage>
-        <div className="min-h-screen flex flex-col pt-safe bg-background">
-          <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
-            <Dashboard displayName={displayName} />
-          </main>
-        </div>
-      </AnimatedPage>
+    <div className="min-h-screen flex flex-col relative z-0 pt-safe bg-background">
+      <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
+        <Dashboard displayName={displayName} />
+      </main>
       <UnifiedFooter
-        currentRole={roleContext.currentRole}
-        currentUser={roleContext.currentUser}
+        currentRole={currentRole}
+        currentUser={currentUser}
       />
-    </>
+    </div>
   );
 }
 
@@ -59,7 +58,6 @@ const Index = () => {
     }
   }, [loading, session, navigate]);
 
-  // Auth-Check mit PageLoader
   if (loading || !session || !user) {
     return <PageLoader />;
   }

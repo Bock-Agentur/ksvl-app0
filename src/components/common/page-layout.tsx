@@ -1,21 +1,26 @@
 import { ReactNode } from "react";
+import { UnifiedFooter } from "./unified-footer";
 
 interface PageLayoutProps {
   children: ReactNode;
+  showFooter?: boolean;
 }
 
 /**
  * Consistent layout wrapper for all pages
  * - Provides standard container styling
- * - Footer wird AUSSERHALB von AnimatedPage gerendert (nicht hier)
+ * - Automatically includes UnifiedFooter
  * - Ensures pb-20 spacing for footer
  */
-export function PageLayout({ children }: PageLayoutProps) {
+export function PageLayout({ children, showFooter = true }: PageLayoutProps) {
   return (
-    <div className="min-h-screen flex flex-col pt-safe bg-background">
+    <div className="min-h-screen flex flex-col relative z-0 pt-safe bg-background">
       <main className="flex-1 overflow-auto pb-20 mx-0 px-0 py-0">
         {children}
       </main>
+      {showFooter && (
+        <UnifiedFooter />
+      )}
     </div>
   );
 }

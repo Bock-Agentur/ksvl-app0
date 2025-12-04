@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { ConsecutiveSlotsSettings } from "@/components/consecutive-slots-settings";
 import { DashboardSettings } from "@/components/dashboard-settings";
 import { RoleWelcomeSettings } from "@/components/role-welcome-settings";
@@ -11,15 +12,13 @@ import { LoginBackgroundSettings } from "@/components/settings/login-background"
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
 import { HeaderMessageSettings } from "@/components/header-message-settings";
-import { PageTransitionSettings } from "@/components/page-transition-settings";
 import { PageLoader } from "@/components/common/page-loader";
 import { PageLayout } from "@/components/common/page-layout";
-import { AnimatedPage } from "@/components/common/animated-page";
-import { UnifiedFooter } from "@/components/common/unified-footer";
 import { useRole, useIsMobile, useLoginBackground, ConsecutiveSlotsProvider } from "@/hooks";
 import { UserRole } from "@/types";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import { ROUTES } from "@/lib/registry/routes";
 import { toast } from "sonner";
 import { 
   LayoutDashboard, 
@@ -35,7 +34,6 @@ import {
   ChevronRight, 
   ArrowLeft,
   Type,
-  Zap,
   type LucideIcon
 } from "lucide-react";
 
@@ -65,8 +63,6 @@ function SettingsContent() {
   // KRITISCH: Prüfe TATSÄCHLICHE Rollen, nicht die ausgewählte Role-Switch-Rolle
   const isAdmin = currentUser?.roles?.includes('admin') || currentUser?.roles?.includes('vorstand');
   
-  const isReady = !isPageLoading && isAdmin;
-  
   // Access control - redirect if not authorized
   useEffect(() => {
     if (!roleLoading && !isAdmin) {
@@ -76,11 +72,11 @@ function SettingsContent() {
       navigate("/");
     }
   }, [isAdmin, roleLoading, navigate]);
-
-  // Scroll to top on mount
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }, []);
+  
+  // Zeige Loader während der Prüfung oder wenn kein Zugriff
+  if (roleLoading || !isAdmin) {
+    return <PageLoader />;
+  }
 
   // Helper: prüft ob User die tatsächliche Rolle hat (nicht die ausgewählte)
   const userHasRole = (role: UserRole) => currentUser?.roles?.includes(role) ?? false;
@@ -98,7 +94,6 @@ function SettingsContent() {
     { id: "footer", label: "Footer-Menü", description: "Fußzeile konfigurieren", icon: List, component: FooterMenuSettings, group: "navigation" },
     { id: "design", label: "Design", description: "Farben und Stile", icon: Palette, component: DesignSettings, group: "design" },
     { id: "theme", label: "Theme", description: "Hell/Dunkel-Modus", icon: Brush, component: ThemeManager, group: "design" },
-    { id: "transitions", label: "Seitenübergänge", description: "Animationen beim Seitenwechsel", icon: Zap, component: PageTransitionSettings, group: "design" },
     ...(userIsAdminOrVorstand ? [
       { id: "loginpage", label: "Login-Seite", description: "Hintergrundbild anpassen", icon: Image, component: LoginBackgroundSettings, group: "design" }
     ] : []),
@@ -137,27 +132,28 @@ function SettingsContent() {
   const activeLabel = sections.find(section => section.id === activeSection)?.label;
 
 
-  // Overview Content
-  const OverviewContent = () => (
-    <div
-      className={cn(
-        "min-h-screen pb-20 bg-background",
-        isMobile ? "pt-4" : "p-6"
-      )}
-      style={showBackground ? {
-        backgroundImage: `url(${background})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed'
-      } : undefined}
-    >
-      <div className={cn("max-w-4xl mx-auto")}>
-        {/* Header */}
-        <Card className={cn(
-          "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
-          isMobile && "mx-4"
-        )}>
+  if (isOverview) {
+    return (
+      <PageLayout>
+      <div
+        className={cn(
+          "min-h-screen pb-20 bg-background",
+          isMobile ? "pt-4" : "p-6"
+        )}
+        style={showBackground ? {
+          backgroundImage: `url(${background})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+          backgroundAttachment: 'fixed'
+        } : undefined}
+      >
+    <div className={cn("max-w-4xl mx-auto")}>
+      {/* Header */}
+      <Card className={cn(
+        "bg-gradient-to-r from-[hsl(var(--navy-deep))] to-[hsl(var(--navy-primary))] text-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 mb-6",
+        isMobile && "mx-4"
+      )}>
           <CardHeader className="pb-6">
             <CardTitle className={cn(
               "font-bold",
@@ -226,7 +222,7 @@ function SettingsContent() {
             </Card>
           )}
 
-          {/* Design */}
+          {/* Design & Darstellung */}
           {groupedSections.design.length > 0 && (
             <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
               {groupedSections.design.map((section, index) => (
@@ -254,7 +250,7 @@ function SettingsContent() {
             </Card>
           )}
 
-          {/* Advanced */}
+          {/* Erweitert */}
           {groupedSections.advanced.length > 0 && (
             <Card className="bg-white rounded-[2rem] shadow-[0_12px_32px_-8px_hsl(215_60%_15%_/_0.4)] border-0 overflow-hidden">
               {groupedSections.advanced.map((section, index) => (
@@ -282,12 +278,15 @@ function SettingsContent() {
             </Card>
           )}
         </div>
+        </div>
       </div>
-    </div>
-  );
+      </PageLayout>
+    );
+  }
 
-  // Detail View Content
-  const DetailContent = () => (
+  // Detail View
+  return (
+    <PageLayout>
     <div
       className={cn(
         "min-h-screen pb-20 bg-background",
@@ -338,28 +337,7 @@ function SettingsContent() {
         </div>
       </div>
     </div>
-  );
-
-  // PageLoader nur während Daten laden
-  if (!isReady) {
-    return <PageLoader />;
-  }
-
-  return (
-    <>
-      {/* Content mit Animation */}
-      <AnimatedPage>
-        <PageLayout>
-          {isOverview ? <OverviewContent /> : <DetailContent />}
-        </PageLayout>
-      </AnimatedPage>
-      
-      {/* Footer AUSSERHALB AnimatedPage - sofort sichtbar und sticky */}
-      <UnifiedFooter
-        currentRole={currentRole}
-        currentUser={currentUser}
-      />
-    </>
+    </PageLayout>
   );
 }
 
