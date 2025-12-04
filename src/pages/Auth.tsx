@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -163,10 +163,17 @@ export function Auth() {
   const [loading, setLoading] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const emailInputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { background, isLoading } = useLoginBackground();
   const isMobile = useIsMobile();
+
+  useEffect(() => {
+    if (!isLoading && emailInputRef.current) {
+      emailInputRef.current.focus();
+    }
+  }, [isLoading]);
 
   const getMediaUrl = (): string | null => {
     if (!background.storagePath || !background.bucket) {
@@ -479,21 +486,22 @@ export function Auth() {
               backgroundColor: `${background.inputBgColor}${Math.round(background.inputBgOpacity * 2.55).toString(16).padStart(2, '0')}`,
             }}
           >
-            <div className="relative flex items-center gap-3 px-4 h-full">
-              <svg className="w-5 h-5 flex-shrink-0 text-foreground/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-              <input
-                id="email"
-                name="email"
-                type="text"
-                autoComplete="username"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="E-Mail oder Benutzername"
-                className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-foreground/50"
-              />
+              <div className="relative flex items-center gap-3 px-4 h-full">
+                <svg className="w-5 h-5 flex-shrink-0 text-foreground/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                <input
+                  ref={emailInputRef}
+                  id="email"
+                  name="email"
+                  type="text"
+                  autoComplete="username"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  placeholder="E-Mail oder Benutzername"
+                  className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-foreground/50"
+                />
             </div>
           </div>
 
