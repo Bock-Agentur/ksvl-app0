@@ -17,12 +17,19 @@ export function PageLoader({ className, isExiting }: PageLoaderProps) {
     const easing = settingsLoading ? 'ease-out' : settings.easing;
     const enabled = settingsLoading ? true : settings.enabled;
 
-    if (!enabled) {
-      return { opacity: isExiting ? 0 : 1 };
+    // Loader ist SOFORT sichtbar (opacity: 1), kein fade-in
+    if (!isExiting) {
+      return { opacity: 1 };
     }
 
+    // Wenn disabled, sofort unsichtbar
+    if (!enabled) {
+      return { opacity: 0 };
+    }
+
+    // Nur fade-out Animation wenn isExiting
     return {
-      animationName: isExiting ? 'loader-fade-out' : 'loader-fade-in',
+      animationName: 'loader-fade-out',
       animationDuration: `${duration}ms`,
       animationTimingFunction: easing,
       animationFillMode: 'forwards',

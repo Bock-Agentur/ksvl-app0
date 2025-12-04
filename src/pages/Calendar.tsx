@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/contexts/auth-context";
-import { useRole, useSlotDesign, useFooterMenuSettings, ConsecutiveSlotsProvider } from "@/hooks";
+import { useRole, useSlotDesign, useFooterMenuSettings, usePageTransitionSettings, ConsecutiveSlotsProvider } from "@/hooks";
 import { SlotsProvider } from "@/contexts/slots-context";
 import { UnifiedFooter } from "@/components/common/unified-footer";
 import { CalendarView } from "@/components/calendar-view";
@@ -16,6 +16,7 @@ function CalendarContent() {
   const [loaderExiting, setLoaderExiting] = useState(false);
   
   const { isLoading: footerLoading } = useFooterMenuSettings(roleContext?.currentRole || 'mitglied');
+  const { settings: transitionSettings } = usePageTransitionSettings();
   
   useSlotDesign();
   
@@ -37,14 +38,17 @@ function CalendarContent() {
   
   const isFullyLoaded = !footerLoading && !roleContext?.isLoading;
   
-  // Handle smooth transition
+  // Handle smooth transition mit dynamischer Dauer aus Settings
   useEffect(() => {
     if (isFullyLoaded && roleContext?.currentUser) {
       setLoaderExiting(true);
-      const timer = setTimeout(() => setShowContent(true), 200);
+      const fadeOutDuration = transitionSettings.enabled 
+        ? transitionSettings.loaderFadeOutDuration 
+        : 0;
+      const timer = setTimeout(() => setShowContent(true), fadeOutDuration);
       return () => clearTimeout(timer);
     }
-  }, [isFullyLoaded, roleContext?.currentUser]);
+  }, [isFullyLoaded, roleContext?.currentUser, transitionSettings.enabled, transitionSettings.loaderFadeOutDuration]);
   
   if (!showContent) {
     return <PageLoader isExiting={loaderExiting} />;

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { EnhancedFileManager } from "@/components/file-manager/enhanced-file-manager";
-import { useIsMobile, useRole } from "@/hooks";
+import { useIsMobile, useRole, usePageTransitionSettings } from "@/hooks";
 import { cn } from "@/lib/utils";
 import { PageLayout } from "@/components/common/page-layout";
 import { PageLoader } from "@/components/common/page-loader";
@@ -11,15 +11,19 @@ export function FileManager() {
   const { isLoading } = useRole();
   const [showContent, setShowContent] = useState(false);
   const [loaderExiting, setLoaderExiting] = useState(false);
+  const { settings: transitionSettings } = usePageTransitionSettings();
 
-  // Handle smooth transition
+  // Handle smooth transition mit dynamischer Dauer aus Settings
   useEffect(() => {
     if (!isLoading) {
       setLoaderExiting(true);
-      const timer = setTimeout(() => setShowContent(true), 200);
+      const fadeOutDuration = transitionSettings.enabled 
+        ? transitionSettings.loaderFadeOutDuration 
+        : 0;
+      const timer = setTimeout(() => setShowContent(true), fadeOutDuration);
       return () => clearTimeout(timer);
     }
-  }, [isLoading]);
+  }, [isLoading, transitionSettings.enabled, transitionSettings.loaderFadeOutDuration]);
 
   if (!showContent) {
     return <PageLoader isExiting={loaderExiting} />;

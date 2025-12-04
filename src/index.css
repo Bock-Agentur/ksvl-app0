@@ -362,12 +362,8 @@ All colors MUST be HSL for proper theme support.
   }
 }
 
+/* Loader Keyframes - nur fade-out, kein fade-in für sofortige Sichtbarkeit */
 @keyframes loader-fade-out {
   from { opacity: 1; }
   to { opacity: 0; }
-}
-
-@keyframes loader-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }

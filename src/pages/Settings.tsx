@@ -15,7 +15,7 @@ import { PageTransitionSettings } from "@/components/page-transition-settings";
 import { PageLoader } from "@/components/common/page-loader";
 import { PageLayout } from "@/components/common/page-layout";
 import { AnimatedPage } from "@/components/common/animated-page";
-import { useRole, useIsMobile, useLoginBackground, ConsecutiveSlotsProvider } from "@/hooks";
+import { useRole, useIsMobile, useLoginBackground, usePageTransitionSettings, ConsecutiveSlotsProvider } from "@/hooks";
 import { UserRole } from "@/types";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -56,6 +56,7 @@ function SettingsContent() {
   const { currentRole, currentUser, isLoading: roleLoading } = useRole();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const { settings: transitionSettings } = usePageTransitionSettings();
   
   // ✅ Nur laden wenn Overview sichtbar (Background benötigt)
   const { background, isLoading: bgLoading } = useLoginBackground({ enabled: isOverview });
@@ -76,14 +77,17 @@ function SettingsContent() {
     }
   }, [isAdmin, roleLoading, navigate]);
 
-  // Handle smooth transition
+  // Handle smooth transition mit dynamischer Dauer aus Settings
   useEffect(() => {
     if (!isPageLoading && isAdmin) {
       setLoaderExiting(true);
-      const timer = setTimeout(() => setShowContent(true), 200);
+      const fadeOutDuration = transitionSettings.enabled 
+        ? transitionSettings.loaderFadeOutDuration 
+        : 0;
+      const timer = setTimeout(() => setShowContent(true), fadeOutDuration);
       return () => clearTimeout(timer);
     }
-  }, [isPageLoading, isAdmin]);
+  }, [isPageLoading, isAdmin, transitionSettings.enabled, transitionSettings.loaderFadeOutDuration]);
   
   // Zeige Loader während der Prüfung oder wenn kein Zugriff
   if (!showContent) {
