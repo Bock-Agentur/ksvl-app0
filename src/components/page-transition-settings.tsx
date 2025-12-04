@@ -165,8 +165,8 @@ export function PageTransitionSettings() {
                     <Slider
                       value={[settings.duration]}
                       onValueChange={([value]) => handleChange('duration', value)}
-                      min={100}
-                      max={1000}
+                      min={200}
+                      max={1500}
                       step={50}
                     />
                   </div>
@@ -217,8 +217,8 @@ export function PageTransitionSettings() {
                     <Slider
                       value={[settings.loaderFadeOutDuration]}
                       onValueChange={([value]) => handleChange('loaderFadeOutDuration', value)}
-                      min={100}
-                      max={500}
+                      min={200}
+                      max={800}
                       step={50}
                     />
                   </div>
