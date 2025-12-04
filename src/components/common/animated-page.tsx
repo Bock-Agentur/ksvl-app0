@@ -17,26 +17,25 @@ const DEFAULT_SETTINGS: PageTransitionSettings = {
   translateDistance: 12,
 };
 
-const getKeyframeName = (effect: PageTransitionSettings['effect']): string => {
+const getAnimationClass = (effect: PageTransitionSettings['effect']): string => {
   switch (effect) {
-    case 'fade': return 'page-fade';
-    case 'slide-up': return 'page-slide-up';
-    case 'slide-down': return 'page-slide-down';
-    case 'scale': return 'page-scale';
-    case 'fade-slide': return 'page-fade-slide';
-    default: return 'none';
+    case 'fade': return 'animate-fade';
+    case 'slide-up': return 'animate-slide-up';
+    case 'slide-down': return 'animate-slide-down';
+    case 'scale': return 'animate-scale';
+    case 'fade-slide': return 'animate-fade-slide';
+    default: return '';
   }
 };
 
 /**
- * AnimatedPage - CSS-only Animation für sanfte Seitenübergänge
+ * AnimatedPage - CSS-Klassen-basierte Animation für sanfte Seitenübergänge
  * 
- * KRITISCH: Verwendet animation-fill-mode: both, was garantiert:
- * - VOR der Animation: opacity: 0 (aus den Keyframes)
- * - NACH der Animation: opacity: 1 (aus den Keyframes)
- * 
- * Dadurch gibt es keinen "Flash" des Contents vor der Animation,
- * da der Browser den initialen Keyframe-State sofort anwendet.
+ * KRITISCH: Verwendet CSS-Klassen statt Inline-Styles!
+ * - CSS-Klassen werden VOR dem ersten Browser-Paint angewendet
+ * - Inline-Styles können einen Frame verzögert sein → Flash
+ * - .animate-page-enter hat opacity: 0 im CSS → garantiert unsichtbar
+ * - animation-fill-mode: both im CSS → sauberer Start/End-State
  */
 export function AnimatedPage({ children, className }: AnimatedPageProps) {
   const { settings, isLoading } = usePageTransitionSettings();
@@ -45,29 +44,39 @@ export function AnimatedPage({ children, className }: AnimatedPageProps) {
   const effectiveSettings = isLoading ? DEFAULT_SETTINGS : settings;
   const shouldAnimate = effectiveSettings.enabled && effectiveSettings.effect !== 'none';
 
-  const animationStyle = useMemo((): React.CSSProperties => {
-    // Wenn nicht animiert, sofort sichtbar ohne Animation
+  // CSS-Variablen für dynamische Werte (duration, easing, translateDistance)
+  const cssVariables = useMemo((): React.CSSProperties => {
     if (!shouldAnimate) {
-      return { opacity: 1 };
+      return {};
     }
-
-    const keyframeName = getKeyframeName(effectiveSettings.effect);
-
-    // CSS-only Animation:
-    // - animation-fill-mode: both wendet den ERSTEN Keyframe (opacity: 0) sofort an
-    // - Dadurch ist der Content GARANTIERT unsichtbar vor dem ersten Paint
-    // - Die Animation startet dann sauber von opacity: 0 zu opacity: 1
     return {
-      animationName: keyframeName,
+      '--translate-distance': `${effectiveSettings.translateDistance}px`,
       animationDuration: `${effectiveSettings.duration}ms`,
       animationTimingFunction: effectiveSettings.easing,
-      animationFillMode: 'both', // KRITISCH: Wendet Start- UND End-Keyframe an
-      '--translate-distance': `${effectiveSettings.translateDistance}px`,
     } as React.CSSProperties;
   }, [shouldAnimate, effectiveSettings]);
 
+  // Wenn keine Animation, direkt sichtbar rendern
+  if (!shouldAnimate) {
+    return (
+      <div className={cn(className)}>
+        {children}
+      </div>
+    );
+  }
+
+  // Mit Animation: CSS-Klassen für garantierte opacity: 0 vor erstem Paint
+  const animationClass = getAnimationClass(effectiveSettings.effect);
+
   return (
-    <div className={cn(className)} style={animationStyle}>
+    <div 
+      className={cn(
+        "animate-page-enter", // Basis-Klasse: opacity: 0, animation-fill-mode: both
+        animationClass,        // Spezifische Animation (fade, slide-up, etc.)
+        className
+      )} 
+      style={cssVariables}
+    >
       {children}
     </div>
   );

@@ -367,3 +367,33 @@ All colors MUST be HSL for proper theme support.
   from { opacity: 1; }
   to { opacity: 0; }
 }
+
+/* 
+ * KRITISCH: Diese Klasse wird VOR dem ersten Browser-Paint angewendet.
+ * Inline-Styles können einen Frame verzögert sein, CSS-Klassen nicht.
+ * animation-fill-mode: both garantiert opacity: 0 vor Animation-Start.
+ */
+.animate-page-enter {
+  opacity: 0;
+  animation-fill-mode: both;
+}
+
+.animate-page-enter.animate-fade {
+  animation-name: page-fade;
+}
+
+.animate-page-enter.animate-slide-up {
+  animation-name: page-slide-up;
+}
+
+.animate-page-enter.animate-slide-down {
+  animation-name: page-slide-down;
+}
+
+.animate-page-enter.animate-scale {
+  animation-name: page-scale;
+}
+
+.animate-page-enter.animate-fade-slide {
+  animation-name: page-fade-slide;
+}
