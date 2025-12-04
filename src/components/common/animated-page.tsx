@@ -45,10 +45,10 @@ export function AnimatedPage({ children, className }: AnimatedPageProps) {
       return { opacity: 1 };
     }
 
-    // animation-fill-mode: both sorgt für:
-    // - VOR Animation: opacity aus "from" (0)
-    // - NACH Animation: opacity aus "to" (1)
+    // opacity: 0 als Fallback für den Frame BEVOR die Animation greift
+    // animation-fill-mode: both überschreibt das dann korrekt
     return {
+      opacity: 0,
       animationName: keyframeName,
       animationDuration: `${effectiveSettings.duration}ms`,
       animationTimingFunction: effectiveSettings.easing,
