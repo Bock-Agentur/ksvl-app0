@@ -1,58 +1,46 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { UserManagementRefactored } from "@/components/user-management";
 import { PageLayout } from "@/components/common/page-layout";
 import { PageLoader } from "@/components/common/page-loader";
 import { AnimatedPage } from "@/components/common/animated-page";
 import { UnifiedFooter } from "@/components/common/unified-footer";
-import { useRole, usePageTransitionSettings } from "@/hooks";
+import { useRole } from "@/hooks";
 
 /**
  * Mitgliederverwaltung Page
  * 
- * Overlay-Pattern: PageLoader und AnimatedPage werden parallel gerendert.
- * PageLoader liegt ÜBER dem Content und fadet aus.
+ * Vereinfachte Architektur: AnimatedPage übernimmt die visuelle Überblendung.
+ * PageLoader nur noch für initialen Auth-Check.
  */
 export function Users() {
   const { isLoading, currentRole, currentUser } = useRole();
-  const [contentVisible, setContentVisible] = useState(false);
-  const { settings: transitionSettings } = usePageTransitionSettings();
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
 
   const isReady = !isLoading;
 
-  // Loader wird erst entfernt NACHDEM seine fade-out Animation komplett ist
-  useEffect(() => {
-    if (isReady) {
-      const fadeOutDuration = transitionSettings.enabled 
-        ? transitionSettings.loaderFadeOutDuration 
-        : 0;
-      const timer = setTimeout(() => setContentVisible(true), fadeOutDuration);
-      return () => clearTimeout(timer);
-    }
-  }, [isReady, transitionSettings.enabled, transitionSettings.loaderFadeOutDuration]);
+  // PageLoader nur während Auth/Role lädt
+  if (!isReady) {
+    return <PageLoader />;
+  }
 
   return (
     <>
-      {/* Content wird gerendert sobald Daten bereit sind */}
-      {isReady && (
-        <AnimatedPage>
-          <PageLayout>
-            <UserManagementRefactored />
-          </PageLayout>
-        </AnimatedPage>
-      )}
+      {/* Content mit Animation */}
+      <AnimatedPage>
+        <PageLayout>
+          <UserManagementRefactored />
+        </PageLayout>
+      </AnimatedPage>
       
       {/* Footer AUSSERHALB AnimatedPage - sofort sichtbar und sticky */}
-      {isReady && (
-        <UnifiedFooter
-          currentRole={currentRole}
-          currentUser={currentUser}
-        />
-      )}
-      
-      {/* Loader liegt DARÜBER und fadet aus - z-40 damit Footer (z-50) darüber bleibt */}
-      {!contentVisible && (
-        <PageLoader isExiting={isReady} />
-      )}
+      <UnifiedFooter
+        currentRole={currentRole}
+        currentUser={currentUser}
+      />
     </>
   );
 }

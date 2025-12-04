@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConsecutiveSlotsSettings } from "@/components/consecutive-slots-settings";
 import { DashboardSettings } from "@/components/dashboard-settings";
 import { RoleWelcomeSettings } from "@/components/role-welcome-settings";
@@ -16,7 +16,7 @@ import { PageLoader } from "@/components/common/page-loader";
 import { PageLayout } from "@/components/common/page-layout";
 import { AnimatedPage } from "@/components/common/animated-page";
 import { UnifiedFooter } from "@/components/common/unified-footer";
-import { useRole, useIsMobile, useLoginBackground, usePageTransitionSettings, ConsecutiveSlotsProvider } from "@/hooks";
+import { useRole, useIsMobile, useLoginBackground, ConsecutiveSlotsProvider } from "@/hooks";
 import { UserRole } from "@/types";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
@@ -52,11 +52,9 @@ type SettingSection = {
 function SettingsContent() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [isOverview, setIsOverview] = useState(true);
-  const [contentVisible, setContentVisible] = useState(false);
   const { currentRole, currentUser, isLoading: roleLoading } = useRole();
   const isMobile = useIsMobile();
   const navigate = useNavigate();
-  const { settings: transitionSettings } = usePageTransitionSettings();
   
   // ✅ Nur laden wenn Overview sichtbar (Background benötigt)
   const { background, isLoading: bgLoading } = useLoginBackground({ enabled: isOverview });
@@ -79,16 +77,10 @@ function SettingsContent() {
     }
   }, [isAdmin, roleLoading, navigate]);
 
-  // Loader wird erst entfernt NACHDEM seine fade-out Animation komplett ist
+  // Scroll to top on mount
   useEffect(() => {
-    if (isReady) {
-      const fadeOutDuration = transitionSettings.enabled 
-        ? transitionSettings.loaderFadeOutDuration 
-        : 0;
-      const timer = setTimeout(() => setContentVisible(true), fadeOutDuration);
-      return () => clearTimeout(timer);
-    }
-  }, [isReady, transitionSettings.enabled, transitionSettings.loaderFadeOutDuration]);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
 
   // Helper: prüft ob User die tatsächliche Rolle hat (nicht die ausgewählte)
   const userHasRole = (role: UserRole) => currentUser?.roles?.includes(role) ?? false;
@@ -348,29 +340,25 @@ function SettingsContent() {
     </div>
   );
 
+  // PageLoader nur während Daten laden
+  if (!isReady) {
+    return <PageLoader />;
+  }
+
   return (
     <>
-      {/* Content wird gerendert sobald Daten bereit sind */}
-      {isReady && (
-        <AnimatedPage>
-          <PageLayout>
-            {isOverview ? <OverviewContent /> : <DetailContent />}
-          </PageLayout>
-        </AnimatedPage>
-      )}
+      {/* Content mit Animation */}
+      <AnimatedPage>
+        <PageLayout>
+          {isOverview ? <OverviewContent /> : <DetailContent />}
+        </PageLayout>
+      </AnimatedPage>
       
       {/* Footer AUSSERHALB AnimatedPage - sofort sichtbar und sticky */}
-      {isReady && (
-        <UnifiedFooter
-          currentRole={currentRole}
-          currentUser={currentUser}
-        />
-      )}
-      
-      {/* Loader liegt DARÜBER und fadet aus - z-40 damit Footer (z-50) darüber bleibt */}
-      {!contentVisible && (
-        <PageLoader isExiting={isReady} />
-      )}
+      <UnifiedFooter
+        currentRole={currentRole}
+        currentUser={currentUser}
+      />
     </>
   );
 }
