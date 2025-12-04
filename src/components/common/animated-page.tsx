@@ -10,11 +10,11 @@ interface AnimatedPageProps {
 // Default settings für sofortige Animation ohne DB-Wartezeit
 const DEFAULT_SETTINGS: PageTransitionSettings = {
   enabled: true,
-  duration: 300,
+  duration: 500,
   easing: 'ease-out',
   effect: 'fade-slide',
-  loaderFadeOutDuration: 200,
-  translateDistance: 10,
+  loaderFadeOutDuration: 400,
+  translateDistance: 12,
 };
 
 const getKeyframeName = (effect: PageTransitionSettings['effect']): string => {
