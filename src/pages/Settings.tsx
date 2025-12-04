@@ -11,6 +11,7 @@ import { LoginBackgroundSettings } from "@/components/settings/login-background"
 import { AIAssistantSettings } from "@/components/ai-assistant-settings";
 import { AIWelcomeMessageSettings } from "@/components/ai-welcome-message-settings";
 import { HeaderMessageSettings } from "@/components/header-message-settings";
+import { PageTransitionSettings } from "@/components/page-transition-settings";
 import { PageLoader } from "@/components/common/page-loader";
 import { PageLayout } from "@/components/common/page-layout";
 import { AnimatedPage } from "@/components/common/animated-page";
@@ -33,6 +34,7 @@ import {
   ChevronRight, 
   ArrowLeft,
   Type,
+  Zap,
   type LucideIcon
 } from "lucide-react";
 
@@ -104,6 +106,7 @@ function SettingsContent() {
     { id: "footer", label: "Footer-Menü", description: "Fußzeile konfigurieren", icon: List, component: FooterMenuSettings, group: "navigation" },
     { id: "design", label: "Design", description: "Farben und Stile", icon: Palette, component: DesignSettings, group: "design" },
     { id: "theme", label: "Theme", description: "Hell/Dunkel-Modus", icon: Brush, component: ThemeManager, group: "design" },
+    { id: "transitions", label: "Seitenübergänge", description: "Animationen beim Seitenwechsel", icon: Zap, component: PageTransitionSettings, group: "design" },
     ...(userIsAdminOrVorstand ? [
       { id: "loginpage", label: "Login-Seite", description: "Hintergrundbild anpassen", icon: Image, component: LoginBackgroundSettings, group: "design" }
     ] : []),

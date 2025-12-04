@@ -308,3 +308,66 @@ All colors MUST be HSL for proper theme support.
     0 8px 16px -4px rgba(15, 23, 42, 0.10),
     0 16px 40px -8px rgba(15, 23, 42, 0.15);
 }
+
+/* ============================================
+   PAGE TRANSITION ANIMATIONS (Configurable)
+   ============================================ */
+
+@keyframes page-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes page-slide-up {
+  from { 
+    opacity: 0; 
+    transform: translateY(var(--translate-distance, 10px)); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes page-slide-down {
+  from { 
+    opacity: 0; 
+    transform: translateY(calc(var(--translate-distance, 10px) * -1)); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes page-scale {
+  from { 
+    opacity: 0; 
+    transform: scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+@keyframes page-fade-slide {
+  from { 
+    opacity: 0; 
+    transform: translateY(var(--translate-distance, 10px)); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes loader-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes loader-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

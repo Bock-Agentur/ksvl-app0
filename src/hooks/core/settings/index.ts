@@ -15,3 +15,4 @@ export { useAIAssistantSettings } from './use-ai-assistant-settings';
 export { useAIWelcomeMessage } from './use-ai-welcome-message';
 export { useWelcomeMessages } from './use-welcome-messages';
 export { useSlotDesign, type SlotDesignSettings } from './use-slot-design';
+export { usePageTransitionSettings, type PageTransitionSettings } from './use-page-transition-settings';
