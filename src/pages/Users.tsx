@@ -3,6 +3,7 @@ import { UserManagementRefactored } from "@/components/user-management";
 import { PageLayout } from "@/components/common/page-layout";
 import { PageLoader } from "@/components/common/page-loader";
 import { AnimatedPage } from "@/components/common/animated-page";
+import { UnifiedFooter } from "@/components/common/unified-footer";
 import { useRole, usePageTransitionSettings } from "@/hooks";
 
 /**
@@ -12,7 +13,7 @@ import { useRole, usePageTransitionSettings } from "@/hooks";
  * PageLoader liegt ÜBER dem Content und fadet aus.
  */
 export function Users() {
-  const { isLoading } = useRole();
+  const { isLoading, currentRole, currentUser } = useRole();
   const [contentVisible, setContentVisible] = useState(false);
   const { settings: transitionSettings } = usePageTransitionSettings();
 
@@ -38,6 +39,14 @@ export function Users() {
             <UserManagementRefactored />
           </PageLayout>
         </AnimatedPage>
+      )}
+      
+      {/* Footer AUSSERHALB AnimatedPage - sofort sichtbar und sticky */}
+      {isReady && (
+        <UnifiedFooter
+          currentRole={currentRole}
+          currentUser={currentUser}
+        />
       )}
       
       {/* Loader liegt DARÜBER und fadet aus - z-40 damit Footer (z-50) darüber bleibt */}
