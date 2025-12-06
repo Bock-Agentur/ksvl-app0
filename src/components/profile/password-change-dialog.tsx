@@ -162,7 +162,7 @@ export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         placeholder="Passwort wiederholen"
-                        className="pr-10"
+                        className={`pr-10 ${confirmPassword && newPassword !== confirmPassword ? 'border-destructive' : ''}`}
                       />
                       <Button
                         type="button"
@@ -174,6 +174,9 @@ export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
                         {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                     </div>
+                    {confirmPassword && newPassword !== confirmPassword && (
+                      <p className="text-xs text-destructive">Passwörter stimmen nicht überein</p>
+                    )}
                   </div>
 
                   <p className="text-xs text-muted-foreground">
