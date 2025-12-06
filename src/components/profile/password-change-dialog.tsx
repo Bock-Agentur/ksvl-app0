@@ -118,15 +118,15 @@ export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
           <Key className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[85vh] overflow-y-auto pb-8">
-        <DialogHeader>
+      <DialogContent className="max-h-[80vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Passwort ändern</DialogTitle>
           <DialogDescription>
             Bitte geben Sie ein neues Passwort ein.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="flex-1 overflow-y-auto space-y-4 py-4">
           <div className="space-y-2">
             <Label htmlFor="new-password">Neues Passwort</Label>
             <div className="relative">
@@ -176,22 +176,22 @@ export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
           <p className="text-xs text-muted-foreground">
             Mind. 8 Zeichen, Groß- und Kleinbuchstaben, mindestens eine Zahl
           </p>
+        </div>
 
-          <div className="flex gap-2 justify-end">
-            <Button
-              variant="outline"
-              onClick={handleClose}
-              disabled={isChanging}
-            >
-              Abbrechen
-            </Button>
-            <Button 
-              onClick={handleChangePassword} 
-              disabled={isChanging || !newPassword || !confirmPassword}
-            >
-              {isChanging ? "Wird geändert..." : "Passwort ändern"}
-            </Button>
-          </div>
+        <div className="flex gap-2 justify-end flex-shrink-0 pt-4 border-t">
+          <Button
+            variant="outline"
+            onClick={handleClose}
+            disabled={isChanging}
+          >
+            Abbrechen
+          </Button>
+          <Button 
+            onClick={handleChangePassword} 
+            disabled={isChanging || !newPassword || !confirmPassword}
+          >
+            {isChanging ? "Wird geändert..." : "Passwort ändern"}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
