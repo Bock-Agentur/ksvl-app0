@@ -1,16 +1,8 @@
 import { useState } from "react";
-import { Key, Eye, EyeOff } from "lucide-react";
+import { Key, Eye, EyeOff, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import { useToast } from "@/hooks";
 import { supabase } from "@/integrations/supabase/client";
 import { validatePassword } from "@/lib/password-validation";
@@ -21,7 +13,7 @@ interface PasswordChangeDialogProps {
 }
 
 export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
@@ -104,7 +96,7 @@ export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setIsOpen(false);
     setNewPassword("");
     setConfirmPassword("");
     setShowNewPassword(false);
@@ -112,88 +104,104 @@ export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => isOpen ? setOpen(true) : handleClose()}>
-      <DialogTrigger asChild>
-        <Button type="button" variant="outline" size="sm">
-          <Key className="w-4 h-4" />
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-h-[80vh] flex flex-col">
-        <DialogHeader className="flex-shrink-0">
-          <DialogTitle>Passwort ändern</DialogTitle>
-          <DialogDescription>
-            Bitte geben Sie ein neues Passwort ein.
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Button type="button" variant="outline" size="sm" onClick={() => setIsOpen(true)}>
+        <Key className="w-4 h-4" />
+      </Button>
 
-        <div className="flex-1 overflow-y-auto space-y-4 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="new-password">Neues Passwort</Label>
-            <div className="relative">
-              <Input
-                id="new-password"
-                type={showNewPassword ? "text" : "password"}
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Neues Passwort eingeben"
-                className="pr-10"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                onClick={() => setShowNewPassword(!showNewPassword)}
-              >
-                {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
+      {isOpen && (
+        <div className="fixed inset-0 z-50">
+          <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
+          <div className="fixed inset-0 flex items-center justify-center p-4 overflow-y-auto">
+            <div className="bg-card rounded-2xl shadow-lg max-w-md w-full my-auto">
+              <div className="p-6 space-y-4">
+                {/* Header */}
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold">Passwort ändern</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Bitte geben Sie ein neues Passwort ein.
+                    </p>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={handleClose}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Form */}
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="new-password">Neues Passwort</Label>
+                    <div className="relative">
+                      <Input
+                        id="new-password"
+                        type={showNewPassword ? "text" : "password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Neues Passwort eingeben"
+                        className="pr-10"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                      >
+                        {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password">Passwort bestätigen</Label>
+                    <div className="relative">
+                      <Input
+                        id="confirm-password"
+                        type={showConfirmPassword ? "text" : "password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Passwort wiederholen"
+                        className="pr-10"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    Mind. 8 Zeichen, Groß- und Kleinbuchstaben, mindestens eine Zahl
+                  </p>
+                </div>
+
+                {/* Footer */}
+                <div className="flex gap-2 justify-end pt-2">
+                  <Button
+                    variant="outline"
+                    onClick={handleClose}
+                    disabled={isChanging}
+                  >
+                    Abbrechen
+                  </Button>
+                  <Button 
+                    onClick={handleChangePassword} 
+                    disabled={isChanging || !newPassword || !confirmPassword}
+                  >
+                    {isChanging ? "Wird geändert..." : "Passwort ändern"}
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="confirm-password">Passwort bestätigen</Label>
-            <div className="relative">
-              <Input
-                id="confirm-password"
-                type={showConfirmPassword ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Passwort wiederholen"
-                className="pr-10"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
-            </div>
-          </div>
-
-          <p className="text-xs text-muted-foreground">
-            Mind. 8 Zeichen, Groß- und Kleinbuchstaben, mindestens eine Zahl
-          </p>
         </div>
-
-        <div className="flex gap-2 justify-end flex-shrink-0 pt-4 border-t">
-          <Button
-            variant="outline"
-            onClick={handleClose}
-            disabled={isChanging}
-          >
-            Abbrechen
-          </Button>
-          <Button 
-            onClick={handleChangePassword} 
-            disabled={isChanging || !newPassword || !confirmPassword}
-          >
-            {isChanging ? "Wird geändert..." : "Passwort ändern"}
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+      )}
+    </>
   );
 }
