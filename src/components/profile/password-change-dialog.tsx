@@ -118,7 +118,7 @@ export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
           <Key className="w-4 h-4" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-h-[85vh] overflow-y-auto pb-8">
         <DialogHeader>
           <DialogTitle>Passwort ändern</DialogTitle>
           <DialogDescription>
