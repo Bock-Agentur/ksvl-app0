@@ -3,8 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { User as UserType } from "@/types";
-import { PasswordChangeDialog } from "./password-change-dialog";
-
+import { PasswordDialog } from "@/components/common/password-dialog";
 interface ProfileLoginCardProps {
   user: UserType;
   editedUser: UserType | null;
@@ -63,7 +62,7 @@ export function ProfileLoginCard({
                 disabled
                 className="bg-muted flex-1"
               />
-              <PasswordChangeDialog userId={userId} />
+              <PasswordDialog userId={userId} />
             </div>
           </div>
 
