@@ -13,7 +13,7 @@ import { UserStatsCards } from "./user-management/user-stats-cards";
 import { UserFiltersSection } from "./user-management/user-filters-section";
 import { UserListSection } from "./user-management/user-list-section";
 import { UserAddDialog } from "./user-management/user-add-dialog";
-import { UserPasswordDialog } from "./user-management/user-password-dialog";
+import { PasswordDialog } from "@/components/common/password-dialog";
 
 /**
  * Benutzer-Verwaltung mit Supabase Datenbank
@@ -408,7 +408,7 @@ export function UserManagementRefactored() {
           onSubmit={handleFormSubmit}
         />
 
-        <UserPasswordDialog
+        <PasswordDialog
           open={showPasswordDialog}
           onOpenChange={(open) => {
             setShowPasswordDialog(open);
