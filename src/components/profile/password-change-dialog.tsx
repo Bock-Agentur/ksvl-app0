@@ -111,9 +111,9 @@ export function PasswordChangeDialog({ userId }: PasswordChangeDialogProps) {
 
       {isOpen && (
         <div className="fixed inset-0 z-50">
-          <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
+          <div className="fixed inset-0 bg-black/50 animate-fade-in" onClick={handleClose} />
           <div className="fixed inset-0 flex items-center justify-center p-4 overflow-y-auto">
-            <div className="bg-card rounded-2xl shadow-lg max-w-md w-full my-auto">
+            <div className="bg-card rounded-2xl shadow-lg max-w-md w-full my-auto animate-scale-in">
               <div className="p-6 space-y-4">
                 {/* Header */}
                 <div className="flex items-start justify-between">
