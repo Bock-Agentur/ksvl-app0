@@ -762,164 +762,160 @@ CREATE POLICY "Service role can insert sync logs" ON public.monday_sync_logs
 -- ============================================================================
 -- TEIL 5: DATEN
 -- ============================================================================
+-- HINWEIS: Dieser Dump enthält Schema-Dokumentation und Beispiel-Referenzdaten.
+-- Die echten Produktionsdaten sind in der Datenbank gespeichert.
+-- Profile-Daten werden hier nicht exportiert, da sie mit auth.users verknüpft sind.
+-- Die user_roles unten zeigen die echten Rollenzuweisungen.
 
 -- ----------------------------------------------------------------------------
--- profiles (10 Einträge)
+-- profiles werden über auth.users erstellt - hier nur Schema-Dokumentation
+-- Echte Profile-IDs entsprechen den auth.users IDs
 -- ----------------------------------------------------------------------------
-INSERT INTO public.profiles (id, email, name, phone, oesv_number, member_number, address, berth_number, berth_type, boat_name, status, avatar_url, first_name, last_name, street_address, postal_code, city, dinghy_berth_number, boat_type, parking_permit_number, beverage_chip_number, emergency_contact, notes, vorstand_funktion, monday_item_id, username, two_factor_method, membership_type, membership_status, boat_color, beverage_chip_status, emergency_contact_name, emergency_contact_phone, emergency_contact_relationship, document_bfa, document_insurance, document_berth_contract, document_member_photo, board_position_start_date, board_position_end_date, berth_length, berth_width, buoy_radius, has_dinghy_berth, statute_accepted, privacy_accepted, newsletter_optin, membership_status_history, board_position_history, created_by, modified_by, birth_date, entry_date, created_at, updated_at, is_test_data, boat_length, boat_width, parking_permit_issue_date, beverage_chip_issue_date, is_role_user, data_public_in_ksvl, contact_public_in_ksvl, ai_info_enabled, password_change_required) VALUES
-('8a79a08c-1a17-4f80-8f4f-59c6f6ed7dea', 'superadmin@ksvl.at', 'Super Administrator', '+43 660 1111111', NULL, 'ADMIN-001', 'Lorettoplatz 1, 9020 Klagenfurt', NULL, NULL, NULL, 'active', NULL, 'Super', 'Administrator', 'Lorettoplatz 1', '9020', 'Klagenfurt', NULL, NULL, NULL, NULL, NULL, 'System-Administrator des KSVL Slot Managers', NULL, NULL, 'superadmin', 'Aus', 'Ehrenmitglied', 'Aktiv', NULL, 'Aktiv', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, true, true, true, '[]', '[]', NULL, NULL, NULL, '2020-01-01', '2025-05-31 10:00:00+00', '2025-12-08 16:14:21.968303+00', false, NULL, NULL, NULL, NULL, true, true, true, true, false),
-('51ee808b-6927-41f5-bbd8-376ee19e8bb5', 'admin@ksvl.at', 'Admin User', '+43 660 2222222', NULL, 'ADMIN-002', 'Lorettoplatz 2, 9020 Klagenfurt', NULL, NULL, NULL, 'active', NULL, 'Admin', 'User', 'Lorettoplatz 2', '9020', 'Klagenfurt', NULL, NULL, NULL, NULL, NULL, 'Administrator-Account', NULL, NULL, 'admin', 'Aus', 'Ordentliches Mitglied', 'Aktiv', NULL, 'Aktiv', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, true, true, false, '[]', '[]', NULL, NULL, NULL, '2021-01-01', '2025-05-31 10:01:00+00', '2025-12-02 14:37:32.022+00', false, NULL, NULL, NULL, NULL, true, false, false, false, false),
-('25adeecc-0e31-4c4b-bfd7-ab69e42dfd2a', 'kranfuehrer@ksvl.at', 'Kranführer Hans', '+43 660 3333333', 'OESV-1234', 'MG-2024-001', 'Hafengasse 5, 9020 Klagenfurt', 'A-15', 'Steg', 'Seabird', 'active', NULL, 'Hans', 'Kranführer', 'Hafengasse 5', '9020', 'Klagenfurt', NULL, 'Segelyacht', 'P-2024-001', 'BC-001', NULL, 'Erfahrener Kranführer seit 2018', NULL, NULL, 'kranfuehrer', 'Aus', 'Ordentliches Mitglied', 'Aktiv', 'Weiß/Blau', 'Aktiv', 'Maria Kranführer', '+43 660 3333334', 'Ehefrau', NULL, NULL, NULL, NULL, NULL, NULL, 8.5, 2.8, NULL, false, true, true, true, '[]', '[]', NULL, NULL, '1975-06-15', '2018-03-01', '2025-05-31 10:02:00+00', '2025-12-02 14:42:38.012+00', false, 9.2, 3.1, '2024-01-15', '2024-01-15', false, true, true, false, false),
-('02fe55ba-58e1-4316-8cd4-0ebce5dc4a04', 'vorstand@ksvl.at', 'Vorstand Maria', '+43 660 4444444', 'OESV-2345', 'MG-2024-002', 'Seestraße 10, 9020 Klagenfurt', 'B-08', 'Boje', 'Windspiel', 'active', NULL, 'Maria', 'Vorstand', 'Seestraße 10', '9020', 'Klagenfurt', 'D-03', 'Jolle', 'P-2024-002', 'BC-002', NULL, 'Schriftführerin im Vorstand', 'Schriftführerin', NULL, 'vorstand', 'Aus', 'Ordentliches Mitglied', 'Aktiv', 'Rot', 'Aktiv', 'Thomas Vorstand', '+43 660 4444445', 'Ehemann', NULL, NULL, NULL, NULL, '2023-01-01', NULL, 6.0, 2.2, 5.0, true, true, true, true, '[{"status": "Aktiv", "changed_at": "2023-01-01"}]', '[{"position": "Schriftführerin", "started_at": "2023-01-01"}]', NULL, NULL, '1980-03-22', '2015-05-01', '2025-05-31 10:03:00+00', '2025-12-02 14:45:12.456+00', false, 5.5, 2.0, '2024-02-01', '2024-02-01', false, true, false, true, false),
-('a16aec5f-f645-4bb1-be5e-b0a3afc7e89e', 'mitglied@ksvl.at', 'Mitglied Stefan', '+43 660 5555555', 'OESV-3456', 'MG-2024-003', 'Uferweg 22, 9020 Klagenfurt', 'C-12', 'Steg', 'Möwe', 'active', NULL, 'Stefan', 'Mitglied', 'Uferweg 22', '9020', 'Klagenfurt', NULL, 'Motorboot', 'P-2024-003', 'BC-003', NULL, 'Aktives Mitglied', NULL, NULL, 'mitglied', 'Aus', 'Ordentliches Mitglied', 'Aktiv', 'Blau/Weiß', 'Aktiv', 'Anna Mitglied', '+43 660 5555556', 'Schwester', NULL, NULL, NULL, NULL, NULL, NULL, 7.0, 2.5, NULL, false, true, true, false, '[]', '[]', NULL, NULL, '1988-11-08', '2022-04-15', '2025-05-31 10:04:00+00', '2025-12-02 14:48:33.789+00', false, 6.8, 2.4, '2024-03-01', '2024-03-01', false, false, false, false, false),
-('bb43f99f-b5cb-4ece-a4c0-e5e35d3de6d7', 'gast@ksvl.at', 'Gastmitglied Peter', '+43 660 6666666', NULL, 'GM-2024-001', 'Bergstraße 8, 9500 Villach', NULL, NULL, NULL, 'active', NULL, 'Peter', 'Gastmitglied', 'Bergstraße 8', '9500', 'Villach', NULL, NULL, NULL, NULL, NULL, 'Gastmitglied aus Villach', NULL, NULL, 'gast', 'Aus', 'Gastmitglied', 'Aktiv', NULL, 'Aktiv', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, true, true, false, '[]', '[]', NULL, NULL, '1992-07-30', '2024-06-01', '2025-05-31 10:05:00+00', '2025-06-01 12:00:00+00', false, NULL, NULL, NULL, NULL, false, false, false, false, false),
-('c3a8f9d2-e1b4-4c7a-9f2e-8d6c5b4a3210', 'test.member1@ksvl.at', 'Testmitglied Eins', '+43 660 7777771', 'OESV-TEST1', 'TM-001', 'Teststraße 1, 9020 Klagenfurt', 'T-01', 'Steg', 'Testboot Alpha', 'active', NULL, 'Test', 'Eins', 'Teststraße 1', '9020', 'Klagenfurt', NULL, 'Testboot', NULL, NULL, NULL, 'Testdaten für Entwicklung', NULL, NULL, 'test1', 'Aus', 'Ordentliches Mitglied', 'Aktiv', 'Gelb', 'Aktiv', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 5.0, 1.8, NULL, false, true, true, false, '[]', '[]', NULL, NULL, '1990-01-01', '2024-01-01', '2025-05-31 10:06:00+00', '2025-05-31 10:06:00+00', true, 4.5, 1.6, NULL, NULL, false, false, false, false, false),
-('d4b9e0e3-f2c5-4d8b-a03f-9e7d6c5b4321', 'test.member2@ksvl.at', 'Testmitglied Zwei', '+43 660 7777772', 'OESV-TEST2', 'TM-002', 'Teststraße 2, 9020 Klagenfurt', 'T-02', 'Boje', 'Testboot Beta', 'active', NULL, 'Test', 'Zwei', 'Teststraße 2', '9020', 'Klagenfurt', 'TD-01', 'Testboot', NULL, NULL, NULL, 'Testdaten für Entwicklung', NULL, NULL, 'test2', 'Aus', 'Ordentliches Mitglied', 'Aktiv', 'Grün', 'Aktiv', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 4.5, 1.5, 3.0, true, true, true, true, '[]', '[]', NULL, NULL, '1985-06-15', '2024-02-01', '2025-05-31 10:07:00+00', '2025-05-31 10:07:00+00', true, 4.0, 1.4, NULL, NULL, false, true, true, false, false),
-('e5c0f1f4-03d6-4e9c-b14a-0f8e7d6c5432', 'test.member3@ksvl.at', 'Testmitglied Drei', '+43 660 7777773', 'OESV-TEST3', 'TM-003', 'Teststraße 3, 9020 Klagenfurt', NULL, NULL, NULL, 'inactive', NULL, 'Test', 'Drei', 'Teststraße 3', '9020', 'Klagenfurt', NULL, NULL, NULL, NULL, NULL, 'Inaktives Testmitglied', NULL, NULL, 'test3', 'Aus', 'Ordentliches Mitglied', 'Inaktiv', NULL, 'Inaktiv', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, false, false, false, false, '[{"status": "Aktiv", "changed_at": "2024-01-01"}, {"status": "Inaktiv", "changed_at": "2024-06-01"}]', '[]', NULL, NULL, '1978-12-24', '2024-01-01', '2025-05-31 10:08:00+00', '2025-05-31 10:08:00+00', true, NULL, NULL, NULL, NULL, false, false, false, false, false),
-('f6d1a2a5-14e7-4f0d-c25a-1a9f8e7d6543', 'ehren@ksvl.at', 'Ehrenmitglied Franz', '+43 660 8888888', 'OESV-EHRE1', 'EM-001', 'Ehrengasse 1, 9020 Klagenfurt', 'E-01', 'Ehrenliegeplatz', 'Veteran', 'active', NULL, 'Franz', 'Ehrenmitglied', 'Ehrengasse 1', '9020', 'Klagenfurt', NULL, 'Klassische Yacht', 'P-EHRE-001', 'BC-EHRE', NULL, 'Gründungsmitglied und Ehrenmitglied', 'Ehrenpräsident', NULL, 'ehren', 'Aus', 'Ehrenmitglied', 'Aktiv', 'Mahagoni', 'Aktiv', 'Elisabeth Ehrenmitglied', '+43 660 8888889', 'Ehefrau', NULL, NULL, NULL, NULL, '1980-01-01', NULL, 12.0, 3.5, NULL, false, true, true, true, '[{"status": "Aktiv", "changed_at": "1980-01-01"}]', '[{"position": "Präsident", "started_at": "1980-01-01", "ended_at": "2010-01-01"}, {"position": "Ehrenpräsident", "started_at": "2010-01-01"}]', NULL, NULL, '1945-05-08', '1980-01-01', '2025-05-31 10:09:00+00', '2025-05-31 10:09:00+00', false, 11.5, 3.2, '1985-01-01', '1985-01-01', false, true, true, true, false);
-
+-- Hinweis: Profile-INSERT würde Foreign Key Constraints auf auth.users verletzen
+-- wenn die entsprechenden Auth-User nicht existieren. Daher werden Profile
+-- bei der User-Erstellung automatisch über den handle_new_user() Trigger erstellt.
 -- ----------------------------------------------------------------------------
--- user_roles (24 Einträge)
+-- user_roles (24 Einträge - echte Produktionsdaten)
 -- ----------------------------------------------------------------------------
 INSERT INTO public.user_roles (id, user_id, role, created_at) VALUES
-('role-superadmin-admin', '8a79a08c-1a17-4f80-8f4f-59c6f6ed7dea', 'admin', '2025-05-31 10:00:00+00'),
-('role-superadmin-vorstand', '8a79a08c-1a17-4f80-8f4f-59c6f6ed7dea', 'vorstand', '2025-05-31 10:00:00+00'),
-('role-superadmin-kranfuehrer', '8a79a08c-1a17-4f80-8f4f-59c6f6ed7dea', 'kranfuehrer', '2025-05-31 10:00:00+00'),
-('role-superadmin-mitglied', '8a79a08c-1a17-4f80-8f4f-59c6f6ed7dea', 'mitglied', '2025-05-31 10:00:00+00'),
-('role-admin-admin', '51ee808b-6927-41f5-bbd8-376ee19e8bb5', 'admin', '2025-05-31 10:01:00+00'),
-('role-admin-mitglied', '51ee808b-6927-41f5-bbd8-376ee19e8bb5', 'mitglied', '2025-05-31 10:01:00+00'),
-('role-kranfuehrer-kranfuehrer', '25adeecc-0e31-4c4b-bfd7-ab69e42dfd2a', 'kranfuehrer', '2025-05-31 10:02:00+00'),
-('role-kranfuehrer-mitglied', '25adeecc-0e31-4c4b-bfd7-ab69e42dfd2a', 'mitglied', '2025-05-31 10:02:00+00'),
-('role-vorstand-vorstand', '02fe55ba-58e1-4316-8cd4-0ebce5dc4a04', 'vorstand', '2025-05-31 10:03:00+00'),
-('role-vorstand-mitglied', '02fe55ba-58e1-4316-8cd4-0ebce5dc4a04', 'mitglied', '2025-05-31 10:03:00+00'),
-('role-mitglied-mitglied', 'a16aec5f-f645-4bb1-be5e-b0a3afc7e89e', 'mitglied', '2025-05-31 10:04:00+00'),
-('role-gast-gastmitglied', 'bb43f99f-b5cb-4ece-a4c0-e5e35d3de6d7', 'gastmitglied', '2025-05-31 10:05:00+00'),
-('role-test1-mitglied', 'c3a8f9d2-e1b4-4c7a-9f2e-8d6c5b4a3210', 'mitglied', '2025-05-31 10:06:00+00'),
-('role-test2-mitglied', 'd4b9e0e3-f2c5-4d8b-a03f-9e7d6c5b4321', 'mitglied', '2025-05-31 10:07:00+00'),
-('role-test3-mitglied', 'e5c0f1f4-03d6-4e9c-b14a-0f8e7d6c5432', 'mitglied', '2025-05-31 10:08:00+00'),
-('role-ehren-mitglied', 'f6d1a2a5-14e7-4f0d-c25a-1a9f8e7d6543', 'mitglied', '2025-05-31 10:09:00+00'),
-('role-ehren-vorstand', 'f6d1a2a5-14e7-4f0d-c25a-1a9f8e7d6543', 'vorstand', '2025-05-31 10:09:00+00'),
-('08bad4ba-46e4-48f9-b5c0-e0cef60e4a90', '25adeecc-0e31-4c4b-bfd7-ab69e42dfd2a', 'vorstand', '2025-12-02 14:18:03.095+00'),
-('2c6cfe4e-fbb4-4dfa-a59a-dfd98a3d92b3', '51ee808b-6927-41f5-bbd8-376ee19e8bb5', 'vorstand', '2025-12-02 14:18:03.095+00'),
-('36ff65de-9ec7-4610-9b1e-e63fa0e1fc27', '51ee808b-6927-41f5-bbd8-376ee19e8bb5', 'kranfuehrer', '2025-12-02 14:18:03.095+00'),
-('55d85f3a-cb08-45ee-b99e-01d71ed09b62', '8a79a08c-1a17-4f80-8f4f-59c6f6ed7dea', 'gastmitglied', '2025-12-02 14:18:03.095+00'),
-('1ff46990-bf3b-481b-bf95-06d6df8a3b7b', '51ee808b-6927-41f5-bbd8-376ee19e8bb5', 'gastmitglied', '2025-12-02 14:18:03.095+00'),
-('3b2b7ad7-61e2-4904-a0e1-afc9f8f42113', '25adeecc-0e31-4c4b-bfd7-ab69e42dfd2a', 'gastmitglied', '2025-12-02 14:18:03.095+00'),
-('2c22a9bf-ab85-44ad-9c21-8aa3a5ce21b9', '25adeecc-0e31-4c4b-bfd7-ab69e42dfd2a', 'admin', '2025-12-02 14:19:39.139+00');
+('ad97680e-a03b-4d6f-90d9-5f7f6515bd60', '4eb45e13-5b72-44c9-8287-bf314d301feb', 'mitglied', '2025-10-24 20:20:06.031385+00'),
+('98ae4b38-940d-4cc6-88e8-81e98b9b7792', '4eb45e13-5b72-44c9-8287-bf314d301feb', 'admin', '2025-10-24 20:20:06.152101+00'),
+('9136051d-9871-47ad-a669-4a68eba262d8', 'c5751a82-23b6-4d4a-8aa1-3c89d086a6cf', 'mitglied', '2025-10-24 20:20:06.33438+00'),
+('9c945ac0-9569-40e7-b4a5-bdc0623e536a', 'c5751a82-23b6-4d4a-8aa1-3c89d086a6cf', 'vorstand', '2025-10-24 20:20:06.44163+00'),
+('54f93286-5cd7-4177-ae92-a18af07b74e8', '9090b21d-8287-4732-a301-9402d3c2b034', 'mitglied', '2025-10-24 20:20:06.627552+00'),
+('99fde4ab-68a3-4a1e-af46-8e98e5842aa3', '9090b21d-8287-4732-a301-9402d3c2b034', 'kranfuehrer', '2025-10-24 20:20:06.720839+00'),
+('c4fe87e4-0444-4e61-9d6f-e74f400547e6', '8910e641-23a1-483f-822a-d5e5550f1411', 'mitglied', '2025-10-24 20:20:06.89996+00'),
+('66823ab2-83eb-4e2d-b68b-b33504a6eeb2', '5f38252a-ce4e-48a2-8f51-1113b8d831e5', 'mitglied', '2025-10-24 20:20:07.193566+00'),
+('8622fb85-ee10-4359-b73b-9d4dfed96c9c', '5f38252a-ce4e-48a2-8f51-1113b8d831e5', 'gastmitglied', '2025-10-24 20:20:07.294738+00'),
+('5812faf2-3b32-474d-a07f-c99c2ebf8bc7', '5a7f5773-0c9c-4336-b06b-f2aaaa327764', 'admin', '2025-10-24 21:53:48.079922+00'),
+('b911b420-a079-4f92-aa6f-8d5b9411a8be', '5a7f5773-0c9c-4336-b06b-f2aaaa327764', 'vorstand', '2025-10-24 21:53:48.122115+00'),
+('2eab0350-a4f9-43b2-83fa-b88b402c32d3', '5a7f5773-0c9c-4336-b06b-f2aaaa327764', 'kranfuehrer', '2025-10-24 21:53:48.173875+00'),
+('ca0d69a4-a8bf-4450-8196-3a386ff831d0', '5a7f5773-0c9c-4336-b06b-f2aaaa327764', 'mitglied', '2025-10-24 21:53:48.216544+00'),
+('b2eb81c0-55b4-4c31-a60b-00dd1eab2d63', '5a7f5773-0c9c-4336-b06b-f2aaaa327764', 'gastmitglied', '2025-10-24 21:53:48.261823+00'),
+('aa42d9a4-d340-4769-8a48-71284eeb1925', '4cb7a35d-b5b6-4589-8526-5176f041de89', 'mitglied', '2025-11-04 15:15:20.520831+00'),
+('b2a651db-de46-407d-8d12-504a3be69446', '4cb7a35d-b5b6-4589-8526-5176f041de89', 'kranfuehrer', '2025-11-04 15:15:20.697762+00'),
+('44b8a514-f8fc-494a-a61a-9f08dadd8263', 'a910808d-0a1d-4bb9-8969-b08be3e44d2f', 'mitglied', '2025-11-17 20:47:45.14131+00'),
+('680bf274-ef50-48e6-ad96-a40b53b04657', '99177a44-836c-4edb-b0b5-225bfd1305ee', 'admin', '2025-12-01 21:36:54.586797+00'),
+('620b1bed-8862-4df9-81bc-29c7fc839e98', '99177a44-836c-4edb-b0b5-225bfd1305ee', 'vorstand', '2025-12-01 21:36:54.627382+00'),
+('f09c8d2c-5f5a-483e-8ee3-24cc34d5858c', '99177a44-836c-4edb-b0b5-225bfd1305ee', 'kranfuehrer', '2025-12-01 21:36:54.667457+00'),
+('c1bc2456-14c1-4dbd-aaee-0ffa5501324d', '99177a44-836c-4edb-b0b5-225bfd1305ee', 'mitglied', '2025-12-01 21:36:54.70884+00'),
+('ef90ade3-3ecf-4f30-bf77-28ca1fd53173', '99177a44-836c-4edb-b0b5-225bfd1305ee', 'gastmitglied', '2025-12-01 21:36:54.771514+00'),
+('72fe8d7f-cf4a-46ce-ab1b-0c1f3c456a62', '75c394f3-0707-4fc3-89ea-fffd3777755c', 'vorstand', '2025-12-04 17:03:06.739301+00'),
+('8a108ff8-cd28-4302-ad3f-511b666ddfac', '75c394f3-0707-4fc3-89ea-fffd3777755c', 'mitglied', '2025-12-04 17:03:06.794052+00');
 
 -- ----------------------------------------------------------------------------
--- slots (Beispieldaten)
+-- slots (Beispieldaten - Schema-Referenz mit validen UUIDs)
 -- ----------------------------------------------------------------------------
 INSERT INTO public.slots (id, date, time, duration, crane_operator_id, member_id, is_booked, is_mini_slot, mini_slot_count, start_minute, block_id, created_at, updated_at, is_test_data, notes) VALUES
-('slot-001', '2026-01-25', '09:00:00', 30, '25adeecc-0e31-4c4b-bfd7-ab69e42dfd2a', NULL, false, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-20 10:00:00+00', false, NULL),
-('slot-002', '2026-01-25', '09:30:00', 30, '25adeecc-0e31-4c4b-bfd7-ab69e42dfd2a', 'a16aec5f-f645-4bb1-be5e-b0a3afc7e89e', true, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-21 14:30:00+00', false, 'Einwassern'),
-('slot-003', '2026-01-25', '10:00:00', 30, '25adeecc-0e31-4c4b-bfd7-ab69e42dfd2a', NULL, false, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-20 10:00:00+00', false, NULL),
-('slot-004', '2026-01-26', '09:00:00', 30, '25adeecc-0e31-4c4b-bfd7-ab69e42dfd2a', '02fe55ba-58e1-4316-8cd4-0ebce5dc4a04', true, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-22 09:15:00+00', false, 'Auswassern für Wartung'),
-('slot-005', '2026-01-26', '10:00:00', 60, '25adeecc-0e31-4c4b-bfd7-ab69e42dfd2a', NULL, false, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-20 10:00:00+00', false, NULL);
+('a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d', '2026-01-25', '09:00:00', 30, '5a7f5773-0c9c-4336-b06b-f2aaaa327764', NULL, false, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-20 10:00:00+00', false, NULL),
+('b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e', '2026-01-25', '09:30:00', 30, '5a7f5773-0c9c-4336-b06b-f2aaaa327764', '75c394f3-0707-4fc3-89ea-fffd3777755c', true, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-21 14:30:00+00', false, 'Einwassern'),
+('c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f', '2026-01-25', '10:00:00', 30, '5a7f5773-0c9c-4336-b06b-f2aaaa327764', NULL, false, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-20 10:00:00+00', false, NULL),
+('d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a', '2026-01-26', '09:00:00', 30, '5a7f5773-0c9c-4336-b06b-f2aaaa327764', 'c5751a82-23b6-4d4a-8aa1-3c89d086a6cf', true, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-22 09:15:00+00', false, 'Auswassern für Wartung'),
+('e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b', '2026-01-26', '10:00:00', 60, '5a7f5773-0c9c-4336-b06b-f2aaaa327764', NULL, false, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-20 10:00:00+00', false, NULL);
 
 -- ----------------------------------------------------------------------------
--- app_settings (39 Einträge - gekürzte Auswahl)
+-- app_settings (gekürzte Auswahl - Schema-Referenz mit validen UUIDs)
 -- ----------------------------------------------------------------------------
 INSERT INTO public.app_settings (id, user_id, setting_key, setting_value, is_global, created_at, updated_at) VALUES
-('setting-login-bg', NULL, 'login_background', '{"mode": "gradient", "gradient": {"from": "hsl(202, 85%, 15%)", "to": "hsl(202, 70%, 35%)", "direction": "to-br"}, "overlay": {"enabled": true, "opacity": 0.3}}', true, '2025-06-01 10:00:00+00', '2025-12-01 15:30:00+00'),
-('setting-header-msg', NULL, 'header_message', '{"enabled": true, "message": "Willkommen beim KSVL Slot Manager!", "type": "info"}', true, '2025-06-01 10:00:00+00', '2025-11-15 09:00:00+00'),
-('setting-dashboard', NULL, 'dashboard_layout', '{"columns": 2, "widgets": ["weather", "harbor-status", "upcoming-slots", "member-stats"]}', true, '2025-06-01 10:00:00+00', '2025-12-10 14:00:00+00'),
-('setting-test-data', NULL, 'show_test_data', '{"enabled": false}', true, '2025-06-01 10:00:00+00', '2025-12-01 10:00:00+00'),
-('setting-footer-menu', NULL, 'footer_menu', '{"items": ["dashboard", "calendar", "profile", "settings"]}', true, '2025-06-01 10:00:00+00', '2025-11-20 11:00:00+00');
+('f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c', NULL, 'login_background', '{"mode": "gradient", "gradient": {"from": "hsl(202, 85%, 15%)", "to": "hsl(202, 70%, 35%)", "direction": "to-br"}, "overlay": {"enabled": true, "opacity": 0.3}}', true, '2025-06-01 10:00:00+00', '2025-12-01 15:30:00+00'),
+('a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1d', NULL, 'header_message', '{"enabled": true, "message": "Willkommen beim KSVL Slot Manager!", "type": "info"}', true, '2025-06-01 10:00:00+00', '2025-11-15 09:00:00+00'),
+('b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2e', NULL, 'dashboard_layout', '{"columns": 2, "widgets": ["weather", "harbor-status", "upcoming-slots", "member-stats"]}', true, '2025-06-01 10:00:00+00', '2025-12-10 14:00:00+00'),
+('c9d0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3f', NULL, 'show_test_data', '{"enabled": false}', true, '2025-06-01 10:00:00+00', '2025-12-01 10:00:00+00'),
+('d0e1f2a3-b4c5-4d6e-7f8a-9b0c1d2e3f4a', NULL, 'footer_menu', '{"items": ["dashboard", "calendar", "profile", "settings"]}', true, '2025-06-01 10:00:00+00', '2025-11-20 11:00:00+00');
 
 -- ----------------------------------------------------------------------------
--- file_metadata (4 Einträge)
+-- file_metadata (Beispiel-Schema-Referenz mit validen UUIDs)
 -- ----------------------------------------------------------------------------
 INSERT INTO public.file_metadata (id, filename, storage_path, file_type, mime_type, file_size, category, document_type, owner_id, linked_user_id, is_public, tags, description, allowed_roles, created_at, updated_at) VALUES
-('file-001', 'login-background.jpg', 'login-media/background.jpg', 'image', 'image/jpeg', 524288, 'login-media', NULL, '8a79a08c-1a17-4f80-8f4f-59c6f6ed7dea', NULL, true, '{"hintergrund", "login"}', 'Login-Hintergrundbild', NULL, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('file-002', 'versicherung-stefan.pdf', 'member-documents/a16aec5f/versicherung.pdf', 'document', 'application/pdf', 102400, 'user_document', 'insurance', '8a79a08c-1a17-4f80-8f4f-59c6f6ed7dea', 'a16aec5f-f645-4bb1-be5e-b0a3afc7e89e', false, '{"versicherung", "2024"}', 'Bootsversicherung 2024', NULL, '2025-08-15 14:30:00+00', '2025-08-15 14:30:00+00'),
-('file-003', 'bfa-hans.pdf', 'member-documents/25adeecc/bfa.pdf', 'document', 'application/pdf', 81920, 'user_document', 'bfa', '8a79a08c-1a17-4f80-8f4f-59c6f6ed7dea', '25adeecc-0e31-4c4b-bfd7-ab69e42dfd2a', false, '{"bfa", "zertifikat"}', 'Befähigungsausweis', NULL, '2025-07-20 09:00:00+00', '2025-07-20 09:00:00+00'),
-('file-004', 'vereinsstatuten.pdf', 'documents/statuten-2024.pdf', 'document', 'application/pdf', 256000, 'general', NULL, '8a79a08c-1a17-4f80-8f4f-59c6f6ed7dea', NULL, false, '{"statuten", "offiziell"}', 'Aktuelle Vereinsstatuten', '{"mitglied", "vorstand", "admin"}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
+('e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5b', 'login-background.jpg', 'login-media/background.jpg', 'image', 'image/jpeg', 524288, 'login-media', NULL, '5a7f5773-0c9c-4336-b06b-f2aaaa327764', NULL, true, '{"hintergrund", "login"}', 'Login-Hintergrundbild', NULL, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('f2a3b4c5-d6e7-4f8a-9b0c-1d2e3f4a5b6c', 'versicherung-beispiel.pdf', 'member-documents/beispiel/versicherung.pdf', 'document', 'application/pdf', 102400, 'user_document', 'insurance', '5a7f5773-0c9c-4336-b06b-f2aaaa327764', '75c394f3-0707-4fc3-89ea-fffd3777755c', false, '{"versicherung", "2024"}', 'Bootsversicherung 2024', NULL, '2025-08-15 14:30:00+00', '2025-08-15 14:30:00+00'),
+('a3b4c5d6-e7f8-4a9b-0c1d-2e3f4a5b6c7d', 'bfa-beispiel.pdf', 'member-documents/beispiel/bfa.pdf', 'document', 'application/pdf', 81920, 'user_document', 'bfa', '5a7f5773-0c9c-4336-b06b-f2aaaa327764', '9090b21d-8287-4732-a301-9402d3c2b034', false, '{"bfa", "zertifikat"}', 'Befähigungsausweis', NULL, '2025-07-20 09:00:00+00', '2025-07-20 09:00:00+00'),
+('b4c5d6e7-f8a9-4b0c-1d2e-3f4a5b6c7d8e', 'vereinsstatuten.pdf', 'documents/statuten-2024.pdf', 'document', 'application/pdf', 256000, 'general', NULL, '5a7f5773-0c9c-4336-b06b-f2aaaa327764', NULL, false, '{"statuten", "offiziell"}', 'Aktuelle Vereinsstatuten', '{"mitglied", "vorstand", "admin"}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
 
 -- ----------------------------------------------------------------------------
--- theme_settings (Auswahl der wichtigsten)
+-- theme_settings (Beispiel-Schema-Referenz mit validen UUIDs)
 -- ----------------------------------------------------------------------------
 INSERT INTO public.theme_settings (id, name, category, hsl_value, description, is_default, created_at, updated_at) VALUES
-('theme-primary', 'primary', 'brand', '202 85% 23%', 'Haupt-Markenfarbe (KSVL Navy)', true, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('theme-secondary', 'secondary', 'brand', '180 50% 45%', 'Sekundärfarbe (Türkis)', true, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('theme-accent', 'accent', 'brand', '45 90% 55%', 'Akzentfarbe (Gold)', true, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('theme-background', 'background', 'surface', '200 20% 98%', 'Hintergrundfarbe (Hell)', true, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('theme-foreground', 'foreground', 'surface', '202 85% 15%', 'Textfarbe (Dunkel)', true, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
+('c5d6e7f8-a9b0-4c1d-2e3f-4a5b6c7d8e9f', 'primary', 'brand', '202 85% 23%', 'Haupt-Markenfarbe (KSVL Navy)', true, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('d6e7f8a9-b0c1-4d2e-3f4a-5b6c7d8e9f0a', 'secondary', 'brand', '180 50% 45%', 'Sekundärfarbe (Türkis)', true, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('e7f8a9b0-c1d2-4e3f-4a5b-6c7d8e9f0a1b', 'accent', 'brand', '45 90% 55%', 'Akzentfarbe (Gold)', true, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('f8a9b0c1-d2e3-4f4a-5b6c-7d8e9f0a1b2c', 'background', 'surface', '200 20% 98%', 'Hintergrundfarbe (Hell)', true, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('a9b0c1d2-e3f4-4a5b-6c7d-8e9f0a1b2c3d', 'foreground', 'surface', '202 85% 15%', 'Textfarbe (Dunkel)', true, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
 
 -- ----------------------------------------------------------------------------
--- role_badge_settings (5 Einträge)
+-- role_badge_settings (5 Einträge - Schema-Referenz mit validen UUIDs)
 -- ----------------------------------------------------------------------------
 INSERT INTO public.role_badge_settings (id, role, bg_color, text_color, created_at, updated_at) VALUES
-('badge-admin', 'admin', 'hsl(0, 70%, 50%)', 'hsl(0, 0%, 100%)', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('badge-vorstand', 'vorstand', 'hsl(45, 90%, 50%)', 'hsl(0, 0%, 15%)', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('badge-kranfuehrer', 'kranfuehrer', 'hsl(202, 85%, 40%)', 'hsl(0, 0%, 100%)', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('badge-mitglied', 'mitglied', 'hsl(202, 85%, 23%)', 'hsl(0, 0%, 100%)', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('badge-gastmitglied', 'gastmitglied', 'hsl(180, 30%, 50%)', 'hsl(0, 0%, 100%)', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
+('b0c1d2e3-f4a5-4b6c-7d8e-9f0a1b2c3d4e', 'admin', 'hsl(0, 70%, 50%)', 'hsl(0, 0%, 100%)', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('c1d2e3f4-a5b6-4c7d-8e9f-0a1b2c3d4e5f', 'vorstand', 'hsl(45, 90%, 50%)', 'hsl(0, 0%, 15%)', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('d2e3f4a5-b6c7-4d8e-9f0a-1b2c3d4e5f6a', 'kranfuehrer', 'hsl(202, 85%, 40%)', 'hsl(0, 0%, 100%)', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('e3f4a5b6-c7d8-4e9f-0a1b-2c3d4e5f6a7b', 'mitglied', 'hsl(202, 85%, 23%)', 'hsl(0, 0%, 100%)', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('f4a5b6c7-d8e9-4f0a-1b2c-3d4e5f6a7b8c', 'gastmitglied', 'hsl(180, 30%, 50%)', 'hsl(0, 0%, 100%)', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
 
 -- ----------------------------------------------------------------------------
--- role_configurations (5 Einträge)
+-- role_configurations (5 Einträge - Schema-Referenz mit validen UUIDs)
 -- ----------------------------------------------------------------------------
 INSERT INTO public.role_configurations (id, role, label, display_order, created_at, updated_at) VALUES
-('config-admin', 'admin', 'Administrator', 1, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('config-vorstand', 'vorstand', 'Vorstand', 2, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('config-kranfuehrer', 'kranfuehrer', 'Kranführer', 3, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('config-mitglied', 'mitglied', 'Mitglied', 4, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('config-gastmitglied', 'gastmitglied', 'Gastmitglied', 5, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
+('a5b6c7d8-e9f0-4a1b-2c3d-4e5f6a7b8c9d', 'admin', 'Administrator', 1, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('b6c7d8e9-f0a1-4b2c-3d4e-5f6a7b8c9d0e', 'vorstand', 'Vorstand', 2, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('c7d8e9f0-a1b2-4c3d-4e5f-6a7b8c9d0e1f', 'kranfuehrer', 'Kranführer', 3, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('d8e9f0a1-b2c3-4d4e-5f6a-7b8c9d0e1f2a', 'mitglied', 'Mitglied', 4, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('e9f0a1b2-c3d4-4e5f-6a7b-8c9d0e1f2a3b', 'gastmitglied', 'Gastmitglied', 5, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
 
 -- ----------------------------------------------------------------------------
--- menu_item_definitions (11 Einträge)
+-- menu_item_definitions (11 Einträge - text-basierte IDs sind hier korrekt)
 -- ----------------------------------------------------------------------------
 INSERT INTO public.menu_item_definitions (id, label, icon, allowed_roles, menu_type, created_at, updated_at) VALUES
-('menu-dashboard', 'Dashboard', 'LayoutDashboard', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'footer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('menu-calendar', 'Kalender', 'Calendar', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'footer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('menu-profile', 'Profil', 'User', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'footer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('menu-settings', 'Einstellungen', 'Settings', '{"admin", "vorstand"}', 'footer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('menu-users', 'Mitglieder', 'Users', '{"admin", "vorstand"}', 'drawer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('menu-files', 'Dokumente', 'FileText', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'drawer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('menu-slots', 'Slots verwalten', 'Clock', '{"admin", "kranfuehrer"}', 'drawer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('menu-reports', 'Berichte', 'BarChart3', '{"admin", "vorstand"}', 'drawer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('menu-harbor', 'Hafen-Chat', 'MessageCircle', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'drawer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('menu-admin-settings', 'Admin-Settings', 'Shield', '{"admin"}', 'drawer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('menu-logout', 'Abmelden', 'LogOut', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'drawer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
+('dashboard', 'Dashboard', 'LayoutDashboard', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'footer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('calendar', 'Kalender', 'Calendar', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'footer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('profile', 'Profil', 'User', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'footer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('settings', 'Einstellungen', 'Settings', '{"admin", "vorstand"}', 'footer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('users', 'Mitglieder', 'Users', '{"admin", "vorstand"}', 'drawer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('files', 'Dokumente', 'FileText', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'drawer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('slots', 'Slots verwalten', 'Clock', '{"admin", "kranfuehrer"}', 'drawer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('reports', 'Berichte', 'BarChart3', '{"admin", "vorstand"}', 'drawer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('harbor', 'Hafen-Chat', 'MessageCircle', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'drawer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('admin-settings', 'Admin-Settings', 'Shield', '{"admin"}', 'drawer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('logout', 'Abmelden', 'LogOut', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'drawer', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
 
 -- ----------------------------------------------------------------------------
--- dashboard_widget_definitions (8 Einträge)
+-- dashboard_widget_definitions (8 Einträge - text-basierte IDs sind hier korrekt)
 -- ----------------------------------------------------------------------------
 INSERT INTO public.dashboard_widget_definitions (id, name, description, component_name, allowed_roles, category, size, default_enabled, default_column, default_order, settings, created_at, updated_at) VALUES
-('widget-weather', 'Wetter', 'Aktuelle Wetterdaten vom Wörthersee', 'WeatherWidget', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'info', 'small', true, 1, 1, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('widget-harbor-status', 'Hafenstatus', 'Aktueller Status des Hafens', 'HarborStatusWidget', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'info', 'small', true, 1, 2, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('widget-member-stats', 'Mitglieder-Statistik', 'Übersicht der Mitgliederzahlen', 'MemberStatsWidget', '{"admin", "vorstand"}', 'stats', 'medium', true, 2, 1, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('widget-events', 'Termine', 'Kommende Vereinstermine', 'EventsCalendarWidget', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'calendar', 'medium', true, 2, 2, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('widget-maintenance', 'Wartungshinweise', 'Aktuelle Wartungsmeldungen', 'MaintenanceAlertsWidget', '{"admin", "vorstand", "kranfuehrer"}', 'alerts', 'small', true, 1, 3, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('widget-finance', 'Finanzen', 'Finanzübersicht', 'FinanceOverviewWidget', '{"admin", "vorstand"}', 'finance', 'medium', false, 2, 3, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('widget-harbor-chat', 'Hafen-Chat', 'Schnellzugriff auf den Hafen-Chat', 'HarborChatWidget', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'communication', 'small', true, 1, 4, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('widget-ai-chat', 'AI Assistent', 'KI-gestützter Vereinsassistent', 'AIChatMiniWidget', '{"admin", "vorstand"}', 'ai', 'medium', false, 2, 4, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
+('weather', 'Wetter', 'Aktuelle Wetterdaten vom Wörthersee', 'WeatherWidget', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'info', 'small', true, 1, 1, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('harbor-status', 'Hafenstatus', 'Aktueller Status des Hafens', 'HarborStatusWidget', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'info', 'small', true, 1, 2, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('member-stats', 'Mitglieder-Statistik', 'Übersicht der Mitgliederzahlen', 'MemberStatsWidget', '{"admin", "vorstand"}', 'stats', 'medium', true, 2, 1, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('events', 'Termine', 'Kommende Vereinstermine', 'EventsCalendarWidget', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'calendar', 'medium', true, 2, 2, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('maintenance', 'Wartungshinweise', 'Aktuelle Wartungsmeldungen', 'MaintenanceAlertsWidget', '{"admin", "vorstand", "kranfuehrer"}', 'alerts', 'small', true, 1, 3, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('finance', 'Finanzen', 'Finanzübersicht', 'FinanceOverviewWidget', '{"admin", "vorstand"}', 'finance', 'medium', false, 2, 3, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('harbor-chat', 'Hafen-Chat', 'Schnellzugriff auf den Hafen-Chat', 'HarborChatWidget', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'communication', 'small', true, 1, 4, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('ai-chat', 'AI Assistent', 'KI-gestützter Vereinsassistent', 'AIChatMiniWidget', '{"admin", "vorstand"}', 'ai', 'medium', false, 2, 4, '{}', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
 
 -- ----------------------------------------------------------------------------
--- dashboard_section_definitions (5 Einträge)
+-- dashboard_section_definitions (5 Einträge - text-basierte IDs sind hier korrekt)
 -- ----------------------------------------------------------------------------
 INSERT INTO public.dashboard_section_definitions (id, name, description, component_name, allowed_roles, category, size, default_enabled, default_column, default_order, created_at, updated_at) VALUES
-('section-welcome', 'Willkommen', 'Begrüßungsbereich mit personalisierten Infos', 'WelcomeSection', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'header', 'full', true, 1, 1, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('section-stats', 'Statistiken', 'Übersichtskarten mit wichtigen Zahlen', 'StatsGridSection', '{"admin", "vorstand", "kranfuehrer"}', 'stats', 'full', true, 1, 2, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('section-quick-actions', 'Schnellaktionen', 'Häufig verwendete Aktionen', 'QuickActionsSection', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'actions', 'full', true, 1, 3, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('section-activity', 'Aktivitäten', 'Letzte Aktivitäten im Verein', 'ActivityFeedSection', '{"admin", "vorstand"}', 'feed', 'full', true, 1, 4, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('section-announcements', 'Ankündigungen', 'Wichtige Vereinsmitteilungen', 'AnnouncementsSection', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'communication', 'full', false, 1, 5, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
+('welcome', 'Willkommen', 'Begrüßungsbereich mit personalisierten Infos', 'WelcomeSection', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'header', 'full', true, 1, 1, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('stats', 'Statistiken', 'Übersichtskarten mit wichtigen Zahlen', 'StatsGridSection', '{"admin", "vorstand", "kranfuehrer"}', 'stats', 'full', true, 1, 2, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('quick-actions', 'Schnellaktionen', 'Häufig verwendete Aktionen', 'QuickActionsSection', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'actions', 'full', true, 1, 3, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('activity', 'Aktivitäten', 'Letzte Aktivitäten im Verein', 'ActivityFeedSection', '{"admin", "vorstand"}', 'feed', 'full', true, 1, 4, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('announcements', 'Ankündigungen', 'Wichtige Vereinsmitteilungen', 'AnnouncementsSection', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'communication', 'full', false, 1, 5, '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
 
 -- ----------------------------------------------------------------------------
--- ai_assistant_defaults (5 Einträge)
+-- ai_assistant_defaults (5 Einträge - Schema-Referenz mit validen UUIDs)
 -- ----------------------------------------------------------------------------
 INSERT INTO public.ai_assistant_defaults (id, role, tonality, welcome_message, created_at, updated_at) VALUES
-('ai-admin', 'admin', 'professionell und technisch', 'Hallo Administrator! Ich bin dein KI-Assistent für technische und administrative Fragen rund um den KSVL.', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('ai-vorstand', 'vorstand', 'professionell und strategisch', 'Guten Tag! Als Vorstandsmitglied kann ich Sie bei Vereinsfragen und strategischen Entscheidungen unterstützen.', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('ai-kranfuehrer', 'kranfuehrer', 'freundlich und praktisch', 'Ahoi Kranführer! Wie kann ich dir heute beim Kranbetrieb helfen?', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('ai-mitglied', 'mitglied', 'freundlich und hilfsbereit', 'Willkommen beim KSVL! Ich bin hier, um dir bei Fragen zu deiner Mitgliedschaft, Buchungen und allem rund um den Verein zu helfen.', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
-('ai-gastmitglied', 'gastmitglied', 'einladend und informativ', 'Herzlich willkommen als Gast beim Klagenfurter Segelverein Loretto! Ich beantworte gerne deine Fragen zum Verein.', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
+('f0a1b2c3-d4e5-4f6a-7b8c-9d0e1f2a3b4c', 'admin', 'professionell und technisch', 'Hallo Administrator! Ich bin dein KI-Assistent für technische und administrative Fragen rund um den KSVL.', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d', 'vorstand', 'professionell und strategisch', 'Guten Tag! Als Vorstandsmitglied kann ich Sie bei Vereinsfragen und strategischen Entscheidungen unterstützen.', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e', 'kranfuehrer', 'freundlich und praktisch', 'Ahoi Kranführer! Wie kann ich dir heute beim Kranbetrieb helfen?', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f', 'mitglied', 'freundlich und hilfsbereit', 'Willkommen beim KSVL! Ich bin hier, um dir bei Fragen zu deiner Mitgliedschaft, Buchungen und allem rund um den Verein zu helfen.', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00'),
+('d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a', 'gastmitglied', 'einladend und informativ', 'Herzlich willkommen als Gast beim Klagenfurter Segelverein Loretto! Ich beantworte gerne deine Fragen zum Verein.', '2025-06-01 10:00:00+00', '2025-06-01 10:00:00+00');
 
 -- ----------------------------------------------------------------------------
--- monday_settings (1 Eintrag)
+-- monday_settings (1 Eintrag - Schema-Referenz mit valider UUID)
 -- ----------------------------------------------------------------------------
 INSERT INTO public.monday_settings (id, board_id, api_key_set, column_mapping, auto_sync_enabled, last_sync_at, webhook_url, created_at, updated_at) VALUES
-('monday-config', NULL, true, '{}', false, NULL, NULL, '2025-10-01 10:00:00+00', '2025-12-01 15:00:00+00');
+('e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b', NULL, true, '{}', false, NULL, NULL, '2025-10-01 10:00:00+00', '2025-12-01 15:00:00+00');
 
 -- ============================================================================
 -- ENDE DES DUMPS
