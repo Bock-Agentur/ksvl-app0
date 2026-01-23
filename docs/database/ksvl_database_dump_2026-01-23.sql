@@ -775,43 +775,31 @@ CREATE POLICY "Service role can insert sync logs" ON public.monday_sync_logs
 -- wenn die entsprechenden Auth-User nicht existieren. Daher werden Profile
 -- bei der User-Erstellung automatisch über den handle_new_user() Trigger erstellt.
 -- ----------------------------------------------------------------------------
--- user_roles (24 Einträge - echte Produktionsdaten)
+-- user_roles (15 Einträge - bereinigte Produktionsdaten, Stand: 2026-01-23)
+-- Testbenutzer (@ksvl.test) wurden entfernt
 -- ----------------------------------------------------------------------------
 INSERT INTO public.user_roles (id, user_id, role, created_at) VALUES
-('ad97680e-a03b-4d6f-90d9-5f7f6515bd60', '4eb45e13-5b72-44c9-8287-bf314d301feb', 'mitglied', '2025-10-24 20:20:06.031385+00'),
-('98ae4b38-940d-4cc6-88e8-81e98b9b7792', '4eb45e13-5b72-44c9-8287-bf314d301feb', 'admin', '2025-10-24 20:20:06.152101+00'),
-('9136051d-9871-47ad-a669-4a68eba262d8', 'c5751a82-23b6-4d4a-8aa1-3c89d086a6cf', 'mitglied', '2025-10-24 20:20:06.33438+00'),
-('9c945ac0-9569-40e7-b4a5-bdc0623e536a', 'c5751a82-23b6-4d4a-8aa1-3c89d086a6cf', 'vorstand', '2025-10-24 20:20:06.44163+00'),
-('54f93286-5cd7-4177-ae92-a18af07b74e8', '9090b21d-8287-4732-a301-9402d3c2b034', 'mitglied', '2025-10-24 20:20:06.627552+00'),
-('99fde4ab-68a3-4a1e-af46-8e98e5842aa3', '9090b21d-8287-4732-a301-9402d3c2b034', 'kranfuehrer', '2025-10-24 20:20:06.720839+00'),
-('c4fe87e4-0444-4e61-9d6f-e74f400547e6', '8910e641-23a1-483f-822a-d5e5550f1411', 'mitglied', '2025-10-24 20:20:06.89996+00'),
-('66823ab2-83eb-4e2d-b68b-b33504a6eeb2', '5f38252a-ce4e-48a2-8f51-1113b8d831e5', 'mitglied', '2025-10-24 20:20:07.193566+00'),
-('8622fb85-ee10-4359-b73b-9d4dfed96c9c', '5f38252a-ce4e-48a2-8f51-1113b8d831e5', 'gastmitglied', '2025-10-24 20:20:07.294738+00'),
+('aa42d9a4-d340-4769-8a48-71284eeb1925', '4cb7a35d-b5b6-4589-8526-5176f041de89', 'mitglied', '2025-11-04 15:15:20.520831+00'),
+('b2a651db-de46-407d-8d12-504a3be69446', '4cb7a35d-b5b6-4589-8526-5176f041de89', 'kranfuehrer', '2025-11-04 15:15:20.697762+00'),
 ('5812faf2-3b32-474d-a07f-c99c2ebf8bc7', '5a7f5773-0c9c-4336-b06b-f2aaaa327764', 'admin', '2025-10-24 21:53:48.079922+00'),
 ('b911b420-a079-4f92-aa6f-8d5b9411a8be', '5a7f5773-0c9c-4336-b06b-f2aaaa327764', 'vorstand', '2025-10-24 21:53:48.122115+00'),
 ('2eab0350-a4f9-43b2-83fa-b88b402c32d3', '5a7f5773-0c9c-4336-b06b-f2aaaa327764', 'kranfuehrer', '2025-10-24 21:53:48.173875+00'),
 ('ca0d69a4-a8bf-4450-8196-3a386ff831d0', '5a7f5773-0c9c-4336-b06b-f2aaaa327764', 'mitglied', '2025-10-24 21:53:48.216544+00'),
 ('b2eb81c0-55b4-4c31-a60b-00dd1eab2d63', '5a7f5773-0c9c-4336-b06b-f2aaaa327764', 'gastmitglied', '2025-10-24 21:53:48.261823+00'),
-('aa42d9a4-d340-4769-8a48-71284eeb1925', '4cb7a35d-b5b6-4589-8526-5176f041de89', 'mitglied', '2025-11-04 15:15:20.520831+00'),
-('b2a651db-de46-407d-8d12-504a3be69446', '4cb7a35d-b5b6-4589-8526-5176f041de89', 'kranfuehrer', '2025-11-04 15:15:20.697762+00'),
-('44b8a514-f8fc-494a-a61a-9f08dadd8263', 'a910808d-0a1d-4bb9-8969-b08be3e44d2f', 'mitglied', '2025-11-17 20:47:45.14131+00'),
+('72fe8d7f-cf4a-46ce-ab1b-0c1f3c456a62', '75c394f3-0707-4fc3-89ea-fffd3777755c', 'vorstand', '2025-12-04 17:03:06.739301+00'),
+('8a108ff8-cd28-4302-ad3f-511b666ddfac', '75c394f3-0707-4fc3-89ea-fffd3777755c', 'mitglied', '2025-12-04 17:03:06.794052+00'),
 ('680bf274-ef50-48e6-ad96-a40b53b04657', '99177a44-836c-4edb-b0b5-225bfd1305ee', 'admin', '2025-12-01 21:36:54.586797+00'),
 ('620b1bed-8862-4df9-81bc-29c7fc839e98', '99177a44-836c-4edb-b0b5-225bfd1305ee', 'vorstand', '2025-12-01 21:36:54.627382+00'),
 ('f09c8d2c-5f5a-483e-8ee3-24cc34d5858c', '99177a44-836c-4edb-b0b5-225bfd1305ee', 'kranfuehrer', '2025-12-01 21:36:54.667457+00'),
 ('c1bc2456-14c1-4dbd-aaee-0ffa5501324d', '99177a44-836c-4edb-b0b5-225bfd1305ee', 'mitglied', '2025-12-01 21:36:54.70884+00'),
 ('ef90ade3-3ecf-4f30-bf77-28ca1fd53173', '99177a44-836c-4edb-b0b5-225bfd1305ee', 'gastmitglied', '2025-12-01 21:36:54.771514+00'),
-('72fe8d7f-cf4a-46ce-ab1b-0c1f3c456a62', '75c394f3-0707-4fc3-89ea-fffd3777755c', 'vorstand', '2025-12-04 17:03:06.739301+00'),
-('8a108ff8-cd28-4302-ad3f-511b666ddfac', '75c394f3-0707-4fc3-89ea-fffd3777755c', 'mitglied', '2025-12-04 17:03:06.794052+00');
+('44b8a514-f8fc-494a-a61a-9f08dadd8263', 'a910808d-0a1d-4bb9-8969-b08be3e44d2f', 'mitglied', '2025-11-17 20:47:45.14131+00');
 
 -- ----------------------------------------------------------------------------
--- slots (Beispieldaten - Schema-Referenz mit validen UUIDs)
+-- slots (leer - alle Testdaten wurden entfernt, Stand: 2026-01-23)
+-- Neue Slots werden über die App erstellt
 -- ----------------------------------------------------------------------------
-INSERT INTO public.slots (id, date, time, duration, crane_operator_id, member_id, is_booked, is_mini_slot, mini_slot_count, start_minute, block_id, created_at, updated_at, is_test_data, notes) VALUES
-('a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d', '2026-01-25', '09:00:00', 30, '5a7f5773-0c9c-4336-b06b-f2aaaa327764', NULL, false, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-20 10:00:00+00', false, NULL),
-('b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e', '2026-01-25', '09:30:00', 30, '5a7f5773-0c9c-4336-b06b-f2aaaa327764', '75c394f3-0707-4fc3-89ea-fffd3777755c', true, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-21 14:30:00+00', false, 'Einwassern'),
-('c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f', '2026-01-25', '10:00:00', 30, '5a7f5773-0c9c-4336-b06b-f2aaaa327764', NULL, false, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-20 10:00:00+00', false, NULL),
-('d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a', '2026-01-26', '09:00:00', 30, '5a7f5773-0c9c-4336-b06b-f2aaaa327764', 'c5751a82-23b6-4d4a-8aa1-3c89d086a6cf', true, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-22 09:15:00+00', false, 'Auswassern für Wartung'),
-('e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b', '2026-01-26', '10:00:00', 60, '5a7f5773-0c9c-4336-b06b-f2aaaa327764', NULL, false, false, NULL, NULL, NULL, '2026-01-20 10:00:00+00', '2026-01-20 10:00:00+00', false, NULL);
+-- Keine Slots vorhanden
 
 -- ----------------------------------------------------------------------------
 -- app_settings (gekürzte Auswahl - Schema-Referenz mit validen UUIDs)
