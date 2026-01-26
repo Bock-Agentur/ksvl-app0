@@ -906,5 +906,73 @@ INSERT INTO public.monday_settings (id, board_id, api_key_set, column_mapping, a
 ('e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b', NULL, true, '{}', false, NULL, NULL, '2025-10-01 10:00:00+00', '2025-12-01 15:00:00+00');
 
 -- ============================================================================
+-- TEIL 6: STORAGE BUCKETS
+-- ============================================================================
+
+-- Hinweis: Diese Befehle müssen im Supabase SQL-Editor ausgeführt werden
+-- Die storage.buckets Tabelle existiert bereits in Supabase
+
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES
+  ('login-media', 'login-media', true, 52428800, 
+   ARRAY['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/webm']),
+  ('documents', 'documents', false, 10485760, 
+   ARRAY['application/pdf', 'image/jpeg', 'image/png']),
+  ('member-documents', 'member-documents', false, 10485760, 
+   ARRAY['application/pdf', 'image/jpeg', 'image/png'])
+ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================================
+-- TEIL 7: STORAGE RLS POLICIES
+-- ============================================================================
+
+-- login-media Bucket (öffentlich lesbar, nur Admins können schreiben)
+CREATE POLICY "Public can view login-media" ON storage.objects
+  FOR SELECT USING (bucket_id = 'login-media');
+
+CREATE POLICY "Admins can upload to login-media" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'login-media' AND public.is_admin(auth.uid()));
+
+CREATE POLICY "Admins can update login-media" ON storage.objects
+  FOR UPDATE USING (bucket_id = 'login-media' AND public.is_admin(auth.uid()));
+
+CREATE POLICY "Admins can delete from login-media" ON storage.objects
+  FOR DELETE USING (bucket_id = 'login-media' AND public.is_admin(auth.uid()));
+
+-- documents Bucket (RBAC-geschützt)
+CREATE POLICY "Users can view documents via RBAC" ON storage.objects
+  FOR SELECT USING (bucket_id = 'documents' AND public.can_access_file(name));
+
+CREATE POLICY "Admins can manage documents" ON storage.objects
+  FOR ALL USING (bucket_id = 'documents' AND public.is_admin(auth.uid()));
+
+-- member-documents Bucket (RBAC-geschützt)
+CREATE POLICY "Users can view member-documents via RBAC" ON storage.objects
+  FOR SELECT USING (bucket_id = 'member-documents' AND public.can_access_file(name));
+
+CREATE POLICY "Users can upload own member-documents" ON storage.objects
+  FOR INSERT WITH CHECK (
+    bucket_id = 'member-documents' AND 
+    (auth.uid()::text = (storage.foldername(name))[1] OR public.is_admin(auth.uid()))
+  );
+
+CREATE POLICY "Admins can manage member-documents" ON storage.objects
+  FOR ALL USING (bucket_id = 'member-documents' AND public.is_admin(auth.uid()));
+
+-- ============================================================================
+-- TEIL 8: AUTH TRIGGER
+-- ============================================================================
+
+-- Trigger für automatische Profil-Erstellung bei neuen Usern
+-- Hinweis: Die Funktion handle_new_user() wurde bereits in TEIL 3 erstellt
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- ============================================================================
 -- ENDE DES DUMPS
+-- ============================================================================
+-- 
+-- Migrations-Anleitung: docs/migration/REMIX_MIGRATION_GUIDE.md
+-- Edge Functions Doku: docs/rebuild/10_edge_functions.md
 -- ============================================================================
