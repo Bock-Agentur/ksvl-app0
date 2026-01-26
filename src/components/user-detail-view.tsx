@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Edit, Save, X, User, Mail, Phone, Anchor, Calendar, Home, Ship, Ticket, ArrowLeft } from "lucide-react";
+import { Edit, Save, X, User, Mail, Phone, Anchor, Calendar, Home, Ship, Ticket, ArrowLeft, Shield } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -208,7 +208,7 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                 </div>
                 <div className="flex-1">
                   <CardTitle className="text-lg">{editedUser.name}</CardTitle>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
                     {sortRoles(editedUser.roles || []).map((role) => (
                       <Badge key={role} className="text-xs" style={getRoleBadgeInlineStyle(role)}>
                         {ROLE_LABELS[role] || roleLabels[role]}
@@ -220,6 +220,68 @@ export function UserDetailView({ user, isOpen, onClose, onUpdate }: UserDetailVi
                   </div>
                 </div>
               </div>
+              
+              {/* Rollen-Bearbeitung (nur für Admins im Edit-Modus) */}
+              {isEditing && isAdmin && (
+                <div className="mt-4 p-4 bg-muted/50 rounded-lg border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Shield className="w-4 h-4 text-primary" />
+                    <Label className="text-sm font-medium">Rollen zuweisen</Label>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {(["gastmitglied", "mitglied", "kranfuehrer", "vorstand", "admin"] as UserRole[]).map((role) => (
+                      <div key={role} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`role-edit-${role}`}
+                          checked={(editedUser.roles || []).includes(role)}
+                          onCheckedChange={(checked) => {
+                            const currentRoles = editedUser.roles || [];
+                            let newRoles: UserRole[];
+                            
+                            if (checked) {
+                              newRoles = [...currentRoles, role];
+                              // Auto-add dependent roles
+                              if (role === "kranfuehrer" && !currentRoles.includes("mitglied")) {
+                                newRoles.push("mitglied");
+                              }
+                              if (role === "admin") {
+                                newRoles = ["admin", "kranfuehrer", "mitglied", "gastmitglied"];
+                              }
+                              if (role === "vorstand") {
+                                newRoles = ["vorstand", "admin", "kranfuehrer", "mitglied", "gastmitglied"];
+                              }
+                            } else {
+                              newRoles = currentRoles.filter(r => r !== role);
+                              // Auto-remove dependent roles
+                              if (role === "mitglied") {
+                                newRoles = newRoles.filter(r => !["kranfuehrer", "admin", "vorstand"].includes(r));
+                              }
+                              if (role === "kranfuehrer") {
+                                newRoles = newRoles.filter(r => !["admin", "vorstand"].includes(r));
+                              }
+                              if (role === "admin") {
+                                newRoles = newRoles.filter(r => r !== "vorstand");
+                              }
+                            }
+                            
+                            const uniqueRoles = Array.from(new Set(newRoles)) as UserRole[];
+                            setEditedUser(prev => ({ ...prev, roles: uniqueRoles }));
+                          }}
+                        />
+                        <Label
+                          htmlFor={`role-edit-${role}`}
+                          className="text-sm font-normal cursor-pointer"
+                        >
+                          {roleLabels[role]}
+                        </Label>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-3">
+                    Vorstand erhält automatisch alle Rollen. Admin erhält alle außer Vorstand.
+                  </p>
+                </div>
+              )}
             </CardHeader>
             
             <CardContent className="space-y-6">
