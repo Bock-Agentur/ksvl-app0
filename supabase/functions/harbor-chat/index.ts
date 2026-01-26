@@ -41,10 +41,10 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const GOOGLE_API_KEY = Deno.env.get('GOOGLE_API_KEY');
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY nicht konfiguriert');
+    if (!GOOGLE_API_KEY) {
+      throw new Error('GOOGLE_API_KEY nicht konfiguriert');
     }
 
     // Verify JWT token
@@ -93,7 +93,7 @@ serve(async (req) => {
     const customPrompt = settings.customSystemPrompt || '';
     const agentName = settings.agentName || 'Capitano';
 
-    console.log('AI Settings:', { userTonality, maxTokens, hasCustomPrompt: !!customPrompt, agentName });
+    console.log('AI Settings:', { userTonality, maxTokens, hasCustomPrompt: !!customPrompt, agentName, apiProvider: 'Google Gemini' });
 
     // Hilfsfunktion: Vollständiger Name aus first_name + last_name, Fallback auf name
     const getFullName = (profile: any): string => {
@@ -463,45 +463,98 @@ ${customPrompt ? `\nZUSÄTZLICHE ANWEISUNGEN:\n${customPrompt}` : ''}
 
 Ahoi und viel Spaß beim Segeln! 🚤⚓`;
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          ...messages
-        ],
-        temperature: 0.7,
-        max_tokens: maxTokens,
-      }),
-    });
+    // Konvertiere OpenAI-Format zu Google Gemini Format
+    const geminiContents = [
+      // System-Prompt als erster User-Turn (Gemini unterstützt kein system role direkt)
+      { role: 'user', parts: [{ text: systemPrompt }] },
+      { role: 'model', parts: [{ text: 'Verstanden! Ich bin bereit zu helfen. ⚓' }] },
+      // Chat-Verlauf konvertieren
+      ...messages.map((m: { role: string; content: string }) => ({
+        role: m.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: m.content }]
+      }))
+    ];
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GOOGLE_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: geminiContents,
+          generationConfig: {
+            temperature: 0.7,
+            maxOutputTokens: maxTokens,
+            topP: 0.95,
+            topK: 40,
+          },
+          safetySettings: [
+            { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+            { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+            { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+            { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' }
+          ]
+        }),
+      }
+    );
 
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: 'Zu viele Anfragen. Bitte versuchen Sie es in einem Moment erneut.' }),
+          JSON.stringify({ error: 'Zu viele Anfragen. Bitte warten Sie einen Moment.' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      if (response.status === 402) {
+      if (response.status === 400) {
+        const errorData = await response.json();
+        console.error('Google API Fehler (400):', errorData);
         return new Response(
-          JSON.stringify({ error: 'AI-Kontingent aufgebraucht. Bitte kontaktieren Sie den Administrator.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'Ungültige Anfrage an Google AI API' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      if (response.status === 403) {
+        return new Response(
+          JSON.stringify({ error: 'Google API Key ungültig oder keine Berechtigung' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       const errorText = await response.text();
-      console.error('AI Gateway Fehler:', response.status, errorText);
-      throw new Error('AI Gateway Fehler');
+      console.error('Google AI API Fehler:', response.status, errorText);
+      throw new Error('Google AI API Fehler');
     }
 
     const data = await response.json();
-    
+
+    // Google Gemini Response extrahieren
+    const aiContent = data.candidates?.[0]?.content?.parts?.[0]?.text 
+      || 'Entschuldigung, ich konnte keine Antwort generieren.';
+
+    // Konvertiere zu OpenAI-Format für Frontend-Kompatibilität
+    const openAIFormatResponse = {
+      id: `chatcmpl-${Date.now()}`,
+      object: 'chat.completion',
+      created: Math.floor(Date.now() / 1000),
+      model: 'gemini-2.0-flash',
+      choices: [{
+        index: 0,
+        message: {
+          role: 'assistant',
+          content: aiContent
+        },
+        finish_reason: data.candidates?.[0]?.finishReason?.toLowerCase() || 'stop'
+      }],
+      usage: {
+        prompt_tokens: data.usageMetadata?.promptTokenCount || 0,
+        completion_tokens: data.usageMetadata?.candidatesTokenCount || 0,
+        total_tokens: data.usageMetadata?.totalTokenCount || 0
+      }
+    };
+
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify(openAIFormatResponse),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
