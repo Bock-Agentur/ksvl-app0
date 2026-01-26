@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,10 @@ import {
   Copy,
   ExternalLink,
   AlertTriangle,
-  Rocket
+  Rocket,
+  RotateCcw,
+  Save,
+  Clock
 } from "lucide-react";
 
 interface StepResult {
@@ -40,6 +43,18 @@ interface SetupResponse {
   error?: string;
   details?: string;
 }
+
+interface SavedSetupState {
+  supabaseUrl: string;
+  anonKey: string;
+  adminEmail: string;
+  adminName: string;
+  steps: StepResult[];
+  setupComplete: boolean;
+  savedAt: string;
+}
+
+const STORAGE_KEY = 'ksvl-setup-wizard-state';
 
 export function Setup() {
   const navigate = useNavigate();
@@ -60,6 +75,65 @@ export function Setup() {
   const [steps, setSteps] = useState<StepResult[]>([]);
   const [setupComplete, setSetupComplete] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [hasSavedState, setHasSavedState] = useState(false);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+
+  // Load saved state on mount
+  useEffect(() => {
+    const savedState = localStorage.getItem(STORAGE_KEY);
+    if (savedState) {
+      try {
+        const parsed: SavedSetupState = JSON.parse(savedState);
+        setSupabaseUrl(parsed.supabaseUrl || "");
+        setAnonKey(parsed.anonKey || "");
+        setAdminEmail(parsed.adminEmail || "");
+        setAdminName(parsed.adminName || "");
+        setSteps(parsed.steps || []);
+        setSetupComplete(parsed.setupComplete || false);
+        setSavedAt(parsed.savedAt);
+        setHasSavedState(true);
+        toast.info("Gespeicherter Fortschritt geladen");
+      } catch (e) {
+        console.error("Failed to parse saved state:", e);
+        localStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }, []);
+
+  // Save state whenever relevant fields change
+  const saveState = () => {
+    const state: SavedSetupState = {
+      supabaseUrl,
+      anonKey,
+      adminEmail,
+      adminName,
+      steps,
+      setupComplete,
+      savedAt: new Date().toISOString()
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    setSavedAt(state.savedAt);
+    setHasSavedState(true);
+    toast.success("Fortschritt gespeichert");
+  };
+
+  // Clear saved state
+  const clearSavedState = () => {
+    localStorage.removeItem(STORAGE_KEY);
+    setSupabaseUrl("");
+    setAnonKey("");
+    setServiceRoleKey("");
+    setAdminEmail("");
+    setAdminPassword("");
+    setAdminPasswordConfirm("");
+    setAdminName("");
+    setSteps([]);
+    setSetupComplete(false);
+    setErrorMessage(null);
+    setHasSavedState(false);
+    setSavedAt(null);
+    toast.success("Fortschritt zurückgesetzt");
+  };
 
   // Validation
   const isValidUrl = (url: string) => {
@@ -96,7 +170,7 @@ export function Setup() {
 
     setIsRunning(true);
     setErrorMessage(null);
-    setSteps([
+    const initialSteps: StepResult[] = [
       { step: 1, name: 'Enum erstellen', status: 'pending' },
       { step: 2, name: '16 Tabellen erstellen', status: 'pending' },
       { step: 3, name: '6 DB-Funktionen erstellen', status: 'pending' },
@@ -105,7 +179,8 @@ export function Setup() {
       { step: 6, name: '3 Storage Buckets erstellen', status: 'pending' },
       { step: 7, name: 'Storage RLS Policies erstellen', status: 'pending' },
       { step: 8, name: 'Auth-Trigger + Admin-User erstellen', status: 'pending' },
-    ]);
+    ];
+    setSteps(initialSteps);
 
     try {
       const { data, error } = await supabase.functions.invoke<SetupResponse>('setup-wizard', {
@@ -127,16 +202,53 @@ export function Setup() {
         
         if (data.success) {
           setSetupComplete(true);
+          // Save final state
+          const state: SavedSetupState = {
+            supabaseUrl,
+            anonKey,
+            adminEmail,
+            adminName,
+            steps: data.steps,
+            setupComplete: true,
+            savedAt: new Date().toISOString()
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
           toast.success("Migration erfolgreich!");
         } else {
+          // Save partial state so user can continue later
+          const state: SavedSetupState = {
+            supabaseUrl,
+            anonKey,
+            adminEmail,
+            adminName,
+            steps: data.steps,
+            setupComplete: false,
+            savedAt: new Date().toISOString()
+          };
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+          setHasSavedState(true);
+          setSavedAt(state.savedAt);
           setErrorMessage(data.message || data.error || 'Unbekannter Fehler');
-          toast.warning("Migration mit Warnungen abgeschlossen");
+          toast.warning("Migration mit Warnungen - Fortschritt gespeichert");
         }
       }
     } catch (err) {
       console.error('Setup error:', err);
+      // Save state even on error
+      const state: SavedSetupState = {
+        supabaseUrl,
+        anonKey,
+        adminEmail,
+        adminName,
+        steps: steps.map(s => s.status === 'running' ? { ...s, status: 'error' as const } : s),
+        setupComplete: false,
+        savedAt: new Date().toISOString()
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      setHasSavedState(true);
+      setSavedAt(state.savedAt);
       setErrorMessage(err instanceof Error ? err.message : 'Setup fehlgeschlagen');
-      toast.error("Setup fehlgeschlagen");
+      toast.error("Setup fehlgeschlagen - Fortschritt gespeichert");
     } finally {
       setIsRunning(false);
     }
@@ -163,6 +275,17 @@ export function Setup() {
     }
   };
 
+  const formatSavedAt = (isoString: string) => {
+    const date = new Date(isoString);
+    return date.toLocaleString('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl space-y-6">
@@ -178,6 +301,55 @@ export function Setup() {
             Automatisierte Migration für neue Supabase-Projekte
           </p>
         </div>
+
+        {/* Saved State Info */}
+        {hasSavedState && !setupComplete && (
+          <Card className="border-primary/30 bg-primary/5">
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Clock className="h-5 w-5 text-primary" />
+                  <div>
+                    <p className="font-medium text-sm">Gespeicherter Fortschritt</p>
+                    {savedAt && (
+                      <p className="text-xs text-muted-foreground">
+                        Zuletzt gespeichert: {formatSavedAt(savedAt)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={saveState}
+                    disabled={isRunning}
+                  >
+                    <Save className="h-4 w-4 mr-1" />
+                    Speichern
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    onClick={clearSavedState}
+                    disabled={isRunning}
+                  >
+                    <RotateCcw className="h-4 w-4 mr-1" />
+                    Zurücksetzen
+                  </Button>
+                </div>
+              </div>
+              {completedSteps > 0 && (
+                <div className="mt-3">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{completedSteps} von 8 Schritten abgeschlossen</span>
+                    <Progress value={progress} className="flex-1 h-2" />
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {!setupComplete ? (
           <>
@@ -373,30 +545,49 @@ export function Setup() {
                     <div>
                       <p className="font-medium text-destructive">Fehler aufgetreten</p>
                       <p className="text-sm text-muted-foreground">{errorMessage}</p>
+                      <p className="text-xs text-muted-foreground mt-2">
+                        Dein Fortschritt wurde gespeichert. Du kannst später fortfahren.
+                      </p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Submit Button */}
-            <Button
-              className="w-full h-12 text-lg"
-              onClick={handleSubmit}
-              disabled={!canSubmit || isRunning}
-            >
-              {isRunning ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Migration läuft...
-                </>
-              ) : (
-                <>
-                  <Rocket className="mr-2 h-5 w-5" />
-                  Migration starten
-                </>
+            {/* Action Buttons */}
+            <div className="flex gap-3">
+              <Button
+                className="flex-1 h-12 text-lg"
+                onClick={handleSubmit}
+                disabled={!canSubmit || isRunning}
+              >
+                {isRunning ? (
+                  <>
+                    <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                    Migration läuft...
+                  </>
+                ) : completedSteps > 0 ? (
+                  <>
+                    <Rocket className="mr-2 h-5 w-5" />
+                    Migration fortsetzen
+                  </>
+                ) : (
+                  <>
+                    <Rocket className="mr-2 h-5 w-5" />
+                    Migration starten
+                  </>
+                )}
+              </Button>
+              {!isRunning && (supabaseUrl || anonKey || adminEmail) && (
+                <Button
+                  variant="outline"
+                  className="h-12"
+                  onClick={saveState}
+                >
+                  <Save className="h-5 w-5" />
+                </Button>
               )}
-            </Button>
+            </div>
           </>
         ) : (
           /* Success State */
@@ -479,6 +670,12 @@ export function Setup() {
                   <ExternalLink className="mr-2 h-4 w-4" />
                   Supabase Dashboard
                 </Button>
+                <Button
+                  variant="ghost"
+                  onClick={clearSavedState}
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -486,7 +683,7 @@ export function Setup() {
 
         {/* Footer */}
         <p className="text-center text-sm text-muted-foreground">
-          KSVL Slot Manager • Setup-Wizard v1.0
+          KSVL Slot Manager • Setup-Wizard v1.1
         </p>
       </div>
     </div>
