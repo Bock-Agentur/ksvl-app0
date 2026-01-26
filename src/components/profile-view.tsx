@@ -184,12 +184,15 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
     <div className="space-y-6">
       <ProfileHeader
         user={user}
+        editedUser={editedUser || undefined}
         isEditing={isEditing}
+        isAdmin={isAdmin}
         getRoleBadgeInlineStyle={getRoleBadgeInlineStyle}
         onEdit={handleStartEditing}
         onSave={handleSaveProfile}
         onCancel={handleCancelEditing}
         onBack={onBack}
+        onRolesChange={(roles) => setEditedUser(prev => prev ? { ...prev, roles } : null)}
       />
 
       <ProfileFormCards
