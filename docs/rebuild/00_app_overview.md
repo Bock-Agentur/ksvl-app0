@@ -250,15 +250,37 @@ ksvl-app/
 
 ## 9. Quick Start für Nachbau
 
+### Option A: Neues Projekt von Grund auf
+
 1. **Projekt erstellen**: Neues Lovable-Projekt mit React + TypeScript
 2. **Supabase aktivieren**: Cloud-Integration aktivieren
-3. **Database Setup**: Migrations aus `02_database_schema.md` ausführen
+3. **Database Setup**: SQL-Dump aus `docs/database/ksvl_database_dump_2026-01-23.sql` ausführen
 4. **Auth konfigurieren**: Email-Auth mit Auto-Confirm aktivieren
-5. **Edge Functions**: Functions aus `10_edge_functions.md` erstellen
+5. **Edge Functions**: Functions aus `10_edge_functions.md` deployen
 6. **Components**: UI-Komponenten gemäß Dokumentation implementieren
 7. **Styling**: Maritime Theme aus `11_ui_components.md` anwenden
 
+### Option B: Remix eines bestehenden Projekts
+
+Für die Migration eines Remix-Projekts zu einer neuen Supabase-Instanz:
+
+👉 **Siehe: [`docs/migration/REMIX_MIGRATION_GUIDE.md`](../migration/REMIX_MIGRATION_GUIDE.md)**
+
+Diese Anleitung enthält:
+- Schritt-für-Schritt-Anweisungen (8 Schritte)
+- Vollständige Checkliste
+- Troubleshooting-Tipps
+- Übertragungs-Matrix
+
+### Wichtige Dateien für Migration
+
+| Datei | Beschreibung |
+|-------|--------------|
+| `docs/database/ksvl_database_dump_2026-01-23.sql` | Vollständiger DB-Dump (Schema, RLS, Funktionen, Storage, Trigger, Seed-Daten) |
+| `docs/migration/REMIX_MIGRATION_GUIDE.md` | Migrations-Anleitung mit Checkliste |
+| `docs/rebuild/10_edge_functions.md` | Edge Functions Dokumentation mit Deployment-Anleitung |
+
 ---
 
-**Letzte Aktualisierung**: 2026-01-23
-**Version**: 2.0.0
+**Letzte Aktualisierung**: 2026-01-26
+**Version**: 2.1.0
