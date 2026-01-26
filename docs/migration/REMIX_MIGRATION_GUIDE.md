@@ -6,10 +6,11 @@
 
 1. [Übersicht](#1-übersicht)
 2. [Voraussetzungen](#2-voraussetzungen)
-3. [Schritt-für-Schritt-Anleitung](#3-schritt-für-schritt-anleitung)
-4. [Checkliste](#4-checkliste)
-5. [Troubleshooting](#5-troubleshooting)
-6. [Übertragungs-Matrix](#6-übertragungs-matrix)
+3. [**Setup-Wizard (Automatisiert)**](#3-setup-wizard-automatisiert) ⭐ NEU
+4. [Manuelle Schritt-für-Schritt-Anleitung](#4-manuelle-schritt-für-schritt-anleitung)
+5. [Checkliste](#5-checkliste)
+6. [Troubleshooting](#6-troubleshooting)
+7. [Übertragungs-Matrix](#7-übertragungs-matrix)
 
 ---
 
@@ -69,7 +70,112 @@ supabase link --project-ref <project-id>
 
 ---
 
-## 3. Schritt-für-Schritt-Anleitung
+## 3. Setup-Wizard (Automatisiert) ⭐
+
+> **Empfohlen!** Der Setup-Wizard automatisiert den Großteil der Migration.
+
+### 3.1 Voraussetzungen
+
+1. Neues Supabase-Projekt erstellen (siehe [Abschnitt 2.1](#21-neues-supabase-projekt))
+2. Folgende Credentials bereithalten:
+   - **Project URL**: `https://xxxxx.supabase.co`
+   - **Anon Key**: `eyJhbG...` (öffentlich)
+   - **Service Role Key**: `eyJhbG...` (geheim!)
+
+### 3.2 Setup-Wizard starten
+
+1. Im Remix-Projekt die URL `/setup` aufrufen
+2. Die Setup-Seite wird angezeigt
+
+### 3.3 Schritt 1: Supabase-Credentials eingeben
+
+| Feld | Beschreibung | Beispiel |
+|------|--------------|----------|
+| **Supabase URL** | Project URL aus dem Dashboard | `https://abcdefgh.supabase.co` |
+| **Anon Key** | Öffentlicher API-Key | `eyJhbGciOiJIUzI1...` |
+| **Service Role Key** | Geheimer Admin-Key | `eyJhbGciOiJIUzI1...` |
+
+> ⚠️ **Sicherheitshinweis**: Der Service Role Key wird nur für das Setup verwendet und nicht gespeichert.
+
+### 3.4 Schritt 2: Admin-Benutzer definieren
+
+| Feld | Beschreibung | Anforderungen |
+|------|--------------|---------------|
+| **Email** | Admin-Email-Adresse | Gültige Email |
+| **Passwort** | Sicheres Passwort | Min. 8 Zeichen, Groß-/Kleinbuchstaben, Zahl |
+| **Name** | Anzeigename | z.B. "Administrator" |
+
+### 3.5 Migration starten
+
+1. **"Migration starten"** klicken
+2. Der Wizard prüft, ob die Datenbank bereits initialisiert ist:
+
+#### Fall A: Datenbank ist leer (Ersteinrichtung)
+
+Der Wizard gibt den **kompletten SQL-Dump** zurück mit:
+- 1 Enum (`app_role`)
+- 16 Tabellen
+- 6 DB-Funktionen
+- 50+ RLS Policies
+- Storage Buckets & Policies
+- Auth-Trigger
+
+**Vorgehen:**
+1. SQL-Code kopieren (Button "SQL kopieren")
+2. Im Supabase Dashboard: **SQL Editor** öffnen
+3. SQL einfügen und **"Run"** klicken
+4. Zurück zum Setup-Wizard und **erneut "Migration starten"** klicken
+
+#### Fall B: Datenbank ist bereits initialisiert
+
+Der Wizard führt automatisch aus:
+- ✅ Seed-Daten einfügen (9 Tabellen)
+- ✅ Storage Buckets erstellen (3 Buckets)
+- ✅ Admin-User erstellen mit `admin`-Rolle
+
+### 3.6 Nach erfolgreicher Migration
+
+Der Wizard zeigt:
+
+1. **Erfolgs-Meldung** mit Zusammenfassung
+2. **`.env`-Werte zum Kopieren**:
+   ```env
+   VITE_SUPABASE_URL=https://xxxxx.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=eyJhbG...
+   VITE_SUPABASE_PROJECT_ID=xxxxx
+   ```
+3. **Hinweis auf manuelle Schritte** (Secrets, Edge Functions)
+
+### 3.7 Manuelle Nacharbeiten
+
+Nach dem Setup-Wizard müssen noch manuell erledigt werden:
+
+| Schritt | Beschreibung | Anleitung |
+|---------|--------------|-----------|
+| **Secrets konfigurieren** | API-Keys im Supabase Dashboard | [Schritt 5 in Abschnitt 4](#schritt-5-secrets-konfigurieren) |
+| **Edge Functions deployen** | Via Supabase CLI | [Schritt 4 in Abschnitt 4](#schritt-4-edge-functions-deployen) |
+| **Auth konfigurieren** | Email-Bestätigung deaktivieren | [Schritt 3 in Abschnitt 4](#schritt-3-auth-einstellungen-konfigurieren) |
+
+### 3.8 Was der Setup-Wizard automatisiert
+
+| Element | Manuell | Setup-Wizard |
+|---------|---------|--------------|
+| Supabase-Projekt erstellen | ✅ | ❌ |
+| SQL-Dump ausführen | ✅ | ⚠️ Gibt SQL zurück |
+| Seed-Daten einfügen | ✅ | ✅ Automatisch |
+| Storage Buckets erstellen | ✅ | ✅ Automatisch |
+| Admin-User erstellen | ✅ | ✅ Automatisch |
+| Secrets konfigurieren | ✅ | ❌ |
+| Edge Functions deployen | ✅ | ❌ |
+| `.env` aktualisieren | ✅ | ⚠️ Zeigt Werte |
+
+**Zeitersparnis**: ~20-30 Minuten
+
+---
+
+## 4. Manuelle Schritt-für-Schritt-Anleitung
+
+> Diese Anleitung ist für Fälle, in denen der Setup-Wizard nicht verwendet werden kann.
 
 ### Schritt 1: Supabase-Projekt erstellen
 
@@ -176,7 +282,7 @@ VITE_SUPABASE_PROJECT_ID=<neue-project-id>
 
 ---
 
-## 4. Checkliste
+## 5. Checkliste
 
 ### ✅ Datenbank
 
@@ -253,7 +359,7 @@ VITE_SUPABASE_PROJECT_ID=<neue-project-id>
 
 ---
 
-## 5. Troubleshooting
+## 6. Troubleshooting
 
 ### Problem: "relation does not exist"
 
@@ -313,9 +419,27 @@ SELECT * FROM pg_trigger WHERE tgname = 'on_auth_user_created';
 2. Falls Bucket fehlt: TEIL 6 des Dumps ausführen
 3. Policies prüfen: TEIL 7 des Dumps ausführen
 
+### Problem: Setup-Wizard zeigt "SQL manuell ausführen"
+
+**Ursache**: DDL-Befehle (CREATE TABLE, etc.) können nicht via REST API ausgeführt werden.
+
+**Lösung**:
+1. SQL-Code kopieren (Button im Wizard)
+2. Supabase Dashboard → SQL Editor
+3. SQL einfügen und ausführen
+4. Wizard erneut starten
+
+### Problem: Setup-Wizard Fehler "Tabelle existiert bereits"
+
+**Ursache**: Datenbank wurde bereits teilweise initialisiert.
+
+**Lösung**:
+1. Entweder: Neues Supabase-Projekt erstellen
+2. Oder: Alle Tabellen manuell löschen und neu starten
+
 ---
 
-## 6. Übertragungs-Matrix
+## 7. Übertragungs-Matrix
 
 | Element | Übertragen via | Status nach Migration |
 |---------|----------------|----------------------|
@@ -344,10 +468,23 @@ SELECT * FROM pg_trigger WHERE tgname = 'on_auth_user_created';
 
 ## Zusammenfassung
 
-Die Migration eines KSVL App Remixes umfasst 8 Schritte:
+### Option A: Mit Setup-Wizard (Empfohlen)
 
 1. ✅ Neues Supabase-Projekt erstellen
-2. ✅ SQL-Dump ausführen (Schema + RLS + Funktionen + Storage + Trigger)
+2. ✅ `/setup` aufrufen und Credentials eingeben
+3. ✅ SQL-Dump ausführen (vom Wizard bereitgestellt)
+4. ✅ Wizard erneut starten → Seed-Daten + Buckets + Admin automatisch
+5. ⚠️ Auth konfigurieren (manuell)
+6. ⚠️ Edge Functions deployen (CLI)
+7. ⚠️ Secrets konfigurieren (Dashboard)
+8. ✅ Frontend `.env` aktualisieren (Werte vom Wizard)
+
+**Geschätzte Dauer**: 15-30 Minuten
+
+### Option B: Komplett manuell
+
+1. ✅ Neues Supabase-Projekt erstellen
+2. ✅ SQL-Dump ausführen
 3. ✅ Auth konfigurieren
 4. ✅ Edge Functions deployen
 5. ✅ Secrets konfigurieren
@@ -360,4 +497,4 @@ Die Migration eines KSVL App Remixes umfasst 8 Schritte:
 ---
 
 **Letzte Aktualisierung**: 2026-01-26  
-**Version**: 1.0.0
+**Version**: 2.0.0 (Setup-Wizard hinzugefügt)
