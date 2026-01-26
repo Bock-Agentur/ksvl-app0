@@ -21,6 +21,7 @@ import { Users } from "./pages/Users";
 import { Calendar } from "./pages/Calendar";
 import { Profile } from "./pages/Profile";
 import SettingsManager from "./pages/SettingsManager";
+import { Setup } from "./pages/Setup";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => {
                 <TabRedirect />
                 <Routes>
                   {/* Public Routes */}
+                  <Route path="/setup" element={<Setup />} />
                   <Route path={ROUTES.public.auth.path} element={<Auth />} />
                   
                   {/* Legacy Redirects for backward compatibility */}
