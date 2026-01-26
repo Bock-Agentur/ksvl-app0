@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.monday-webhook]
 verify_jwt = false
+
+[functions.setup-wizard]
+verify_jwt = false
