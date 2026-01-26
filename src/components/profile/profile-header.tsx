@@ -1,7 +1,9 @@
-import { Edit, Save, X, ArrowLeft } from "lucide-react";
+import { Edit, Save, X, ArrowLeft, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { User as UserType, UserRole } from "@/types";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
 
@@ -15,23 +17,65 @@ const roleLabels: Record<UserRole, string> = {
 
 interface ProfileHeaderProps {
   user: UserType;
+  editedUser?: UserType;
   isEditing: boolean;
+  isAdmin?: boolean;
   getRoleBadgeInlineStyle: (role: UserRole) => React.CSSProperties;
   onEdit: () => void;
   onSave: () => void;
   onCancel: () => void;
   onBack?: () => void;
+  onRolesChange?: (roles: UserRole[]) => void;
 }
 
 export function ProfileHeader({
   user,
+  editedUser,
   isEditing,
+  isAdmin = false,
   getRoleBadgeInlineStyle,
   onEdit,
   onSave,
   onCancel,
   onBack,
+  onRolesChange,
 }: ProfileHeaderProps) {
+  const currentRoles = editedUser?.roles || user.roles || [];
+  
+  const handleRoleToggle = (role: UserRole, checked: boolean) => {
+    if (!onRolesChange) return;
+    
+    let newRoles: UserRole[];
+    
+    if (checked) {
+      newRoles = [...currentRoles, role];
+      // Auto-add dependent roles
+      if (role === "kranfuehrer" && !currentRoles.includes("mitglied")) {
+        newRoles.push("mitglied");
+      }
+      if (role === "admin") {
+        newRoles = ["admin", "kranfuehrer", "mitglied", "gastmitglied"];
+      }
+      if (role === "vorstand") {
+        newRoles = ["vorstand", "admin", "kranfuehrer", "mitglied", "gastmitglied"];
+      }
+    } else {
+      newRoles = currentRoles.filter(r => r !== role);
+      // Auto-remove dependent roles
+      if (role === "mitglied") {
+        newRoles = newRoles.filter(r => !["kranfuehrer", "admin", "vorstand"].includes(r));
+      }
+      if (role === "kranfuehrer") {
+        newRoles = newRoles.filter(r => !["admin", "vorstand"].includes(r));
+      }
+      if (role === "admin") {
+        newRoles = newRoles.filter(r => r !== "vorstand");
+      }
+    }
+    
+    const uniqueRoles = Array.from(new Set(newRoles)) as UserRole[];
+    onRolesChange(uniqueRoles);
+  };
   return (
     <Card className="bg-white rounded-[2rem] card-shadow-soft border-0">
       <CardContent className="p-6">
@@ -101,6 +145,36 @@ export function ProfileHeader({
             </>
           )}
         </div>
+
+        {/* Rollen-Bearbeitung (nur für Admins im Edit-Modus) */}
+        {isEditing && isAdmin && onRolesChange && (
+          <div className="mt-4 p-4 bg-muted/50 rounded-lg border">
+            <div className="flex items-center gap-2 mb-3">
+              <Shield className="w-4 h-4 text-primary" />
+              <Label className="text-sm font-medium">Rollen zuweisen</Label>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {(["gastmitglied", "mitglied", "kranfuehrer", "vorstand", "admin"] as UserRole[]).map((role) => (
+                <div key={role} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`role-header-${role}`}
+                    checked={currentRoles.includes(role)}
+                    onCheckedChange={(checked) => handleRoleToggle(role, Boolean(checked))}
+                  />
+                  <Label
+                    htmlFor={`role-header-${role}`}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {roleLabels[role]}
+                  </Label>
+                </div>
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">
+              Vorstand erhält automatisch alle Rollen. Admin erhält alle außer Vorstand.
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
