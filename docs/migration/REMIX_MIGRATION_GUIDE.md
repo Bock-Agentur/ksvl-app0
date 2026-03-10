@@ -290,14 +290,7 @@ VITE_SUPABASE_PROJECT_ID=<neue-project-id>
 - [ ] Tabelle `app_settings` erstellt
 - [ ] Tabelle `file_metadata` erstellt
 - [ ] Tabelle `theme_settings` erstellt
-- [ ] Tabelle `menu_item_definitions` erstellt
-- [ ] Tabelle `dashboard_widget_definitions` erstellt
-- [ ] Tabelle `dashboard_section_definitions` erstellt
 - [ ] Tabelle `role_badge_settings` erstellt
-- [ ] Tabelle `role_configurations` erstellt
-- [ ] Tabelle `ai_assistant_defaults` erstellt
-- [ ] Tabelle `monday_settings` erstellt
-- [ ] Tabelle `monday_sync_logs` erstellt
 
 ### ✅ DB-Funktionen
 
