@@ -114,9 +114,9 @@ supabase link --project-ref <project-id>
 
 Der Wizard gibt den **kompletten SQL-Dump** zurück mit:
 - 1 Enum (`app_role`)
-- 16 Tabellen
+- 7 Tabellen
 - 6 DB-Funktionen
-- 50+ RLS Policies
+- 40+ RLS Policies
 - Storage Buckets & Policies
 - Auth-Trigger
 
