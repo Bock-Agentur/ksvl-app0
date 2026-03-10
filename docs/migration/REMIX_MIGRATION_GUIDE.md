@@ -238,8 +238,6 @@ Im Supabase Dashboard: **Project Settings** → **Edge Functions** → **Secrets
 |--------|------|---------|
 | `GOOGLE_API_KEY` | API-Key von [ai.google.dev](https://ai.google.dev) | ✅ Ja |
 | `ADMIN_PASSWORD_RESET_KEY` | Selbst generierter sicherer String | ✅ Ja |
-| `MONDAY_API_KEY` | Monday.com API Key | ⚪ Optional |
-| `MONDAY_SIGNING_SECRET` | Monday.com Webhook Secret | ⚪ Optional |
 
 ### Schritt 6: Admin-User erstellen
 
