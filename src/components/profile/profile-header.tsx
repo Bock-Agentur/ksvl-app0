@@ -43,7 +43,58 @@ export function ProfileHeader({
   onCancel,
   onBack,
   onRolesChange,
+  onAvatarChange,
 }: ProfileHeaderProps) {
+  const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const avatarUrl = (user as any).avatarUrl || (user as any).avatar_url || null;
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({ title: 'Fehler', description: 'Nur Bilddateien sind erlaubt.', variant: 'destructive' });
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: 'Fehler', description: 'Maximale Dateigröße: 5 MB', variant: 'destructive' });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `avatars/${user.id}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('documents')
+        .upload(filePath, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('documents')
+        .getPublicUrl(filePath);
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: urlData.publicUrl })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      toast({ title: 'Profilbild aktualisiert', description: 'Dein Profilbild wurde gespeichert.' });
+      onAvatarChange?.();
+    } catch (error: any) {
+      toast({ title: 'Fehler', description: error.message || 'Upload fehlgeschlagen.', variant: 'destructive' });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
   const currentRoles = editedUser?.roles || user.roles || [];
   
   const handleRoleToggle = (role: UserRole, checked: boolean) => {
