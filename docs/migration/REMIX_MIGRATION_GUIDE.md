@@ -190,15 +190,15 @@ Nach dem Setup-Wizard müssen noch manuell erledigt werden:
 ### Schritt 2: SQL-Dump ausführen
 
 1. Im Supabase Dashboard: **SQL Editor** öffnen
-2. Den kompletten Inhalt von `docs/database/ksvl_database_dump_2026-01-23.sql` einfügen
+2. Den kompletten Inhalt von `docs/database/ksvl_database_dump_2026-03-10.sql` einfügen
 3. **"Run"** klicken
 4. Auf erfolgreiche Ausführung prüfen (grüner Haken)
 
 > ⚠️ **Wichtig**: Der Dump enthält alle 8 Teile:
 > - TEIL 1: Enums
-> - TEIL 2: Tabellen (14 Stück)
+> - TEIL 2: Tabellen (7 Stück)
 > - TEIL 3: DB-Funktionen (6 Stück)
-> - TEIL 4: RLS Policies (50+ Stück)
+> - TEIL 4: RLS Policies (40+ Stück)
 > - TEIL 5: Seed-Daten
 > - TEIL 6: Storage Buckets (3 Stück)
 > - TEIL 7: Storage RLS Policies
