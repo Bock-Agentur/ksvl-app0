@@ -129,7 +129,7 @@ Der Wizard gibt den **kompletten SQL-Dump** zurück mit:
 #### Fall B: Datenbank ist bereits initialisiert
 
 Der Wizard führt automatisch aus:
-- ✅ Seed-Daten einfügen (9 Tabellen)
+- ✅ Seed-Daten einfügen (3 Tabellen)
 - ✅ Storage Buckets erstellen (3 Buckets)
 - ✅ Admin-User erstellen mit `admin`-Rolle
 
