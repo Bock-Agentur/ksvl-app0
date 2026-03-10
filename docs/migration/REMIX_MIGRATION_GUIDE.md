@@ -484,5 +484,5 @@ SELECT * FROM pg_trigger WHERE tgname = 'on_auth_user_created';
 
 ---
 
-**Letzte Aktualisierung**: 2026-01-26  
-**Version**: 2.0.0 (Setup-Wizard hinzugefügt)
+**Letzte Aktualisierung**: 2026-03-10  
+**Version**: 3.0.0 (Bereinigt: 7 Tabellen, Monday-Integration entfernt)
