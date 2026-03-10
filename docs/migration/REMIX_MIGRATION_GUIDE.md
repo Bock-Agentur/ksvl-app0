@@ -65,7 +65,7 @@ supabase link --project-ref <project-id>
 
 ### 2.3 Benötigte Dateien
 
-- `docs/database/ksvl_database_dump_2026-01-23.sql` (vollständiger DB-Dump)
+- `docs/database/ksvl_database_dump_2026-03-10.sql` (vollständiger DB-Dump)
 - `supabase/functions/*` (Edge Functions)
 
 ---
