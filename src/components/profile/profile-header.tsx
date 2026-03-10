@@ -1,4 +1,5 @@
-import { Edit, Save, X, ArrowLeft, Shield } from "lucide-react";
+import { useState, useRef } from "react";
+import { Edit, Save, X, ArrowLeft, Shield, Camera, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +7,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { User as UserType, UserRole } from "@/types";
 import { sortRoles, ROLE_LABELS } from "@/lib/role-order";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const roleLabels: Record<UserRole, string> = {
   gastmitglied: "Gastmitglied",
