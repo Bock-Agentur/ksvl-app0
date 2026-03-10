@@ -1,32 +1,12 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1'
+-- ============================================================================
+-- KSVL Slot Manager - Vollständiger Datenbank-Dump
+-- Version: 2026-03-10 (bereinigt: 7 Tabellen)
+-- ============================================================================
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
-}
+-- ============================================================================
+-- TEIL 1: ENUM TYPES
+-- ============================================================================
 
-interface SetupRequest {
-  supabaseUrl: string
-  serviceRoleKey: string
-  anonKey: string
-  adminEmail: string
-  adminPassword: string
-  adminName: string
-}
-
-interface StepResult {
-  step: number
-  name: string
-  status: 'pending' | 'running' | 'completed' | 'error'
-  message?: string
-  details?: string
-}
-
-// ============================================================================
-// SQL BLOCKS - Aktualisiert: 7 Tabellen (bereinigt 2026-03-10)
-// ============================================================================
-
-const SQL_PART_1_ENUM = `
 DO $$ BEGIN
   CREATE TYPE public.app_role AS ENUM (
     'admin',
@@ -38,9 +18,11 @@ DO $$ BEGIN
 EXCEPTION
   WHEN duplicate_object THEN null;
 END $$;
-`;
 
-const SQL_PART_2_TABLES = `
+-- ============================================================================
+-- TEIL 2: TABELLEN (7 Tabellen)
+-- ============================================================================
+
 -- profiles
 CREATE TABLE IF NOT EXISTS public.profiles (
     id uuid NOT NULL PRIMARY KEY,
@@ -115,7 +97,8 @@ CREATE TABLE IF NOT EXISTS public.user_roles (
     id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id uuid NOT NULL,
     role public.app_role NOT NULL,
-    created_at timestamp with time zone DEFAULT now()
+    created_at timestamp with time zone DEFAULT now(),
+    UNIQUE(user_id, role)
 );
 
 -- slots
@@ -190,7 +173,10 @@ CREATE TABLE IF NOT EXISTS public.role_badge_settings (
     updated_at timestamp with time zone DEFAULT now()
 );
 
--- Indexes
+-- ============================================================================
+-- TEIL 2b: INDEXES
+-- ============================================================================
+
 CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
 CREATE INDEX IF NOT EXISTS idx_profiles_username ON public.profiles(username);
 CREATE INDEX IF NOT EXISTS idx_profiles_member_number ON public.profiles(member_number);
@@ -205,12 +191,10 @@ CREATE INDEX IF NOT EXISTS idx_file_metadata_owner ON public.file_metadata(owner
 CREATE INDEX IF NOT EXISTS idx_file_metadata_category ON public.file_metadata(category);
 CREATE INDEX IF NOT EXISTS idx_file_metadata_linked_user ON public.file_metadata(linked_user_id);
 
--- Unique constraints
-ALTER TABLE public.user_roles DROP CONSTRAINT IF EXISTS user_roles_user_id_role_key;
-ALTER TABLE public.user_roles ADD CONSTRAINT user_roles_user_id_role_key UNIQUE (user_id, role);
-`;
+-- ============================================================================
+-- TEIL 3: DATABASE FUNCTIONS
+-- ============================================================================
 
-const SQL_PART_3_FUNCTIONS = `
 -- has_role
 CREATE OR REPLACE FUNCTION public.has_role(_user_id uuid, _role app_role)
 RETURNS boolean
@@ -336,10 +320,11 @@ BEGIN
   RETURN FALSE;
 END;
 $$;
-`;
 
-const SQL_PART_4_RLS = `
--- Enable RLS on all tables
+-- ============================================================================
+-- TEIL 4: ROW LEVEL SECURITY
+-- ============================================================================
+
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.slots ENABLE ROW LEVEL SECURITY;
@@ -489,9 +474,11 @@ CREATE POLICY "Admins can update role badge settings" ON public.role_badge_setti
 
 DROP POLICY IF EXISTS "Anyone can read role badge settings" ON public.role_badge_settings;
 CREATE POLICY "Anyone can read role badge settings" ON public.role_badge_settings FOR SELECT USING (true);
-`;
 
-const SQL_PART_5_SEED_DATA = `
+-- ============================================================================
+-- TEIL 5: SEED DATA
+-- ============================================================================
+
 -- theme_settings
 INSERT INTO public.theme_settings (id, name, category, hsl_value, description, is_default, created_at, updated_at) VALUES
 ('c5d6e7f8-a9b0-4c1d-2e3f-4a5b6c7d8e9f', 'primary', 'brand', '202 85% 23%', 'Haupt-Markenfarbe (KSVL Navy)', true, now(), now()),
@@ -510,15 +497,17 @@ INSERT INTO public.role_badge_settings (id, role, bg_color, text_color, created_
 ('f4a5b6c7-d8e9-4f0a-1b2c-3d4e5f6a7b8c', 'gastmitglied', 'hsl(180, 30%, 50%)', 'hsl(0, 0%, 100%)', now(), now())
 ON CONFLICT (id) DO NOTHING;
 
--- app_settings (Default-Einstellungen)
+-- app_settings (Defaults)
 INSERT INTO public.app_settings (id, user_id, setting_key, setting_value, is_global, created_at, updated_at) VALUES
 ('f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c', NULL, 'login_background', '{"mode": "gradient", "gradient": {"from": "hsl(202, 85%, 15%)", "to": "hsl(202, 70%, 35%)", "direction": "to-br"}, "overlay": {"enabled": true, "opacity": 0.3}}', true, now(), now()),
 ('a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1d', NULL, 'header_message', '{"enabled": true, "message": "Willkommen beim KSVL Slot Manager!", "type": "info"}', true, now(), now()),
 ('c9d0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3f', NULL, 'show_test_data', '{"enabled": false}', true, now(), now())
 ON CONFLICT (id) DO NOTHING;
-`;
 
-const SQL_PART_6_STORAGE_BUCKETS = `
+-- ============================================================================
+-- TEIL 6: STORAGE BUCKETS
+-- ============================================================================
+
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES
   ('login-media', 'login-media', true, 52428800, 
@@ -528,9 +517,11 @@ VALUES
   ('member-documents', 'member-documents', false, 10485760, 
    ARRAY['application/pdf', 'image/jpeg', 'image/png'])
 ON CONFLICT (id) DO NOTHING;
-`;
 
-const SQL_PART_7_STORAGE_RLS = `
+-- ============================================================================
+-- TEIL 7: STORAGE RLS POLICIES
+-- ============================================================================
+
 -- login-media Bucket
 DROP POLICY IF EXISTS "Public can view login-media" ON storage.objects;
 CREATE POLICY "Public can view login-media" ON storage.objects FOR SELECT USING (bucket_id = 'login-media');
@@ -563,282 +554,19 @@ CREATE POLICY "Users can upload own member-documents" ON storage.objects FOR INS
 
 DROP POLICY IF EXISTS "Admins can manage member-documents" ON storage.objects;
 CREATE POLICY "Admins can manage member-documents" ON storage.objects FOR ALL USING (bucket_id = 'member-documents' AND public.is_admin(auth.uid()));
-`;
 
-const SQL_PART_8_AUTH_TRIGGER = `
+-- ============================================================================
+-- TEIL 8: AUTH TRIGGER
+-- ============================================================================
+
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
-`;
 
-// ============================================================================
-// MAIN FUNCTION
-// ============================================================================
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
-  }
-
-  try {
-    const body = await req.json() as SetupRequest
-    const { supabaseUrl, serviceRoleKey, anonKey, adminEmail, adminPassword, adminName } = body
-
-    // Validate inputs
-    if (!supabaseUrl || !serviceRoleKey || !adminEmail || !adminPassword || !adminName) {
-      return new Response(
-        JSON.stringify({ error: 'Alle Felder sind erforderlich' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(adminEmail)) {
-      return new Response(
-        JSON.stringify({ error: 'Ungültiges E-Mail-Format' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    if (adminPassword.length < 8) {
-      return new Response(
-        JSON.stringify({ error: 'Passwort muss mindestens 8 Zeichen haben' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    console.log('[setup-wizard] Starting setup for:', supabaseUrl)
-
-    const supabase = createClient(supabaseUrl, serviceRoleKey, {
-      auth: { autoRefreshToken: false, persistSession: false }
-    })
-
-    const steps: StepResult[] = [
-      { step: 1, name: 'Enum erstellen', status: 'pending' },
-      { step: 2, name: '7 Tabellen erstellen', status: 'pending' },
-      { step: 3, name: '6 DB-Funktionen erstellen', status: 'pending' },
-      { step: 4, name: 'RLS Policies aktivieren', status: 'pending' },
-      { step: 5, name: 'Seed-Daten einfügen', status: 'pending' },
-      { step: 6, name: '3 Storage Buckets erstellen', status: 'pending' },
-      { step: 7, name: 'Storage RLS Policies erstellen', status: 'pending' },
-      { step: 8, name: 'Auth-Trigger + Admin-User erstellen', status: 'pending' },
-    ]
-
-    const updateStep = (stepNum: number, status: StepResult['status'], message?: string, details?: string) => {
-      const step = steps.find(s => s.step === stepNum)
-      if (step) {
-        step.status = status
-        if (message) step.message = message
-        if (details) step.details = details
-      }
-    }
-
-    // Check if database is already set up
-    console.log('[setup-wizard] Checking database status...')
-    
-    let tablesExist = false
-    try {
-      const { error } = await supabase.from('profiles').select('id').limit(1)
-      tablesExist = !error || !error.message.includes('does not exist')
-    } catch {
-      tablesExist = false
-    }
-
-    if (tablesExist) {
-      updateStep(1, 'completed', 'Enum bereits vorhanden')
-      updateStep(2, 'completed', '7 Tabellen bereits vorhanden')
-      updateStep(3, 'completed', '6 Funktionen bereits vorhanden')
-      updateStep(4, 'completed', 'RLS Policies bereits vorhanden')
-      
-      // Check seed data
-      const { data: seedData } = await supabase.from('theme_settings').select('id').limit(1)
-      if (seedData && seedData.length > 0) {
-        updateStep(5, 'completed', 'Seed-Daten bereits vorhanden')
-      } else {
-        updateStep(5, 'running')
-        try {
-          // Insert role_badge_settings
-          await supabase.from('role_badge_settings').upsert([
-            { id: 'b0c1d2e3-f4a5-4b6c-7d8e-9f0a1b2c3d4e', role: 'admin', bg_color: 'hsl(0, 70%, 50%)', text_color: 'hsl(0, 0%, 100%)' },
-            { id: 'c1d2e3f4-a5b6-4c7d-8e9f-0a1b2c3d4e5f', role: 'vorstand', bg_color: 'hsl(45, 90%, 50%)', text_color: 'hsl(0, 0%, 15%)' },
-            { id: 'd2e3f4a5-b6c7-4d8e-9f0a-1b2c3d4e5f6a', role: 'kranfuehrer', bg_color: 'hsl(202, 85%, 40%)', text_color: 'hsl(0, 0%, 100%)' },
-            { id: 'e3f4a5b6-c7d8-4e9f-0a1b-2c3d4e5f6a7b', role: 'mitglied', bg_color: 'hsl(202, 85%, 23%)', text_color: 'hsl(0, 0%, 100%)' },
-            { id: 'f4a5b6c7-d8e9-4f0a-1b2c-3d4e5f6a7b8c', role: 'gastmitglied', bg_color: 'hsl(180, 30%, 50%)', text_color: 'hsl(0, 0%, 100%)' },
-          ], { onConflict: 'id' })
-
-          // Insert app_settings
-          await supabase.from('app_settings').upsert([
-            { id: 'f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c', user_id: null, setting_key: 'login_background', setting_value: { mode: 'gradient', gradient: { from: 'hsl(202, 85%, 15%)', to: 'hsl(202, 70%, 35%)', direction: 'to-br' }, overlay: { enabled: true, opacity: 0.3 } }, is_global: true },
-            { id: 'a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1d', user_id: null, setting_key: 'header_message', setting_value: { enabled: true, message: 'Willkommen beim KSVL Slot Manager!', type: 'info' }, is_global: true },
-            { id: 'c9d0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3f', user_id: null, setting_key: 'show_test_data', setting_value: { enabled: false }, is_global: true },
-          ], { onConflict: 'id' })
-
-          // Insert theme_settings
-          await supabase.from('theme_settings').upsert([
-            { id: 'c5d6e7f8-a9b0-4c1d-2e3f-4a5b6c7d8e9f', name: 'primary', category: 'brand', hsl_value: '202 85% 23%', description: 'Haupt-Markenfarbe (KSVL Navy)', is_default: true },
-            { id: 'd6e7f8a9-b0c1-4d2e-3f4a-5b6c7d8e9f0a', name: 'secondary', category: 'brand', hsl_value: '180 50% 45%', description: 'Sekundärfarbe (Türkis)', is_default: true },
-            { id: 'e7f8a9b0-c1d2-4e3f-4a5b-6c7d8e9f0a1b', name: 'accent', category: 'brand', hsl_value: '45 90% 55%', description: 'Akzentfarbe (Gold)', is_default: true },
-            { id: 'f8a9b0c1-d2e3-4f4a-5b6c-7d8e9f0a1b2c', name: 'background', category: 'surface', hsl_value: '200 20% 98%', description: 'Hintergrundfarbe (Hell)', is_default: true },
-            { id: 'a9b0c1d2-e3f4-4a5b-6c7d-8e9f0a1b2c3d', name: 'foreground', category: 'surface', hsl_value: '202 85% 15%', description: 'Textfarbe (Dunkel)', is_default: true },
-          ], { onConflict: 'id' })
-
-          updateStep(5, 'completed', 'Seed-Daten eingefügt (3 Tabellen)')
-        } catch (seedErr) {
-          console.error('[setup-wizard] Seed data error:', seedErr)
-          updateStep(5, 'error', 'Seed-Daten-Fehler', String(seedErr))
-        }
-      }
-    } else {
-      // Database not set up - return SQL for manual execution
-      updateStep(1, 'error', 'Tabellen nicht vorhanden', 'SQL-Dump muss zuerst manuell im SQL-Editor ausgeführt werden')
-      updateStep(2, 'error', 'Tabellen nicht vorhanden')
-      updateStep(3, 'error', 'Funktionen nicht vorhanden')
-      updateStep(4, 'error', 'RLS nicht vorhanden')
-      updateStep(5, 'error', 'Seed-Daten können nicht eingefügt werden')
-
-      return new Response(
-        JSON.stringify({
-          success: false,
-          message: 'Datenbank ist nicht initialisiert. Bitte führen Sie zuerst den SQL-Dump im SQL-Editor aus.',
-          steps,
-          sqlDump: {
-            part1_enum: SQL_PART_1_ENUM,
-            part2_tables: SQL_PART_2_TABLES,
-            part3_functions: SQL_PART_3_FUNCTIONS,
-            part4_rls: SQL_PART_4_RLS,
-            part5_seed: SQL_PART_5_SEED_DATA,
-            part6_storage: SQL_PART_6_STORAGE_BUCKETS,
-            part7_storage_rls: SQL_PART_7_STORAGE_RLS,
-            part8_trigger: SQL_PART_8_AUTH_TRIGGER,
-          },
-          nextSteps: [
-            '1. Kopieren Sie den SQL-Dump aus docs/database/ksvl_database_dump_2026-03-10.sql',
-            '2. Öffnen Sie den SQL-Editor im Supabase Dashboard',
-            '3. Fügen Sie den SQL-Code ein und führen Sie ihn aus',
-            '4. Kehren Sie zum Setup-Wizard zurück und führen Sie ihn erneut aus'
-          ]
-        }),
-        { 
-          status: 200, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      )
-    }
-
-    // Step 6: Storage Buckets
-    console.log('[setup-wizard] Step 6: Creating storage buckets...')
-    updateStep(6, 'running')
-    try {
-      const { data: buckets } = await supabase.storage.listBuckets()
-      const existingBucketNames = buckets?.map(b => b.name) || []
-      
-      const bucketsToCreate = [
-        { name: 'login-media', public: true },
-        { name: 'documents', public: false },
-        { name: 'member-documents', public: false }
-      ]
-      
-      let createdCount = 0
-      for (const bucket of bucketsToCreate) {
-        if (!existingBucketNames.includes(bucket.name)) {
-          const { error } = await supabase.storage.createBucket(bucket.name, { 
-            public: bucket.public,
-            fileSizeLimit: bucket.name === 'login-media' ? 52428800 : 10485760
-          })
-          if (!error) createdCount++
-        }
-      }
-      
-      if (createdCount > 0) {
-        updateStep(6, 'completed', `${createdCount} neue Buckets erstellt`)
-      } else {
-        updateStep(6, 'completed', 'Alle 3 Buckets bereits vorhanden')
-      }
-    } catch (err) {
-      console.error('[setup-wizard] Storage error:', err)
-      updateStep(6, 'error', 'Storage-Fehler', String(err))
-    }
-
-    // Step 7: Storage RLS (info only - needs SQL)
-    updateStep(7, 'completed', 'Storage RLS via SQL-Dump erstellt', '9 Policies')
-
-    // Step 8: Create Admin User
-    console.log('[setup-wizard] Step 8: Creating admin user...')
-    updateStep(8, 'running')
-    try {
-      const { data: existingUsers } = await supabase.auth.admin.listUsers()
-      const userExists = existingUsers?.users?.some(u => u.email === adminEmail)
-      
-      if (userExists) {
-        updateStep(8, 'completed', 'Admin-User existiert bereits', `Email: ${adminEmail}`)
-      } else {
-        const { data: userData, error: userError } = await supabase.auth.admin.createUser({
-          email: adminEmail,
-          password: adminPassword,
-          email_confirm: true,
-          user_metadata: { name: adminName }
-        })
-
-        if (userError) throw userError
-
-        if (userData.user) {
-          await supabase
-            .from('user_roles')
-            .insert({ user_id: userData.user.id, role: 'admin' })
-
-          await supabase
-            .from('profiles')
-            .update({ 
-              name: adminName, 
-              first_name: adminName.split(' ')[0],
-              last_name: adminName.split(' ').slice(1).join(' ') || null
-            })
-            .eq('id', userData.user.id)
-
-          updateStep(8, 'completed', 'Admin-User erstellt', `ID: ${userData.user.id}`)
-        }
-      }
-    } catch (err) {
-      console.error('[setup-wizard] Admin creation error:', err)
-      updateStep(8, 'error', 'Admin-Erstellung fehlgeschlagen', String(err))
-    }
-
-    const hasErrors = steps.some(s => s.status === 'error')
-
-    return new Response(
-      JSON.stringify({
-        success: !hasErrors,
-        message: hasErrors 
-          ? 'Setup mit Fehlern abgeschlossen. Prüfen Sie die Details.'
-          : 'Setup erfolgreich abgeschlossen!',
-        steps,
-        envConfig: {
-          VITE_SUPABASE_URL: supabaseUrl,
-          VITE_SUPABASE_PUBLISHABLE_KEY: anonKey || '[Anon Key eingeben]',
-          VITE_SUPABASE_PROJECT_ID: supabaseUrl.replace('https://', '').replace('.supabase.co', '')
-        },
-        nextSteps: [
-          'Edge Functions mit Supabase CLI deployen',
-          'Secrets konfigurieren (GOOGLE_API_KEY, ADMIN_PASSWORD_RESET_KEY)',
-          '.env-Datei mit den angezeigten Credentials aktualisieren'
-        ]
-      }),
-      { 
-        status: 200, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
-  } catch (error) {
-    console.error('[setup-wizard] Fatal error:', error)
-    return new Response(
-      JSON.stringify({ 
-        error: 'Setup fehlgeschlagen', 
-        details: error instanceof Error ? error.message : String(error)
-      }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    )
-  }
-})
+-- ============================================================================
+-- FERTIG! Nächste Schritte:
+-- 1. Edge Functions deployen (supabase functions deploy)
+-- 2. Secrets konfigurieren (GOOGLE_API_KEY, ADMIN_PASSWORD_RESET_KEY)
+-- 3. Admin-User über /setup erstellen
+-- ============================================================================

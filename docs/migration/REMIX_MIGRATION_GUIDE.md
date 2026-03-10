@@ -65,7 +65,7 @@ supabase link --project-ref <project-id>
 
 ### 2.3 Benötigte Dateien
 
-- `docs/database/ksvl_database_dump_2026-01-23.sql` (vollständiger DB-Dump)
+- `docs/database/ksvl_database_dump_2026-03-10.sql` (vollständiger DB-Dump)
 - `supabase/functions/*` (Edge Functions)
 
 ---
@@ -114,9 +114,9 @@ supabase link --project-ref <project-id>
 
 Der Wizard gibt den **kompletten SQL-Dump** zurück mit:
 - 1 Enum (`app_role`)
-- 16 Tabellen
+- 7 Tabellen
 - 6 DB-Funktionen
-- 50+ RLS Policies
+- 40+ RLS Policies
 - Storage Buckets & Policies
 - Auth-Trigger
 
@@ -129,7 +129,7 @@ Der Wizard gibt den **kompletten SQL-Dump** zurück mit:
 #### Fall B: Datenbank ist bereits initialisiert
 
 Der Wizard führt automatisch aus:
-- ✅ Seed-Daten einfügen (9 Tabellen)
+- ✅ Seed-Daten einfügen (3 Tabellen)
 - ✅ Storage Buckets erstellen (3 Buckets)
 - ✅ Admin-User erstellen mit `admin`-Rolle
 
@@ -190,15 +190,15 @@ Nach dem Setup-Wizard müssen noch manuell erledigt werden:
 ### Schritt 2: SQL-Dump ausführen
 
 1. Im Supabase Dashboard: **SQL Editor** öffnen
-2. Den kompletten Inhalt von `docs/database/ksvl_database_dump_2026-01-23.sql` einfügen
+2. Den kompletten Inhalt von `docs/database/ksvl_database_dump_2026-03-10.sql` einfügen
 3. **"Run"** klicken
 4. Auf erfolgreiche Ausführung prüfen (grüner Haken)
 
 > ⚠️ **Wichtig**: Der Dump enthält alle 8 Teile:
 > - TEIL 1: Enums
-> - TEIL 2: Tabellen (14 Stück)
+> - TEIL 2: Tabellen (7 Stück)
 > - TEIL 3: DB-Funktionen (6 Stück)
-> - TEIL 4: RLS Policies (50+ Stück)
+> - TEIL 4: RLS Policies (40+ Stück)
 > - TEIL 5: Seed-Daten
 > - TEIL 6: Storage Buckets (3 Stück)
 > - TEIL 7: Storage RLS Policies
@@ -226,8 +226,7 @@ supabase functions deploy manage-user
 supabase functions deploy manage-user-password
 supabase functions deploy reset-password-admin
 supabase functions deploy create-admin
-supabase functions deploy monday-webhook
-supabase functions deploy sync-monday
+supabase functions deploy setup-wizard
 supabase functions deploy migrate-storage-files
 ```
 
@@ -239,8 +238,6 @@ Im Supabase Dashboard: **Project Settings** → **Edge Functions** → **Secrets
 |--------|------|---------|
 | `GOOGLE_API_KEY` | API-Key von [ai.google.dev](https://ai.google.dev) | ✅ Ja |
 | `ADMIN_PASSWORD_RESET_KEY` | Selbst generierter sicherer String | ✅ Ja |
-| `MONDAY_API_KEY` | Monday.com API Key | ⚪ Optional |
-| `MONDAY_SIGNING_SECRET` | Monday.com Webhook Secret | ⚪ Optional |
 
 ### Schritt 6: Admin-User erstellen
 
@@ -293,14 +290,7 @@ VITE_SUPABASE_PROJECT_ID=<neue-project-id>
 - [ ] Tabelle `app_settings` erstellt
 - [ ] Tabelle `file_metadata` erstellt
 - [ ] Tabelle `theme_settings` erstellt
-- [ ] Tabelle `menu_item_definitions` erstellt
-- [ ] Tabelle `dashboard_widget_definitions` erstellt
-- [ ] Tabelle `dashboard_section_definitions` erstellt
 - [ ] Tabelle `role_badge_settings` erstellt
-- [ ] Tabelle `role_configurations` erstellt
-- [ ] Tabelle `ai_assistant_defaults` erstellt
-- [ ] Tabelle `monday_settings` erstellt
-- [ ] Tabelle `monday_sync_logs` erstellt
 
 ### ✅ DB-Funktionen
 
@@ -342,15 +332,13 @@ VITE_SUPABASE_PROJECT_ID=<neue-project-id>
 - [ ] `manage-user-password` deployed
 - [ ] `reset-password-admin` deployed
 - [ ] `create-admin` deployed
-- [ ] `monday-webhook` deployed
-- [ ] `sync-monday` deployed
+- [ ] `setup-wizard` deployed
 - [ ] `migrate-storage-files` deployed
 
 ### ✅ Secrets
 
 - [ ] `GOOGLE_API_KEY` konfiguriert
 - [ ] `ADMIN_PASSWORD_RESET_KEY` konfiguriert
-- [ ] `MONDAY_API_KEY` konfiguriert (optional)
 
 ### ✅ Frontend
 
@@ -449,7 +437,7 @@ SELECT * FROM pg_trigger WHERE tgname = 'on_auth_user_created';
 | Komponenten | Lovable Remix | ✅ Vollständig |
 | Edge Function Code | Lovable Remix | ✅ Vollständig |
 | **Manuell via SQL-Dump** | | |
-| DB-Schema (14 Tabellen) | SQL-Dump | ✅ Nach Ausführung |
+| DB-Schema (7 Tabellen) | SQL-Dump | ✅ Nach Ausführung |
 | RLS Policies (50+) | SQL-Dump | ✅ Nach Ausführung |
 | DB-Funktionen (6) | SQL-Dump | ✅ Nach Ausführung |
 | Seed-Daten | SQL-Dump | ✅ Nach Ausführung |
@@ -496,5 +484,5 @@ SELECT * FROM pg_trigger WHERE tgname = 'on_auth_user_created';
 
 ---
 
-**Letzte Aktualisierung**: 2026-01-26  
-**Version**: 2.0.0 (Setup-Wizard hinzugefügt)
+**Letzte Aktualisierung**: 2026-03-10  
+**Version**: 3.0.0 (Bereinigt: 7 Tabellen, Monday-Integration entfernt)
