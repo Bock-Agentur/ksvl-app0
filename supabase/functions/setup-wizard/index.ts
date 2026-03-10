@@ -2,7 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 }
 
 interface SetupRequest {
@@ -23,7 +23,7 @@ interface StepResult {
 }
 
 // ============================================================================
-// SQL BLOCKS - Alle 8 Teile aus dem Dump
+// SQL BLOCKS - Aktualisiert: 7 Tabellen (bereinigt 2026-03-10)
 // ============================================================================
 
 const SQL_PART_1_ENUM = `
@@ -168,32 +168,6 @@ CREATE TABLE IF NOT EXISTS public.file_metadata (
     updated_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
--- custom_fields
-CREATE TABLE IF NOT EXISTS public.custom_fields (
-    id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-    name text NOT NULL,
-    label text NOT NULL,
-    type text NOT NULL DEFAULT 'text'::text,
-    placeholder text,
-    options text[],
-    required boolean DEFAULT false,
-    "group" text,
-    "order" integer DEFAULT 0,
-    monday_column_id text,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
-);
-
--- custom_field_values
-CREATE TABLE IF NOT EXISTS public.custom_field_values (
-    id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id uuid NOT NULL,
-    field_id uuid NOT NULL,
-    value text,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
-);
-
 -- theme_settings
 CREATE TABLE IF NOT EXISTS public.theme_settings (
     id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -209,104 +183,31 @@ CREATE TABLE IF NOT EXISTS public.theme_settings (
 -- role_badge_settings
 CREATE TABLE IF NOT EXISTS public.role_badge_settings (
     id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-    role text NOT NULL,
+    role text NOT NULL UNIQUE,
     bg_color text NOT NULL DEFAULT 'hsl(202, 85%, 23%)'::text,
     text_color text NOT NULL DEFAULT 'hsl(0, 0%, 100%)'::text,
     created_at timestamp with time zone DEFAULT now(),
     updated_at timestamp with time zone DEFAULT now()
 );
 
--- role_configurations
-CREATE TABLE IF NOT EXISTS public.role_configurations (
-    id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-    role text NOT NULL,
-    label text NOT NULL,
-    display_order integer NOT NULL,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
-);
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
+CREATE INDEX IF NOT EXISTS idx_profiles_username ON public.profiles(username);
+CREATE INDEX IF NOT EXISTS idx_profiles_member_number ON public.profiles(member_number);
+CREATE INDEX IF NOT EXISTS idx_user_roles_user_id ON public.user_roles(user_id);
+CREATE INDEX IF NOT EXISTS idx_slots_date ON public.slots(date);
+CREATE INDEX IF NOT EXISTS idx_slots_crane_operator ON public.slots(crane_operator_id);
+CREATE INDEX IF NOT EXISTS idx_slots_member ON public.slots(member_id);
+CREATE INDEX IF NOT EXISTS idx_slots_block ON public.slots(block_id);
+CREATE INDEX IF NOT EXISTS idx_app_settings_key ON public.app_settings(setting_key);
+CREATE INDEX IF NOT EXISTS idx_app_settings_user ON public.app_settings(user_id);
+CREATE INDEX IF NOT EXISTS idx_file_metadata_owner ON public.file_metadata(owner_id);
+CREATE INDEX IF NOT EXISTS idx_file_metadata_category ON public.file_metadata(category);
+CREATE INDEX IF NOT EXISTS idx_file_metadata_linked_user ON public.file_metadata(linked_user_id);
 
--- menu_item_definitions
-CREATE TABLE IF NOT EXISTS public.menu_item_definitions (
-    id text NOT NULL PRIMARY KEY,
-    label text NOT NULL,
-    icon text NOT NULL,
-    allowed_roles text[] NOT NULL,
-    menu_type text NOT NULL,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
-);
-
--- dashboard_widget_definitions
-CREATE TABLE IF NOT EXISTS public.dashboard_widget_definitions (
-    id text NOT NULL PRIMARY KEY,
-    name text NOT NULL,
-    description text,
-    component_name text NOT NULL,
-    allowed_roles text[] NOT NULL,
-    category text NOT NULL,
-    size text NOT NULL,
-    default_enabled boolean DEFAULT true,
-    default_column integer NOT NULL,
-    default_order integer NOT NULL,
-    settings jsonb DEFAULT '{}'::jsonb,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
-);
-
--- dashboard_section_definitions
-CREATE TABLE IF NOT EXISTS public.dashboard_section_definitions (
-    id text NOT NULL PRIMARY KEY,
-    name text NOT NULL,
-    description text,
-    component_name text NOT NULL,
-    allowed_roles text[] NOT NULL,
-    category text NOT NULL,
-    size text NOT NULL,
-    default_enabled boolean DEFAULT true,
-    default_column integer NOT NULL,
-    default_order integer NOT NULL,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
-);
-
--- ai_assistant_defaults
-CREATE TABLE IF NOT EXISTS public.ai_assistant_defaults (
-    id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-    role text NOT NULL,
-    tonality text NOT NULL,
-    welcome_message text NOT NULL,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
-);
-
--- monday_settings
-CREATE TABLE IF NOT EXISTS public.monday_settings (
-    id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-    board_id text,
-    api_key_set boolean DEFAULT false,
-    column_mapping jsonb DEFAULT '{}'::jsonb,
-    auto_sync_enabled boolean DEFAULT false,
-    last_sync_at timestamp with time zone,
-    webhook_url text,
-    created_at timestamp with time zone DEFAULT now(),
-    updated_at timestamp with time zone DEFAULT now()
-);
-
--- monday_sync_logs
-CREATE TABLE IF NOT EXISTS public.monday_sync_logs (
-    id uuid NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-    user_id uuid,
-    sync_type text NOT NULL,
-    direction text NOT NULL,
-    action text NOT NULL,
-    board_id text,
-    item_id text,
-    success boolean NOT NULL,
-    error_details jsonb,
-    started_at timestamp with time zone DEFAULT now(),
-    completed_at timestamp with time zone
-);
+-- Unique constraints
+ALTER TABLE public.user_roles DROP CONSTRAINT IF EXISTS user_roles_user_id_role_key;
+ALTER TABLE public.user_roles ADD CONSTRAINT user_roles_user_id_role_key UNIQUE (user_id, role);
 `;
 
 const SQL_PART_3_FUNCTIONS = `
@@ -444,17 +345,8 @@ ALTER TABLE public.user_roles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.slots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.app_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.file_metadata ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.custom_fields ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.custom_field_values ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.theme_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.role_badge_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.role_configurations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.menu_item_definitions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.dashboard_widget_definitions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.dashboard_section_definitions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.ai_assistant_defaults ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.monday_settings ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.monday_sync_logs ENABLE ROW LEVEL SECURITY;
 
 -- profiles RLS
 DROP POLICY IF EXISTS "Admins can delete profiles" ON public.profiles;
@@ -578,44 +470,6 @@ CREATE POLICY "Users can view role-allowed files" ON public.file_metadata FOR SE
   )))
 );
 
--- custom_fields RLS
-DROP POLICY IF EXISTS "Admins can delete custom fields" ON public.custom_fields;
-CREATE POLICY "Admins can delete custom fields" ON public.custom_fields FOR DELETE USING (is_admin(auth.uid()));
-
-DROP POLICY IF EXISTS "Admins can insert custom fields" ON public.custom_fields;
-CREATE POLICY "Admins can insert custom fields" ON public.custom_fields FOR INSERT WITH CHECK (is_admin(auth.uid()));
-
-DROP POLICY IF EXISTS "Admins can update custom fields" ON public.custom_fields;
-CREATE POLICY "Admins can update custom fields" ON public.custom_fields FOR UPDATE USING (is_admin(auth.uid()));
-
-DROP POLICY IF EXISTS "Everyone can view custom fields" ON public.custom_fields;
-CREATE POLICY "Everyone can view custom fields" ON public.custom_fields FOR SELECT USING (true);
-
--- custom_field_values RLS
-DROP POLICY IF EXISTS "Admins can delete any field values" ON public.custom_field_values;
-CREATE POLICY "Admins can delete any field values" ON public.custom_field_values FOR DELETE USING (is_admin(auth.uid()));
-
-DROP POLICY IF EXISTS "Admins can insert field values for any user" ON public.custom_field_values;
-CREATE POLICY "Admins can insert field values for any user" ON public.custom_field_values FOR INSERT WITH CHECK (is_admin(auth.uid()));
-
-DROP POLICY IF EXISTS "Admins can update any field values" ON public.custom_field_values;
-CREATE POLICY "Admins can update any field values" ON public.custom_field_values FOR UPDATE USING (is_admin(auth.uid()));
-
-DROP POLICY IF EXISTS "Admins can view all field values" ON public.custom_field_values;
-CREATE POLICY "Admins can view all field values" ON public.custom_field_values FOR SELECT USING (is_admin(auth.uid()));
-
-DROP POLICY IF EXISTS "Users can delete their own field values" ON public.custom_field_values;
-CREATE POLICY "Users can delete their own field values" ON public.custom_field_values FOR DELETE USING (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Users can insert their own field values" ON public.custom_field_values;
-CREATE POLICY "Users can insert their own field values" ON public.custom_field_values FOR INSERT WITH CHECK (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Users can update their own field values" ON public.custom_field_values;
-CREATE POLICY "Users can update their own field values" ON public.custom_field_values FOR UPDATE USING (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "Users can view their own field values" ON public.custom_field_values;
-CREATE POLICY "Users can view their own field values" ON public.custom_field_values FOR SELECT USING (auth.uid() = user_id);
-
 -- theme_settings RLS
 DROP POLICY IF EXISTS "Admins can delete theme settings" ON public.theme_settings;
 CREATE POLICY "Admins can delete theme settings" ON public.theme_settings FOR DELETE USING (is_admin(auth.uid()));
@@ -635,52 +489,6 @@ CREATE POLICY "Admins can update role badge settings" ON public.role_badge_setti
 
 DROP POLICY IF EXISTS "Anyone can read role badge settings" ON public.role_badge_settings;
 CREATE POLICY "Anyone can read role badge settings" ON public.role_badge_settings FOR SELECT USING (true);
-
--- role_configurations RLS
-DROP POLICY IF EXISTS "Admins can manage role configurations" ON public.role_configurations;
-CREATE POLICY "Admins can manage role configurations" ON public.role_configurations FOR ALL USING (is_admin(auth.uid()));
-
-DROP POLICY IF EXISTS "Anyone can read role configurations" ON public.role_configurations;
-CREATE POLICY "Anyone can read role configurations" ON public.role_configurations FOR SELECT USING (true);
-
--- menu_item_definitions RLS
-DROP POLICY IF EXISTS "Admins can manage menu definitions" ON public.menu_item_definitions;
-CREATE POLICY "Admins can manage menu definitions" ON public.menu_item_definitions FOR ALL USING (is_admin(auth.uid()));
-
-DROP POLICY IF EXISTS "Anyone can read menu definitions" ON public.menu_item_definitions;
-CREATE POLICY "Anyone can read menu definitions" ON public.menu_item_definitions FOR SELECT USING (true);
-
--- dashboard_widget_definitions RLS
-DROP POLICY IF EXISTS "Admins can manage widget definitions" ON public.dashboard_widget_definitions;
-CREATE POLICY "Admins can manage widget definitions" ON public.dashboard_widget_definitions FOR ALL USING (is_admin(auth.uid()));
-
-DROP POLICY IF EXISTS "Anyone can read widget definitions" ON public.dashboard_widget_definitions;
-CREATE POLICY "Anyone can read widget definitions" ON public.dashboard_widget_definitions FOR SELECT USING (true);
-
--- dashboard_section_definitions RLS
-DROP POLICY IF EXISTS "Admins can manage section definitions" ON public.dashboard_section_definitions;
-CREATE POLICY "Admins can manage section definitions" ON public.dashboard_section_definitions FOR ALL USING (is_admin(auth.uid()));
-
-DROP POLICY IF EXISTS "Anyone can read section definitions" ON public.dashboard_section_definitions;
-CREATE POLICY "Anyone can read section definitions" ON public.dashboard_section_definitions FOR SELECT USING (true);
-
--- ai_assistant_defaults RLS
-DROP POLICY IF EXISTS "Admins can manage AI defaults" ON public.ai_assistant_defaults;
-CREATE POLICY "Admins can manage AI defaults" ON public.ai_assistant_defaults FOR ALL USING (is_admin(auth.uid()));
-
-DROP POLICY IF EXISTS "Anyone can read AI defaults" ON public.ai_assistant_defaults;
-CREATE POLICY "Anyone can read AI defaults" ON public.ai_assistant_defaults FOR SELECT USING (true);
-
--- monday_settings RLS
-DROP POLICY IF EXISTS "Admins can manage monday_settings" ON public.monday_settings;
-CREATE POLICY "Admins can manage monday_settings" ON public.monday_settings FOR ALL USING (is_admin(auth.uid()));
-
--- monday_sync_logs RLS
-DROP POLICY IF EXISTS "Admins can view sync logs" ON public.monday_sync_logs;
-CREATE POLICY "Admins can view sync logs" ON public.monday_sync_logs FOR SELECT USING (is_admin(auth.uid()));
-
-DROP POLICY IF EXISTS "Service role can insert sync logs" ON public.monday_sync_logs;
-CREATE POLICY "Service role can insert sync logs" ON public.monday_sync_logs FOR INSERT WITH CHECK (auth.role() = 'service_role'::text);
 `;
 
 const SQL_PART_5_SEED_DATA = `
@@ -700,65 +508,6 @@ INSERT INTO public.role_badge_settings (id, role, bg_color, text_color, created_
 ('d2e3f4a5-b6c7-4d8e-9f0a-1b2c3d4e5f6a', 'kranfuehrer', 'hsl(202, 85%, 40%)', 'hsl(0, 0%, 100%)', now(), now()),
 ('e3f4a5b6-c7d8-4e9f-0a1b-2c3d4e5f6a7b', 'mitglied', 'hsl(202, 85%, 23%)', 'hsl(0, 0%, 100%)', now(), now()),
 ('f4a5b6c7-d8e9-4f0a-1b2c-3d4e5f6a7b8c', 'gastmitglied', 'hsl(180, 30%, 50%)', 'hsl(0, 0%, 100%)', now(), now())
-ON CONFLICT (id) DO NOTHING;
-
--- role_configurations
-INSERT INTO public.role_configurations (id, role, label, display_order, created_at, updated_at) VALUES
-('a5b6c7d8-e9f0-4a1b-2c3d-4e5f6a7b8c9d', 'admin', 'Administrator', 1, now(), now()),
-('b6c7d8e9-f0a1-4b2c-3d4e-5f6a7b8c9d0e', 'vorstand', 'Vorstand', 2, now(), now()),
-('c7d8e9f0-a1b2-4c3d-4e5f-6a7b8c9d0e1f', 'kranfuehrer', 'Kranführer', 3, now(), now()),
-('d8e9f0a1-b2c3-4d4e-5f6a-7b8c9d0e1f2a', 'mitglied', 'Mitglied', 4, now(), now()),
-('e9f0a1b2-c3d4-4e5f-6a7b-8c9d0e1f2a3b', 'gastmitglied', 'Gastmitglied', 5, now(), now())
-ON CONFLICT (id) DO NOTHING;
-
--- menu_item_definitions
-INSERT INTO public.menu_item_definitions (id, label, icon, allowed_roles, menu_type, created_at, updated_at) VALUES
-('dashboard', 'Dashboard', 'LayoutDashboard', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'footer', now(), now()),
-('calendar', 'Kalender', 'Calendar', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'footer', now(), now()),
-('profile', 'Profil', 'User', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'footer', now(), now()),
-('settings', 'Einstellungen', 'Settings', '{"admin", "vorstand"}', 'footer', now(), now()),
-('users', 'Mitglieder', 'Users', '{"admin", "vorstand"}', 'drawer', now(), now()),
-('files', 'Dokumente', 'FileText', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'drawer', now(), now()),
-('slots', 'Slots verwalten', 'Clock', '{"admin", "kranfuehrer"}', 'drawer', now(), now()),
-('reports', 'Berichte', 'BarChart3', '{"admin", "vorstand"}', 'drawer', now(), now()),
-('harbor', 'Hafen-Chat', 'MessageCircle', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'drawer', now(), now()),
-('admin-settings', 'Admin-Settings', 'Shield', '{"admin"}', 'drawer', now(), now()),
-('logout', 'Abmelden', 'LogOut', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'drawer', now(), now())
-ON CONFLICT (id) DO NOTHING;
-
--- dashboard_widget_definitions
-INSERT INTO public.dashboard_widget_definitions (id, name, description, component_name, allowed_roles, category, size, default_enabled, default_column, default_order, settings, created_at, updated_at) VALUES
-('weather', 'Wetter', 'Aktuelle Wetterdaten vom Wörthersee', 'WeatherWidget', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'info', 'small', true, 1, 1, '{}', now(), now()),
-('harbor-status', 'Hafenstatus', 'Aktueller Status des Hafens', 'HarborStatusWidget', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'info', 'small', true, 1, 2, '{}', now(), now()),
-('member-stats', 'Mitglieder-Statistik', 'Übersicht der Mitgliederzahlen', 'MemberStatsWidget', '{"admin", "vorstand"}', 'stats', 'medium', true, 2, 1, '{}', now(), now()),
-('events', 'Termine', 'Kommende Vereinstermine', 'EventsCalendarWidget', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'calendar', 'medium', true, 2, 2, '{}', now(), now()),
-('maintenance', 'Wartungshinweise', 'Aktuelle Wartungsmeldungen', 'MaintenanceAlertsWidget', '{"admin", "vorstand", "kranfuehrer"}', 'alerts', 'small', true, 1, 3, '{}', now(), now()),
-('finance', 'Finanzen', 'Finanzübersicht', 'FinanceOverviewWidget', '{"admin", "vorstand"}', 'finance', 'medium', false, 2, 3, '{}', now(), now()),
-('harbor-chat', 'Hafen-Chat', 'Schnellzugriff auf den Hafen-Chat', 'HarborChatWidget', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'communication', 'small', true, 1, 4, '{}', now(), now()),
-('ai-chat', 'AI Assistent', 'KI-gestützter Vereinsassistent', 'AIChatMiniWidget', '{"admin", "vorstand"}', 'ai', 'medium', false, 2, 4, '{}', now(), now())
-ON CONFLICT (id) DO NOTHING;
-
--- dashboard_section_definitions
-INSERT INTO public.dashboard_section_definitions (id, name, description, component_name, allowed_roles, category, size, default_enabled, default_column, default_order, created_at, updated_at) VALUES
-('welcome', 'Willkommen', 'Begrüßungsbereich mit personalisierten Infos', 'WelcomeSection', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'header', 'full', true, 1, 1, now(), now()),
-('stats', 'Statistiken', 'Übersichtskarten mit wichtigen Zahlen', 'StatsGridSection', '{"admin", "vorstand", "kranfuehrer"}', 'stats', 'full', true, 1, 2, now(), now()),
-('quick-actions', 'Schnellaktionen', 'Häufig verwendete Aktionen', 'QuickActionsSection', '{"admin", "vorstand", "kranfuehrer", "mitglied"}', 'actions', 'full', true, 1, 3, now(), now()),
-('activity', 'Aktivitäten', 'Letzte Aktivitäten im Verein', 'ActivityFeedSection', '{"admin", "vorstand"}', 'feed', 'full', true, 1, 4, now(), now()),
-('announcements', 'Ankündigungen', 'Wichtige Vereinsmitteilungen', 'AnnouncementsSection', '{"admin", "vorstand", "kranfuehrer", "mitglied", "gastmitglied"}', 'communication', 'full', false, 1, 5, now(), now())
-ON CONFLICT (id) DO NOTHING;
-
--- ai_assistant_defaults
-INSERT INTO public.ai_assistant_defaults (id, role, tonality, welcome_message, created_at, updated_at) VALUES
-('f0a1b2c3-d4e5-4f6a-7b8c-9d0e1f2a3b4c', 'admin', 'professionell und technisch', 'Hallo Administrator! Ich bin dein KI-Assistent für technische und administrative Fragen rund um den KSVL.', now(), now()),
-('a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d', 'vorstand', 'professionell und strategisch', 'Guten Tag! Als Vorstandsmitglied kann ich Sie bei Vereinsfragen und strategischen Entscheidungen unterstützen.', now(), now()),
-('b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e', 'kranfuehrer', 'freundlich und praktisch', 'Ahoi Kranführer! Wie kann ich dir heute beim Kranbetrieb helfen?', now(), now()),
-('c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f', 'mitglied', 'freundlich und hilfsbereit', 'Willkommen beim KSVL! Ich bin hier, um dir bei Fragen zu deiner Mitgliedschaft, Buchungen und allem rund um den Verein zu helfen.', now(), now()),
-('d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a', 'gastmitglied', 'einladend und informativ', 'Herzlich willkommen als Gast beim Klagenfurter Segelverein Loretto! Ich beantworte gerne deine Fragen zum Verein.', now(), now())
-ON CONFLICT (id) DO NOTHING;
-
--- monday_settings
-INSERT INTO public.monday_settings (id, board_id, api_key_set, column_mapping, auto_sync_enabled, last_sync_at, webhook_url, created_at, updated_at) VALUES
-('e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b', NULL, false, '{}', false, NULL, NULL, now(), now())
 ON CONFLICT (id) DO NOTHING;
 
 -- app_settings (Default-Einstellungen)
@@ -824,43 +573,6 @@ CREATE TRIGGER on_auth_user_created
 `;
 
 // ============================================================================
-// HELPER: Execute SQL via Supabase SQL API
-// ============================================================================
-async function executeSql(
-  supabaseUrl: string, 
-  serviceRoleKey: string, 
-  sql: string, 
-  stepName: string
-): Promise<{ success: boolean; error?: string }> {
-  try {
-    // Use the Supabase REST API's sql endpoint
-    // The SQL endpoint is available at /rest/v1/rpc/
-    // But for DDL statements, we need the Management API or pg_query
-    
-    // Alternative: Use the pg protocol via Supabase's edge-runtime
-    // For now, let's try the RPC approach with a helper function
-    
-    const response = await fetch(`${supabaseUrl}/rest/v1/rpc/`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': serviceRoleKey,
-        'Authorization': `Bearer ${serviceRoleKey}`,
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({})
-    })
-    
-    // Since we can't directly execute DDL via REST API,
-    // we'll return info about what needs to be done
-    return { success: true }
-  } catch (err) {
-    console.error(`[setup-wizard] Error in ${stepName}:`, err)
-    return { success: false, error: String(err) }
-  }
-}
-
-// ============================================================================
 // MAIN FUNCTION
 // ============================================================================
 Deno.serve(async (req) => {
@@ -880,7 +592,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(adminEmail)) {
       return new Response(
@@ -889,7 +600,6 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Validate password strength
     if (adminPassword.length < 8) {
       return new Response(
         JSON.stringify({ error: 'Passwort muss mindestens 8 Zeichen haben' }),
@@ -899,16 +609,15 @@ Deno.serve(async (req) => {
 
     console.log('[setup-wizard] Starting setup for:', supabaseUrl)
 
-    // Create Supabase client with service role key
     const supabase = createClient(supabaseUrl, serviceRoleKey, {
       auth: { autoRefreshToken: false, persistSession: false }
     })
 
     const steps: StepResult[] = [
       { step: 1, name: 'Enum erstellen', status: 'pending' },
-      { step: 2, name: '16 Tabellen erstellen', status: 'pending' },
+      { step: 2, name: '7 Tabellen erstellen', status: 'pending' },
       { step: 3, name: '6 DB-Funktionen erstellen', status: 'pending' },
-      { step: 4, name: '50+ RLS Policies aktivieren', status: 'pending' },
+      { step: 4, name: 'RLS Policies aktivieren', status: 'pending' },
       { step: 5, name: 'Seed-Daten einfügen', status: 'pending' },
       { step: 6, name: '3 Storage Buckets erstellen', status: 'pending' },
       { step: 7, name: 'Storage RLS Policies erstellen', status: 'pending' },
@@ -924,12 +633,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ========================================================================
-    // SQL kann nicht direkt via REST API ausgeführt werden
-    // Wir prüfen stattdessen den Status und geben den SQL-Code zurück
-    // ========================================================================
-
-    // Step 1-4: Check if database is already set up
+    // Check if database is already set up
     console.log('[setup-wizard] Checking database status...')
     
     let tablesExist = false
@@ -942,27 +646,17 @@ Deno.serve(async (req) => {
 
     if (tablesExist) {
       updateStep(1, 'completed', 'Enum bereits vorhanden')
-      updateStep(2, 'completed', '16 Tabellen bereits vorhanden')
+      updateStep(2, 'completed', '7 Tabellen bereits vorhanden')
       updateStep(3, 'completed', '6 Funktionen bereits vorhanden')
       updateStep(4, 'completed', 'RLS Policies bereits vorhanden')
       
       // Check seed data
-      const { data: seedData } = await supabase.from('role_configurations').select('id').limit(1)
+      const { data: seedData } = await supabase.from('theme_settings').select('id').limit(1)
       if (seedData && seedData.length > 0) {
         updateStep(5, 'completed', 'Seed-Daten bereits vorhanden')
       } else {
         updateStep(5, 'running')
-        // Try to insert seed data via REST API
         try {
-          // Insert role_configurations
-          await supabase.from('role_configurations').upsert([
-            { id: 'a5b6c7d8-e9f0-4a1b-2c3d-4e5f6a7b8c9d', role: 'admin', label: 'Administrator', display_order: 1 },
-            { id: 'b6c7d8e9-f0a1-4b2c-3d4e-5f6a7b8c9d0e', role: 'vorstand', label: 'Vorstand', display_order: 2 },
-            { id: 'c7d8e9f0-a1b2-4c3d-4e5f-6a7b8c9d0e1f', role: 'kranfuehrer', label: 'Kranführer', display_order: 3 },
-            { id: 'd8e9f0a1-b2c3-4d4e-5f6a-7b8c9d0e1f2a', role: 'mitglied', label: 'Mitglied', display_order: 4 },
-            { id: 'e9f0a1b2-c3d4-4e5f-6a7b-8c9d0e1f2a3b', role: 'gastmitglied', label: 'Gastmitglied', display_order: 5 },
-          ], { onConflict: 'id' })
-          
           // Insert role_badge_settings
           await supabase.from('role_badge_settings').upsert([
             { id: 'b0c1d2e3-f4a5-4b6c-7d8e-9f0a1b2c3d4e', role: 'admin', bg_color: 'hsl(0, 70%, 50%)', text_color: 'hsl(0, 0%, 100%)' },
@@ -970,56 +664,6 @@ Deno.serve(async (req) => {
             { id: 'd2e3f4a5-b6c7-4d8e-9f0a-1b2c3d4e5f6a', role: 'kranfuehrer', bg_color: 'hsl(202, 85%, 40%)', text_color: 'hsl(0, 0%, 100%)' },
             { id: 'e3f4a5b6-c7d8-4e9f-0a1b-2c3d4e5f6a7b', role: 'mitglied', bg_color: 'hsl(202, 85%, 23%)', text_color: 'hsl(0, 0%, 100%)' },
             { id: 'f4a5b6c7-d8e9-4f0a-1b2c-3d4e5f6a7b8c', role: 'gastmitglied', bg_color: 'hsl(180, 30%, 50%)', text_color: 'hsl(0, 0%, 100%)' },
-          ], { onConflict: 'id' })
-
-          // Insert menu_item_definitions
-          await supabase.from('menu_item_definitions').upsert([
-            { id: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', allowed_roles: ['admin', 'vorstand', 'kranfuehrer', 'mitglied', 'gastmitglied'], menu_type: 'footer' },
-            { id: 'calendar', label: 'Kalender', icon: 'Calendar', allowed_roles: ['admin', 'vorstand', 'kranfuehrer', 'mitglied'], menu_type: 'footer' },
-            { id: 'profile', label: 'Profil', icon: 'User', allowed_roles: ['admin', 'vorstand', 'kranfuehrer', 'mitglied', 'gastmitglied'], menu_type: 'footer' },
-            { id: 'settings', label: 'Einstellungen', icon: 'Settings', allowed_roles: ['admin', 'vorstand'], menu_type: 'footer' },
-            { id: 'users', label: 'Mitglieder', icon: 'Users', allowed_roles: ['admin', 'vorstand'], menu_type: 'drawer' },
-            { id: 'files', label: 'Dokumente', icon: 'FileText', allowed_roles: ['admin', 'vorstand', 'kranfuehrer', 'mitglied'], menu_type: 'drawer' },
-            { id: 'slots', label: 'Slots verwalten', icon: 'Clock', allowed_roles: ['admin', 'kranfuehrer'], menu_type: 'drawer' },
-            { id: 'reports', label: 'Berichte', icon: 'BarChart3', allowed_roles: ['admin', 'vorstand'], menu_type: 'drawer' },
-            { id: 'harbor', label: 'Hafen-Chat', icon: 'MessageCircle', allowed_roles: ['admin', 'vorstand', 'kranfuehrer', 'mitglied'], menu_type: 'drawer' },
-            { id: 'admin-settings', label: 'Admin-Settings', icon: 'Shield', allowed_roles: ['admin'], menu_type: 'drawer' },
-            { id: 'logout', label: 'Abmelden', icon: 'LogOut', allowed_roles: ['admin', 'vorstand', 'kranfuehrer', 'mitglied', 'gastmitglied'], menu_type: 'drawer' },
-          ], { onConflict: 'id' })
-
-          // Insert dashboard_widget_definitions
-          await supabase.from('dashboard_widget_definitions').upsert([
-            { id: 'weather', name: 'Wetter', description: 'Aktuelle Wetterdaten vom Wörthersee', component_name: 'WeatherWidget', allowed_roles: ['admin', 'vorstand', 'kranfuehrer', 'mitglied', 'gastmitglied'], category: 'info', size: 'small', default_enabled: true, default_column: 1, default_order: 1, settings: {} },
-            { id: 'harbor-status', name: 'Hafenstatus', description: 'Aktueller Status des Hafens', component_name: 'HarborStatusWidget', allowed_roles: ['admin', 'vorstand', 'kranfuehrer', 'mitglied'], category: 'info', size: 'small', default_enabled: true, default_column: 1, default_order: 2, settings: {} },
-            { id: 'member-stats', name: 'Mitglieder-Statistik', description: 'Übersicht der Mitgliederzahlen', component_name: 'MemberStatsWidget', allowed_roles: ['admin', 'vorstand'], category: 'stats', size: 'medium', default_enabled: true, default_column: 2, default_order: 1, settings: {} },
-            { id: 'events', name: 'Termine', description: 'Kommende Vereinstermine', component_name: 'EventsCalendarWidget', allowed_roles: ['admin', 'vorstand', 'kranfuehrer', 'mitglied'], category: 'calendar', size: 'medium', default_enabled: true, default_column: 2, default_order: 2, settings: {} },
-            { id: 'maintenance', name: 'Wartungshinweise', description: 'Aktuelle Wartungsmeldungen', component_name: 'MaintenanceAlertsWidget', allowed_roles: ['admin', 'vorstand', 'kranfuehrer'], category: 'alerts', size: 'small', default_enabled: true, default_column: 1, default_order: 3, settings: {} },
-            { id: 'finance', name: 'Finanzen', description: 'Finanzübersicht', component_name: 'FinanceOverviewWidget', allowed_roles: ['admin', 'vorstand'], category: 'finance', size: 'medium', default_enabled: false, default_column: 2, default_order: 3, settings: {} },
-            { id: 'harbor-chat', name: 'Hafen-Chat', description: 'Schnellzugriff auf den Hafen-Chat', component_name: 'HarborChatWidget', allowed_roles: ['admin', 'vorstand', 'kranfuehrer', 'mitglied'], category: 'communication', size: 'small', default_enabled: true, default_column: 1, default_order: 4, settings: {} },
-            { id: 'ai-chat', name: 'AI Assistent', description: 'KI-gestützter Vereinsassistent', component_name: 'AIChatMiniWidget', allowed_roles: ['admin', 'vorstand'], category: 'ai', size: 'medium', default_enabled: false, default_column: 2, default_order: 4, settings: {} },
-          ], { onConflict: 'id' })
-
-          // Insert dashboard_section_definitions
-          await supabase.from('dashboard_section_definitions').upsert([
-            { id: 'welcome', name: 'Willkommen', description: 'Begrüßungsbereich mit personalisierten Infos', component_name: 'WelcomeSection', allowed_roles: ['admin', 'vorstand', 'kranfuehrer', 'mitglied', 'gastmitglied'], category: 'header', size: 'full', default_enabled: true, default_column: 1, default_order: 1 },
-            { id: 'stats', name: 'Statistiken', description: 'Übersichtskarten mit wichtigen Zahlen', component_name: 'StatsGridSection', allowed_roles: ['admin', 'vorstand', 'kranfuehrer'], category: 'stats', size: 'full', default_enabled: true, default_column: 1, default_order: 2 },
-            { id: 'quick-actions', name: 'Schnellaktionen', description: 'Häufig verwendete Aktionen', component_name: 'QuickActionsSection', allowed_roles: ['admin', 'vorstand', 'kranfuehrer', 'mitglied'], category: 'actions', size: 'full', default_enabled: true, default_column: 1, default_order: 3 },
-            { id: 'activity', name: 'Aktivitäten', description: 'Letzte Aktivitäten im Verein', component_name: 'ActivityFeedSection', allowed_roles: ['admin', 'vorstand'], category: 'feed', size: 'full', default_enabled: true, default_column: 1, default_order: 4 },
-            { id: 'announcements', name: 'Ankündigungen', description: 'Wichtige Vereinsmitteilungen', component_name: 'AnnouncementsSection', allowed_roles: ['admin', 'vorstand', 'kranfuehrer', 'mitglied', 'gastmitglied'], category: 'communication', size: 'full', default_enabled: false, default_column: 1, default_order: 5 },
-          ], { onConflict: 'id' })
-
-          // Insert ai_assistant_defaults
-          await supabase.from('ai_assistant_defaults').upsert([
-            { id: 'f0a1b2c3-d4e5-4f6a-7b8c-9d0e1f2a3b4c', role: 'admin', tonality: 'professionell und technisch', welcome_message: 'Hallo Administrator! Ich bin dein KI-Assistent für technische und administrative Fragen rund um den KSVL.' },
-            { id: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d', role: 'vorstand', tonality: 'professionell und strategisch', welcome_message: 'Guten Tag! Als Vorstandsmitglied kann ich Sie bei Vereinsfragen und strategischen Entscheidungen unterstützen.' },
-            { id: 'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e', role: 'kranfuehrer', tonality: 'freundlich und praktisch', welcome_message: 'Ahoi Kranführer! Wie kann ich dir heute beim Kranbetrieb helfen?' },
-            { id: 'c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f', role: 'mitglied', tonality: 'freundlich und hilfsbereit', welcome_message: 'Willkommen beim KSVL! Ich bin hier, um dir bei Fragen zu deiner Mitgliedschaft, Buchungen und allem rund um den Verein zu helfen.' },
-            { id: 'd4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a', role: 'gastmitglied', tonality: 'einladend und informativ', welcome_message: 'Herzlich willkommen als Gast beim Klagenfurter Segelverein Loretto! Ich beantworte gerne deine Fragen zum Verein.' },
-          ], { onConflict: 'id' })
-
-          // Insert monday_settings
-          await supabase.from('monday_settings').upsert([
-            { id: 'e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b', board_id: null, api_key_set: false, column_mapping: {}, auto_sync_enabled: false, last_sync_at: null, webhook_url: null },
           ], { onConflict: 'id' })
 
           // Insert app_settings
@@ -1038,7 +682,7 @@ Deno.serve(async (req) => {
             { id: 'a9b0c1d2-e3f4-4a5b-6c7d-8e9f0a1b2c3d', name: 'foreground', category: 'surface', hsl_value: '202 85% 15%', description: 'Textfarbe (Dunkel)', is_default: true },
           ], { onConflict: 'id' })
 
-          updateStep(5, 'completed', 'Seed-Daten eingefügt (9 Tabellen)')
+          updateStep(5, 'completed', 'Seed-Daten eingefügt (3 Tabellen)')
         } catch (seedErr) {
           console.error('[setup-wizard] Seed data error:', seedErr)
           updateStep(5, 'error', 'Seed-Daten-Fehler', String(seedErr))
@@ -1068,7 +712,7 @@ Deno.serve(async (req) => {
             part8_trigger: SQL_PART_8_AUTH_TRIGGER,
           },
           nextSteps: [
-            '1. Kopieren Sie den SQL-Dump aus docs/database/ksvl_database_dump_2026-01-23.sql',
+            '1. Kopieren Sie den SQL-Dump aus docs/database/ksvl_database_dump_2026-03-10.sql',
             '2. Öffnen Sie den SQL-Editor im Supabase Dashboard',
             '3. Fügen Sie den SQL-Code ein und führen Sie ihn aus',
             '4. Kehren Sie zum Setup-Wizard zurück und führen Sie ihn erneut aus'
@@ -1122,14 +766,12 @@ Deno.serve(async (req) => {
     console.log('[setup-wizard] Step 8: Creating admin user...')
     updateStep(8, 'running')
     try {
-      // Check if user exists
       const { data: existingUsers } = await supabase.auth.admin.listUsers()
       const userExists = existingUsers?.users?.some(u => u.email === adminEmail)
       
       if (userExists) {
         updateStep(8, 'completed', 'Admin-User existiert bereits', `Email: ${adminEmail}`)
       } else {
-        // Create admin user
         const { data: userData, error: userError } = await supabase.auth.admin.createUser({
           email: adminEmail,
           password: adminPassword,
@@ -1137,21 +779,13 @@ Deno.serve(async (req) => {
           user_metadata: { name: adminName }
         })
 
-        if (userError) {
-          throw userError
-        }
+        if (userError) throw userError
 
         if (userData.user) {
-          // Add admin role
-          const { error: roleError } = await supabase
+          await supabase
             .from('user_roles')
             .insert({ user_id: userData.user.id, role: 'admin' })
-          
-          if (roleError) {
-            console.error('[setup-wizard] Role insert error:', roleError)
-          }
 
-          // Update profile
           await supabase
             .from('profiles')
             .update({ 
@@ -1169,10 +803,7 @@ Deno.serve(async (req) => {
       updateStep(8, 'error', 'Admin-Erstellung fehlgeschlagen', String(err))
     }
 
-    // Calculate overall success
     const hasErrors = steps.some(s => s.status === 'error')
-
-    console.log('[setup-wizard] Setup completed:', { hasErrors })
 
     return new Response(
       JSON.stringify({
