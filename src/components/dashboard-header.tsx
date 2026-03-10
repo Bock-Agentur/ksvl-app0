@@ -39,7 +39,7 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const { currentRole } = useRole();
   const { settings } = useDashboardSettings(currentRole);
-  const { firstName: profileFirstName } = useProfileData();
+  const { firstName: profileFirstName, avatarUrl: profileAvatarUrl } = useProfileData();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
@@ -90,7 +90,7 @@ export function DashboardHeader({
     }
   }, [welcomeEnabled, welcomeMessage, welcomeShown, messages.length]);
 
-  const displayImage = userImage || (currentUser as any)?.user_metadata?.avatar_url;
+  const displayImage = profileAvatarUrl || userImage || (currentUser as any)?.user_metadata?.avatar_url;
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
