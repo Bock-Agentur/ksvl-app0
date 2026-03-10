@@ -193,6 +193,7 @@ export function ProfileView({ currentRole, userId, onUpdate, isDialog = false, o
         onCancel={handleCancelEditing}
         onBack={onBack}
         onRolesChange={(roles) => setEditedUser(prev => prev ? { ...prev, roles } : null)}
+        onAvatarChange={reload}
       />
 
       <ProfileFormCards
