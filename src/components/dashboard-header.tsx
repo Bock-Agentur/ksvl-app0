@@ -39,7 +39,7 @@ export function DashboardHeader({
 }: DashboardHeaderProps) {
   const { currentRole } = useRole();
   const { settings } = useDashboardSettings(currentRole);
-  const { firstName: profileFirstName } = useProfileData();
+  const { firstName: profileFirstName, avatarUrl: profileAvatarUrl } = useProfileData();
   const { toast } = useToast();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<Message[]>([]);
