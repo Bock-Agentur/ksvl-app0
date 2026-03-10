@@ -18,6 +18,7 @@ export function useProfileData(options?: { enabled?: boolean }) {
       ? `${user.first_name} ${user.last_name}`
       : user.name || 'User',
     email: user.email,
+    avatarUrl: user.avatar_url || null,
   } : null;
 
   return { 
@@ -25,6 +26,7 @@ export function useProfileData(options?: { enabled?: boolean }) {
     lastName: data?.lastName || '',
     fullName: data?.fullName || '',
     email: data?.email || '',
+    avatarUrl: data?.avatarUrl || null,
     isLoading 
   };
 }

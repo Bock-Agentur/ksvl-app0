@@ -90,7 +90,7 @@ export function DashboardHeader({
     }
   }, [welcomeEnabled, welcomeMessage, welcomeShown, messages.length]);
 
-  const displayImage = userImage || (currentUser as any)?.user_metadata?.avatar_url;
+  const displayImage = profileAvatarUrl || userImage || (currentUser as any)?.user_metadata?.avatar_url;
 
   const sendMessage = async () => {
     if (!input.trim() || isLoading) return;
