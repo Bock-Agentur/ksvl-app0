@@ -437,7 +437,7 @@ SELECT * FROM pg_trigger WHERE tgname = 'on_auth_user_created';
 | Komponenten | Lovable Remix | ✅ Vollständig |
 | Edge Function Code | Lovable Remix | ✅ Vollständig |
 | **Manuell via SQL-Dump** | | |
-| DB-Schema (14 Tabellen) | SQL-Dump | ✅ Nach Ausführung |
+| DB-Schema (7 Tabellen) | SQL-Dump | ✅ Nach Ausführung |
 | RLS Policies (50+) | SQL-Dump | ✅ Nach Ausführung |
 | DB-Funktionen (6) | SQL-Dump | ✅ Nach Ausführung |
 | Seed-Daten | SQL-Dump | ✅ Nach Ausführung |
