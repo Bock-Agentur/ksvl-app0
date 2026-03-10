@@ -226,8 +226,7 @@ supabase functions deploy manage-user
 supabase functions deploy manage-user-password
 supabase functions deploy reset-password-admin
 supabase functions deploy create-admin
-supabase functions deploy monday-webhook
-supabase functions deploy sync-monday
+supabase functions deploy setup-wizard
 supabase functions deploy migrate-storage-files
 ```
 
