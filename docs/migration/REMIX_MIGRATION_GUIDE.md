@@ -339,7 +339,6 @@ VITE_SUPABASE_PROJECT_ID=<neue-project-id>
 
 - [ ] `GOOGLE_API_KEY` konfiguriert
 - [ ] `ADMIN_PASSWORD_RESET_KEY` konfiguriert
-- [ ] `MONDAY_API_KEY` konfiguriert (optional)
 
 ### ✅ Frontend
 
