@@ -332,8 +332,7 @@ VITE_SUPABASE_PROJECT_ID=<neue-project-id>
 - [ ] `manage-user-password` deployed
 - [ ] `reset-password-admin` deployed
 - [ ] `create-admin` deployed
-- [ ] `monday-webhook` deployed
-- [ ] `sync-monday` deployed
+- [ ] `setup-wizard` deployed
 - [ ] `migrate-storage-files` deployed
 
 ### ✅ Secrets
