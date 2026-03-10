@@ -29,6 +29,7 @@ interface ProfileHeaderProps {
   onCancel: () => void;
   onBack?: () => void;
   onRolesChange?: (roles: UserRole[]) => void;
+  onAvatarChange?: () => void;
 }
 
 export function ProfileHeader({
