@@ -155,7 +155,9 @@ export function useProfileLoader(options?: UseProfileLoaderOptions): ProfileLoad
         boardPositionHistory: profile.board_position_history || [],
         createdBy: profile.created_by || undefined,
         modifiedBy: profile.modified_by || undefined,
-        ai_info_enabled: profile.ai_info_enabled || false
+        ai_info_enabled: profile.ai_info_enabled || false,
+        avatarUrl: profile.avatar_url || null,
+        avatar_url: profile.avatar_url || null
       } as any;
 
       setUser(userData);
